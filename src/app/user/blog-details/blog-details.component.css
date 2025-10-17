@@ -1,0 +1,42 @@
+.view-blog-page {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.blog-header h2 {
+  color: #0d6efd;
+}
+
+.blog-image-wrapper img {
+  max-height: 400px;
+  object-fit: cover;
+}
+
+.blog-content p {
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.blog-actions button {
+  font-size: 0.9rem;
+  padding: 0.5rem 0.9rem;
+}
+
+.blog-actions button i {
+  font-size: 1rem;
+}
+
+.comments-section h5 {
+  color: #0d6efd;
+}
+
+.comment {
+  border-left: 3px solid #0d6efd;
+}
+
+.add-comment textarea {
+  resize: none;
+}
+
+.add-comment button {
+  font-size: 0.9rem;
+}

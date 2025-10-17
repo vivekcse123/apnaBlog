@@ -1,0 +1,339 @@
+html....
+
+
+<div class="profile-page min-vh-100 d-flex align-items-center justify-content-center bg-light">
+  <div class="profile-container shadow-lg rounded-4 bg-white overflow-hidden row w-100 mx-3">
+
+    <!-- Left Section: Profile Info & Posts -->
+    <div class="col-md-7 p-5">
+      
+      <!-- Profile Header -->
+      <div class="profile-header d-flex align-items-center mb-4">
+        <img src="https://via.placeholder.com/120" alt="Profile Picture" class="rounded-circle shadow-sm me-3" width="120" height="120">
+        <div>
+          <h2 class="fw-bold mb-1">{{ userName || 'User Name' }}</h2>
+          <p class="text-muted mb-0">{{ '@' + userHandle || 'username' }}</p>
+        </div>
+      </div>
+
+      <!-- Social Stats -->
+      <div class="social-stats d-flex gap-4 mb-4">
+        <div class="text-center">
+          <h5 class="fw-bold mb-0">{{ followersCount || 0 }}</h5>
+          <small class="text-muted">Followers</small>
+        </div>
+        <div class="text-center">
+          <h5 class="fw-bold mb-0">{{ followingCount || 0 }}</h5>
+          <small class="text-muted">Following</small>
+        </div>
+        <div class="text-center">
+          <h5 class="fw-bold mb-0">{{ postsCount || 0 }}</h5>
+          <small class="text-muted">Posts</small>
+        </div>
+      </div>
+
+      <!-- Follow / Message / Create Blog Buttons -->
+      <div class="d-flex gap-2 mb-4">
+        <button class="btn btn-success flex-grow-1">
+          <i class="bi bi-person-plus me-2"></i>Follow
+        </button>
+        <button class="btn btn-outline-primary flex-grow-1">
+          <i class="bi bi-chat-dots me-2"></i>Message
+        </button>
+        <button class="btn btn-outline-success flex-grow-1" routerLink="/user-dashboard/create-blog">
+          <i class="bi bi-pencil-square me-2"></i>Create New Blog
+        </button>
+      </div>
+
+      <!-- About Section -->
+      <div class="about-section mb-4">
+        <h5 class="fw-bold mb-2">About</h5>
+        <p class="text-muted">{{ userAbout || 'This is a short bio about the user. Share something interesting!' }}</p>
+      </div>
+
+      <!-- User Posts -->
+      <div class="user-posts">
+        <h5 class="fw-bold mb-3">Posts</h5>
+        <div class="row g-3">
+          <div class="col-12" *ngFor="let post of userPosts">
+            <div class="card shadow-sm rounded-4 overflow-hidden">
+              <img *ngIf="post.imageUrl" [src]="post.imageUrl" class="card-img-top" alt="Post Image">
+              <div class="card-body">
+                <h6 class="card-title fw-bold">{{ post.title }}</h6>
+                <p class="card-text text-muted">{{ post.content | slice:0:100 }}...</p>
+                <div class="d-flex justify-content-between align-items-center mt-2">
+                  <small class="text-muted">{{ post.date | date:'shortDate' }}</small>
+                  <div class="d-flex gap-2">
+                    <i class="bi bi-heart text-danger"></i> {{ post.likes }}
+                    <i class="bi bi-chat text-primary"></i> {{ post.comments }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right Sidebar: Trending / Suggestions -->
+    <div class="col-md-5 p-5 border-start bg-light d-flex flex-column align-items-start justify-content-start">
+      
+      <!-- Suggested Friends -->
+      <div class="mb-4 w-100">
+        <h6 class="fw-bold mb-3"><i class="bi bi-people me-2 text-success"></i>Suggested Friends</h6>
+        <div class="suggested-friend d-flex align-items-center mb-2" *ngFor="let friend of suggestedFriends">
+          <img [src]="friend.imageUrl || 'https://via.placeholder.com/40'" class="rounded-circle me-2" width="40" height="40">
+          <div class="flex-grow-1">
+            <p class="mb-0 fw-semibold">{{ friend.name }}</p>
+            <small class="text-muted">{{ '@' + friend.handle }}</small>
+          </div>
+          <button class="btn btn-outline-success btn-sm">Follow</button>
+        </div>
+      </div>
+
+      <!-- Trending Topics -->
+      <div class="trending-section w-100 mt-4">
+        <h6 class="fw-bold mb-3"><i class="bi bi-fire me-2 text-danger"></i>Trending Topics</h6>
+        <div class="trending-item py-1" *ngFor="let topic of trendingTopics">
+          <span class="text-success fw-semibold">#{{ topic.tag }}</span>
+          <small class="text-muted ms-2">{{ topic.count }} posts</small>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+
+.... csss
+/* General Page Styles */
+.profile-page {
+  background-color: #f5f7fb;
+  padding: 2rem 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.profile-container {
+  max-width: 1200px;
+}
+
+/* Profile Header */
+.profile-header img {
+  object-fit: cover;
+}
+
+.profile-header h2 {
+  font-size: 1.8rem;
+}
+
+.profile-header p {
+  font-size: 0.95rem;
+}
+
+/* Social Stats */
+.social-stats div h5 {
+  font-size: 1.25rem;
+}
+
+.social-stats div small {
+  font-size: 0.85rem;
+}
+
+/* Buttons */
+.btn {
+  border-radius: 0.75rem;
+  font-weight: 600;
+}
+
+.btn i {
+  vertical-align: middle;
+}
+
+/* About Section */
+.about-section h5 {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+.about-section p {
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* User Posts */
+.user-posts h5 {
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.user-posts .card {
+  border: none;
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
+.user-posts .card img {
+  object-fit: cover;
+  max-height: 250px;
+}
+
+.user-posts .card-body h6 {
+  font-size: 1rem;
+}
+
+.user-posts .card-body p {
+  font-size: 0.9rem;
+}
+
+.user-posts .card-body i {
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+/* Right Sidebar */
+.suggested-friend img {
+  object-fit: cover;
+}
+
+.suggested-friend p {
+  font-size: 0.95rem;
+  margin-bottom: 0;
+}
+
+.trending-section h6 {
+  font-size: 1rem;
+}
+
+.trending-item {
+  padding: 0.25rem 0;
+  font-size: 0.9rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+  .profile-container {
+    flex-direction: column;
+  }
+
+  .profile-container .col-md-7,
+  .profile-container .col-md-5 {
+    max-width: 100%;
+    padding: 2rem;
+  }
+
+  .profile-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .profile-header img {
+    margin-bottom: 1rem;
+  }
+}
+
+
+ts....
+import { CommonModule } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
+import { RouterLink } from '@angular/router';
+
+interface Post {
+  title: string;
+  content: string;
+  imageUrl?: string;
+  date: Date;
+  likes: number;
+  comments: number;
+}
+
+interface Friend {
+  name: string;
+  handle: string;
+  imageUrl?: string;
+}
+
+interface TrendingTopic {
+  tag: string;
+  count: number;
+}
+
+@Component({
+  selector: 'app-profile',
+  standalone: true,
+  imports: [CommonModule, RouterLink],
+  templateUrl: './profile.component.html',
+  styleUrls: ['./profile.component.css']
+})
+export class ProfileComponent implements OnInit {
+  userName: string = 'John Doe';
+  userHandle: string = 'johndoe';
+  followersCount: number = 1200;
+  followingCount: number = 180;
+  postsCount: number = 8;
+  userAbout: string = 'Loves traveling, photography, and sharing village stories.';
+
+  userPosts: Post[] = [];
+  suggestedFriends: Friend[] = [];
+  trendingTopics: TrendingTopic[] = [];
+
+  constructor() {}
+
+  ngOnInit(): void {
+    this.loadUserPosts();
+    this.loadSuggestedFriends();
+    this.loadTrendingTopics();
+  }
+
+  loadUserPosts() {
+    this.userPosts = [
+      {
+        title: 'Village Festival Celebration',
+        content: 'We celebrated the annual festival with traditional dances and food.',
+        imageUrl: 'https://via.placeholder.com/600x400',
+        date: new Date('2025-10-10'),
+        likes: 34,
+        comments: 5
+      },
+      {
+        title: 'Morning in the Village',
+        content: 'A peaceful morning with beautiful sunrise and fresh air.',
+        imageUrl: 'https://via.placeholder.com/600x400',
+        date: new Date('2025-10-12'),
+        likes: 56,
+        comments: 12
+      },
+      // Add more posts as needed
+    ];
+  }
+
+  loadSuggestedFriends() {
+    this.suggestedFriends = [
+      { name: 'Alice Smith', handle: 'alice', imageUrl: 'https://via.placeholder.com/40' },
+      { name: 'Bob Johnson', handle: 'bobj', imageUrl: 'https://via.placeholder.com/40' },
+      { name: 'Charlie Lee', handle: 'charlie', imageUrl: 'https://via.placeholder.com/40' }
+      // Add more friends as needed
+    ];
+  }
+
+  loadTrendingTopics() {
+    this.trendingTopics = [
+      { tag: 'culture', count: 24 },
+      { tag: 'village', count: 15 },
+      { tag: 'festival', count: 30 },
+      { tag: 'travel', count: 10 }
+      // Add more topics as needed
+    ];
+  }
+
+  followFriend(friend: Friend) {
+    console.log(`Followed ${friend.name}`);
+    // Implement follow logic here
+  }
+
+  sendMessage(friend: Friend) {
+    console.log(`Message sent to ${friend.name}`);
+    // Implement message logic here
+  }
+}

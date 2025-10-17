@@ -1,0 +1,47 @@
+<div class="container dashboard-container py-5">
+
+  <!-- Page Header -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4">
+    <div>
+      <h2 class="text-primary fw-bold mb-1">My Blogs</h2>
+      <p class="text-muted mb-0">Here are all the blogs you have posted. You can view, like, and comment on them.</p>
+    </div>
+    <button class="btn btn-success mt-3 mt-md-0" routerLink="/user-dashboard/create-blog">
+      <i class="bi bi-pencil-square me-2"></i>Create New Blog
+    </button>
+  </div>
+
+  <!-- Blogs Grid -->
+  <div class="row g-4">
+    <div class="col-md-6 col-lg-4" *ngFor="let blog of blogs">
+      <div class="card shadow-sm rounded-4 overflow-hidden h-100">
+        
+        <!-- Blog Image -->
+        <img [src]="blog.image || 'assets/images/default-blog.jpg'" 
+             alt="Blog Image" class="card-img-top" style="height:180px; object-fit:cover;">
+
+        <!-- Card Body -->
+        <div class="card-body d-flex flex-column">
+          <h5 class="card-title fw-bold mb-2">{{ blog.title }}</h5>
+          <p class="card-text text-muted flex-grow-1">{{ blog.summary | slice:0:120 }}...</p>
+
+          <!-- Action Buttons and Stats -->
+          <div class="d-flex justify-content-between align-items-center mt-3">
+            <button class="btn btn-outline-primary flex-grow-1 btn-sm me-2" (click)="viewBlog(blog.id)">
+              <i class="bi bi-eye me-1"></i>View
+            </button>
+            <div class="d-flex gap-3 align-items-center">
+              <span class="text-muted">
+                <i class="bi bi-heart text-danger me-1"></i>{{ blog.likes }}
+              </span>
+              <span class="text-muted">
+                <i class="bi bi-chat text-primary me-1"></i>{{ blog.comments }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,109 @@
+<div class="profile-page min-vh-100 d-flex align-items-center justify-content-center bg-light">
+  <div class="profile-container shadow-lg rounded-4 bg-white overflow-hidden row w-100 mx-3">
+
+    <!-- Left Section: Profile Info & Posts -->
+    <div class="col-md-7 p-5">
+      
+      <!-- Profile Header -->
+      <div class="profile-header d-flex align-items-center mb-4">
+        <div class="position-relative">
+          <img [src]="currentUser.profileImage || 'https://via.placeholder.com/120'" 
+               alt="Profile Picture" class="rounded-circle shadow-sm" width="120" height="120">
+          <!-- Camera icon for profile photo upload -->
+          <i class="bi bi-camera-fill upload-icon" title="Change Profile Photo" (click)="changeProfilePhoto()"></i>
+        </div>
+        <div class="flex-grow-1 ms-3 d-flex align-items-center justify-content-between">
+          <div>
+            <h2 class="fw-bold mb-1 d-flex align-items-center">
+              {{ currentUser.name }}
+              <!-- Smaller edit icon -->
+              <i class="bi bi-pencil edit-icon ms-2" title="Edit Name" (click)="editName()"></i>
+            </h2>
+            <p class="text-muted mb-0">{{ '@' + currentUser.handle }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Social Stats -->
+      <div class="social-stats d-flex gap-4 mb-4">
+        <div class="text-center">
+          <h5 class="fw-bold mb-0">{{ currentUser.followersCount }}</h5>
+          <small class="text-muted">Followers</small>
+        </div>
+        <div class="text-center">
+          <h5 class="fw-bold mb-0">{{ currentUser.followingCount }}</h5>
+          <small class="text-muted">Following</small>
+        </div>
+        <div class="text-center">
+          <h5 class="fw-bold mb-0">{{ currentUser.posts.length }}</h5>
+          <small class="text-muted">Posts</small>
+        </div>
+      </div>
+
+      <!-- Create Blog Button -->
+      <div class="d-flex gap-2 mb-4">
+        <button class="btn btn-outline-success flex-grow-1" routerLink="/user-dashboard/create-blog">
+          <i class="bi bi-pencil-square me-2"></i>Create New Blog
+        </button>
+      </div>
+
+      <!-- About Section -->
+      <div class="about-section mb-2 d-flex align-items-center justify-content-between">
+        <h5 class="fw-bold mb-2">About</h5>
+        <i class="bi bi-pencil edit-icon" title="Edit About" (click)="editAbout()"></i>
+      </div>
+      <p class="text-muted mb-4">{{ currentUser.about || 'This is a short bio about you. Share something interesting!' }}</p>
+
+      <!-- User Posts -->
+      <div class="user-posts">
+        <h5 class="fw-bold mb-3">Posts</h5>
+        <div class="row g-3">
+          <div class="col-12" *ngFor="let post of currentUser.posts">
+            <div class="card shadow-sm rounded-4 overflow-hidden">
+              <img *ngIf="post.imageUrl" [src]="post.imageUrl" class="card-img-top" alt="Post Image">
+              <div class="card-body">
+                <h6 class="card-title fw-bold">{{ post.title }}</h6>
+                <p class="card-text text-muted">{{ post.content | slice:0:100 }}...</p>
+                <div class="d-flex justify-content-between align-items-center mt-2">
+                  <small class="text-muted">{{ post.date | date:'shortDate' }}</small>
+                  <div class="d-flex gap-2">
+                    <i class="bi bi-heart text-danger"></i> {{ post.likes }}
+                    <i class="bi bi-chat text-primary"></i> {{ post.comments }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right Sidebar: Trending / Suggestions -->
+    <div class="col-md-5 p-5 border-start bg-light d-flex flex-column align-items-start justify-content-start">
+      
+      <!-- Suggested Friends -->
+      <div class="mb-4 w-100">
+        <h6 class="fw-bold mb-3"><i class="bi bi-people me-2 text-success"></i>Suggested Friends</h6>
+        <div class="suggested-friend d-flex align-items-center mb-2" *ngFor="let friend of suggestedFriends">
+          <img [src]="friend.imageUrl || 'https://via.placeholder.com/40'" class="rounded-circle me-2" width="40" height="40">
+          <div class="flex-grow-1">
+            <p class="mb-0 fw-semibold">{{ friend.name }}</p>
+            <small class="text-muted">{{ '@' + friend.handle }}</small>
+          </div>
+          <button class="btn btn-outline-success btn-sm">Follow</button>
+        </div>
+      </div>
+
+      <!-- Trending Topics -->
+      <div class="trending-section w-100 mt-4">
+        <h6 class="fw-bold mb-3"><i class="bi bi-fire me-2 text-danger"></i>Trending Topics</h6>
+        <div class="trending-item py-1" *ngFor="let topic of trendingTopics">
+          <span class="text-success fw-semibold">#{{ topic.tag }}</span>
+          <small class="text-muted ms-2">{{ topic.count }} posts</small>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

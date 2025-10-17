@@ -1,0 +1,215 @@
+<div class="site-wrap min-vh-100 d-flex align-items-center justify-content-center">
+  <div class="feed-dashboard row shadow-lg rounded-4 overflow-hidden bg-white">
+
+    <!-- Left Feed Section -->
+    <div class="col-md-7 p-5 feed-col">
+      <!-- Brand Header -->
+      <div class="d-flex align-items-center mb-4">
+        <div class="logo-wrap me-3" aria-hidden="true">
+          <svg class="logo-svg" width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect rx="12" width="64" height="64" fill="#F6FBF6"/>
+            <g transform="translate(6,6)">
+              <path d="M22 2c-6 0-11 4-11 9 0 3 2 5 2 5l9 0 9 0s2-2 2-5c0-5-5-9-11-9z" fill="#FFD166"/>
+              <path d="M2 30c0-6 6-12 14-12s14 6 14 12v10H2V30z" fill="#7FB069"/>
+              <path d="M30 30L16 18 2 30" fill="#A7D48C" opacity="0.9"/>
+              <rect x="12" y="20" width="8" height="12" rx="1.5" fill="#5C8A3B"/>
+              <path d="M6 30h20" stroke="#4E7A2F" stroke-linecap="round" stroke-width="1"/>
+            </g>
+          </svg>
+        </div>
+        <div>
+          <h3 class="brand-title mb-0">अपना<span class="brand-english">Blog</span></h3>
+          <small class="brand-subtitle">Discover stories from villages across India</small>
+        </div>
+      </div>
+
+      <!-- Feed Title -->
+      <h1 class="feed-main-title mb-3">
+        <i class="bi bi-people-fill me-2"></i>
+        <span class="title-text">Community Feed</span>
+      </h1>
+
+      <p class="feed-description">
+        Explore authentic stories, festivals, and daily life moments shared by people from villages across the country.
+      </p>
+
+      <!-- Empty State -->
+      <div *ngIf="posts.length === 0" class="empty-state-card">
+        <i class="bi bi-journal-text empty-icon"></i>
+        <h4 class="empty-title">No posts yet</h4>
+        <p class="empty-text">Be the first to share your village story!</p>
+      </div>
+
+      <!-- Posts Feed -->
+      <div class="posts-feed-list">
+        <article *ngFor="let post of posts" class="post-card">
+          
+          <!-- Post Header -->
+          <div class="post-header">
+            <div class="author-info">
+              <div class="avatar-wrapper">
+                <i class="bi bi-person-circle avatar-icon"></i>
+              </div>
+              <div class="author-details">
+                <h5 class="author-name">
+                  {{ post.author }}
+                  <span class="author-location">from {{ post.village }}</span>
+                </h5>
+                <small class="post-time">{{ post.time }}</small>
+              </div>
+            </div>
+            <button class="btn-more" type="button">
+              <i class="bi bi-three-dots"></i>
+            </button>
+          </div>
+
+          <!-- Post Title -->
+          <h3 class="post-title">{{ post.title }}</h3>
+          
+          <!-- Post Image -->
+          <div *ngIf="post.imageUrl" class="post-image-container">
+            <img [src]="post.imageUrl" class="post-image" [alt]="'Image for ' + post.title" />
+          </div>
+
+          <!-- Post Content -->
+          <div class="post-content">
+            <div class="content-section">
+              <span class="content-label content-label-en">
+                <i class="bi bi-translate me-1"></i>English
+              </span>
+              <p class="content-text">{{ post.content_en }}</p>
+            </div>
+            <div class="content-section">
+              <span class="content-label content-label-hi">
+                <i class="bi bi-translate me-1"></i>Hindi (हिंदी)
+              </span>
+              <p class="content-text">{{ post.content_hi }}</p>
+            </div>
+          </div>
+
+          <!-- Post Footer -->
+          <div class="post-footer">
+            <!-- Stats Bar -->
+            <div class="post-stats">
+              <span class="stat-item">
+                <i class="bi bi-heart-fill stat-icon"></i>
+                {{ post.likes }} {{ post.likes === 1 ? 'Like' : 'Likes' }}
+              </span>
+              <span class="stat-item">
+                <i class="bi bi-chat-fill stat-icon"></i>
+                {{ post.comments }} {{ post.comments === 1 ? 'Comment' : 'Comments' }}
+              </span>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="post-actions">
+              <button 
+                type="button" 
+                class="action-btn"
+                [class.action-btn-active]="post.isLiked"
+                (click)="likePost(post)">
+                <i [class]="post.isLiked ? 'bi bi-heart-fill' : 'bi bi-heart'"></i>
+                <span>Like</span>
+              </button>
+              
+              <button 
+                type="button" 
+                class="action-btn"
+                (click)="commentPost(post)">
+                <i class="bi bi-chat-left-text"></i>
+                <span>Comment</span>
+              </button>
+              
+              <button 
+                type="button" 
+                class="action-btn"
+                (click)="sharePost(post)">
+                <i class="bi bi-share"></i>
+                <span>Share</span>
+              </button>
+            </div>
+          </div>
+
+        </article>
+      </div>
+    </div>
+
+    <!-- Right Sidebar Section -->
+    <div class="col-md-5 d-flex align-items-start justify-content-center p-5 sidebar-col">
+      <div class="sidebar-content w-100">
+        
+        <!-- User Profile Card -->
+        <div class="profile-card">
+          <div class="profile-header">
+            <div class="profile-avatar">
+              <i class="bi bi-person-circle"></i>
+            </div>
+            <div class="profile-info">
+              <h4 class="profile-name">Welcome Back!</h4>
+              <p class="profile-subtitle">Share your village story today</p>
+            </div>
+          </div>
+          <button type="button" class="btn-create-post" (click)="createPost()">
+            <i class="bi bi-pencil-square me-2"></i>Create New Post
+          </button>
+        </div>
+
+        <!-- Trending Topics -->
+        <div class="trending-card">
+          <h6 class="card-title">
+            <i class="bi bi-fire me-2"></i>Trending Topics
+          </h6>
+          <div class="trending-list">
+            <div class="trending-item" *ngFor="let topic of trendingTopics">
+              <span class="trending-tag">#{{ topic.tag }}</span>
+              <small class="trending-count">{{ topic.count }} posts</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="stats-card">
+          <h6 class="card-title">
+            <i class="bi bi-graph-up me-2"></i>Community Stats
+          </h6>
+          <div class="stats-grid">
+            <div class="stat-box">
+              <h4 class="stat-number">5k+</h4>
+              <div class="stat-text">Villages</div>
+            </div>
+            <div class="stat-box">
+              <h4 class="stat-number">30k+</h4>
+              <div class="stat-text">Posts</div>
+            </div>
+            <div class="stat-box">
+              <h4 class="stat-number">50k+</h4>
+              <div class="stat-text">Members</div>
+            </div>
+            <div class="stat-box">
+              <h4 class="stat-number">4.9/5</h4>
+              <div class="stat-text">Rating</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Suggested Villages -->
+        <div class="suggested-card">
+          <h6 class="card-title">
+            <i class="bi bi-geo-alt me-2"></i>Suggested Villages
+          </h6>
+          <div class="suggested-list">
+            <div class="suggested-item" *ngFor="let village of suggestedVillages">
+              <div class="suggested-info">
+                <div class="suggested-name">{{ village.name }}</div>
+                <small class="suggested-state">{{ village.state }}</small>
+              </div>
+              <button type="button" class="btn-follow">Follow</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>

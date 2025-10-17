@@ -1,0 +1,96 @@
+<div class="site-wrap d-flex align-items-center justify-content-center bg-light">
+  <div class="main shadow-lg rounded-4 p-5" style="max-width: 400px;">
+    <h4 class="text-gradient mb-3 text-center">Create Your Account</h4>
+    <p class="text-muted text-center small mb-4">
+      Sign up to share your village stories and join the community
+    </p>
+    <form [formGroup] = "signUpForm" (ngSubmit)="signUp()" class="login-form">
+      <div class="mb-3">
+        <input type="text" class="form-control" placeholder="Full Name" formControlName="name">
+        @if(signUpForm.get('name')?.invalid && isSubmitted){
+          <small style="color: red;">
+            @if(signUpForm.get('name')?.errors?.['required']){
+              Name is required....!
+            }
+          </small>
+          <small style="color: red;">
+            @if(signUpForm.get('name')?.errors?.['pattern']){
+              Invalid name....!
+            }
+          </small>
+          }
+      </div>
+      <div class="mb-3">
+        <input type="email" class="form-control" placeholder="Email" formControlName = "email">
+        @if(signUpForm.get('email')?.invalid && isSubmitted){
+          <small style="color: red;">
+            @if(signUpForm.get('email')?.errors?.['required']){
+              Email is required....!
+            }
+          </small>
+          <small style="color: red;">
+            @if(signUpForm.get('email')?.errors?.['email']){
+              Invalid Email....!
+            }
+          </small>
+          }
+      </div>
+
+      <!-- Gender -->
+      <!-- <div class="mb-3 d-flex gap-3 justify-content-center">
+        <div class="form-check">
+          <input type="radio" class="form-check-input" id="male" name="gender" [(ngModel)]="user.gender" value="Male" required>
+          <label class="form-check-label" for="male">Male</label>
+        </div>
+        <div class="form-check">
+          <input type="radio" class="form-check-input" id="female" name="gender" [(ngModel)]="user.gender" value="Female">
+          <label class="form-check-label" for="female">Female</label>
+        </div>
+        <div class="form-check">
+          <input type="radio" class="form-check-input" id="other" name="gender" [(ngModel)]="user.gender" value="Other">
+          <label class="form-check-label" for="other">Other</label>
+        </div>
+      </div> -->
+
+      <div class="mb-3">
+        <input type="password" class="form-control" placeholder="Password" formControlName = "password">
+        @if(signUpForm.get('password')?.invalid && isSubmitted){
+          <small style="color: red;">
+            @if(signUpForm.get('password')?.errors?.['required']){
+              Password is required....!
+            }
+          </small>
+          <small style="color: red;">
+            @if(signUpForm.get('password')?.errors?.['minlength'] || signUpForm.get('password')?.errors?.['maxlength']){
+              Password must be between 5 and 10 characters long.
+            }
+          </small>          
+          }
+      </div>
+
+      <div class="mb-4">
+        <input type="password" class="form-control" placeholder="Confirm Password" formControlName = "confirm_password">
+        @if(signUpForm.get('confirm_password')?.invalid && isSubmitted){
+          <small style="color: red;">
+            @if(signUpForm.get('confirm_password')?.errors?.['required']){
+              Confirm Password is required....!
+            }
+          </small>        
+          }
+      </div>
+      
+      <div class="d-grid mb-3">
+        <button type="submit" class="btn btn-signup fw-semibold" [disabled]="!signUpForm.valid">
+          <i class="bi bi-person-plus me-2"></i>Sign Up
+        </button>
+      </div>
+      @if(message){
+        <p [ngStyle]="{'color': isSuccess ? 'green' : 'red'}">{{ message }}</p>
+      }
+      <p class="text-center text-muted mt-3">
+        Already have an account? 
+        <a href="#" (click)="toggleAuth()" class="text-success fw-semibold">Login</a>
+      </p>
+    </form>
+  </div>
+</div>
