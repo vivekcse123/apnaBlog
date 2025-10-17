@@ -1,13 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { Login } from '../modals/login';
 
 @Component({
     selector: 'app-login',
-    imports: [FormsModule, CommonModule, FormsModule, ReactiveFormsModule],
+    imports: [FormsModule, CommonModule, FormsModule, ReactiveFormsModule, RouterLink],
     templateUrl: './login.component.html',
     styleUrl: './login.component.css'
 })
@@ -41,13 +41,7 @@ export class LoginComponent {
           console.error('Error:', err);
         }
       });
-    }    
-
-  forgotPassword(event: Event): void {
-    event.preventDefault();
-    console.log('Forgot password clicked');
-    alert('Password reset link will be sent to your email.');
-  }
+    }
 
   createAccount(){
     this.auth.updateStatus(false);

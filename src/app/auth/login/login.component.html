@@ -32,7 +32,7 @@
         <p [ngStyle]="{'color': isSuccess ? 'green' : 'red'}">{{ message }}</p>
       }
       <div class="text-center mb-2 down">
-        <a href="#" class="text-muted small" (click)="forgotPassword($event)">
+        <a routerLink="/auth/verify-user" class="text-muted small">
           <i class="bi bi-key-fill me-1"></i>Forgot password?
         </a>
       </div>

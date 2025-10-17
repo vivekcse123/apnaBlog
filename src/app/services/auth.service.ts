@@ -22,11 +22,19 @@ export class AuthService {
   }
 
  login(obj: Login): Observable<string> {
-  return this.http.post<string>(`${this.authURL}/`, obj);
+  return this.http.post<string>(`${this.authURL}/login`, obj);
 }
 
   signUp(obj: SignUp): Observable<string> {
-    return this.http.post<string>(`${this.authURL}/`, obj);
+    return this.http.post<string>(`${this.authURL}/signup`, obj);
+  }
+
+  verifyUser(email: string){
+    return this.http.post(`${this.authURL}/checkemail`, email);
+  }
+
+  forgotPassword(obj: any){
+    return this.http.post(`${this.authURL}/forgotpassword`, obj);
   }
 
 }
