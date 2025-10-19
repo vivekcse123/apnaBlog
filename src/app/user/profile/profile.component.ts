@@ -1,50 +1,23 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
-import { RouterLink } from '@angular/router';
-
-interface Post {
-  title: string;
-  content: string;
-  imageUrl?: string;
-  date: Date;
-  likes: number;
-  comments: number;
-}
-
-interface User {
-  name: string;
-  handle: string;
-  profileImage?: string;
-  about?: string;
-  followersCount: number;
-  followingCount: number;
-  posts: Post[];
-}
-
-interface Friend {
-  name: string;
-  handle: string;
-  imageUrl?: string;
-}
-
-interface TrendingTopic {
-  tag: string;
-  count: number;
-}
+import { Component } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
+import { User } from '../modals/user.model';
+import { Friend } from '../modals/friend.model';
+import { TrendingTopic } from '../modals/trending-topic.model';
+import { Post } from '../modals/post.model'
 
 @Component({
-    selector: 'app-profile',
-    imports: [CommonModule, RouterLink],
-    templateUrl: './profile.component.html',
-    styleUrls: ['./profile.component.css']
+  selector: 'app-profile',
+  imports: [CommonModule, RouterLink],
+  templateUrl: './profile.component.html',
+  styleUrls: ['./profile.component.css']
 })
-export class ProfileComponent implements OnInit {
+export class ProfileComponent {
   currentUser: User;
   suggestedFriends: Friend[] = [];
   trendingTopics: TrendingTopic[] = [];
 
-  constructor() {
-    // Current user data
+  constructor(private router: Router) {
     this.currentUser = {
       name: 'John Doe',
       handle: 'johndoe',
@@ -54,6 +27,7 @@ export class ProfileComponent implements OnInit {
       followingCount: 300,
       posts: [
         {
+          id: 1,
           title: 'My First Blog',
           content: 'This is the content of my first blog post about Angular...',
           imageUrl: 'https://via.placeholder.com/600x300',
@@ -62,6 +36,7 @@ export class ProfileComponent implements OnInit {
           comments: 5
         },
         {
+          id: 2,
           title: 'Village Trip',
           content: 'Visited my native village and it was an amazing experience...',
           imageUrl: 'https://via.placeholder.com/600x300',
@@ -72,56 +47,20 @@ export class ProfileComponent implements OnInit {
       ]
     };
 
-    // Suggested friends
     this.suggestedFriends = [
       { name: 'Alice', handle: 'alice123', imageUrl: 'https://via.placeholder.com/40' },
       { name: 'Bob', handle: 'bob_dev', imageUrl: 'https://via.placeholder.com/40' },
       { name: 'Charlie', handle: 'charlie_dev', imageUrl: 'https://via.placeholder.com/40' }
     ];
 
-    // Trending topics
     this.trendingTopics = [
-      { tag: 'Angular', count: 120 },
-      { tag: 'JavaScript', count: 85 },
-      { tag: 'WebDevelopment', count: 60 }
+      { tag: 'Village Fest', count: 120 },
+      { tag: 'Holi', count: 85 },
+      { tag: 'Dewali', count: 60 }
     ];
   }
-
-  ngOnInit(): void {}
-
-// Edit name
-editName() {
-  const newName = prompt('Enter new name:', this.currentUser.name);
-  if (newName !== null && newName.trim() !== '') {
-    this.currentUser.name = newName.trim();
+  editProfile() {
+    this.router.navigate(['/user-dashboard/edit-profile', 1]);
   }
-}
-
-// Upload new profile photo
-changeProfilePhoto() {
-  const fileInput = document.createElement('input');
-  fileInput.type = 'file';
-  fileInput.accept = 'image/*';
-  fileInput.onchange = (event: any) => {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e: any) => {
-        this.currentUser.profileImage = e.target.result;
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-  fileInput.click();
-}
-
-// Edit about
-editAbout() {
-  const newAbout = prompt('Update your bio:', this.currentUser.about);
-  if (newAbout !== null && newAbout.trim() !== '') {
-    this.currentUser.about = newAbout.trim();
-  }
-}
-
 
 }

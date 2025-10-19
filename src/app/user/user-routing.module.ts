@@ -5,6 +5,7 @@ import { CreateBlogComponent } from './create-blog/create-blog.component';
 import { BlogDetailsComponent } from './blog-details/blog-details.component';
 import { ProfileComponent } from './profile/profile.component';
 import { BlogListComponent } from './blog-list/blog-list.component';
+import { EditProfile } from './edit-profile/edit-profile';
 
 const routes: Routes = [
   {
@@ -12,9 +13,10 @@ const routes: Routes = [
     component: UserDashboardComponent,
     children: [
       { path: '', redirectTo: 'my-blogs', pathMatch: 'full' },
-      { path: 'my-blogs', component: BlogListComponent },
-      { path: 'create-blog', component: CreateBlogComponent },
-      { path: 'profile', component: ProfileComponent },
+      { path: 'my-blogs/:id', component: BlogListComponent },
+      { path: 'create-blog/:id', component: CreateBlogComponent },
+      { path: 'my-profile/:id', component: ProfileComponent },
+      { path: 'edit-profile/:id', component: EditProfile },
       { path: 'blog-details/:id', component: BlogDetailsComponent }
     ]
   }

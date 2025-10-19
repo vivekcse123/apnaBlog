@@ -10,7 +10,7 @@
   }
   
   .main {
-    height: 55vh;
+    height: 55vh auto;
     max-width: 380px;
     width: 100%;
     background: #fff;
@@ -66,12 +66,19 @@
     transform: translateY(-1px);
     opacity: 0.9;
   }
+
+  small{
+    position: relative;
+    float: left;
+    padding: 10px;
+    top: -10px;
+  }
+
   
   @media (max-width: 480px) {
     .main {
       padding: 25px 15px;
     }
-  
     .text-gradient {
       font-size: 1.5rem;
     }

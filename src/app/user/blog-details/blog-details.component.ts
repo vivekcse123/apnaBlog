@@ -63,7 +63,7 @@ export class BlogDetailsComponent implements OnInit {
   }
 
   goBack() {
-    this.router.navigate(['/user-dashboard/my-blogs']);
+    this.router.navigate(['/user-dashboard/my-blogs/1']);
   }
 
   addComment(blogId: number) {

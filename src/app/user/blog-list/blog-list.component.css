@@ -6,7 +6,7 @@
   margin: 0 auto;
 }
 
-/* Page Header */
+/* Welcome Header */
 .dashboard-container h2 {
   font-weight: 700;
   color: #222;
@@ -19,101 +19,82 @@
   line-height: 1.6;
 }
 
-/* Blogs Grid */
-.blogs-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1.5rem;
+.dashboard-container .d-flex.gap-4 h5 {
+  font-weight: 700;
+  margin-bottom: 0.2rem;
+  color: #333;
+}
+
+.dashboard-container .d-flex.gap-4 small {
+  color: #888;
 }
 
 /* Blog Card */
-.blog-card {
+.card {
   background: #fff;
   border-radius: 20px;
   overflow: hidden;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
-  transition: transform 0.3s;
+  transition: transform 0.3s, box-shadow 0.3s;
 }
 
-.blog-card:hover {
+.card:hover {
   transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
 }
 
 /* Blog Image */
-.blog-card .blog-image {
+.card-img-top {
   width: 100%;
   height: 180px;
   object-fit: cover;
 }
 
 /* Card Body */
-.blog-card .card-body {
+.card-body {
   padding: 1rem;
   display: flex;
   flex-direction: column;
   flex-grow: 1;
 }
 
-.blog-title {
+.card-title {
   font-weight: 700;
   font-size: 1.2rem;
   margin-bottom: 0.5rem;
   color: #222;
 }
 
-.blog-summary {
+.card-text {
   font-size: 0.95rem;
   color: #666;
   flex-grow: 1;
   margin-bottom: 1rem;
 }
 
-/* Action Buttons */
-.blog-actions .btn {
-  border-radius: 10px;
+/* View Post Link */
+a.text-decoration-none {
   font-weight: 500;
-  transition: all 0.3s;
-  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s;
 }
 
-.blog-actions .btn-outline-primary {
+a.text-decoration-none:hover {
   color: #0d6efd;
-  border: 1px solid #0d6efd;
+  text-decoration: underline;
 }
 
-.blog-actions .btn-outline-primary:hover {
-  background: #0d6efd;
-  color: #fff;
-  transform: translateY(-1px);
+/* Stats Icons */
+.bi-heart, .bi-chat {
+  font-size: 1rem;
 }
 
-.blog-actions .btn-outline-success {
-  color: #198754;
-  border: 1px solid #198754;
-}
-
-.blog-actions .btn-outline-success:hover {
-  background: #198754;
-  color: #fff;
-  transform: translateY(-1px);
-}
-
-.blog-actions .btn-outline-danger {
-  color: #dc3545;
-  border: 1px solid #dc3545;
-}
-
-.blog-actions .btn-outline-danger:hover {
-  background: #dc3545;
-  color: #fff;
-  transform: translateY(-1px);
-}
-
-/* Responsive adjustments */
+/* Responsive */
 @media (max-width: 768px) {
-  .blogs-grid {
-    gap: 1rem;
+  .dashboard-container .d-flex.gap-4 {
+    flex-wrap: wrap;
+    gap: 1rem 2rem;
   }
 }

@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
+import { createPost } from '../user/modals/create-post.modal';
+import { HttpClient } from '@angular/common/http';
 
 interface Blog {
   id: number;
@@ -16,7 +18,8 @@ interface Blog {
 })
 export class BlogService {
 
-  // Mock blog data
+  private blogURL = "";
+
   private blogs: Blog[] = [
     {
       id: 1,
@@ -40,21 +43,22 @@ export class BlogService {
     }
   ];
 
-  constructor() { }
+  constructor(private http: HttpClient) { }
 
-  // Get a blog by ID
+  createBlog(obj: createPost): Observable<any>{
+    return this.http.post<any>(`${this.blogURL}/create-blog`, obj)
+  }
+
   getBlogById(id: number): Observable<Blog> {
     const blog = this.blogs.find(b => b.id === id);
     return of(blog!);
   }
 
-  // Delete a blog by ID
   deleteBlog(id: number): Observable<boolean> {
     this.blogs = this.blogs.filter(b => b.id !== id);
     return of(true);
   }
 
-  // Add a comment to a blog
   addComment(blogId: number, comment: { user: { name: string; id: number }, text: string, date: Date }): Observable<boolean> {
     const blog = this.blogs.find(b => b.id === blogId);
     if (blog) {
@@ -64,8 +68,8 @@ export class BlogService {
     return of(false);
   }
 
-  // Optional: Get all blogs (for My Blogs page)
   getAllBlogs(): Observable<Blog[]> {
     return of(this.blogs);
   }
+
 }

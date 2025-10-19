@@ -1,7 +1,6 @@
 <div class="create-post-page min-vh-100 d-flex align-items-center justify-content-center bg-light">
   <div class="create-post-container shadow-lg rounded-4 bg-white overflow-hidden row w-100 mx-3">
     
-    <!-- Left Content Section -->
     <div class="col-md-7 p-5">
 
       <h1 class="page-title mb-3">
@@ -12,52 +11,50 @@
         Share your village story, post an image, and inspire others in the community.
       </p>
 
-      <!-- Form -->
-      <form class="create-post-form" (ngSubmit)="onSubmit()">
+      <form [formGroup] = "createPostForm" class="create-post-form" (ngSubmit)="postBlog()">
         <div class="mb-3">
-          <label for="title" class="form-label fw-semibold text-secondary">
-            Post Title
-          </label>
-          <input id="title" type="text" class="form-control" 
-                 placeholder="Enter your post title"
-                 [(ngModel)]="post.title" name="title" required>
-        </div>
-
-        <div class="mb-3">
-          <label for="content_en" class="form-label fw-semibold text-secondary">
-            Content (English)
-          </label>
-          <textarea id="content_en" rows="4" class="form-control"
-                    placeholder="Write your story in English..."
-                    [(ngModel)]="post.content_en" name="content_en"></textarea>
-        </div>
-
-        <div class="mb-3">
-          <label for="content_hi" class="form-label fw-semibold text-secondary">
-            Content (Hindi)
-          </label>
-          <textarea id="content_hi" rows="4" class="form-control"
-                    placeholder="Write your story in Hindi..."
-                    [(ngModel)]="post.content_hi" name="content_hi"></textarea>
-        </div>
-
-        <div class="mb-3">
-          <label for="image" class="form-label fw-semibold text-secondary">
-            Upload Image
-          </label>
-          <input id="image" type="file" class="form-control" (change)="onImageUpload($event)">
-          <div class="image-preview mt-3" *ngIf="post.imageUrl">
-            <img [src]="post.imageUrl" alt="Preview" class="img-fluid rounded shadow-sm">
+          <label for="title" class="form-label fw-semibold text-secondary">Post Title</label>
+          <input id="title" type="text" class="form-control" placeholder="Enter your post title" formControlName="title">
+          <div style="color: red;">
+            @if(createPostForm.get('title')?.invalid && isSubmitted){
+              <small>
+                @if(createPostForm.get('title')?.errors?.['required']){
+                  Title is required....!
+                }
+              </small>
+            }
           </div>
         </div>
 
+        <div class="mb-3">
+          <label for="content_en" class="form-label fw-semibold text-secondary">Content (English)</label>
+          <textarea id="content_en" rows="4" class="form-control" placeholder="Write your story in English..."formControlName="content_eng"></textarea>
+          <div style="color: red;">
+            @if(createPostForm.get('content_eng')?.invalid && isSubmitted){
+              <small>
+                @if(createPostForm.get('content_eng')?.errors?.['required']){
+                  English Content is required....!
+                }
+              </small>
+            }
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="content_hi" class="form-label fw-semibold text-secondary">Content (Hindi)</label>
+          <textarea id="content_hi" rows="4" class="form-control" placeholder="Write your story in Hindi..." formControlName="content_hindi"></textarea>
+        </div>
+
+        <div class="mb-3">
+          <label for="image" class="form-label fw-semibold text-secondary">Upload Image</label> <span class="format"> (Formats .jpg, .jpeg, .png)</span>
+          <input id="images" type="file" class="form-control" (change)="onImageUpload($event)" multiple>
+        <div class="image-preview mt-3 d-flex flex-wrap gap-3" *ngIf="post.images?.length">
+          <img *ngFor="let img of post.images" [src]="img" alt="Preview" class="img-fluid rounded shadow-sm" style="width: 120px; height: 120px; object-fit: cover;">
+        </div>
+        </div>
         <div class="mb-4">
-          <label for="tags" class="form-label fw-semibold text-secondary">
-            Tags (comma separated)
-          </label>
-          <input id="tags" type="text" class="form-control"
-                 placeholder="#culture, #festival, #village"
-                 [(ngModel)]="post.tags" name="tags">
+          <label for="tags" class="form-label fw-semibold text-secondary">Tags (comma separated)</label>
+          <input id="tags" type="text" class="form-control" placeholder="#culture, #festival, #village" formControlName="tags">
         </div>
 
         <button type="submit" class="btn btn-success w-100 py-2 fw-semibold">
@@ -66,7 +63,6 @@
       </form>
     </div>
 
-    <!-- Right Sidebar Section -->
     <div class="col-md-5 p-5 border-start bg-light d-flex flex-column align-items-start justify-content-start">
       <div class="mb-4">
         <h4 class="fw-bold">Welcome, {{ userName || 'Guest' }}</h4>

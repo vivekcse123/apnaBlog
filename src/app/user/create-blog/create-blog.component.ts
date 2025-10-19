@@ -1,21 +1,36 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { createPost } from '../modals/create-post.modal';
+import { BlogService } from '../../services/blog.service';
 
 @Component({
-    selector: 'app-create-post',
-    imports: [FormsModule, CommonModule, RouterLink],
-    templateUrl: './create-blog.component.html',
-    styleUrls: ['./create-blog.component.css']
+  selector: 'app-create-post',
+  standalone: true,
+  imports: [FormsModule, CommonModule, RouterLink, ReactiveFormsModule],
+  templateUrl: './create-blog.component.html',
+  styleUrls: ['./create-blog.component.css']
 })
 export class CreateBlogComponent {
-  post = {
+  createPostForm: FormGroup = new FormGroup({});
+
+  constructor(private fb : FormBuilder, private blog : BlogService){
+    this.createPostForm = this.fb.group({
+      'title': new FormControl('', [Validators.required, Validators.pattern(/^[A-Za-z0-9\s.,!?'"-]+$/)]),
+      'content_eng': new FormControl('', [Validators.required, Validators.pattern(/^[A-Za-z0-9\s.,!?'"-]+$/)]),
+      'content_hindi': new FormControl('', [Validators.pattern(/^[\u0900-\u097F\s]+$/)]), 
+      'images': new FormControl('', [Validators.pattern(/\.(png|jpg|jpeg)$/i)]),
+      'tags': new FormControl('', [Validators.pattern(/^#[A-Za-z0-9_]+$/)]),
+      'date': new FormControl(new Date().toISOString().split('T')[0])
+    });
+  }
+  post: createPost = {
     title: '',
-    content_en: '',
-    content_hi: '',
-    tags: '',
-    imageUrl: ''
+    content_eng: '',
+    content_hindi: '',
+    tags: [],
+    images: []
   };
 
   trendingTopics = [
@@ -27,16 +42,32 @@ export class CreateBlogComponent {
   userName = 'Vivek Verma';
 
   onImageUpload(event: any) {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => this.post.imageUrl = reader.result as string;
-      reader.readAsDataURL(file);
+    const files = event.target.files as FileList;
+    if (files && files.length > 0) {
+      this.post.images = [];
+
+      Array.from(files).forEach((file: File) => {
+        const reader = new FileReader();
+        reader.onload = () => this.post.images.push(reader.result as string);
+        reader.readAsDataURL(file);
+      });
     }
   }
+  message: string = "";
+  isSubmitted: boolean = false;
 
-  onSubmit() {
-    console.log('Post submitted:', this.post);
-    alert('Your story has been published!');
+  postBlog() {
+    this.isSubmitted = true;
+    if (this.createPostForm?.invalid) {
+      this.message = "Please fill out all required fields correctly.";
+      return;
+    }
+  
+    this.blog.createBlog(this.createPostForm.value as createPost).subscribe({
+      next: () => this.message = "Blog posted successfully!",
+      error: () => this.message = "Something went wrong while posting the blog!"
+    });
   }
+  
+  
 }

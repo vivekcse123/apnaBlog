@@ -137,20 +137,23 @@ export class BlogFeedComponent implements OnInit {
    * Handle like action for a post
    */
   likePost(post: Post): void {
+    // Toggle like state
     post.isLiked = !post.isLiked;
-    
-    if (post.isLiked) {
-      post.likes++;
-      console.log(`Liked post: "${post.title}"`);
-      // API call to like the post
-      // this.postService.likePost(post.id).subscribe(...)
-    } else {
-      post.likes--;
-      console.log(`Unliked post: "${post.title}"`);
-      // API call to unlike the post
-      // this.postService.unlikePost(post.id).subscribe(...)
-    }
+  
+    // Update like count
+    post.likes = post.isLiked ? post.likes + 1 : Math.max(0, post.likes - 1);
+  
+    // Log for debugging (optional)
+    console.log(`${post.isLiked ? 'Liked' : 'Unliked'} post: "${post.title}"`);
+  
+    // Example API call (uncomment when ready)
+    // if (post.isLiked) {
+    //   this.postService.likePost(post.id).subscribe();
+    // } else {
+    //   this.postService.unlikePost(post.id).subscribe();
+    // }
   }
+  
 
   /**
    * Handle comment action for a post
@@ -199,7 +202,7 @@ export class BlogFeedComponent implements OnInit {
    */
   createPost(): void {
     console.log('Opening create post dialog');
-    this.router.navigate(['/user-dashboard/create-blog']);
+    this.router.navigate(['/user-dashboard/create-blog/1']);
     alert('Create post feature coming soon!');
     // Navigate to create post page or open modal
     // this.router.navigate(['/create-post']);

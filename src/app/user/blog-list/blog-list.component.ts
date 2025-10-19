@@ -1,64 +1,82 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, RouterModule } from '@angular/router';
+import { User } from '../modals/user.model';
+import { FormsModule } from '@angular/forms';
+import { FilterBlogPipe } from "../filter-blog-pipe";
 
 @Component({
-    selector: 'app-blog-list',
-    imports: [CommonModule, RouterLink],
-    templateUrl: './blog-list.component.html',
-    styleUrl: './blog-list.component.css'
+  selector: 'app-blog-list',
+  standalone: true,
+  imports: [CommonModule, RouterLink, FormsModule, FilterBlogPipe, RouterModule],
+  templateUrl: './blog-list.component.html',
+  styleUrls: ['./blog-list.component.css']
 })
-export class BlogListComponent implements OnInit{
-  constructor(private router: Router){}
+export class BlogListComponent implements OnInit {
 
-  blogs = [
+ currentUser: User = {
+  name: 'John Doe',
+  handle: 'johndoe',
+  profileImage: 'https://via.placeholder.com/120',
+  followersCount: 1250,
+  followingCount: 300,
+  posts: [
     {
       id: 1,
       title: 'Village Festival Celebration',
-      summary: 'A brief summary about our annual village festival...',
-      image: 'assets/images/festival.jpg',
+      content: 'A brief summary about our annual village festival...',
+      imageUrl: 'assets/images/festival.jpg',
       likes: 12,
-      comments: 4
+      comments: 4,
+      date: new Date('2022-12-12') // YYYY-MM-DD format
     },
     {
       id: 2,
       title: 'Local Farmers Market',
-      summary: 'Highlights from our weekly farmers market...',
-      image: 'assets/images/market.jpg',
+      content: 'Highlights from our weekly farmers market...',
+      imageUrl: 'assets/images/market.jpg',
       likes: 8,
-      comments: 2
+      comments: 2,
+      date: new Date('2022-12-12')
     },
     {
       id: 3,
       title: 'Community Clean-up Drive',
-      summary: 'How our community came together to clean the village...',
-      image: '',
+      content: 'How our community came together to clean the village...',
+      imageUrl: '',
       likes: 15,
-      comments: 6
+      comments: 6,
+      date: new Date('2022-12-12')
     },
     {
       id: 4,
-      title: 'Community Clean-up Drive',
-      summary: 'How our community came together to clean the village...',
-      image: '',
+      title: 'Village Storytelling Night',
+      content: 'Stories shared by elders at the community center...',
+      imageUrl: '',
       likes: 5,
-      comments: 1
+      comments: 1,
+      date: new Date('2022-12-12')
     },
     {
       id: 5,
-      title: 'Community Clean-up Drive',
-      summary: 'How our community came together to clean the village...',
-      image: '',
+      title: 'Local Handicrafts Exhibition',
+      content: 'Showcasing local artisans and their crafts...',
+      imageUrl: '',
       likes: 7,
-      comments: 3
+      comments: 3,
+      date: new Date('2022-12-12')
     }
-  ];
+  ]
+};
+
+  constructor(private router: Router) {}
+
+  ngOnInit(): void {}
 
   viewBlog(id: number) {
     this.router.navigate(['/user-dashboard/blog-details', id]);
   }
-  
-  ngOnInit(): void {
-      
-  }
+
+  searchText: string  = "";
+  filterOption: string = "";
 }

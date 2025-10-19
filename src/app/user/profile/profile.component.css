@@ -14,21 +14,41 @@
 }
 
 /* Profile Header */
+.profile-header {
+  position: relative;
+}
+
 .profile-header img {
   object-fit: cover;
+}
+
+.edit-profile-icon {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  font-size: 1.2rem;
+  color: #0d6efd;
+  cursor: pointer;
+  transition: color 0.3s ease, transform 0.3s ease;
+}
+
+.edit-profile-icon:hover {
+  color: #0a58ca;
+  transform: rotate(10deg);
 }
 
 .edit-icon {
   cursor: pointer;
   font-size: 0.85rem;
   color: #0d6efd;
-  transition: color 0.2s ease;
+  transition: color 0.3s ease;
 }
 
 .edit-icon:hover {
   color: #0a58ca;
 }
 
+/* Upload Icon */
 .upload-icon {
   position: absolute;
   bottom: 0;
@@ -37,19 +57,27 @@
   color: #fff;
   background-color: #0d6efd;
   border-radius: 50%;
-  padding: 5px;
+  padding: 6px;
   cursor: pointer;
   border: 2px solid #fff;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
 .upload-icon:hover {
   background-color: #0a58ca;
+  transform: scale(1.1);
 }
 
 /* Social Stats */
+.social-stats {
+  display: flex;
+  justify-content: flex-start;
+  gap: 2rem;
+}
+
 .social-stats h5 {
   font-size: 1.25rem;
+  margin-bottom: 0.25rem;
 }
 
 .social-stats small {
@@ -61,7 +89,7 @@
 .btn {
   border-radius: 0.5rem;
   font-weight: 600;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
 }
 
 .btn-outline-success {
@@ -72,6 +100,7 @@
 .btn-outline-success:hover {
   background-color: #198754;
   color: #fff;
+  transform: translateY(-2px);
 }
 
 .btn-outline-primary {
@@ -82,15 +111,25 @@
 .btn-outline-primary:hover {
   background-color: #0d6efd;
   color: #fff;
+  transform: translateY(-2px);
 }
 
 /* About Section */
+.about-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
 .about-section h5 {
   font-size: 1.1rem;
+  font-weight: 600;
 }
 
 .about-section p {
   font-size: 0.9rem;
+  color: #6c757d;
 }
 
 /* User Posts */
@@ -98,7 +137,7 @@
   border: none;
   border-radius: 1rem;
   overflow: hidden;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .user-posts .card:hover {
@@ -119,9 +158,11 @@
 .trending-section h6,
 .suggested-friend h6 {
   font-size: 1rem;
+  font-weight: 600;
 }
 
-.trending-item, .suggested-friend {
+.trending-item,
+.suggested-friend {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -146,25 +187,63 @@
   .profile-container {
     flex-direction: column;
   }
+
   .col-md-7, .col-md-5 {
     padding: 2rem !important;
     border: none !important;
   }
+
   .social-stats {
     flex-wrap: wrap;
     gap: 1.5rem;
+    justify-content: center;
   }
+
   .profile-header {
     flex-direction: column;
     align-items: center;
     text-align: center;
   }
+
   .profile-header .flex-grow-1 {
     margin-left: 0 !important;
     margin-top: 1rem;
   }
+
   .upload-icon {
     right: 0.5rem;
     bottom: 0.5rem;
   }
+
+  .edit-profile-icon {
+    top: 0.5rem;
+    right: 0.5rem;
+  }
 }
+
+.view-post-link {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #0d6efd; 
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.2s ease-in-out;
+}
+
+.view-post-link i {
+  margin-left: 0.25rem;
+  font-size: 1rem;
+  transition: transform 0.2s ease-in-out;
+}
+
+.view-post-link:hover {
+  color: #0b5ed7;
+}
+
+.view-post-link:hover i {
+  transform: translateX(3px);
+}
+
+
