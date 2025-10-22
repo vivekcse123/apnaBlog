@@ -4,6 +4,15 @@ export interface Post {
   content: string;
   imageUrl?: string;
   date: Date;
-  likes: number;
-  comments: number;
+  likes: number; // from Post
+  author: { 
+    name: string; 
+    id: number; 
+  }; // from Blog
+  commentsCount: number; // from Post
+  comments: { 
+    user: { name: string; id: number }; 
+    text: string; 
+    date: Date; 
+  }[]; // from Blog
 }

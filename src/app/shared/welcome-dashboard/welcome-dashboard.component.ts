@@ -34,5 +34,8 @@ export class WelcomeDashboardComponent implements OnInit{
     this.router.navigate(['/festival-feed']);
   }
 
+  showSignUp(){
+    this.auth.updateStatus(false);
+  }
 
 }

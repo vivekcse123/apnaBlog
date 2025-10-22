@@ -32,7 +32,13 @@ export class UserDashboardComponent implements OnInit{
     this.isCollapsed = !this.isCollapsed;
   }
 
-  autoCollapseSidebar() {
+ autoCollapseSidebar() {
+  if (typeof window !== 'undefined') {
     this.isCollapsed = window.innerWidth < 992;
+  } else {
+    // Fallback for environments without window
+    this.isCollapsed = false;
   }
+}
+
 }

@@ -22,7 +22,9 @@ export class ForgotPassword {
 
   message: string = "";
   isSuccess: boolean = false;
+  isSubmited: boolean = false;
   forgotPassword() {
+    this.isSubmited = true;
     this.auth.forgotPassword(this.forgotPasswordForm.value).subscribe({
       next: (res) => {
         this.isSuccess = true;
@@ -40,5 +42,21 @@ export class ForgotPassword {
         }, 2000);
       }
     });
-  }  
+  }
+  
+  togglePassword(field: string) {
+  const input = document.getElementById(field) as HTMLInputElement;
+  const icon = field === 'new_password' ? document.getElementById('toggleNewPassword') : document.getElementById('toggleConfirmPassword');
+
+  if (input.type === 'password') {
+    input.type = 'text';
+    icon?.classList.remove('bi-eye-fill');
+    icon?.classList.add('bi-eye-slash-fill');
+  } else {
+    input.type = 'password';
+    icon?.classList.remove('bi-eye-slash-fill');
+    icon?.classList.add('bi-eye-fill');
+  }
+}
+
 }

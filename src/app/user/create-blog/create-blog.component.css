@@ -1,18 +1,21 @@
 .create-post-page {
-  background-color: #f6faf6;
+  /* Removed the green gradient background */
+  background: #f8f9fa; /* light neutral background for better readability */
   padding: 2rem 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .create-post-container {
   max-width: 1100px;
   border-radius: 20px;
   background: #fff;
+  box-shadow: 0 15px 30px rgba(0,0,0,0.1);
 }
 
 .page-title {
   font-weight: 700;
   color: #222;
-  font-size: 1.75rem;
+  font-size: 1.9rem;
 }
 
 .page-description {
@@ -20,27 +23,37 @@
   color: #666;
   line-height: 1.6;
 }
-.format{
-  font-size: 14px !important;
-  opacity: 0.7 !important;
+
+.format {
+  font-size: 0.85rem;
+  opacity: 0.7;
   color: red;
 }
+
 .create-post-form .form-control {
-  border-radius: 10px;
+  border-radius: 12px;
   border: 1px solid rgba(0, 0, 0, 0.1);
-  padding: 0.75rem;
+  padding: 0.75rem 1rem;
   font-size: 0.95rem;
+  transition: all 0.3s ease;
 }
 
 .create-post-form .form-control:focus {
   border-color: #198754;
-  box-shadow: 0 0 0 3px rgba(25, 135, 84, 0.15);
+  box-shadow: 0 0 10px rgba(25, 135, 84, 0.2);
 }
 
-.image-preview img {
+.image-preview img.preview-img {
   border-radius: 12px;
-  max-height: 200px;
+  width: 120px;
+  height: 120px;
   object-fit: cover;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.image-preview img.preview-img:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
 }
 
 .trending-section {
@@ -49,11 +62,22 @@
 }
 
 .trending-item {
-  font-size: 0.95rem;
+  font-size: 0.9rem;
+  background: #e6f4ea;
+  color: #198754;
+  padding: 0.35rem 0.75rem;
+  border-radius: 15px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.trending-item:hover {
+  background: #198754;
+  color: #fff;
 }
 
 .btn-outline-success {
-  border-radius: 10px;
+  border-radius: 12px;
   font-weight: 500;
   transition: all 0.3s;
 }
@@ -65,7 +89,7 @@
 }
 
 .btn-success {
-  border-radius: 10px;
+  border-radius: 12px;
   background-color: #2f8f2f;
   border: none;
   transition: all 0.3s;
@@ -74,4 +98,10 @@
 .btn-success:hover {
   background-color: #257826;
   transform: translateY(-1px);
+}
+
+@media (max-width: 768px) {
+  .create-post-container { flex-direction: column; }
+  .border-start { border-left: none !important; border-top: 1px solid #e5e7eb !important; }
+  .col-md-7, .col-md-5 { width: 100%; }
 }

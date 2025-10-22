@@ -1,6 +1,9 @@
 <div class="profile-page min-vh-100 d-flex align-items-center justify-content-center bg-light">
   <div class="profile-container shadow-lg rounded-4 bg-white overflow-hidden row w-100 mx-3">
+    
+    <!-- Left Column -->
     <div class="col-md-7 p-5">
+
       <!-- Profile Header -->
       <div class="profile-header d-flex align-items-center mb-4 position-relative">
         <i class="bi bi-pencil-square edit-profile-icon" title="Edit Profile" (click)="editProfile()"></i>
@@ -44,7 +47,7 @@
 
       <!-- Create Blog Button -->
       <div class="d-flex gap-2 mb-4">
-        <button class="btn btn-outline-success flex-grow-1" routerLink="/user-dashboard/create-blog">
+        <button class="btn btn-outline-success flex-grow-1" routerLink="/user-dashboard/create-blog/1">
           <i class="bi bi-pencil-square me-2"></i>Create New Blog
         </button>
       </div>
@@ -62,10 +65,11 @@
                   <p class="card-text text-muted">{{ post.content | slice:0:100 }}...</p>
                   <div class="d-flex justify-content-between align-items-center mt-2">
                     <small class="text-muted">{{ post.date | date:'shortDate' }}</small>
-                    <div class="d-flex gap-2">
+                    <div class="d-flex gap-2 align-items-center">
                       <i class="bi bi-heart text-danger"></i> {{ post.likes }}
-                      <i class="bi bi-chat text-primary"></i> {{ post.comments }}
-                      | <a [routerLink]="['/user-dashboard/blog-details', post.id]" class="view-post-link">
+                      <i class="bi bi-chat text-primary"></i> {{ post.commentsCount }}
+                      |
+                      <a [routerLink]="['/user-dashboard/blog-details', post.id]" class="view-post-link">
                         View Post <i class="bi bi-arrow-right"></i>
                       </a>                      
                     </div>
@@ -79,9 +83,10 @@
 
     </div>
 
-    <!-- Sidebar -->
+    <!-- Right Sidebar -->
     <div class="col-md-5 p-5 border-start bg-light d-flex flex-column align-items-start justify-content-start">
-      <!-- Suggested Friends -->
+
+      <!-- Suggested Friends Section -->
       <div class="mb-4 w-100">
         <h6 class="fw-bold mb-3"><i class="bi bi-people me-2 text-success"></i>Suggested Friends</h6>
         <div class="suggested-friend d-flex align-items-center mb-2" *ngFor="let friend of suggestedFriends">
@@ -94,7 +99,7 @@
         </div>
       </div>
 
-      <!-- Trending Topics -->
+      <!-- Trending Topics Section -->
       <div class="trending-section w-100 mt-4">
         <h6 class="fw-bold mb-3"><i class="bi bi-fire me-2 text-danger"></i>Trending Topics</h6>
         <div class="trending-item py-1" *ngFor="let topic of trendingTopics">
@@ -102,6 +107,8 @@
           <small class="text-muted ms-2">{{ topic.count }} posts</small>
         </div>
       </div>
+
     </div>
+    
   </div>
 </div>

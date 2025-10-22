@@ -1,16 +1,63 @@
-<div class="container dashboard-container py-5">
+<div class="container dashboard-container py-4">
 
-  <!-- Dashboard Header -->
-  <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4">
-    <div class="flex-grow-1">
-      <h2 class="text-primary fw-bold mb-1">Welcome, {{ currentUser.name }}</h2>
-      <p class="text-muted mb-2">You have <strong>{{ currentUser.posts.length }}</strong> posts.</p>
+  <!-- Sticky Header + Stats -->
+  <div class="dashboard-header-wrapper">
+    <div class="dashboard-header d-flex flex-column flex-md-row justify-content-between align-items-center mb-3">
       
-      <!-- Search & Filter -->
-      <div class="d-flex flex-column flex-md-row gap-2 gap-md-3 align-items-start align-items-md-center mt-3">
-        <input type="text" class="form-control w-md-auto" placeholder="Search blogs..." [(ngModel)]="searchText">
-        
-        <select class="form-select w-md-auto" [(ngModel)]="filterOption">
+      <!-- Welcome & Post Count -->
+      <div class="dashboard-intro flex-grow-1">
+        <h2 class="text-primary fw-bold mb-1 d-flex align-items-center gap-2">
+          Welcome, {{ currentUser.name }}
+          <span class="badge bg-success">{{ currentUser.posts.length }} posts</span>
+        </h2>
+      </div>
+
+      <!-- Create Blog Button -->
+      <div class="d-flex align-items-center mt-3 mt-md-0">
+        <button class="btn btn-success btn-create" routerLink="/user-dashboard/create-blog/1">
+          <i class="bi bi-pencil-square me-2"></i> Create New Blog
+        </button>
+      </div>
+    </div>
+
+    <!-- User Stats -->
+    <div class="user-stats mb-4">
+      <div class="stat-card">
+        <i class="bi bi-calendar3 text-success"></i>
+        <span>Blogging Since:</span>
+        <strong>{{ currentUser.joinedDate | date:'longDate' }}</strong>
+      </div>
+      <div class="stat-card">
+        <i class="bi bi-hand-thumbs-up-fill text-primary"></i>
+        <span>Highest Likes:</span>
+        <strong>{{ getHighestLikes() }}</strong>
+      </div>
+      <div class="stat-card">
+        <i class="bi bi-heart-fill text-danger"></i>
+        <span>Total Likes:</span>
+        <strong>{{ getTotalLikes() }}</strong>
+      </div>
+      <div class="stat-card">
+        <i class="bi bi-chat-dots-fill text-info"></i>
+        <span>Total Comments:</span>
+        <strong>{{ getTotalComments() }}</strong>
+      </div>
+    </div>
+
+    <!-- Search & Filter -->
+    <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center gap-2 gap-md-3 search-filter-group mb-4">
+      <div class="input-group search-box">
+        <span class="input-group-text bg-white border-end-0">
+          <i class="bi bi-search text-muted"></i>
+        </span>
+        <input type="text" class="form-control border-start-0" placeholder="Search blogs..." [(ngModel)]="searchText">
+      </div>
+
+      <div class="input-group filter-box">
+        <span class="input-group-text bg-white border-end-0">
+          <i class="bi bi-funnel text-muted"></i>
+        </span>
+        <select class="form-select border-start-0" [(ngModel)]="filterOption">
           <option value="">Filter by</option>
           <option value="mostLiked">Most Liked</option>
           <option value="mostCommented">Most Commented</option>
@@ -18,45 +65,35 @@
         </select>
       </div>
     </div>
-
-    <button class="btn btn-success mt-3 mt-md-0" routerLink="/user-dashboard/create-blog">
-      <i class="bi bi-pencil-square me-2"></i>Create New Blog
-    </button>
   </div>
 
-  <!-- Blogs Grid -->
-  <div class="row g-4">
-    <div class="col-md-6 col-lg-4" 
-         *ngFor="let blog of currentUser.posts | filterBlog:searchText:filterOption">
-      <div class="card shadow-sm rounded-4 overflow-hidden h-100">
-        
-        <!-- Blog Image -->
-        <img [src]="blog.imageUrl || 'assets/images/default-blog.jpg'" 
-             alt="Blog Image" class="card-img-top" style="height:180px; object-fit:cover;">
+  <!-- Scrollable Blog Grid -->
+  <div class="blogs-grid-wrapper">
+    <div class="row g-4">
+      <div class="col-md-6 col-lg-4" *ngFor="let blog of currentUser.posts | filterBlog:searchText:filterOption">
+        <div class="card shadow-sm rounded-4 overflow-hidden h-100">
+          <img [src]="blog.imageUrl || 'assets/images/default-blog.jpg'" alt="Blog Image" class="card-img-top">
+          <div class="card-body d-flex flex-column">
+            <h5 class="card-title fw-bold mb-2">{{ blog.title }}</h5>
+            <p class="card-text text-muted flex-grow-1">{{ blog.content | slice:0:120 }}...</p>
 
-        <!-- Card Body -->
-        <div class="card-body d-flex flex-column">
-          <h5 class="card-title fw-bold mb-2">{{ blog.title }}</h5>
-          <p class="card-text text-muted flex-grow-1">{{ blog.content | slice:0:120 }}...</p>
-
-          <!-- Action Buttons and Stats -->
-          <div class="d-flex justify-content-between align-items-center mt-3">
-            <a class="text-decoration-none text-primary d-flex align-items-center" 
-               [routerLink]="['/user-dashboard/blog-details', blog.id]">
-              <i class="bi bi-eye me-1"></i>View Post
-              <i class="bi bi-arrow-right ms-1"></i>
-            </a>
-            <div class="d-flex gap-3 align-items-center">
-              <span class="text-muted">
-                <i class="bi bi-heart text-danger me-1"></i>{{ blog.likes }}
-              </span>
-              <span class="text-muted">
-                <i class="bi bi-chat text-primary me-1"></i>{{ blog.comments }}
-              </span>
+            <div class="d-flex justify-content-between align-items-center mt-3">
+              <a class="view-post-link text-decoration-none" [routerLink]="['/user-dashboard/blog-details', blog.id]">
+                <i class="bi bi-eye me-1"></i>View Post
+                <i class="bi bi-arrow-right ms-1"></i>
+              </a>
+              <div class="d-flex gap-3 align-items-center">
+                <span class="text-muted"><i class="bi bi-heart-fill text-danger me-1"></i>{{ blog.likes }}</span>
+                <span class="text-muted"><i class="bi bi-chat-fill text-primary me-1"></i>{{ blog.commentsCount }}</span>
+              </div>
             </div>
           </div>
         </div>
+      </div>
 
+      <!-- No Posts Found Message -->
+      <div *ngIf="(currentUser.posts | filterBlog:searchText:filterOption)?.length === 0" class="no-posts-message">
+        <p>No posts found. Try changing your search or filter.</p>
       </div>
     </div>
   </div>

@@ -1,95 +1,75 @@
-<div class="site-wrap d-flex align-items-center justify-content-center bg-light">
-  <div class="main shadow-lg rounded-4 p-5" style="max-width: 400px;">
-    <h4 class="text-gradient mb-3 text-center">Create Your Account</h4>
-    <p class="text-muted text-center small mb-4">
-      Sign up to share your village stories and join the community
-    </p>
-    <form [formGroup] = "signUpForm" (ngSubmit)="signUp()" class="login-form">
-      <div class="mb-3">
+<div class="signin-wrapper">
+  <div class="signin-content">
+    <div class="logo">
+      <i class="bi bi-person-plus-fill"></i>
+    </div>
+    <h2 class="welcome">Create Your Account</h2>
+    <p class="subtitle">Sign up to share your village stories and join the community</p>
+
+    <form [formGroup]="signUpForm" (ngSubmit)="signUp()">
+      <div class="input-wrapper">
+        <span class="input-icon-left">
+          <i class="bi bi-person-fill"></i>
+        </span>
         <input type="text" class="form-control" placeholder="Full Name" formControlName="name">
-        @if(signUpForm.get('name')?.invalid && isSubmitted){
-          <small style="color: red;">
-            @if(signUpForm.get('name')?.errors?.['required']){
-              Name is required....!
-            }
-          </small>
-          <small style="color: red;">
-            @if(signUpForm.get('name')?.errors?.['pattern']){
-              Invalid name....!
-            }
-          </small>
-          }
-      </div>
-      <div class="mb-3">
-        <input type="email" class="form-control" placeholder="Email" formControlName = "email">
-        @if(signUpForm.get('email')?.invalid && isSubmitted){
-          <small style="color: red;">
-            @if(signUpForm.get('email')?.errors?.['required']){
-              Email is required....!
-            }
-          </small>
-          <small style="color: red;">
-            @if(signUpForm.get('email')?.errors?.['email']){
-              Invalid Email....!
-            }
-          </small>
-          }
+        <small *ngIf="signUpForm.get('name')?.invalid && isSubmitted">
+          <span *ngIf="signUpForm.get('name')?.errors?.['required']">Name is required!</span>
+          <span *ngIf="signUpForm.get('name')?.errors?.['pattern']">Invalid name!</span>
+        </small>
       </div>
 
-      <!-- Gender -->
-      <!-- <div class="mb-3 d-flex gap-3 justify-content-center">
-        <div class="form-check">
-          <input type="radio" class="form-check-input" id="male" name="gender" [(ngModel)]="user.gender" value="Male" required>
-          <label class="form-check-label" for="male">Male</label>
-        </div>
-        <div class="form-check">
-          <input type="radio" class="form-check-input" id="female" name="gender" [(ngModel)]="user.gender" value="Female">
-          <label class="form-check-label" for="female">Female</label>
-        </div>
-        <div class="form-check">
-          <input type="radio" class="form-check-input" id="other" name="gender" [(ngModel)]="user.gender" value="Other">
-          <label class="form-check-label" for="other">Other</label>
-        </div>
-      </div> -->
-
-      <div class="mb-3">
-        <input type="password" class="form-control" placeholder="Password" formControlName = "password">
-        @if(signUpForm.get('password')?.invalid && isSubmitted){
-          <small style="color: red;">
-            @if(signUpForm.get('password')?.errors?.['required']){
-              Password is required....!
-            }
-          </small>
-          <small style="color: red;">
-            @if(signUpForm.get('password')?.errors?.['minlength'] || signUpForm.get('password')?.errors?.['maxlength']){
-              Password must be between 5 and 10 characters long.
-            }
-          </small>          
-          }
+      <div class="input-wrapper">
+        <span class="input-icon-left">
+          <i class="bi bi-envelope-fill"></i>
+        </span>
+        <input type="email" class="form-control" placeholder="Email" formControlName="email">
+        <small *ngIf="signUpForm.get('email')?.invalid && isSubmitted">
+          <span *ngIf="signUpForm.get('email')?.errors?.['required']">Email is required!</span>
+          <span *ngIf="signUpForm.get('email')?.errors?.['email']">Invalid email!</span>
+        </small>
       </div>
 
-      <div class="mb-4">
-        <input type="password" class="form-control" placeholder="Confirm Password" formControlName = "confirm_password">
-        @if(signUpForm.get('confirm_password')?.invalid && isSubmitted){
-          <small style="color: red;">
-            @if(signUpForm.get('confirm_password')?.errors?.['required']){
-              Confirm Password is required....!
-            }
-          </small>        
-          }
+      <!-- Password -->
+      <div class="input-wrapper position-relative">
+        <span class="input-icon-left">
+          <i class="bi bi-lock-fill"></i>
+        </span>
+        <input type="password" id="password" class="form-control" placeholder="Password" formControlName="password">
+        <a href="#" class="input-icon-right" (click)="togglePassword('password'); $event.preventDefault()">
+          <i id="togglePassword" class="bi bi-eye-fill"></i>
+        </a>
+        <small *ngIf="signUpForm.get('password')?.invalid && isSubmitted">
+          <span *ngIf="signUpForm.get('password')?.errors?.['required']">Password is required!</span>
+          <span *ngIf="signUpForm.get('password')?.errors?.['minlength'] || signUpForm.get('password')?.errors?.['maxlength']">
+            Password must be between 5 and 10 characters.
+          </span>
+        </small>
       </div>
-      
-      <div class="d-grid mb-3">
-        <button type="submit" class="btn btn-signup fw-semibold" [disabled]="!signUpForm.valid">
-          <i class="bi bi-person-plus me-2"></i>Sign Up
-        </button>
+
+      <div class="input-wrapper position-relative">
+        <span class="input-icon-left">
+          <i class="bi bi-lock-fill"></i>
+        </span>
+        <input type="password" id="confirm_password" class="form-control" placeholder="Confirm Password" formControlName="confirm_password">
+        <a href="#" class="input-icon-right" (click)="togglePassword('confirm_password'); $event.preventDefault()">
+          <i id="toggleConfirmPassword" class="bi bi-eye-fill"></i>
+        </a>
+        <small *ngIf="signUpForm.get('confirm_password')?.invalid && isSubmitted">
+          <span *ngIf="signUpForm.get('confirm_password')?.errors?.['required']">Confirm password is required!</span>
+        </small>
       </div>
-      @if(message){
-        <p [ngStyle]="{'color': isSuccess ? 'green' : 'red'}">{{ message }}</p>
-      }
-      <p class="text-center text-muted mt-3">
+
+      <button type="submit" class="btn btn-login w-100" [disabled]="!signUpForm.valid">
+        <i class="bi bi-person-plus me-2"></i> Sign Up
+      </button>
+
+      <p *ngIf="message" class='message' [ngStyle]="{'color': isSuccess ? 'green' : 'red'}">{{ message }}</p>
+
+      <div class="divider-text">Or</div>
+
+      <p class="create-account">
         Already have an account? 
-        <a href="#" (click)="toggleAuth()" class="text-success fw-semibold">Login</a>
+        <a href="#" (click)="toggleAuth()">Login</a>
       </p>
     </form>
   </div>

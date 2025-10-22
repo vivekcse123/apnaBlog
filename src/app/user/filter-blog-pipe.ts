@@ -8,6 +8,7 @@ export class FilterBlogPipe implements PipeTransform {
 
   transform(posts: Post[], searchText: string = '', filterOption: string = ''): Post[] {
     if (!posts) return [];
+
     let filtered = posts;
 
     // Search filter
@@ -18,11 +19,11 @@ export class FilterBlogPipe implements PipeTransform {
 
     // Option filter
     if (filterOption === 'mostLiked') {
-      filtered = filtered.sort((a, b) => b.likes - a.likes);
+      filtered = filtered.slice().sort((a, b) => b.likes - a.likes);
     } else if (filterOption === 'mostCommented') {
-      filtered = filtered.sort((a, b) => b.comments - a.comments);
+      filtered = filtered.slice().sort((a, b) => b.commentsCount - a.commentsCount);
     } else if (filterOption === 'date') {
-      filtered = filtered.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      filtered = filtered.slice().sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     }
 
     return filtered;

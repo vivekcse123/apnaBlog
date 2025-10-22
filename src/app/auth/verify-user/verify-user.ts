@@ -14,7 +14,7 @@ export class VerifyUser {
   verifyUserForm: FormGroup = new FormGroup({});
   constructor(private fb: FormBuilder, private auth: AuthService, private router: Router){
     this.verifyUserForm = this.fb.group({
-      'email': new FormControl('', [Validators.required, Validators.email])
+      'username': new FormControl('', [Validators.required, Validators.email])
     });
   }
 

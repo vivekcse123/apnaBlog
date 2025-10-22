@@ -1,47 +1,55 @@
 <div class="site-wrap">
-    <div class="main login-card p-4">
-      <div class="text-center mb-4">
-        <svg class="logo-svg" width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect rx="12" width="64" height="64" fill="#F6FBF6"/>
-          <g transform="translate(6,6)">
-            <path d="M22 2c-6 0-11 4-11 9 0 3 2 5 2 5l9 0 9 0s2-2 2-5c0-5-5-9-11-9z" fill="#FFD166"/>
-            <path d="M2 30c0-6 6-12 14-12s14 6 14 12v10H2V30z" fill="#7FB069"/>
-            <path d="M30 30L16 18 2 30" fill="#A7D48C" opacity="0.9"/>
-            <rect x="12" y="20" width="8" height="12" rx="1.5" fill="#5C8A3B"/>
-            <path d="M6 30h20" stroke="#4E7A2F" stroke-linecap="round" stroke-width="1"/>
-          </g>
-        </svg>
-        <h3 class="brand-title mt-2">अपना<span class="brand-english">Blog</span></h3>
-      </div>
-      <h2 class="text-gradient mb-3">Verify User</h2>
-      <p class="text-muted text-center mb-3 small">
-        Sign in to continue sharing your village stories
-      </p>
-      <form [formGroup]="verifyUserForm" (ngSubmit)="verifyUser()">
-        <div class="mb-3">
-          <input type="email" class="form-control rounded-pill" placeholder="Enter your email" formControlName="email">
-          <div style="color: red;">
-            @if(verifyUserForm.get('email')?.invalid){
-                <small>
-                  @if(verifyUserForm.get('email')?.errors?.['required']){
-                    Email is required....!
-                  }
-                </small>
-                <small>
-                  @if(verifyUserForm.get('email')?.errors?.['email']){
-                    Invalid Email....!
-                  }
-                </small>
-            }
-          </div>
-        </div>
-        <button type="submit" class="btn btn-login w-100 mb-3" [disabled]="!verifyUserForm.valid">
-          <i class="bi bi-box-arrow-in-right me-2"></i>Verify
-        </button>
-        <button type="submit" class="btn btn-login w-100 mb-3" (click)="back_login()">
-            <i class="bi bi-box-arrow-in-left me-2"></i>Go Back to Login
-          </button>
-      </form>
+  <div class="main login-card p-4">
+    <div class="text-center mb-4">
+      <svg class="logo-svg" width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect rx="12" width="64" height="64" fill="#F6FBF6"/>
+        <g transform="translate(6,6)">
+          <path d="M22 2c-6 0-11 4-11 9 0 3 2 5 2 5l9 0 9 0s2-2 2-5c0-5-5-9-11-9z" fill="#FFD166"/>
+          <path d="M2 30c0-6 6-12 14-12s14 6 14 12v10H2V30z" fill="#7FB069"/>
+          <path d="M30 30L16 18 2 30" fill="#A7D48C" opacity="0.9"/>
+          <rect x="12" y="20" width="8" height="12" rx="1.5" fill="#5C8A3B"/>
+          <path d="M6 30h20" stroke="#4E7A2F" stroke-linecap="round" stroke-width="1"/>
+        </g>
+      </svg>
+      <h3 class="brand-title mt-2">अपना<span class="brand-english">Blog</span></h3>
     </div>
+
+    <h2 class="text-gradient mb-3">Verify User</h2>
+    <p class="text-muted text-center mb-3 small">
+      Enter your registered email to verify your account.
+    </p>
+
+    <form [formGroup]="verifyUserForm" (ngSubmit)="verifyUser()">
+      <!-- Email Input -->
+        <div class="input-wrapper">
+        <span class="input-icon-left">
+          <i class="bi bi-envelope-fill"></i>
+        </span>
+        <input type="email" class="form-control" placeholder="Enter your email" formControlName="username">
+         <div style="color: red;">
+          @if(verifyUserForm.get('email')?.invalid){
+            <small>
+              @if(verifyUserForm.get('email')?.errors?.['required']){
+                Email is required....!
+              }
+            </small>
+            <small>
+              @if(verifyUserForm.get('email')?.errors?.['email']){
+                Invalid Email....!
+              }
+            </small>
+          }
+        </div>
+      </div>
+      <button type="submit" class="btn btn-verify w-100 mb-3" [disabled]="!verifyUserForm.valid">
+        <i class="bi bi-box-arrow-in-right me-2"></i>Verify
+      </button>
+
+      <div class="divider-text">Or</div>
+
+      <button type="button" class="btn btn-login w-100 mb-3" (click)="back_login()">
+        <i class="bi bi-box-arrow-in-left me-2"></i>Go Back to Login
+      </button>
+    </form>
   </div>
-  
+</div>

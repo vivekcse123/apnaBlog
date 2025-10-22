@@ -3,16 +3,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { BlogService } from '../../services/blog.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Post } from '../modals/post.model';
 
-interface Blog {
-  id: number;
-  title: string;
-  content: string;
-  image?: string;
-  author: { name: string; id: number };
-  date: Date;
-  comments: { user: { name: string; id: number }, text: string, date: Date }[];
-}
 
 @Component({
     selector: 'app-blog-details',
@@ -21,7 +13,7 @@ interface Blog {
     styleUrls: ['./blog-details.component.css']
 })
 export class BlogDetailsComponent implements OnInit {
-  blog!: Blog;
+  post!: Post;
   newComment: string = '';
 
   constructor(
@@ -37,8 +29,8 @@ export class BlogDetailsComponent implements OnInit {
 
   loadBlog(id: number) {
     this.blogService.getBlogById(id).subscribe(
-      (data: Blog) => {
-        this.blog = data;
+      (data: any) => {
+        this.post = data;
       },
       error => {
         console.error('Error fetching blog:', error);
@@ -70,15 +62,14 @@ export class BlogDetailsComponent implements OnInit {
     if (!this.newComment.trim()) return;
 
     const comment = {
-      user: { name: 'Current User', id: 1 }, // Replace with current user info
+      user: { name: 'Current User', id: 1 },
       text: this.newComment,
       date: new Date()
     };
 
-    this.blog.comments.push(comment);
+    this.post.comments.push(comment);
     this.newComment = '';
 
-    // Optionally, persist the comment via service
     this.blogService.addComment(blogId, comment).subscribe(
       () => console.log('Comment added successfully'),
       error => console.error('Error adding comment:', error)

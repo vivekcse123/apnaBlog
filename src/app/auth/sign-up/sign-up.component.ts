@@ -49,4 +49,25 @@ export class SignUpComponent {
   toggleAuth() {
     this.isSignUp = !this.isSignUp;
   }
+
+togglePassword(field: string) {
+
+  const input = document.getElementById(field) as HTMLInputElement;
+
+  const icon = field === 'password' 
+    ? document.getElementById('togglePassword') 
+    : document.getElementById('toggleConfirmPassword');
+
+  if (input.type === 'password') {
+    input.type = 'text';
+    icon?.classList.remove('bi-eye-fill');
+    icon?.classList.add('bi-eye-slash-fill');
+  } else {
+    input.type = 'password';
+    icon?.classList.remove('bi-eye-slash-fill');
+    icon?.classList.add('bi-eye-fill');
+  }
+}
+
+
 }
