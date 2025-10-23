@@ -23,6 +23,7 @@ export class ForgotPassword {
   message: string = "";
   isSuccess: boolean = false;
   isSubmited: boolean = false;
+
   forgotPassword() {
     this.isSubmited = true;
     this.auth.forgotPassword(this.forgotPasswordForm.value).subscribe({
@@ -43,6 +44,7 @@ export class ForgotPassword {
       }
     });
   }
+  
   
   togglePassword(field: string) {
   const input = document.getElementById(field) as HTMLInputElement;

@@ -11,7 +11,9 @@ import { Router } from '@angular/router';
   styleUrl: './verify-user.css'
 })
 export class VerifyUser {
+
   verifyUserForm: FormGroup = new FormGroup({});
+
   constructor(private fb: FormBuilder, private auth: AuthService, private router: Router){
     this.verifyUserForm = this.fb.group({
       'username': new FormControl('', [Validators.required, Validators.email])
@@ -21,6 +23,7 @@ export class VerifyUser {
   verifyUser(){
     this.router.navigate(['/auth/forgot-password']);
   }
+  
   back_login(){
     this.router.navigate(['/welcome-dashboard']);
   }

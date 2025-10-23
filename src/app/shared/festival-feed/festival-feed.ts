@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 interface Festival {
   title: string;
@@ -32,7 +33,7 @@ interface Village {
 @Component({
   selector: 'app-festival',
   standalone: true,
-  imports: [CommonModule, ],
+  imports: [CommonModule, RouterLink],
   templateUrl: './festival-feed.html',
   styleUrls: ['./festival-feed.css']
 })
@@ -50,7 +51,6 @@ export class FestivalFeed implements OnInit {
     this.loadSuggestedVillages();
   }
 
-  // ✅ Mock Data Loading
   loadFestivals(): void {
     this.festivals = [
       {
@@ -125,7 +125,6 @@ export class FestivalFeed implements OnInit {
     ];
   }
 
-  // ✅ Actions
   likeFestival(festival: Festival): void {
     festival.isLiked = !festival.isLiked;
     festival.likes += festival.isLiked ? 1 : -1;
@@ -133,7 +132,6 @@ export class FestivalFeed implements OnInit {
 
   commentFestival(festival: Festival): void {
     console.log('Open comments section for:', festival.title);
-    // You can navigate to a detailed page or open a modal here
   }
 
   shareFestival(festival: Festival): void {
@@ -147,6 +145,5 @@ export class FestivalFeed implements OnInit {
 
   createFestival(): void {
     console.log('Navigate to festival creation page');
-    // Example: this.router.navigate(['/create-festival']);
   }
 }

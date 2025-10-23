@@ -39,7 +39,7 @@
         <!-- Image Upload -->
         <div class="mb-3">
           <label class="form-label fw-semibold text-secondary">Upload Image</label> 
-          <span class="format">(Formats .jpg, .jpeg, .png)</span>
+          <span class="format"> (only .jpg, .jpeg, .png)</span>
           <input type="file" class="form-control" (change)="onImageUpload($event)" multiple>
           <div class="image-preview mt-3 d-flex flex-wrap gap-3" *ngIf="post.images?.length">
             <img *ngFor="let img of post.images" [src]="img" alt="Preview" class="img-fluid rounded shadow-sm preview-img">
