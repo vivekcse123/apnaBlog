@@ -22,7 +22,7 @@
         </a>
       </div>
 
-      <button type="submit" class="btn btn-login w-100" [disabled]="!loginForm.valid"> <i class="bi bi-person-plus-fill"></i> Sign In</button>
+      <button type="submit" class="btn btn-login-ice w-100" [disabled]="!loginForm.valid"> <i class="bi bi-person-plus-fill"></i> Sign In</button>
       <p *ngIf="message" class='message' [ngStyle]="{'color': isSuccess ? 'green' : 'red'}">{{ message }}</p>
       <p class="forgot-password"><a routerLink="/auth/verify-user">Forgot your password?</a></p>
       <div class="divider-text">Or</div>

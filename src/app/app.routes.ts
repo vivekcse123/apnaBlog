@@ -14,7 +14,7 @@ export const routes: Routes = [
     pathMatch: 'full'
   },
   {
-    path: 'blogs', component: BlogFeedComponent
+    path: 'blog-feed', component: BlogFeedComponent
   },
   {
     path: 'festival-feed', component: FestivalFeed

@@ -210,8 +210,10 @@ export class BlogFeedComponent implements OnInit {
 
  
   loadMorePosts(): void {
-    // Implement pagination/infinite scroll
     console.log('Loading more posts...');
-    // this.postService.getPosts(this.currentPage++).subscribe(...)
+  }
+
+  goBack(){
+    this.router.navigate(['/welcome-dashboard']);
   }
 }

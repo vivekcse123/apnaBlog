@@ -27,7 +27,7 @@ export class WelcomeDashboardComponent implements OnInit{
   }
 
   seeBlogs(): void {
-    this.router.navigate(['/blogs']);
+    this.router.navigate(['/blog-feed']);
   }
 
   checkFestivals(): void {

@@ -33,7 +33,7 @@ interface Village {
 @Component({
   selector: 'app-festival',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule],
   templateUrl: './festival-feed.html',
   styleUrls: ['./festival-feed.css']
 })

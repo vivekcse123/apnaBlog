@@ -1,9 +1,12 @@
+<div class="container d-flex justify-content-end">
+  <button class="btn btn-outline-success go-back-btn" (click)="goBack()"><i class="bi bi-arrow-left empty-icon"></i> Go Back</button>
+</div>
+
 <div class="site-wrap min-vh-100 d-flex align-items-center justify-content-center">
   <div class="feed-dashboard row shadow-lg rounded-4 overflow-hidden bg-white">
 
-    <!-- Left Feed Section -->
     <div class="col-md-7 p-5 feed-col">
-      <!-- Brand Header -->
+
       <div class="d-flex align-items-center mb-4">
         <div class="logo-wrap me-3" aria-hidden="true">
           <svg class="logo-svg" width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -23,7 +26,6 @@
         </div>
       </div>
 
-      <!-- Feed Title -->
       <h1 class="feed-main-title mb-3">
         <i class="bi bi-people-fill me-2"></i>
         <span class="title-text">Community Feed</span>
@@ -33,18 +35,15 @@
         Explore authentic stories, festivals, and daily life moments shared by people from villages across the country.
       </p>
 
-      <!-- Empty State -->
       <div *ngIf="posts.length === 0" class="empty-state-card">
         <i class="bi bi-journal-text empty-icon"></i>
         <h4 class="empty-title">No posts yet</h4>
         <p class="empty-text">Be the first to share your village story!</p>
       </div>
 
-      <!-- Posts Feed -->
       <div class="posts-feed-list">
         <article *ngFor="let post of posts" class="post-card">
           
-          <!-- Post Header -->
           <div class="post-header">
             <div class="author-info">
               <div class="avatar-wrapper">
@@ -63,15 +62,12 @@
             </button>
           </div>
 
-          <!-- Post Title -->
           <h3 class="post-title">{{ post.title }}</h3>
           
-          <!-- Post Image -->
           <div *ngIf="post.imageUrl" class="post-image-container">
             <img [src]="post.imageUrl" class="post-image" [alt]="'Image for ' + post.title" />
           </div>
 
-          <!-- Post Content -->
           <div class="post-content">
             <div class="content-section">
               <span class="content-label content-label-en">
@@ -87,9 +83,8 @@
             </div>
           </div>
 
-          <!-- Post Footer -->
           <div class="post-footer">
-            <!-- Stats Bar -->
+
             <div class="post-stats">
               <span class="stat-item">
                 <i class="bi bi-heart-fill stat-icon"></i>
@@ -101,7 +96,6 @@
               </span>
             </div>
             
-            <!-- Action Buttons -->
             <div class="post-actions">
               <button 
                 type="button" 
@@ -134,11 +128,9 @@
       </div>
     </div>
 
-    <!-- Right Sidebar Section -->
     <div class="col-md-5 d-flex align-items-start justify-content-center p-5 sidebar-col">
       <div class="sidebar-content w-100">
         
-        <!-- User Profile Card -->
         <div class="profile-card">
           <div class="profile-header">
             <div class="profile-avatar">
@@ -154,7 +146,6 @@
           </button>
         </div>
 
-        <!-- Trending Topics -->
         <div class="trending-card">
           <h6 class="card-title">
             <i class="bi bi-fire me-2"></i>Trending Topics
@@ -167,7 +158,6 @@
           </div>
         </div>
 
-        <!-- Quick Stats -->
         <div class="stats-card">
           <h6 class="card-title">
             <i class="bi bi-graph-up me-2"></i>Community Stats

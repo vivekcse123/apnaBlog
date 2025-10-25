@@ -18,16 +18,106 @@ body {
   font-family: 'Inter', sans-serif;
   background: var(--green-50);
 }
-.btn-sm{
+
+.btn-ice {
+  backdrop-filter: blur(8px) saturate(180%);
+  border-radius: 12px;
   width: 200px !important;
-  font-size: 16px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  border: 1px solid rgba(40, 167, 69, 0.5);
+  background: rgba(40, 167, 69, 0.3);
+  color: #0a3d1f;
+  box-shadow: 0 4px 16px rgba(40, 167, 69, 0.25);
+  transition: all 0.3s ease-in-out;
+  position: relative;
+  overflow: hidden;
 }
-.btn-outline-warning{
+
+.btn-ice:hover {
+  background: rgba(40, 167, 69, 0.55);
+  color: #fff;
+  box-shadow: 0 0 20px rgba(40, 167, 69, 0.7);
+  transform: translateY(-2px);
+}
+
+.btn-ice:active {
+  transform: scale(0.97);
+  box-shadow: 0 2px 8px rgba(40, 167, 69, 0.4);
+}
+
+.btn-ice.btn-outline-success {
+  background: rgba(40, 167, 69, 0.35);
+  border: 1px solid rgba(40, 167, 69, 0.6);
+  color: #0a3d1f;
+}
+
+.btn-ice.btn-outline-success:hover {
+  background: rgba(40, 167, 69, 0.6);
+  color: #fff;
+  box-shadow: 0 0 18px rgba(40, 167, 69, 0.8);
+}
+
+.btn-ice.btn-outline-warning {
+  background: rgba(255, 193, 7, 0.35);
+  border: 1px solid rgba(255, 193, 7, 0.6);
+  color: #7a5c00;
+}
+
+.btn-ice.btn-outline-warning:hover {
+  background: rgba(255, 193, 7, 0.6);
+  color: #fff;
+  box-shadow: 0 0 18px rgba(255, 193, 7, 0.8);
+}
+
+.btn-ice-community {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 12px;
+  border: 1px solid rgba(179, 229, 252, 0.6);
+  background: linear-gradient(135deg, #c8e7ff 0%, #9cdcfb 100%);
+  color: #0d47a1;
+  cursor: pointer;
+  backdrop-filter: blur(8px) saturate(180%);
+  box-shadow: 0 4px 16px rgba(179, 229, 252, 0.4);
+  transition: all 0.3s ease-in-out;
+  overflow: hidden;
+}
+
+.btn-ice-community i {
+  font-size: 1rem;
+  color: #0d47a1;
+  transition: color 0.3s ease-in-out;
+}
+
+.btn-ice-community:hover {
+  background: linear-gradient(135deg, #9cdcfb 0%, #81d4fa 100%);
+  color: #083c91;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(179, 229, 252, 0.6);
+}
+
+.btn-ice-community:hover i {
+  color: #083c91;
+}
+
+.btn-ice-community:active {
+  transform: scale(0.97);
+  box-shadow: 0 2px 8px rgba(179, 229, 252, 0.5);
+}
+
+.btn-outline-warning,
+.btn-outline-success {
   padding: 15px 0px !important;
 }
-.btn-outline-success{
-  padding: 15px 0px !important;
-}
+
 .site-wrap {
   min-height: 100vh;
   display: flex;
@@ -43,11 +133,12 @@ body {
 }
 
 .login-card {
-  background: #fff;
+  background: rgba(255, 255, 255, 0.85);
   border-radius: 20px;
   padding: 2rem;
   box-shadow: var(--shadow-lg);
   width: 100%;
+  backdrop-filter: blur(12px);
 }
 
 .welcome-title {
