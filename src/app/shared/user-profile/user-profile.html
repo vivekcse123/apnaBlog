@@ -1,0 +1,38 @@
+<div class="profile-container">
+  <div class="triangle-symbol"></div>
+
+  <!-- Header -->
+  <div class="profile-header">
+    <div class="avatar" id="avatar">{{name.charAt(0)}}</div>
+
+    <div class="user-info">
+      <div class="user-name">
+        <span id="userName">{{name}}</span>
+        <span class="divider-name">|</span>
+        <span class="user-role" id="userRole">{{role}}</span>
+      </div>
+      <div class="user-email" id="userEmail">{{email}}</div>
+    </div>
+
+    <button class="close-btn" (click)="closeProfile($event)">
+      <span class="close-icon">
+        <span></span>
+        <span></span>
+      </span>
+    </button>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="profile-content">
+    <div class="profile-actions">
+  <div class="action-btn primary">
+    <ng-content select="[primary-action]"></ng-content>
+  </div>
+
+  <div class="action-btn secondary logout">
+    <ng-content select="[secondary-action]"></ng-content>
+  </div>
+</div>
+  </div>
+</div>

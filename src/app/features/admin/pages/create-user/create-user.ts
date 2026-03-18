@@ -1,0 +1,67 @@
+import { Component, signal, inject, output } from '@angular/core';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { Auth } from '../../../../core/services/auth';
+
+@Component({
+  selector: 'app-create-user',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule],
+  templateUrl: './create-user.html',
+  styleUrl: './create-user.css'
+})
+export class CreateUser {
+
+  private fb = inject(FormBuilder);
+  private authService = inject(Auth);
+
+  close = output<void>();
+  userCreated = output<void>();
+
+  isSubmitted = signal(false);
+  errorMessage = signal('');
+  successMessage = signal('');
+
+  createUserForm: FormGroup = this.fb.group({
+    name: ['', [
+      Validators.required,
+      Validators.pattern(/^[a-zA-Z\s]+$/),
+      Validators.minLength(5),
+      Validators.maxLength(15)
+    ]],
+    email: ['', [
+      Validators.required,
+      Validators.pattern(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)
+    ]],
+    dob: ['', Validators.required],
+    password: ['', [
+      Validators.required,
+      Validators.minLength(5),
+      Validators.maxLength(15)
+    ]]
+  });
+
+  closeModal() {
+    this.close.emit();
+  }
+
+  createUser() {
+    this.isSubmitted.set(true);
+    this.errorMessage.set('');
+    this.successMessage.set('');
+
+    if (this.createUserForm.invalid) return;
+    this.authService.register(this.createUserForm.value).subscribe({
+      next:(res) =>{
+         this.successMessage.set('User created successfully!');
+      },
+      error: (err) =>{
+        this.errorMessage.set(err?.error.message)
+      }
+    })
+    setTimeout(() => {
+      this.userCreated.emit();
+      this.closeModal();
+    }, 1500);
+  }
+}

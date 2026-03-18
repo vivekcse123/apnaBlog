@@ -1,0 +1,76 @@
+import { CommonModule } from '@angular/common';
+import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { Auth } from '../../../../core/services/auth';
+import { ActivatedRoute, Router, RouterOutlet, RouterLink } from '@angular/router';
+import { UserService } from '../../../user/services/user-service';
+import { Subscription, switchMap } from 'rxjs';
+import { CommonHeader } from "../../../../shared/common-header/common-header";
+import { UserProfile } from "../../../../shared/user-profile/user-profile";
+import { User } from '../../../user/models/user.mode';
+
+@Component({
+  selector: 'app-admin-dashboard',
+  standalone: true,
+  imports: [CommonModule, RouterOutlet, CommonHeader, UserProfile, RouterLink],
+  templateUrl: './admin-dashboard.html',
+  styleUrl: './admin-dashboard.css',
+})
+export class AdminDashboard implements OnInit, OnDestroy{
+  private route = inject(ActivatedRoute);
+  private userService = inject(UserService);
+  private authService = inject(Auth);
+  private router = inject(Router);
+
+  initial = signal<string | null>(null);
+  userId = signal<string | null>(null);
+
+  user = signal<User | any>('');
+  sub!: Subscription;
+
+  ngOnInit(): void {
+    
+
+    this.sub = this.route.paramMap.pipe(
+      switchMap(param =>{
+        const id = param.get('id');
+        this.userId.set(id);
+        return this.userService.getUserById(id);
+       
+      })
+    ).subscribe({
+      next: (user) =>{
+        if(!user){
+          this.router.navigate(['/page-not-found']);
+          return;
+        }
+        const name = user.data.name;
+        const parts = name.trim().split(' ');
+        const initial = parts[0].charAt(0).toUpperCase() + parts[1].charAt(0).toUpperCase();
+        this.initial.set(initial);
+
+        this.user.set(user.data);
+      },
+      error: (err) => {
+        this.router.navigate(['/page-not-found']);
+        return;
+      }
+    })
+  }
+
+  isOpened = signal(false);
+  openProfile(){
+    this.isOpened.set(true);
+  }
+
+  closeProfile(){
+    this.isOpened.set(false);
+  }
+
+  logout(){
+    this.authService.logout();
+  }
+
+  ngOnDestroy(): void {
+    this.sub.unsubscribe();
+  }
+}

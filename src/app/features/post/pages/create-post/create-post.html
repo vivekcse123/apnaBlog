@@ -1,0 +1,101 @@
+<div class="user-page">
+  <div class="page-header">
+    <div>
+      <h2>Create Blog Post</h2>
+      <p>Fill in the details below to publish a new post.</p>
+    </div>
+
+    <div class="actions">
+      <button type="submit" form="postForm" class="add-btn">
+        Publish Post
+      </button>
+    </div>
+  </div>
+
+  <div class="table-card">
+    <form
+      id="postForm"
+      [formGroup]="createBlogForm"
+      (ngSubmit)="createBlog()"
+    >
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Title <span class="required">*</span></label>
+          <input type="text" formControlName="title" />
+        </div>
+
+        <div class="form-group">
+          <label>Description <span class="required">*</span></label>
+          <input type="text" formControlName="description" />
+        </div>
+
+        <div class="form-group full-width">
+          <label>Content <span class="required">*</span></label>
+          <textarea rows="6" formControlName="content"></textarea>
+        </div>
+
+        <div class="form-group full-width">
+          <label>Categories <span class="required">*</span></label>
+
+          <div class="checkbox-grid" formArrayName="categories">
+            @for (category of categoryOptions; track category; let i = $index) {
+              <label class="checkbox-item">
+                <input type="checkbox" [formControlName]="i" />
+                <span>{{ category }}</span>
+              </label>
+            }
+          </div>
+        </div>
+
+        <div class="form-group full-width">
+          <label>Tags</label>
+
+          <div class="checkbox-grid" formArrayName="tags">
+            @for (tag of tagOptions; track tag; let i = $index) {
+              <label class="checkbox-item">
+                <input type="checkbox" [formControlName]="i" />
+                <span>{{ tag }}</span>
+              </label>
+            }
+          </div>
+        </div>
+        <div class="form-group full-width">
+          <label>Featured Image</label>
+          <input
+            type="text"
+            formControlName="featuredImage"
+            placeholder="Paste image URL"
+          />
+
+          <div class="or-divider">OR</div>
+          <input type="file" accept="image/*" (change)="createBlogForm.patchValue({ featuredImage: '' })"/>
+        </div>
+        
+        <div class="form-group">
+          <label>Status</label>
+          <select formControlName="status">
+            <option value="draft">Draft</option>
+            <option value="published">Published</option>
+          </select>
+        </div>
+
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="add-btn">
+          Save Post
+        </button>
+      </div>
+      @if (errorMessage()) {
+        <div class="error-message">
+          {{ errorMessage() }}
+        </div>
+      }
+      @if (successMessage()) {
+        <div class="success-message">
+          {{ successMessage() }}
+        </div>
+      }
+
+    </form>
+  </div>
+</div>

@@ -1,0 +1,71 @@
+<!-- Backdrop -->
+<div class="modal-backdrop" (click)="closeModal()">
+
+  <!-- Modal Box — stop click from closing when clicking inside -->
+  <div class="modal-box" (click)="$event.stopPropagation()">
+
+    <!-- X Button -->
+    <button class="close-btn" (click)="closeModal()">&#x2715;</button>
+
+    <div class="heading">
+      <h2>Create New User 👤</h2>
+      <p>Fill in the details to add a new user</p>
+    </div>
+
+    <form [formGroup]="createUserForm" (ngSubmit)="createUser()">
+
+      <input type="text" placeholder="Full Name" formControlName="name">
+      @if(createUserForm.get('name')?.invalid && (isSubmitted() || createUserForm.get('name')?.touched)){
+        @if(createUserForm.get('name')?.errors?.['required']){
+          <small class="error">Name is required...!</small>
+        }
+        @if(createUserForm.get('name')?.errors?.['pattern']){
+          <small class="error">Invalid name...!</small>
+        }
+        @if(createUserForm.get('name')?.errors?.['minlength'] || createUserForm.get('name')?.errors?.['maxlength']){
+          <small class="error">Name should be 5 - 15 characters long...!</small>
+        }
+      }
+
+      <input type="email" placeholder="Email Address" formControlName="email">
+      @if(createUserForm.get('email')?.invalid && (isSubmitted() || createUserForm.get('email')?.touched)){
+        @if(createUserForm.get('email')?.errors?.['required']){
+          <small class="error">Email is required...!</small>
+        }
+        @if(createUserForm.get('email')?.errors?.['pattern']){
+          <small class="error">Invalid email address...!</small>
+        }
+      }
+
+      <input type="date" placeholder="Date of Birth" formControlName="dob">
+      @if(createUserForm.get('dob')?.invalid && (isSubmitted() || createUserForm.get('dob')?.touched)){
+        @if(createUserForm.get('dob')?.errors?.['required']){
+          <small class="error">Date of Birth is required...!</small>
+        }
+      }
+
+      <input type="password" placeholder="Password" formControlName="password">
+      @if(createUserForm.get('password')?.invalid && (isSubmitted() || createUserForm.get('password')?.touched)){
+        @if(createUserForm.get('password')?.errors?.['required']){
+          <small class="error">Password is required...!</small>
+        }
+        @if(createUserForm.get('password')?.errors?.['minlength'] || createUserForm.get('password')?.errors?.['maxlength']){
+          <small class="error">Password should be 5 - 15 characters long...!</small>
+        }
+      }
+
+      <div class="actions">
+        <button type="button" class="cancel-btn" (click)="closeModal()">Cancel</button>
+        <button type="submit" class="submit-btn">Create User</button>
+      </div>
+
+      @if(errorMessage()){
+        <span class="error_message">{{ errorMessage() }}</span>
+      }
+      @if(successMessage()){
+        <span class="success">{{ successMessage() }}</span>
+      }
+
+    </form>
+  </div>
+</div>

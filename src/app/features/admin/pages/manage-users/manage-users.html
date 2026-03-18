@@ -1,0 +1,152 @@
+<div class="user-page">
+
+  <div class="page-header">
+    <div>
+      <h2>Manage All Users</h2>
+      <p>Total Users: {{ totalUsers() }}</p>
+    </div>
+    <div class="actions">
+      <input
+        type="text"
+        placeholder="Search user..."
+        [(ngModel)]="searchName"
+        (ngModelChange)="debounceSearch($event)"
+      />
+      <select [ngModel]="selectedRole()" (ngModelChange)="selectedRole.set($event)">
+        <option value="">Filter by Role</option>
+        <option value="user">User</option>
+        <option value="admin">Admin</option>
+      </select>
+      <button class="add-btn" (click)="showCreateModal.set(true)">+ Add User</button>
+    </div>
+  </div>
+
+  <div class="table-card">
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Role</th>
+          <th>Created At</th>
+          <th width="220">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+
+        @for(user of users() | filterByName: debounceValue() | filterByRole: selectedRole(); track user.userId) {
+          <tr [appDisabled]="user.status === 'inactive'">
+
+            <td>
+              <div class="user-cell">
+                <div class="user-avatar">{{ user.name.charAt(0) | uppercase }}</div>
+                <span>{{ user.name }}</span>
+              </div>
+            </td>
+
+            <td class="email-cell">{{ user.email }}</td>
+
+            <td>
+              <span class="role-badge" [class.admin]="user.role === 'Admin'">
+                {{ user.role }}
+              </span>
+            </td>
+
+            <td>{{ user.createdAt | date: 'mediumDate' }}</td>
+
+            <td>
+              <div class="action-buttons">
+                <button class="view" (click)="getUserDetails(user._id)">View</button>
+                <button class="delete" (click)="toggleUserStatus(user)">
+                  {{ user.status === 'active' ? 'Freeze' : 'Unfreeze' }}
+                </button>
+              </div>
+            </td>
+
+          </tr>
+        }
+
+        @if((users() | filterByName: debounceValue() | filterByRole: selectedRole()).length === 0) {
+          <tr>
+            <td colspan="5" class="empty-row">
+              <div class="empty-state">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="8" r="4" stroke="#ddd" stroke-width="2" fill="none"/>
+                  <path d="M4 20c0-4.418 3.582-7 8-7s8 2.582 8 7" stroke="#ddd" stroke-width="2" stroke-linecap="round" fill="none"/>
+                </svg>
+                <p>No users found</p>
+              </div>
+            </td>
+          </tr>
+        }
+
+      </tbody>
+    </table>
+  </div>
+
+  <div class="pagination">
+    <button (click)="previousPage()" [disabled]="currentPage() === 1">Prev</button>
+    @for(page of pages(); track page) {
+      <button (click)="goToPage(page)" [class.active]="currentPage() === page">{{ page }}</button>
+    }
+    <button (click)="nextPage()" [disabled]="currentPage() === totalPages()">Next</button>
+  </div>
+
+</div>
+
+@if(showCreateModal()) {
+  <app-create-user
+    (close)="showCreateModal.set(false)"
+    (userCreated)="loadUsers()"
+  />
+}
+
+@if(showConfirm()) {
+  <div class="modal-overlay" (click)="cancelToggle()">
+    <div class="confirm-box" (click)="$event.stopPropagation()">
+
+      <div class="confirm-icon">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+      </div>
+
+      <h3>{{ pendingUser()?.status === 'active' ? 'Freeze User?' : 'Unfreeze User?' }}</h3>
+      <p>
+        Are you sure you want to
+        {{ pendingUser()?.status === 'active' ? 'freeze' : 'unfreeze' }}
+        <strong>{{ pendingUser()?.name }}</strong>?
+      </p>
+
+      <div class="confirm-actions">
+        <button class="btn-cancel" (click)="cancelToggle()">Cancel</button>
+        <button
+          class="btn-confirm"
+          [class.freeze]="pendingUser()?.status === 'active'"
+          [class.unfreeze]="pendingUser()?.status !== 'active'"
+          (click)="confirmToggle()">
+          {{ pendingUser()?.status === 'active' ? 'Yes, Freeze' : 'Yes, Unfreeze' }}
+        </button>
+      </div>
+
+    </div>
+  </div>
+}
+
+<app-message-modal
+  [show]="showMessage()"
+  [type]="modalType()"
+  [title]="modalTitle()"
+  [message]="modalMessage()"
+  (closed)="showMessage.set(false)"
+/>
+
+@if(isProfileOpened()) {
+  <app-view-user
+    [userId]="selectedUserId()"
+    (close)="closeProfile()"
+  />
+}

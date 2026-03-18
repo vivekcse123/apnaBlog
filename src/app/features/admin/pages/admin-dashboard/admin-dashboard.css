@@ -1,0 +1,13 @@
+.logout_btn{
+    color: red;
+    text-decoration: none;
+    transition: 0.3s ease;
+}
+.edit_setting{
+    color: white;
+    text-decoration: none;
+    transition: 0.3s ease;
+}
+.logout_btn:hover, .edit_setting:hover{
+    text-decoration: underline;
+}

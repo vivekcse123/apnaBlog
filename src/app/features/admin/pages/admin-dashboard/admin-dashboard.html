@@ -1,0 +1,24 @@
+<app-common-header
+  [navs]="[
+    { label: 'Home', routerLink: `/admin/${userId()}` },
+    { label: 'Users', routerLink: `/admin/${userId()}/manage-users` },
+    { label: 'Blogs', routerLink: `/admin/${userId()}/manage-blogs` },
+    { label: 'Comments', routerLink: `/admin/${userId()}/manage-comments` }
+  ]"
+  [profile]="initial()"
+  (open)="openProfile()"
+  >
+</app-common-header>
+
+@if(isOpened()){
+<app-user-profile
+[name]="user()?.name"
+[email]="user()?.email"
+[role]="user()?.role"
+(close)="closeProfile()"
+>
+<a routerLink="/" primary-action class="edit_setting">Edit Setting</a>
+<a routerLink="/" secondary-action (click)="logout()" class="logout_btn">Logout</a>
+</app-user-profile>
+}
+<router-outlet></router-outlet>

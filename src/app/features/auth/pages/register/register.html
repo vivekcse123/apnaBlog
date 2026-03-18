@@ -1,0 +1,81 @@
+<div class="main">
+
+  <div class="register-container">
+
+    <!-- Form Side -->
+    <div class="form-container">
+
+      <div class="heading">
+        <h2>Join ApnaBlog 👋</h2>
+        <p>Create your account to start sharing stories</p>
+      </div>
+
+      <form [formGroup]="registerForm" (ngSubmit)="register()">
+
+        <input type="text" placeholder="Full Name" formControlName="name">
+        @if(registerForm.get('name')?.invalid && (isSubmitted() || registerForm.get('name')?.touched)){
+          @if(registerForm.get('name')?.errors?.['required']){
+            <small class="error">Name is required...!</small>
+          }
+          @if(registerForm.get('name')?.errors?.['pattern']){
+            <small class="error">Invalid name...!</small>
+          }
+          @if(registerForm.get('name')?.errors?.['minlength'] || registerForm.get('name')?.errors?.['maxlength']){
+            <small class="error">Name should be 5 - 15 characters long...!</small>
+          }
+        }
+
+        <input type="email" placeholder="Email Address" formControlName="email">
+        @if(registerForm.get('email')?.invalid && (isSubmitted() || registerForm.get('email')?.touched)){
+          @if(registerForm.get('email')?.errors?.['required']){
+            <small class="error">Email is required...!</small>
+          }
+          @if(registerForm.get('email')?.errors?.['pattern']){
+            <small class="error">Invalid email address...!</small>
+          }
+        }
+
+        <input type="date" placeholder="Date of Birth" formControlName="dob">
+        @if(registerForm.get('dob')?.invalid && (isSubmitted() || registerForm.get('dob')?.touched)){
+          @if(registerForm.get('dob')?.errors?.['required']){
+            <small class="error">Date of Birth is required...!</small>
+          }
+        }
+
+        <input type="password" placeholder="Password" formControlName="password">
+        @if(registerForm.get('password')?.invalid && (isSubmitted() || registerForm.get('password')?.touched)){
+          @if(registerForm.get('password')?.errors?.['required']){
+            <small class="error">Password is required...!</small>
+          }
+          @if(registerForm.get('password')?.errors?.['minlength'] || registerForm.get('password')?.errors?.['maxlength']){
+            <small class="error">Password should be 5 - 15 characters long...!</small>
+          }
+        }
+
+        <button type="submit" class="register-btn">Register</button>
+
+        <div class="login-link">
+          <p>Already have an account? <a routerLink="/auth/login">Login</a></p>
+        </div>
+
+        @if(errorMessage()){
+          <span class="error_message">{{ errorMessage() }}</span>
+        }
+        @if(successMessage()){
+          <span class="success_message">{{ successMessage() }}</span>
+        }
+
+      </form>
+    </div>
+
+    <!-- Logo Side -->
+    <div class="logo-container">
+      <div class="logo-content">
+        <h1>ApnaBlog</h1>
+        <img src="/images/village.png" alt="Village Illustration">
+        <p>Share your stories with the world 🌿</p>
+      </div>
+    </div>
+
+  </div>
+</div>

@@ -1,0 +1,65 @@
+<div class="main">
+
+  <!-- Blurred background layer -->
+  <div class="bg-blur"></div>
+
+  <div class="login-container">
+
+    <!-- Logo Side -->
+    <div class="logo-container">
+      <div class="logo-content">
+        <h1>ApnaBlog</h1>
+        <img src="/images/village.png" alt="Village Illustration">
+        <p>Share your village stories with the world 🌿</p>
+      </div>
+    </div>
+
+    <!-- Form Side -->
+    <div class="form-container">
+
+      <div class="heading">
+        <h2>Welcome Back 👋</h2>
+        <p>Sign in to continue</p>
+      </div>
+
+      <form [formGroup]="loginForm" (ngSubmit)="login()">
+
+        <input type="text" placeholder="Username / Email" formControlName="email">
+        @if(loginForm.get('email')?.invalid && (isSubmitted() || loginForm.get('email')?.touched)){
+          @if(loginForm.get('email')?.errors?.['required']){
+            <small class="error">Username / Email is required...!</small>
+          }
+          @if(loginForm.get('email')?.errors?.['pattern']){
+            <small class="error">Invalid email address...!</small>
+          }
+        }
+
+        <input type="password" placeholder="Password" formControlName="password">
+        @if(loginForm.get('password')?.invalid && (isSubmitted() || loginForm.get('password')?.touched)){
+          @if(loginForm.get('password')?.errors?.['required']){
+            <small class="error">Password is required...!</small>
+          }
+        }
+
+        <div class="forgot-link">
+          <a href="#">Forgot Password?</a>
+        </div>
+
+        <button type="submit" class="login-btn">Login</button>
+
+        <div class="register-link">
+          <p>Don't have an account? <a routerLink="/auth/register">Register</a></p>
+        </div>
+
+        @if(errorMessage()){
+          <span class="error_message">{{ errorMessage() }}</span>
+        }
+        @if(successMessage()){
+          <span class="success_message">{{ successMessage() }}</span>
+        }
+
+      </form>
+    </div>
+
+  </div>
+</div>
