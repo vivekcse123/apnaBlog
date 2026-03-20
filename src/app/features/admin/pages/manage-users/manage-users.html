@@ -2,8 +2,8 @@
 
   <div class="page-header">
     <div>
-      <h2>Manage All Users</h2>
-      <p>Total Users: {{ totalUsers() }}</p>
+      <h2>Manage Users</h2>
+      <p>View, edit and manage all Users | Total Users: {{ totalUsers() }}</p>
     </div>
     <div class="actions">
       <input
@@ -17,6 +17,12 @@
         <option value="user">User</option>
         <option value="admin">Admin</option>
       </select>
+      <!-- ✅ Status filter -->
+      <select [ngModel]="selectedStatus()" (ngModelChange)="selectedStatus.set($event)">
+        <option value="">Filter by Status</option>
+        <option value="active">Active</option>
+        <option value="inactive">Inactive</option>
+      </select>
       <button class="add-btn" (click)="showCreateModal.set(true)">+ Add User</button>
     </div>
   </div>
@@ -28,13 +34,14 @@
           <th>Name</th>
           <th>Email</th>
           <th>Role</th>
+          <th>Status</th>
           <th>Created At</th>
           <th width="220">Actions</th>
         </tr>
       </thead>
       <tbody>
 
-        @for(user of users() | filterByName: debounceValue() | filterByRole: selectedRole(); track user.userId) {
+        @for (user of users() | filterByName: debounceValue() | filterByRole: selectedRole() | filterByStatus: selectedStatus(); track user._id) {
           <tr [appDisabled]="user.status === 'inactive'">
 
             <td>
@@ -47,8 +54,16 @@
             <td class="email-cell">{{ user.email }}</td>
 
             <td>
-              <span class="role-badge" [class.admin]="user.role === 'Admin'">
-                {{ user.role }}
+              <span class="role-badge" [class.admin]="user.role?.toLowerCase() === 'admin'">
+                {{ user.role | titlecase}}
+              </span>
+            </td>
+
+            <td>
+              <span class="status-badge"
+                [class.status-active]="user.status === 'active'"
+                [class.status-inactive]="user.status === 'inactive'">
+                {{ user.status | titlecase }}
               </span>
             </td>
 
@@ -66,9 +81,9 @@
           </tr>
         }
 
-        @if((users() | filterByName: debounceValue() | filterByRole: selectedRole()).length === 0) {
+        @if ((users() | filterByName: debounceValue() | filterByRole: selectedRole() | filterByStatus: selectedStatus()).length === 0) {
           <tr>
-            <td colspan="5" class="empty-row">
+            <td colspan="6" class="empty-row">
               <div class="empty-state">
                 <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
                   <circle cx="12" cy="8" r="4" stroke="#ddd" stroke-width="2" fill="none"/>
@@ -86,7 +101,7 @@
 
   <div class="pagination">
     <button (click)="previousPage()" [disabled]="currentPage() === 1">Prev</button>
-    @for(page of pages(); track page) {
+    @for (page of pages(); track page) {
       <button (click)="goToPage(page)" [class.active]="currentPage() === page">{{ page }}</button>
     }
     <button (click)="nextPage()" [disabled]="currentPage() === totalPages()">Next</button>
@@ -94,14 +109,14 @@
 
 </div>
 
-@if(showCreateModal()) {
+@if (showCreateModal()) {
   <app-create-user
     (close)="showCreateModal.set(false)"
     (userCreated)="loadUsers()"
   />
 }
 
-@if(showConfirm()) {
+@if (showConfirm()) {
   <div class="modal-overlay" (click)="cancelToggle()">
     <div class="confirm-box" (click)="$event.stopPropagation()">
 
@@ -144,9 +159,10 @@
   (closed)="showMessage.set(false)"
 />
 
-@if(isProfileOpened()) {
+@if (isProfileOpened()) {
   <app-view-user
     [userId]="selectedUserId()"
     (close)="closeProfile()"
+    (userUpdated)="onUserUpdated($event)"
   />
 }

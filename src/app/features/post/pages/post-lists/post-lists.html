@@ -1,10 +1,9 @@
 <div class="user-page">
 
-  <!-- Page Header -->
   <div class="page-header">
     <div>
       <h2>Manage Blogs</h2>
-      <p>View, edit and manage all blog posts</p>
+      <p>View, edit and manage all blog posts | Total Blogs: {{totalBlogs()}}</p>
     </div>
     <div class="actions">
       <input
@@ -15,21 +14,32 @@
       />
       <select [ngModel]="selectedCategory()" (ngModelChange)="selectedCategory.set($event)">
         <option value="">Filter by Category</option>
-        <option value="technology">Technology</option>
-        <option value="health">Health</option>
-        <option value="development">Development</option>
-        <option value="design">Design</option>
+        <option value="Technology">Technology</option>
+        <option value="Lifestyle">Lifestyle</option>
+        <option value="Education">Education</option>
+        <option value="Health">Health</option>
+        <option value="Business">Business</option>
+        <option value="Entertainment">Entertainment</option>
+        <option value="Social">Social</option>
+        <option value="Village">Village</option>
       </select>
       <select [ngModel]="selectedStatus()" (ngModelChange)="selectedStatus.set($event)">
         <option value="">Filter by Status</option>
         <option value="published">Published</option>
         <option value="draft">Draft</option>
       </select>
-      <button class="add-btn" (click)="createBlog()">+ Add New Blog</button>
+      <button class="add-btn" (click)="showCreateBlog.set(true)">+ Add New Blog</button>
     </div>
   </div>
 
-  <!-- Table -->
+  <!-- Create Blog Modal -->
+  @if (showCreateBlog()) {
+    <app-create-blog
+      (close)="showCreateBlog.set(false)"
+      (postCreated)="onPostCreated()"
+    />
+  }
+
   <div class="table-card">
     <table>
       <thead>
@@ -39,13 +49,13 @@
           <th>Status</th>
           <th>Views</th>
           <th>Likes</th>
-          <th>Date</th>
+          <th>Publish Date</th>
           <th width="160">Actions</th>
         </tr>
       </thead>
       <tbody>
 
-        @for(blog of allBlogs() | blogFilter: debounceValue() : selectedCategory() : selectedStatus(); track blog._id){
+        @for (blog of allBlogs() | blogFilter: debounceValue() : selectedCategory() : selectedStatus(); track blog._id) {
           <tr>
             <td>
               <div class="blog-title">{{ blog.title }}</div>
@@ -53,7 +63,7 @@
             </td>
             <td>
               <div class="category-list">
-                @for(category of blog.categories; track category){
+                @for (category of blog.categories; track category) {
                   <span class="category-badge" [ngClass]="category.toLowerCase()">
                     {{ category }}
                   </span>
@@ -61,9 +71,11 @@
               </div>
             </td>
             <td>
-              <span class="status-badge"
+              <span
+                class="status-badge"
                 [class.status-published]="blog.status === 'published'"
-                [class.status-draft]="blog.status === 'draft'">
+                [class.status-draft]="blog.status === 'draft'"
+              >
                 {{ blog.status | titlecase }}
               </span>
             </td>
@@ -85,17 +97,17 @@
                 {{ blog.likesCount | number }}
               </div>
             </td>
-            <td>{{ blog.pusblishDate | date: 'mediumDate' }}</td>
+            <td>{{ blog.createdAt | date: 'mediumDate' }}</td>
             <td>
               <div class="action-buttons">
-                <button class="edit" (click)="editBlog(blog._id)">Edit</button>
-                <button class="delete" (click)="deleteBlog(blog._id)">Delete</button>
+                <button class="edit" (click)="viewPost(blog._id)">View</button>
+                <button class="delete" (click)="confirmDelete(blog._id, blog.title)">Delete</button>
               </div>
             </td>
           </tr>
         }
 
-        @if((allBlogs() | blogFilter: debounceValue() : selectedCategory() : selectedStatus()).length === 0){
+        @if ((allBlogs() | blogFilter: debounceValue() : selectedCategory() : selectedStatus()).length === 0) {
           <tr>
             <td colspan="7" class="empty-row">
               <div class="empty-state">
@@ -117,10 +129,54 @@
   <!-- Pagination -->
   <div class="pagination">
     <button (click)="previousPage()" [disabled]="currentPage() === 1">Prev</button>
-    @for(page of pages(); track page){
+    @for (page of pages(); track page) {
       <button (click)="goToPage(page)" [class.active]="currentPage() === page">{{ page }}</button>
     }
     <button (click)="nextPage()" [disabled]="currentPage() === totalPages()">Next</button>
   </div>
 
 </div>
+
+<!-- View / Edit Post Modal -->
+@if (isPostViewed()) {
+  <app-view-post
+    [postId]="selectedPostId()"
+    (close)="closeModal()"
+    (postUpdated)="onPostUpdated($event)"
+  />
+}
+
+<!-- Delete Confirmation Modal -->
+@if (showConfirm()) {
+  <div class="modal-overlay" (click)="cancelDelete()">
+    <div class="confirm-box" (click)="$event.stopPropagation()">
+
+      <div class="confirm-icon">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+      </div>
+
+      <h3>Delete Post?</h3>
+      <p>Are you sure you want to delete <strong>{{ pendingDeleteTitle() }}</strong>? This action cannot be undone.</p>
+
+      <div class="confirm-actions">
+        <button class="btn-cancel" (click)="cancelDelete()">Cancel</button>
+        <button class="btn-confirm delete" (click)="proceedDelete()">Yes, Delete</button>
+      </div>
+
+    </div>
+  </div>
+}
+
+<!-- Result Message Modal -->
+<app-message-modal
+  [show]="showMessage()"
+  [type]="modalType()"
+  [title]="modalTitle()"
+  [message]="modalMessage()"
+  (closed)="showMessage.set(false)"
+/>

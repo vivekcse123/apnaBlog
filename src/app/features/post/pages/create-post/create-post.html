@@ -1,99 +1,101 @@
-<div class="user-page">
-  <div class="page-header">
-    <div>
-      <h2>Create Blog Post</h2>
-      <p>Fill in the details below to publish a new post.</p>
+<div class="modal-backdrop" (click)="closeModal()">
+
+  <div class="modal-box" (click)="$event.stopPropagation()">
+
+    <button class="close-btn" (click)="closeModal()">&#x2715;</button>
+
+    <div class="heading">
+      <h2>Create New Blog Post ✍️</h2>
+      <p>Fill in the details to publish a new post</p>
     </div>
 
-    <div class="actions">
-      <button type="submit" form="postForm" class="add-btn">
-        Publish Post
-      </button>
-    </div>
-  </div>
+    <form [formGroup]="createBlogForm" (ngSubmit)="createBlog()">
 
-  <div class="table-card">
-    <form
-      id="postForm"
-      [formGroup]="createBlogForm"
-      (ngSubmit)="createBlog()"
-    >
-      <div class="form-grid">
-        <div class="form-group">
-          <label>Title <span class="required">*</span></label>
-          <input type="text" formControlName="title" />
+      <input type="text" placeholder="Post Title" formControlName="title" />
+      @if (createBlogForm.get('title')?.invalid && (isSubmitted() || createBlogForm.get('title')?.touched)) {
+        @if (createBlogForm.get('title')?.errors?.['required']) {
+          <small class="error">Title is required...!</small>
+        }
+        @if (createBlogForm.get('title')?.errors?.['minlength'] || createBlogForm.get('title')?.errors?.['maxlength']) {
+          <small class="error">Title should be 5 - 100 characters long...!</small>
+        }
+      }
+      <input type="text" placeholder="Short Description" formControlName="description" />
+      @if (createBlogForm.get('description')?.invalid && (isSubmitted() || createBlogForm.get('description')?.touched)) {
+        @if (createBlogForm.get('description')?.errors?.['required']) {
+          <small class="error">Description is required...!</small>
+        }
+        @if (createBlogForm.get('description')?.errors?.['minlength']) {
+          <small class="error">Description should be at least 10 characters long...!</small>
+        }
+      }
+      <textarea placeholder="Write your blog content here..." formControlName="content" rows="4"></textarea>
+      @if (createBlogForm.get('content')?.invalid && (isSubmitted() || createBlogForm.get('content')?.touched)) {
+        @if (createBlogForm.get('content')?.errors?.['required']) {
+          <small class="error">Content is required...!</small>
+        }
+        @if (createBlogForm.get('content')?.errors?.['minlength']) {
+          <small class="error">Content should be at least 20 characters long...!</small>
+        }
+      }
+
+      <div class="field-group">
+        <label class="field-label">Categories <span class="required">*</span></label>
+        <div class="checkbox-grid" formArrayName="categories">
+          @for (category of categoryOptions; track category; let i = $index) {
+            <label class="checkbox-item">
+              <input type="checkbox" [formControlName]="i" />
+              <span>{{ category }}</span>
+            </label>
+          }
         </div>
-
-        <div class="form-group">
-          <label>Description <span class="required">*</span></label>
-          <input type="text" formControlName="description" />
-        </div>
-
-        <div class="form-group full-width">
-          <label>Content <span class="required">*</span></label>
-          <textarea rows="6" formControlName="content"></textarea>
-        </div>
-
-        <div class="form-group full-width">
-          <label>Categories <span class="required">*</span></label>
-
-          <div class="checkbox-grid" formArrayName="categories">
-            @for (category of categoryOptions; track category; let i = $index) {
-              <label class="checkbox-item">
-                <input type="checkbox" [formControlName]="i" />
-                <span>{{ category }}</span>
-              </label>
-            }
-          </div>
-        </div>
-
-        <div class="form-group full-width">
-          <label>Tags</label>
-
-          <div class="checkbox-grid" formArrayName="tags">
-            @for (tag of tagOptions; track tag; let i = $index) {
-              <label class="checkbox-item">
-                <input type="checkbox" [formControlName]="i" />
-                <span>{{ tag }}</span>
-              </label>
-            }
-          </div>
-        </div>
-        <div class="form-group full-width">
-          <label>Featured Image</label>
-          <input
-            type="text"
-            formControlName="featuredImage"
-            placeholder="Paste image URL"
-          />
-
-          <div class="or-divider">OR</div>
-          <input type="file" accept="image/*" (change)="createBlogForm.patchValue({ featuredImage: '' })"/>
-        </div>
-        
-        <div class="form-group">
-          <label>Status</label>
-          <select formControlName="status">
-            <option value="draft">Draft</option>
-            <option value="published">Published</option>
-          </select>
-        </div>
-
+        @if (isSubmitted() && !hasAtLeastOneChecked('categories')) {
+          <small class="error" style="position: relative; top: 10px;">Select at least one category...!</small>
+        }
       </div>
-      <div class="form-actions">
-        <button type="submit" class="add-btn">
-          Save Post
-        </button>
+
+      <div class="field-group">
+        <label class="field-label">Tags</label>
+        <div class="checkbox-grid" formArrayName="tags">
+          @for (tag of tagOptions; track tag; let i = $index) {
+            <label class="checkbox-item">
+              <input type="checkbox" [formControlName]="i" />
+              <span>{{ tag }}</span>
+            </label>
+          }
+        </div>
       </div>
+
+      <input type="text" placeholder="Featured Image URL (paste link)" formControlName="featuredImage" />
+      <div class="or-divider">OR</div>
+      <input
+        type="file"
+        accept="image/*"
+        class="file-input"
+        (change)="onFileChange($event)"
+      />
+
+      <select formControlName="status">
+        <option value="" disabled selected>Select Status</option>
+        <option value="draft">Draft</option>
+        <option value="published">Published</option>
+      </select>
+      @if (createBlogForm.get('status')?.invalid && (isSubmitted() || createBlogForm.get('status')?.touched)) {
+        @if (createBlogForm.get('status')?.errors?.['required']) {
+          <small class="error">Status is required...!</small>
+        }
+      }
+
+      <div class="actions">
+        <button type="button" class="cancel-btn" (click)="closeModal()">Cancel</button>
+        <button type="submit" class="submit-btn">Publish Post</button>
+      </div>
+
       @if (errorMessage()) {
-        <div class="error-message">
-          {{ errorMessage() }}
-        </div>
+        <span class="error_message">{{ errorMessage() }}</span>
       }
       @if (successMessage()) {
-        <div class="success-message">
-          {{ successMessage() }}
-        </div>
+        <span class="success-message">{{ successMessage() }}</span>
       }
 
     </form>

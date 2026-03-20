@@ -1,30 +1,36 @@
-import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit, signal } from '@angular/core';
-import { FormArray, FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, inject, input, output, signal } from '@angular/core';
+import {
+  AbstractControl,
+  FormArray,
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
+import { Post } from '../../../../core/models/post.model';
+import { Auth } from '../../../../core/services/auth';
 import { PostService } from '../../services/post-service';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { Subscription } from 'rxjs';
 
 @Component({
-  selector: 'app-create-post',
+  selector: 'app-create-blog',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [ReactiveFormsModule],
   templateUrl: './create-post.html',
   styleUrl: './create-post.css',
 })
-export class CreatePost implements OnInit{
-  createBlogForm: FormGroup = new FormGroup({});
-
- userId = signal<string | null>(
-  localStorage.getItem('userId')
-);
-
+export class CreatePost {
+  private fb = inject(FormBuilder);
+  private authService = inject(Auth);
   private postService = inject(PostService);
-  public fb = inject(FormBuilder);
 
-  sub!: Subscription;
+  close = output<void>();
+  postCreated = output<Post>();
 
-  categoryOptions: string[] = [
+  isSubmitted = signal(false);
+  errorMessage = signal('');
+  successMessage = signal('');
+
+categoryOptions = [
   'Technology',
   'Lifestyle',
   'Education',
@@ -32,76 +38,120 @@ export class CreatePost implements OnInit{
   'Business',
   'Entertainment',
   'Social',
-  'Village'
+  'Village',
 ];
 
-tagOptions: string[] = [
+tagOptions = [
   'Trending',
   'Motivation',
   'Tips',
   'News',
   'Opinion',
   'Guide',
-  'Update'
+  'Update',
 ];
 
-  ngOnInit(): void {
+  createBlogForm: FormGroup = this.fb.group({
+    title: [
+      '',
+      [
+        Validators.required,
+        Validators.minLength(5),
+        Validators.maxLength(100),
+      ],
+    ],
+    description: [
+      '',
+      [Validators.required, Validators.minLength(10)],
+    ],
+    content: [
+      '',
+      [Validators.required, Validators.minLength(20)],
+    ],
+    categories: this.fb.array(
+      this.categoryOptions.map(() => this.fb.control(false))
+    ),
+    tags: this.fb.array(
+      this.tagOptions.map(() => this.fb.control(false))
+    ),
+    featuredImage: [''],
+    status: ['', Validators.required],
+  });
 
-    this.createBlogForm = this.fb.group({
-      title: new FormControl(''),
-      description: new FormControl(''),
-      content: new FormControl(''),
-      categories: this.fb.array(
-      this.categoryOptions.map(() => this.fb.control(false)),),
-      tags: this.fb.array(this.tagOptions.map(() => this.fb.control(false))),
-      featuredImage: new FormControl(''),
-      user: new FormControl(this.userId()),
-      likesCount: new FormControl(0),
-      commentsCount: new FormControl(0),
-      views: new FormControl(0),
-      status: new FormControl('draft')
-    });
+  get categoriesArray(): FormArray {
+    return this.createBlogForm.get('categories') as FormArray;
   }
 
+  get tagsArray(): FormArray {
+    return this.createBlogForm.get('tags') as FormArray;
+  }
 
-get categories(): FormArray {
-  return this.createBlogForm.get('categories') as FormArray;
-}
+  hasAtLeastOneChecked(arrayName: 'categories' | 'tags'): boolean {
+    const arr = this.createBlogForm.get(arrayName) as FormArray;
+    return arr.controls.some((c: AbstractControl) => c.value === true);
+  }
 
-get tags(): FormArray {
-  return this.createBlogForm.get('tags') as FormArray;
-}
-  errorMessage = signal('');
-  successMessage = signal('');
-  isSubmitted = signal(false);
+  onFileChange(event: Event): void {
+    this.createBlogForm.patchValue({ featuredImage: '' });
+  }
 
-  createBlog(){
-    this.isSubmitted.set(true);
-    if(this.createBlogForm.invalid){
-      this.createBlogForm.markAllAsTouched();
-      return;
+  createBlog(): void {
+  this.isSubmitted.set(true);
+  this.errorMessage.set('');
+  this.successMessage.set('');
+
+  const userId = this.authService.userId();
+  if (!userId) {
+    this.errorMessage.set('You must be logged in to create a post.');
+    return;
+  }
+
+  const categorySelected = this.hasAtLeastOneChecked('categories');
+  if (this.createBlogForm.invalid || !categorySelected) {
+    if (!categorySelected) {
+      this.errorMessage.set('Please select at least one category.');
     }
-    const selectedCategories = this.categoryOptions.filter(
-    (_, i) => this.categories.value[i]
+    return;
+  }
+
+  const selectedCategories = this.categoryOptions.filter(
+    (_, i) => this.categoriesArray.at(i).value
   );
 
   const selectedTags = this.tagOptions.filter(
-    (_, i) => this.tags.value[i]
+    (_, i) => this.tagsArray.at(i).value
   );
 
-  const payload = {
-    ...this.createBlogForm.value,
-    categories: selectedCategories,
-    tags: selectedTags
-  };
+ const payload: Omit<Post, '_id'| 'user' | 'likesCount' | 'commentsCount' | 'views' | 'createdAt' | 'updatedAt'> = {
+  title: this.createBlogForm.value.title,
+  description: this.createBlogForm.value.description,
+  content: this.createBlogForm.value.content,
+  categories: selectedCategories,
+  tags: selectedTags,
+  featuredImage: this.createBlogForm.value.featuredImage ?? '',
+  status: this.createBlogForm.value.status,
+  userId: userId,
+};
+  this.postService.createBlog(payload).subscribe({
+    next: (res) => {
+      this.successMessage.set('Post published successfully!');  
+      this.isSubmitted.set(false);
+      setTimeout(() =>{
+        this.postCreated.emit(res.data);   
+        this.successMessage.set('');
+        this.createBlogForm.reset();
+        this.closeModal();
+      }, 1000);
+    },
+    error: (err) => {
+      this.errorMessage.set(err.error?.message ?? 'Something went wrong. Please try again.');
+    },
+  });
+}
 
-    this.sub = this.postService.createBlog(payload).subscribe({
-      next: (response) =>{
-        console.log(response);
-      },
-      error(err){
-        console.log(err?.error.message);
-      }
-    })
-  }
+closeModal(): void {
+  this.close.emit();
+}
+
+  openBlog = input(false);
 }

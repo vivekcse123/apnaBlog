@@ -1,3 +1,4 @@
+/* ── Overlay ── */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -15,7 +16,8 @@
   to   { opacity: 1; }
 }
 
-.user-modal {
+/* ── Modal Box ── */
+.post-modal {
   width: 100%;
   max-width: 620px;
   margin: 1rem;
@@ -23,15 +25,20 @@
   border-radius: 16px;
   border: 1px solid #eee;
   overflow: hidden;
+  max-height: 90vh;
+  overflow-y: auto;
   animation: slideUp 0.25s ease;
 }
+
+.post-modal::-webkit-scrollbar { width: 5px; }
+.post-modal::-webkit-scrollbar-thumb { background: #e0e0e0; border-radius: 10px; }
 
 @keyframes slideUp {
   from { transform: translateY(20px); opacity: 0; }
   to   { transform: translateY(0);    opacity: 1; }
 }
 
-/* Header */
+/* ── Header ── */
 .modal-header {
   display: flex;
   justify-content: space-between;
@@ -40,13 +47,13 @@
   border-bottom: 1px solid #f0f0f0;
 }
 
-.header-profile {
+.header-info {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.avatar {
+.post-icon {
   width: 38px;
   height: 38px;
   border-radius: 50%;
@@ -55,18 +62,21 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 15px;
-  font-weight: 500;
+  font-size: 17px;
   flex-shrink: 0;
 }
 
-.header-profile h4 {
+.header-info h4 {
   margin: 0 0 2px;
   font-size: 15px;
   font-weight: 500;
+  max-width: 300px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.header-profile p {
+.header-info p {
   margin: 0;
   font-size: 12px;
   color: #888;
@@ -78,6 +88,7 @@
   gap: 10px;
 }
 
+/* ── Status Badge ── */
 .status-badge {
   font-size: 12px;
   font-weight: 500;
@@ -85,16 +96,17 @@
   border-radius: 6px;
 }
 
-.status-badge.active {
+.status-published {
   background: #dcfce7;
   color: #15803d;
 }
 
-.status-badge.inactive {
-  background: #fee2e2;
-  color: #b91c1c;
+.status-draft {
+  background: #fef9c3;
+  color: #854d0e;
 }
 
+/* ── Close Button ── */
 .close-btn {
   width: 30px;
   height: 30px;
@@ -116,8 +128,8 @@
   transform: rotate(90deg);
 }
 
-/* Stats */
-.user-stats {
+/* ── Stats ── */
+.post-stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   border-bottom: 1px solid #f0f0f0;
@@ -146,21 +158,26 @@
   color: #888;
 }
 
-/* Details */
-.details-grid {
+/* ── Post Body ── */
+.post-body {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 10px;
   padding: 16px 20px;
 }
 
-.detail-item {
+/* ── Detail Blocks ── */
+.detail-block {
   background: #f8f9fb;
   padding: 14px 16px;
   border-radius: 8px;
 }
 
-.detail-item span {
+.detail-block.full {
+  grid-column: 1 / -1;
+}
+
+.detail-label {
   display: block;
   font-size: 11px;
   text-transform: uppercase;
@@ -169,28 +186,69 @@
   margin-bottom: 6px;
 }
 
-.detail-item p {
+.detail-text {
   margin: 0;
   font-size: 14px;
   font-weight: 500;
   color: #222;
+  line-height: 1.6;
 }
 
-.role-badge {
-  display: inline-block;
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-size: 12px !important;
+.content-text {
+  white-space: pre-wrap;
+  max-height: 130px;
+  overflow-y: auto;
+  font-weight: 400;
+}
+
+/* ── Detail Row (categories + tags side by side) ── */
+.detail-row {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+/* ── Pills (view mode) ── */
+.pill-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.pill {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+
+.pill-category {
   background: #dbeafe;
   color: #1d4ed8;
 }
 
-.role-badge.user {
+.pill-tag {
   background: #f3e8ff;
   color: #7c3aed;
 }
 
-/* Footer */
+.no-tags {
+  font-size: 13px;
+  color: #bbb;
+}
+
+/* ── Featured Image ── */
+.featured-img {
+  width: 100%;
+  max-height: 180px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-top: 8px;
+}
+
+/* ── Footer ── */
 .modal-footer {
   display: flex;
   justify-content: flex-end;
@@ -225,15 +283,7 @@
 
 .btn-edit:hover { opacity: 0.85; }
 
-/* Responsive */
-@media (max-width: 600px) {
-  .details-grid { grid-template-columns: 1fr; }
-  .user-stats { grid-template-columns: 1fr; }
-  .stat-item { border-right: none; border-bottom: 1px solid #f0f0f0; }
-  .stat-item:last-child { border-bottom: none; }
-}
-
-/* ── Edit form ─────────────────────────────────── */
+/* ── Edit Form ── */
 .edit-form {
   padding: 0 20px;
 }
@@ -251,6 +301,10 @@
   gap: 5px;
 }
 
+.edit-field.full {
+  grid-column: 1 / -1;
+}
+
 .edit-field label {
   font-size: 11px;
   text-transform: uppercase;
@@ -259,7 +313,8 @@
 }
 
 .edit-field input,
-.edit-field select {
+.edit-field select,
+.edit-field textarea {
   padding: 10px 12px;
   border-radius: 8px;
   border: 1px solid #e0e0e0;
@@ -269,10 +324,17 @@
   background: #f8f9fb;
   transition: border-color 0.2s, box-shadow 0.2s;
   width: 100%;
+  box-sizing: border-box;
+}
+
+.edit-field textarea {
+  resize: vertical;
+  min-height: 100px;
 }
 
 .edit-field input:focus,
-.edit-field select:focus {
+.edit-field select:focus,
+.edit-field textarea:focus {
   border-color: #43cea2;
   outline: none;
   box-shadow: 0 0 0 3px rgba(67, 206, 162, 0.12);
@@ -284,7 +346,39 @@
   color: #e74c3c;
 }
 
-/* ── Save button ───────────────────────────────── */
+/* ── Pill Selector (edit mode) ── */
+.pill-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px;
+  background: #f8f9fb;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+}
+
+.pill.selectable {
+  cursor: pointer;
+  border: 1px solid #e0e0e0;
+  background: #fff;
+  color: #555;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.pill.selectable:hover {
+  border-color: #43cea2;
+  background: rgba(67, 206, 162, 0.06);
+}
+
+.pill.selectable.selected {
+  border-color: #43cea2;
+  background: rgba(67, 206, 162, 0.14);
+  color: #185a9d;
+  font-weight: 600;
+}
+
+/* ── Save Button ── */
 .btn-save {
   flex: 1;
   padding: 9px 18px;
@@ -299,9 +393,16 @@
 }
 
 .btn-save:hover    { opacity: 0.88; }
-.btn-save:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
+.btn-save:disabled { opacity: 0.45; cursor: not-allowed; }
+
+@media (max-width: 600px) {
+  .post-body        { grid-template-columns: 1fr; }
+  .detail-row       { grid-template-columns: 1fr; }
+  .edit-grid        { grid-template-columns: 1fr; }
+  .post-stats       { grid-template-columns: 1fr; }
+  .stat-item        { border-right: none; border-bottom: 1px solid #f0f0f0; }
+  .stat-item:last-child { border-bottom: none; }
+  .header-info h4   { max-width: 160px; }
 }
 
 .success-message {
@@ -365,4 +466,78 @@
 @keyframes slideDown {
   from { opacity: 0; transform: translateY(-6px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Author Block */
+.author-block {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: #f8f9fa;
+  border-radius: 10px;
+  margin-bottom: 16px;
+  border: 1px solid #e9ecef;
+}
+
+.author-avatar-wrap {
+  flex-shrink: 0;
+}
+
+.author-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #dee2e6;
+}
+
+.author-avatar-fallback {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #4f46e5;
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.author-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.author-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #1a1a2e;
+}
+
+.author-label {
+  font-size: 0.75rem;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.author-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  color: #fff;
+  font-size: 1.2rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.35);
+  user-select: none;
+  flex-shrink: 0;
 }

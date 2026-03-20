@@ -1,0 +1,209 @@
+<div class="modal-overlay" (click)="closeModal()">
+  <div class="post-modal" (click)="$event.stopPropagation()">
+
+    <!-- HEADER -->
+    <div class="modal-header">
+      <div class="header-info">
+        <div class="post-icon">✍️</div>
+        <div>
+          <h4>{{ isEditing() ? 'Edit Post' : post()?.title }}</h4>
+          <p>{{ post()?.status | titlecase }} &middot; {{ post()?.createdAt | date:'mediumDate' }}</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        @if (!isEditing()) {
+          <span class="status-badge"
+            [class.status-published]="post()?.status === 'published'"
+            [class.status-draft]="post()?.status === 'draft'">
+            {{ post()?.status | titlecase }}
+          </span>
+        }
+        <button class="close-btn" (click)="closeModal()">&times;</button>
+      </div>
+    </div>
+
+    <!-- STATS (view mode only) -->
+    @if (!isEditing()) {
+      <div class="post-stats">
+        <div class="stat-item">
+          <h4>{{ post()?.views | number }}</h4>
+          <p>Views</p>
+        </div>
+        <div class="stat-item">
+          <h4>{{ post()?.likesCount | number }}</h4>
+          <p>Likes</p>
+        </div>
+        <div class="stat-item">
+          <h4>{{ post()?.commentsCount | number }}</h4>
+          <p>Comments</p>
+        </div>
+      </div>
+    }
+
+    @if (!isEditing()) {
+      <div class="post-body">
+
+        @if (post()?.user) {
+          <div class="author-block">
+            <div class="author-avatar-wrap">
+              @if (post()?.user) {
+                <p class="author-avatar"> {{post()?.user?.name?.charAt(0)}}</p>
+              } @else {
+                <div class="author-avatar-fallback">
+                  {{ post()?.user?.name?.charAt(0)?.toUpperCase() }}
+                </div>
+              }
+            </div>
+            <div class="author-meta">
+              <span class="author-name">{{ post()?.user?.name }}</span>
+              <span class="author-label">Author</span>
+            </div>
+          </div>
+        }
+
+        <div class="detail-block">
+          <span class="detail-label">Description</span>
+          <p class="detail-text">{{ post()?.description }}</p>
+        </div>
+
+        <div class="detail-block full">
+          <span class="detail-label">Content</span>
+          <p class="detail-text content-text">{{ post()?.content }}</p>
+        </div>
+
+        <div class="detail-row">
+          <div class="detail-block">
+            <span class="detail-label">Categories</span>
+            <div class="pill-group">
+              @for (cat of post()?.categories; track cat) {
+                <span class="pill pill-category">{{ cat }}</span>
+              }
+            </div>
+          </div>
+          <div class="detail-block">
+            <span class="detail-label">Tags</span>
+            <div class="pill-group">
+              @for (tag of post()?.tags; track tag) {
+                <span class="pill pill-tag">{{ tag }}</span>
+              }
+              @if (!post()?.tags?.length) {
+                <span class="no-tags">No tags</span>
+              }
+            </div>
+          </div>
+        </div>
+
+        @if (post()?.featuredImage) {
+          <div class="detail-block full">
+            <span class="detail-label">Featured Image</span>
+            <img class="featured-img" [src]="post()?.featuredImage" alt="Featured image" />
+          </div>
+        }
+
+      </div>
+    }
+
+    <!-- EDIT MODE -->
+    @if (isEditing()) {
+      <form class="edit-form" [formGroup]="editForm" (ngSubmit)="savePost()">
+        <div class="edit-grid">
+
+          <div class="edit-field">
+            <label>Title</label>
+            <input type="text" formControlName="title" placeholder="Post title" />
+            @if (editForm.get('title')?.invalid && editForm.get('title')?.touched) {
+              <small class="error">Title is required (5–100 chars)</small>
+            }
+          </div>
+
+          <div class="edit-field">
+            <label>Status</label>
+            <select formControlName="status">
+              <option value="draft">Draft</option>
+              <option value="published">Published</option>
+            </select>
+          </div>
+
+          <div class="edit-field full">
+            <label>Description</label>
+            <input type="text" formControlName="description" placeholder="Short description" />
+            @if (editForm.get('description')?.invalid && editForm.get('description')?.touched) {
+              <small class="error">Description is required (min 10 chars)</small>
+            }
+          </div>
+
+          <div class="edit-field full">
+            <label>Content</label>
+            <textarea formControlName="content" rows="5" placeholder="Write your content..."></textarea>
+            @if (editForm.get('content')?.invalid && editForm.get('content')?.touched) {
+              <small class="error">Content is required (min 20 chars)</small>
+            }
+          </div>
+
+          <div class="edit-field full">
+            <label>Categories</label>
+            <div class="pill-selector">
+              @for (cat of categoryOptions; track cat) {
+                <span class="pill selectable"
+                  [class.selected]="isCategorySelected(cat)"
+                  (click)="toggleCategory(cat)">
+                  {{ cat }}
+                </span>
+              }
+            </div>
+          </div>
+
+          <div class="edit-field full">
+            <label>Tags</label>
+            <div class="pill-selector">
+              @for (tag of tagOptions; track tag) {
+                <span class="pill selectable"
+                  [class.selected]="isTagSelected(tag)"
+                  (click)="toggleTag(tag)">
+                  {{ tag }}
+                </span>
+              }
+            </div>
+          </div>
+
+          <div class="edit-field full">
+            <label>Featured Image URL</label>
+            <input type="text" formControlName="featuredImage" placeholder="Paste image URL" />
+          </div>
+
+        </div>
+      </form>
+    }
+
+    <!-- MESSAGES (bugs fixed — no duplicate, message() used correctly) -->
+    @if (message()) {
+      <div class="success-message">
+        <span>✓</span> {{ message() }}
+      </div>
+    }
+
+    @if (successMessage()) {
+      <div class="success-message">
+        <span>✓</span> {{ successMessage() }}
+      </div>
+    }
+
+    @if (errorMessage()) {
+      <div class="error-message">
+        <span>✕</span> {{ errorMessage() }}
+      </div>
+    }
+
+    <!-- FOOTER -->
+    <div class="modal-footer">
+      @if (!isEditing()) {
+        <button class="btn-cancel" (click)="closeModal()">Close</button>
+        <button class="btn-edit" (click)="startEdit()">Edit Post</button>
+      } @else {
+        <button class="btn-cancel" (click)="cancelEdit()">Discard</button>
+        <button class="btn-save" (click)="savePost()" [disabled]="editForm.invalid">Save Changes</button>
+      }
+    </div>
+
+  </div>
+</div>

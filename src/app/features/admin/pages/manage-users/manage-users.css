@@ -314,7 +314,6 @@ tbody > tr:hover {
   to   { opacity: 1; }
 }
 
-/* Confirm box */
 .confirm-box {
   width: 100%;
   max-width: 360px;
@@ -331,7 +330,6 @@ tbody > tr:hover {
   to   { transform: scale(1);    opacity: 1; }
 }
 
-/* Warning icon circle */
 .confirm-icon {
   width: 56px;
   height: 56px;
@@ -342,6 +340,26 @@ tbody > tr:hover {
   align-items: center;
   justify-content: center;
   margin: 0 auto 16px;
+}
+
+.status-active {
+  color: #16a34a;        
+  background-color: #dcfce7;
+  border: 1px solid #86efac;
+  padding: 2px 8px;
+  border-radius: 9999px;    
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.status-inactive {
+  color: #dc2626;         
+  background-color: #fee2e2;
+  border: 1px solid #fca5a5;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
 }
 
 .confirm-box h3 {

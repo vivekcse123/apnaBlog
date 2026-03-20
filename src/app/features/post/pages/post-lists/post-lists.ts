@@ -1,26 +1,37 @@
-import { Component, inject, signal, computed } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, inject, signal, computed, OnInit, DestroyRef } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BlogFilterPipe } from '../../../../shared/pipes/blog-filter-pipe';
-import { Post } from '../../../../core/models/post.mode';
+import { Post } from '../../../../core/models/post.model';
+import { CreatePost } from '../create-post/create-post';
+import { PostService } from '../../services/post-service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ViewPost } from '../../../../shared/view-post/view-post';
+import { MessageModal } from '../../../../shared/message-modal/message-modal';
 
 @Component({
   selector: 'app-post-lists',
   standalone: true,
-  imports: [CommonModule, FormsModule, BlogFilterPipe],
+  imports: [CommonModule, FormsModule, BlogFilterPipe, CreatePost, ViewPost, MessageModal],
   templateUrl: './post-lists.html',
   styleUrl: './post-lists.css',
 })
-export class PostLists {
+export class PostLists implements OnInit {
+  private router      = inject(Router);
+  private route       = inject(ActivatedRoute);
+  private postService = inject(PostService);
+  private destroyRef  = inject(DestroyRef);
 
-  private router = inject(Router);
+  allBlogs       = signal<Post[]>([]);
+  userId         = signal<string>('');
+  showCreateBlog = signal(false);
+  totalBlogs = signal<number>(0);
 
-  searchTitle: string = '';
-  debounceValue = signal<string>('');
+  searchTitle      : string = '';
+  debounceValue    = signal<string>('');
   selectedCategory = signal<string>('');
-  selectedStatus = signal<string>('');
-
+  selectedStatus   = signal<string>('');
   private debounceTimer: any;
 
   debounceSearch(value: string): void {
@@ -28,109 +39,122 @@ export class PostLists {
     this.debounceTimer = setTimeout(() => {
       this.debounceValue.set(value);
       this.currentPage.set(1);
+      this.loadPosts(1);        
     }, 400);
   }
 
-  currentPage = signal<number>(1);
+  currentPage  = signal<number>(1);
   itemsPerPage = signal<number>(5);
-
-  totalPages = computed(() =>
-    Math.ceil(this.allBlogs().length / this.itemsPerPage())
-  );
-
+  totalPages   = signal<number>(1); 
   pages = computed(() =>
     Array.from({ length: this.totalPages() }, (_, i) => i + 1)
   );
 
   previousPage(): void {
-    if (this.currentPage() > 1) {
-      this.currentPage.update(p => p - 1);
-    }
+    if (this.currentPage() > 1) this.loadPosts(this.currentPage() - 1);
   }
 
   nextPage(): void {
-    if (this.currentPage() < this.totalPages()) {
-      this.currentPage.update(p => p + 1);
-    }
+    if (this.currentPage() < this.totalPages()) this.loadPosts(this.currentPage() + 1);
   }
 
   goToPage(page: number): void {
-    this.currentPage.set(page);
+    this.loadPosts(page);
   }
 
-  allBlogs = signal<Post[]>([
-    {
-      _id: '1',
-      title: 'The Future of Technology',
-      description: 'Exploring AI and automation trends',
-      content: 'Full content about AI and automation goes here...',
-      categories: ['Technology'],
-      tags: ['AI', 'Automation', 'Future'],
-      featuredImage: '',
-      user: 'user_001',
-      likesCount: 1240,
-      commentsCount: 45,
-      views: 5200,
-      status: 'published',
-      pusblishDate: new Date('2026-03-12'),
-    },
-    {
-      _id: '2',
-      title: 'Healthy Lifestyle Habits',
-      description: 'Simple routines for better living',
-      content: 'Full content about healthy lifestyle goes here...',
-      categories: ['Health'],
-      tags: ['Health', 'Lifestyle', 'Wellness'],
-      featuredImage: '',
-      user: 'user_002',
-      likesCount: 87,
-      commentsCount: 12,
-      views: 530,
-      status: 'draft',
-      pusblishDate: new Date('2026-03-08'),
-    },
-    {
-      _id: '3',
-      title: 'Understanding REST vs GraphQL',
-      description: 'A deep dive into modern API design',
-      content: 'Full content about REST and GraphQL goes here...',
-      categories: ['Development'],
-      tags: ['REST', 'GraphQL', 'API'],
-      featuredImage: '',
-      user: 'user_003',
-      likesCount: 540,
-      commentsCount: 38,
-      views: 2890,
-      status: 'published',
-      pusblishDate: new Date('2026-03-05'),
-    },
-    {
-      _id: '4',
-      title: '10 Tips for Better UX Design',
-      description: 'Principles every designer should know',
-      content: 'Full content about UX design tips goes here...',
-      categories: ['Design'],
-      tags: ['UX', 'Design', 'UI'],
-      featuredImage: '',
-      user: 'user_004',
-      likesCount: 64,
-      commentsCount: 9,
-      views: 410,
-      status: 'draft',
-      pusblishDate: new Date('2026-03-01'),
-    },
-  ]);
-
-  createBlog(): void {
-    this.router.navigate(['/admin/create-blog']);
+  ngOnInit(): void {
+    this.route.params
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((res) => {
+        this.userId.set(res['id']);
+        this.loadPosts();
+      });
   }
 
-  editBlog(id: string): void {
-    this.router.navigate(['/admin/blogs/edit', id]);
+  loadPosts(page: number = this.currentPage()): void {
+    this.postService
+      .getAllPost(page, this.itemsPerPage())
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          this.allBlogs.set(res.data);
+          this.totalBlogs.set(res?.total);
+          this.currentPage.set(Number(res.page));
+          this.totalPages.set(Number(res.totalPages)); 
+        },
+        error: (err) => console.error(err?.error?.message),
+      });
   }
 
-  deleteBlog(id: string): void {
-    this.allBlogs.update(blogs => blogs.filter(b => b._id !== id));
+  onPostCreated(): void {
+    this.loadPosts(1); 
   }
 
+  showConfirm        = signal(false);
+  pendingDeleteId    = signal<string>('');
+  pendingDeleteTitle = signal<string>('');
+
+  confirmDelete(id: string, title: string): void {
+    this.pendingDeleteId.set(id);
+    this.pendingDeleteTitle.set(title);
+    this.showConfirm.set(true);
+  }
+
+  cancelDelete(): void {
+    this.showConfirm.set(false);
+    this.pendingDeleteId.set('');
+    this.pendingDeleteTitle.set('');
+  }
+
+  proceedDelete(): void {
+    const id = this.pendingDeleteId();
+    if (!id) return;
+
+    this.showConfirm.set(false);
+
+    this.postService.deletePost(id).subscribe({
+      next: () => {
+        this.pendingDeleteId.set('');
+        this.pendingDeleteTitle.set('');
+        this.modalType.set('success');
+        this.modalTitle.set('Post Deleted');
+        this.modalMessage.set('The post has been deleted successfully.');
+        this.showMessage.set(true);
+        this.loadPosts(this.currentPage()); 
+      },
+      error: (err) => {
+        this.pendingDeleteId.set('');
+        this.pendingDeleteTitle.set('');
+        this.modalType.set('error');
+        this.modalTitle.set('Delete Failed');
+        this.modalMessage.set(err?.error?.message ?? 'Failed to delete post. Please try again.');
+        this.showMessage.set(true);
+      },
+    });
+  }
+
+  showMessage  = signal(false);
+  modalType    = signal<'success' | 'error'>('success');
+  modalTitle   = signal('');
+  modalMessage = signal('');
+
+  isPostViewed   = signal(false);
+  selectedPostId = signal<string>('');
+
+  viewPost(id: string): void {
+    this.selectedPostId.set(id);
+    this.isPostViewed.set(true);
+  }
+
+  closeModal(): void {
+    this.isPostViewed.set(false);
+    this.selectedPostId.set('');
+  }
+
+  onPostUpdated(updatedPost: Post): void {
+    this.allBlogs.update((blogs) =>
+      blogs.map((b) => (b._id === updatedPost._id ? updatedPost : b))
+    );
+    this.closeModal();
+  }
 }

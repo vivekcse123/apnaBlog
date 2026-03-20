@@ -43,8 +43,7 @@ export class Login implements OnInit{
       next: (res) =>{
         console.log(res);
         const role = res.data?.role?.toLowerCase();
-        const userId = res.data?.userId;
-        console.log(userId);
+        const userId = res.data._id;
 
         if(!userId || !role){
           this.successMessage.set('');

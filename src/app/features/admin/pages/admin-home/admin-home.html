@@ -5,6 +5,10 @@
     <span class="date-badge">{{ currentDate | date: 'EEE, MMM d, y' }}</span>
   </header>
 
+  @if (isLoading()) {
+    <div class="loading-state">Loading dashboard...</div>
+  }
+
   <section class="statistics-section">
     <p class="section-label">Statistics</p>
     <div class="info-container">
@@ -19,8 +23,8 @@
         </div>
         <div class="info-content">
           <span class="info-label">Total Blogs</span>
-          <span class="info-value">{{ totalBlogs }}</span>
-          <span class="info-badge blog-badge">+{{ newBlogs }} this week</span>
+          <span class="info-value">{{ totalBlogs() }}</span>
+          <span class="info-badge blog-badge">+{{ newBlogs() }} this week</span>
         </div>
       </div>
 
@@ -35,8 +39,8 @@
         </div>
         <div class="info-content">
           <span class="info-label">Total Users</span>
-          <span class="info-value">{{ totalUsers }}</span>
-          <span class="info-badge user-badge">+{{ newUsers }} this week</span>
+          <span class="info-value">{{ totalUsers() }}</span>
+          <span class="info-badge user-badge">+{{ newUsers() }} this week</span>
         </div>
       </div>
 
@@ -49,8 +53,8 @@
         </div>
         <div class="info-content">
           <span class="info-label">Published</span>
-          <span class="info-value">{{ totalPublished }}</span>
-          <span class="info-badge published-badge">+{{ newPublished }} this week</span>
+          <span class="info-value">{{ totalPublished() }}</span>
+          <span class="info-badge published-badge">+{{ newPublished() }} this week</span>
         </div>
       </div>
 
@@ -63,8 +67,8 @@
         </div>
         <div class="info-content">
           <span class="info-label">Drafts</span>
-          <span class="info-value">{{ totalDrafts }}</span>
-          <span class="info-badge drafts-badge">{{ pendingReview }} pending review</span>
+          <span class="info-value">{{ totalDrafts() }}</span>
+          <span class="info-badge drafts-badge">{{ pendingReview() }} pending review</span>
         </div>
       </div>
 
@@ -77,8 +81,8 @@
         </div>
         <div class="info-content">
           <span class="info-label">Total Views</span>
-          <span class="info-value">{{ totalViews | number }}</span>
-          <span class="info-badge views-badge">+{{ newViews }} today</span>
+          <span class="info-value">{{ totalViews() | number }}</span>
+          <span class="info-badge views-badge">+{{ newViews() }} today</span>
         </div>
       </div>
 
@@ -91,8 +95,8 @@
         </div>
         <div class="info-content">
           <span class="info-label">Total Comments</span>
-          <span class="info-value">{{ totalComments }}</span>
-          <span class="info-badge comments-badge">+{{ newComments }} today</span>
+          <span class="info-value">{{ totalComments() }}</span>
+          <span class="info-badge comments-badge">+{{ newComments() }} today</span>
         </div>
       </div>
 
@@ -104,8 +108,8 @@
         </div>
         <div class="info-content">
           <span class="info-label">Total Likes</span>
-          <span class="info-value">{{ totalLikes }}</span>
-          <span class="info-badge likes-badge">+{{ newLikes }} today</span>
+          <span class="info-value">{{ totalLikes() }}</span>
+          <span class="info-badge likes-badge">+{{ newLikes() }} today</span>
         </div>
       </div>
 
@@ -119,15 +123,30 @@
         </div>
         <div class="info-content">
           <span class="info-label">Active Users</span>
-          <span class="info-value">{{ activeUsers }}</span>
+          <span class="info-value">{{ activeUsers() }}</span>
           <span class="info-badge active-badge">last 30 days</span>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-icon inactive-icon">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+            <circle cx="11" cy="11" r="8" stroke="#dc2626" stroke-width="2" fill="none"/>
+            <circle cx="11" cy="11" r="3" fill="#dc2626" opacity="0.3"/>
+            <line x1="7" y1="7" x2="15" y2="15" stroke="#dc2626" stroke-width="2" stroke-linecap="round"/>
+            <line x1="15" y1="7" x2="7" y2="15" stroke="#dc2626" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="info-content">
+          <span class="info-label">Inactive Users</span>
+          <span class="info-value">{{ inactiveUsers() }}</span>
+          <span class="info-badge inactive-badge">frozen accounts</span>
         </div>
       </div>
 
     </div>
   </section>
 
-  <!-- Quick Actions -->
   <section class="quick-actions-section">
     <p class="section-label">Quick Actions</p>
     <div class="quick-actions">
@@ -212,36 +231,23 @@
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td>Getting Started with Admin Dashboards</td>
-              <td>Arjun K.</td>
-              <td>Mar 15, 2026</td>
-              <td><span class="status-badge status-published">Published</span></td>
-            </tr>
-            <tr>
-              <td>10 Tips for Better UX Design</td>
-              <td>Priya S.</td>
-              <td>Mar 14, 2026</td>
-              <td><span class="status-badge status-published">Published</span></td>
-            </tr>
-            <tr>
-              <td>The Future of Web Development in 2026</td>
-              <td>Rahul M.</td>
-              <td>Mar 13, 2026</td>
-              <td><span class="status-badge status-draft">Draft</span></td>
-            </tr>
-            <tr>
-              <td>Understanding REST vs GraphQL APIs</td>
-              <td>Sneha T.</td>
-              <td>Mar 12, 2026</td>
-              <td><span class="status-badge status-draft">Draft</span></td>
-            </tr>
-            <tr>
-              <td>Building Scalable Angular Apps</td>
-              <td>Arjun K.</td>
-              <td>Mar 11, 2026</td>
-              <td><span class="status-badge status-published">Published</span></td>
-            </tr>
+            @for (blog of recentBlogs(); track blog._id) {
+              <tr>
+                <td>{{ blog.title }}</td>
+                <td>{{ blog.user?.name || 'Unknown' }}</td>
+                <td>{{ blog.createdAt | date: 'MMM d, y' }}</td>
+                <td>
+                  <span class="status-badge"
+                    [class.status-published]="blog.status === 'published'"
+                    [class.status-draft]="blog.status === 'draft'">
+                    {{ blog.status | titlecase }}
+                  </span>
+                </td>
+              </tr>
+            }
+            @if (recentBlogs().length === 0 && !isLoading()) {
+              <tr><td colspan="4" class="empty-row">No blogs found</td></tr>
+            }
           </tbody>
         </table>
       </div>
@@ -261,66 +267,89 @@
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td>
-                <div class="user-cell">
-                  <div class="user-avatar" style="background: linear-gradient(135deg, #43cea2, #185a9d);">AK</div>
-                  <span>Arjun K.</span>
-                </div>
-              </td>
-              <td class="email-cell">arjun@example.com</td>
-              <td>Mar 15, 2026</td>
-              <td><span class="role-badge admin-role">Admin</span></td>
-            </tr>
-            <tr>
-              <td>
-                <div class="user-cell">
-                  <div class="user-avatar" style="background: linear-gradient(135deg, #7F77DD, #378ADD);">PS</div>
-                  <span>Priya S.</span>
-                </div>
-              </td>
-              <td class="email-cell">priya@example.com</td>
-              <td>Mar 14, 2026</td>
-              <td><span class="role-badge user-role">User</span></td>
-            </tr>
-            <tr>
-              <td>
-                <div class="user-cell">
-                  <div class="user-avatar" style="background: linear-gradient(135deg, #43cea2, #0f7a5a);">RM</div>
-                  <span>Rahul M.</span>
-                </div>
-              </td>
-              <td class="email-cell">rahul@example.com</td>
-              <td>Mar 13, 2026</td>
-              <td><span class="role-badge user-role">User</span></td>
-            </tr>
-            <tr>
-              <td>
-                <div class="user-cell">
-                  <div class="user-avatar" style="background: linear-gradient(135deg, #BA7517, #d9534f);">ST</div>
-                  <span>Sneha T.</span>
-                </div>
-              </td>
-              <td class="email-cell">sneha@example.com</td>
-              <td>Mar 12, 2026</td>
-              <td><span class="role-badge editor-role">Editor</span></td>
-            </tr>
-            <tr>
-              <td>
-                <div class="user-cell">
-                  <div class="user-avatar" style="background: linear-gradient(135deg, #5bc0de, #185a9d);">VR</div>
-                  <span>Vikram R.</span>
-                </div>
-              </td>
-              <td class="email-cell">vikram@example.com</td>
-              <td>Mar 11, 2026</td>
-              <td><span class="role-badge user-role">User</span></td>
-            </tr>
+            @for (user of recentUsers(); track user._id) {
+              <tr>
+                <td>
+                  <div class="user-cell">
+                    <div class="user-avatar">{{ getInitials(user.name) }}</div>
+                    <span>{{ user.name }}</span>
+                  </div>
+                </td>
+                <td class="email-cell">{{ user.email }}</td>
+                <td>{{ user.createdAt | date: 'MMM d, y' }}</td>
+                <td>
+                  <span class="role-badge"
+                    [class.admin-role]="user.role?.toLowerCase() === 'admin'"
+                    [class.user-role]="user.role?.toLowerCase() === 'user'">
+                    {{ user.role | titlecase }}
+                  </span>
+                </td>
+              </tr>
+            }
+            @if (recentUsers().length === 0 && !isLoading()) {
+              <tr><td colspan="4" class="empty-row">No active users found</td></tr>
+            }
           </tbody>
         </table>
       </div>
     </section>
 
+  </div>
+
+  <!-- ✅ Inactive Users Section -->
+  <div class="bottom-grid" style="margin-top: 24px;">
+    <section class="recent-users-section" style="grid-column: 1 / -1;">
+      <p class="section-label">
+        🚫 Inactive / Frozen Users
+        <span class="inactive-count-badge">{{ inactiveUsers() }} frozen</span>
+      </p>
+      <div class="table-card">
+        <table>
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Joined</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (user of inactiveList(); track user._id) {
+              <tr class="inactive-row">
+                <td>
+                  <div class="user-cell">
+                    <div class="user-avatar inactive-avatar">{{ getInitials(user.name) }}</div>
+                    <span>{{ user.name }}</span>
+                  </div>
+                </td>
+                <td class="email-cell">{{ user.email }}</td>
+                <td>
+                  <span class="role-badge"
+                    [class.admin-role]="user.role?.toLowerCase() === 'admin'"
+                    [class.user-role]="user.role?.toLowerCase() === 'user'">
+                    {{ user.role | titlecase }}
+                  </span>
+                </td>
+                <td>{{ user.createdAt | date: 'MMM d, y' }}</td>
+                <td>
+                  <span class="status-badge inactive-badge-pill">Frozen</span>
+                </td>
+              </tr>
+            }
+            @if (inactiveList().length === 0 && !isLoading()) {
+              <tr>
+                <td colspan="5" class="empty-row">
+                  <div class="empty-state">
+                    <p>✅ No frozen users — all accounts are active</p>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
   </div>
 
 </div>

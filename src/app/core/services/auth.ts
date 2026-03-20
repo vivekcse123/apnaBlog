@@ -9,40 +9,40 @@ import { isPlatformBrowser } from '@angular/common';
 @Injectable({
   providedIn: 'root',
 })
+
 export class Auth {
   private authEndpoint = environment.apiAuthEndpoint;
   private http = inject(HttpClient);
   private platformId = inject(PLATFORM_ID);
   private isBrowser = isPlatformBrowser(this.platformId);
 
-  private userId = signal<string | null>(
+  userId = signal<string | null>(
     this.isBrowser ? localStorage.getItem('userId') : null
-  )
+  );
 
   isAuthorized = computed(() => !!this.userId());
 
-  login(userCred: {email: string, password: string}): Observable<apiResponse<User>>{
+  login(userCred: { email: string; password: string }): Observable<apiResponse<User>> {
     return this.http.post<apiResponse<User>>(`${this.authEndpoint}login`, userCred).pipe(
-      tap(res => {
-        const id = res.data.userId;
+      tap((res) => {
+        const id = res.data._id;
         this.userId.set(id);
 
-        if(this.isBrowser){
+        if (this.isBrowser) {
           localStorage.setItem('userId', id);
         }
       })
     );
   }
 
-  logout(){
+  logout(): void {
     this.userId.set(null);
     if (this.isBrowser) {
       localStorage.removeItem('userId');
     }
   }
 
-  register(userData: User): Observable<apiResponse<User>>{
+  register(userData: User): Observable<apiResponse<User>> {
     return this.http.post<apiResponse<User>>(`${this.authEndpoint}register`, userData);
   }
-
 }

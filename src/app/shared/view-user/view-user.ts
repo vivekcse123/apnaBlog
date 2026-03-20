@@ -14,27 +14,32 @@ import { User } from '../../features/user/models/user.mode';
   styleUrl: './view-user.css'
 })
 export class ViewUser implements OnInit, OnDestroy {
-  private fb          = inject(FormBuilder);
-  private userService = inject(UserService);
+  private fb           = inject(FormBuilder);
+  private userService  = inject(UserService);
   private adminService = inject(AdminService);
-  private destroy$    = new Subject<void>();
+  private destroy$     = new Subject<void>();
 
-  // ── Inputs / Outputs ──────────────────────────
   userId      = input<string>('');
+  message = input<string>('');
   close       = output<void>();
-  userUpdated = output<User>();        // ✅ emits updated user to parent
+  userUpdated = output<User>();
 
-  // ── State ─────────────────────────────────────
-  user      = signal<any>(null);
-  isEditing = signal(false);
+  user           = signal<any>(null);
+  isEditing      = signal(false);
+  successMessage = signal('');
+  errorMessage   = signal('');
   editForm!: FormGroup;
 
-  // ─────────────────────────────────────────────
-  ngOnInit() {
+  ngOnInit(): void {
     this.loadUser();
   }
 
-  loadUser() {
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  loadUser(): void {
     this.userService.getUserById(this.userId())
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -43,30 +48,35 @@ export class ViewUser implements OnInit, OnDestroy {
       });
   }
 
-  // ── Edit ──────────────────────────────────────
-  startEdit() {
+  startEdit(): void {
     const u = this.user();
+    this.successMessage.set('');
+    this.errorMessage.set('');
 
     this.editForm = this.fb.group({
       name:     [u?.name     || '', [Validators.required]],
       email:    [u?.email    || '', [Validators.required, Validators.email]],
       dob:      [this.formatDate(u?.dob)],
       location: [u?.location || ''],
-      // ✅ capitalize to match backend enum — 'User' / 'Admin'
-      role:     [u?.role ? u.role.charAt(0).toUpperCase() + u.role.slice(1).toLowerCase() : 'User'],
-      status:   [u?.status  || 'active']
+      role:     [u?.role     || 'user'],
+      status:   [u?.status   || 'active'],
     });
 
     this.isEditing.set(true);
   }
 
-  cancelEdit() {
+  cancelEdit(): void {
     this.isEditing.set(false);
+    this.successMessage.set('');
+    this.errorMessage.set('');
     this.editForm.reset();
   }
 
-  saveUser() {
+  saveUser(): void {
     if (this.editForm.invalid) return;
+
+    this.successMessage.set('');
+    this.errorMessage.set('');
 
     this.adminService.updateUser(this.user()?._id, this.editForm.value)
       .pipe(takeUntil(this.destroy$))
@@ -74,18 +84,24 @@ export class ViewUser implements OnInit, OnDestroy {
         next: (res) => {
           const updated = res.data ?? { ...this.user(), ...this.editForm.value };
 
-          // ✅ update local signal with server response
           this.user.set(updated);
           this.isEditing.set(false);
-
-          // ✅ notify parent so table updates without refresh
           this.userUpdated.emit(updated);
+           this.successMessage.set('Post updated successfully!');
+
+
+        setTimeout(() => {
+          this.successMessage.set('');
+          this.userUpdated.emit(updated);
+          this.closeModal();
+        }, 1500);
         },
-        error: (err) => console.error(err)
+        error: (err) => {
+          this.errorMessage.set(err?.error?.message ?? 'Something went wrong. Please try again.');
+        }
       });
   }
 
-  // ── Helpers ───────────────────────────────────
   calculateAge(dob: string | undefined): string {
     if (!dob) return 'N/A';
     const diff = Date.now() - new Date(dob).getTime();
@@ -97,12 +113,7 @@ export class ViewUser implements OnInit, OnDestroy {
     return new Date(date).toISOString().split('T')[0];
   }
 
-  closeModal(event?: Event) {
+  closeModal(): void {
     this.close.emit();
-  }
-
-  ngOnDestroy() {
-    this.destroy$.next();
-    this.destroy$.complete();
   }
 }

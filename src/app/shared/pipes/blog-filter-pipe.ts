@@ -1,5 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { Post } from '../../core/models/post.mode';
+import { Post } from '../../core/models/post.model';
 
 @Pipe({
   name: 'blogFilter',

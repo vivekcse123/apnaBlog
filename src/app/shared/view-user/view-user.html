@@ -1,7 +1,6 @@
-<div class="modal-overlay" (click)="closeModal($event)">
+<div class="modal-overlay" (click)="closeModal()">
   <div class="user-modal" (click)="$event.stopPropagation()">
 
-    <!-- Header -->
     <div class="modal-header">
       <div class="header-profile">
         <div class="avatar">{{ user()?.name?.charAt(0)?.toUpperCase() || 'U' }}</div>
@@ -11,41 +10,42 @@
         </div>
       </div>
       <div class="header-actions">
-        @if(!isEditing()){
+        @if (!isEditing()) {
           <span class="status-badge"
             [class.active]="user()?.status === 'active'"
             [class.inactive]="user()?.status !== 'active'">
             {{ user()?.status || 'active' | titlecase }}
           </span>
         }
-        <button class="close-btn" (click)="closeModal($event)">&times;</button>
+        <button class="close-btn" (click)="closeModal()">&times;</button>
       </div>
     </div>
 
-    <!-- Stats (hidden while editing) -->
-    @if(!isEditing()){
+    @if (!isEditing()) {
       <div class="user-stats">
         <div class="stat-item">
           <h4>{{ user()?.totalBlogs || 0 }}</h4>
-          <p>Total blogs</p>
+          <p>Total Blogs</p>
         </div>
         <div class="stat-item">
           <h4>{{ user()?.totalViews || 0 }}</h4>
-          <p>Total views</p>
+          <p>Total Views</p>
         </div>
         <div class="stat-item">
           <h4>{{ user()?.createdAt | date:'MMM yyyy' }}</h4>
-          <p>Joined since</p>
+          <p>Joined Since</p>
         </div>
       </div>
     }
 
     <!-- View Mode -->
-    @if(!isEditing()){
+    @if (!isEditing()) {
       <div class="details-grid">
         <div class="detail-item">
           <span>Role</span>
-          <p class="role-badge" [ngClass]="user()?.role?.toLowerCase()">{{ user()?.role | titlecase}}</p>
+          <p class="role-badge" [ngClass]="user()?.role?.toLowerCase()">
+            {{ user()?.role | titlecase }}
+          </p>
         </div>
         <div class="detail-item">
           <span>Age</span>
@@ -56,42 +56,40 @@
           <p>{{ user()?.location || 'India' }}</p>
         </div>
         <div class="detail-item">
-          <span>Date of birth</span>
+          <span>Date of Birth</span>
           <p>{{ user()?.dob | date:'dd MMM yyyy' }}</p>
         </div>
       </div>
     }
 
-    <!-- Edit Mode -->
-    @if(isEditing()){
+    @if (isEditing()) {
       <form class="edit-form" [formGroup]="editForm" (ngSubmit)="saveUser()">
-
         <div class="edit-grid">
 
           <div class="edit-field">
             <label>Full Name</label>
-            <input type="text" formControlName="name" placeholder="Full name">
-            @if(editForm.get('name')?.invalid && editForm.get('name')?.touched){
+            <input type="text" formControlName="name" placeholder="Full name" />
+            @if (editForm.get('name')?.invalid && editForm.get('name')?.touched) {
               <small class="error">Name is required</small>
             }
           </div>
 
           <div class="edit-field">
             <label>Email</label>
-            <input type="email" formControlName="email" placeholder="Email address">
-            @if(editForm.get('email')?.invalid && editForm.get('email')?.touched){
+            <input type="email" formControlName="email" placeholder="Email address" />
+            @if (editForm.get('email')?.invalid && editForm.get('email')?.touched) {
               <small class="error">Valid email is required</small>
             }
           </div>
 
           <div class="edit-field">
             <label>Date of Birth</label>
-            <input type="date" formControlName="dob">
+            <input type="date" formControlName="dob" />
           </div>
 
           <div class="edit-field">
             <label>Location</label>
-            <input type="text" formControlName="location" placeholder="City, Country">
+            <input type="text" formControlName="location" placeholder="City, Country" />
           </div>
 
           <div class="edit-field">
@@ -111,18 +109,34 @@
           </div>
 
         </div>
-
       </form>
     }
 
-    <!-- Footer -->
+    @if(message()){
+      <div class="success-message">
+        <span>✓</span> {{ message() }}
+      </div>
+    }
+
+    @if (successMessage()) {
+      <div class="success-message">
+        <span>✓</span> {{ successMessage() }}
+      </div>
+    }
+
+    @if (errorMessage()) {
+      <div class="error-message">
+        <span>✕</span> {{ errorMessage() }}
+      </div>
+    }
+
     <div class="modal-footer">
-      @if(!isEditing()){
-        <button class="btn-cancel" (click)="closeModal($event)">Cancel</button>
-        <button class="btn-edit" (click)="startEdit()">Edit user</button>
+      @if (!isEditing()) {
+        <button class="btn-cancel" (click)="closeModal()">Cancel</button>
+        <button class="btn-edit" (click)="startEdit()">Edit User</button>
       } @else {
         <button class="btn-cancel" (click)="cancelEdit()">Discard</button>
-        <button class="btn-save" (click)="saveUser()" [disabled]="editForm.invalid">Save changes</button>
+        <button class="btn-save" (click)="saveUser()" [disabled]="editForm.invalid">Save Changes</button>
       }
     </div>
 
