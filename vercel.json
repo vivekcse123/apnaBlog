@@ -1,4 +1,5 @@
 {
+  "outputDirectory": "dist/blog-app/browser",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ]
