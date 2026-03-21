@@ -55,7 +55,7 @@ export class Login implements OnInit{
         this.errorMessage.set('');
         setTimeout(() =>{
           this.router.navigate(['/', role, userId]);
-        }, 1000);
+        }, 300);
       },
       error: (err) =>{
         this.errorMessage.set(err?.error?.message || 'Login failed, Please try again...!');

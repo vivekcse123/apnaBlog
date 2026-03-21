@@ -48,7 +48,7 @@ export class Register implements OnInit{
         this.errorMessage.set('');
         setTimeout(() =>{
           this.router.navigate(['/auth/login']);
-        }, 1000);
+        }, 300);
       },
       error: (err) =>{
         this.successMessage.set('');

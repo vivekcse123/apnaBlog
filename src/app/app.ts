@@ -1,7 +1,8 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { RouterOutlet, Router, NavigationStart, NavigationEnd, NavigationCancel, NavigationError } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { Loader } from './shared/loader/loader';
+import { LoaderService } from './core/services/loader-service';
 
 @Component({
   selector: 'app-root',
@@ -11,7 +12,7 @@ import { Loader } from './shared/loader/loader';
   styleUrl: './app.css'
 })
 export class App implements OnInit, OnDestroy {
-  loading = false;
+  loaderService = inject(LoaderService);
   loaderSize: 'sm' | 'md' | 'lg' = 'md';
 
   private routerSub!: Subscription;
@@ -21,7 +22,7 @@ export class App implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.routerSub = this.router.events.subscribe(event => {
       if (event instanceof NavigationStart) {
-        this.loading = true;
+        this.loaderService.show();
       }
 
       if (
@@ -29,7 +30,7 @@ export class App implements OnInit, OnDestroy {
         event instanceof NavigationCancel ||
         event instanceof NavigationError
       ) {
-        this.loading = false;
+        this.loaderService.hide();
       }
     });
   }
