@@ -3,14 +3,14 @@ import { AdminService } from '../../services/admin-service';
 import { User } from '../../../user/models/user.mode';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
-import { FilterByNamePipe } from '../../../../shared/pipes/filter-by-name-pipe';
 import { FormsModule } from '@angular/forms';
 import { ViewUser } from '../../../../shared/view-user/view-user';
-import { FilterByRolePipe } from '../../../../shared/pipes/filter-by-role-pipe';
 import { MessageModal } from '../../../../shared/message-modal/message-modal';
 import { DisabledDirective } from '../../../../shared/directives/highlight';
 import { CreateUser } from '../create-user/create-user';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { FilterByNamePipe } from '../../../../shared/pipes/filter-by-name-pipe';
+import { FilterByRolePipe } from '../../../../shared/pipes/filter-by-role-pipe';
 import { FilterByStatusPipe } from '../../../../shared/pipes/filter-by-status-pipe';
 
 @Component({
@@ -18,54 +18,85 @@ import { FilterByStatusPipe } from '../../../../shared/pipes/filter-by-status-pi
   standalone: true,
   imports: [
     CommonModule,
-    FilterByNamePipe,
     FormsModule,
     ViewUser,
-    FilterByRolePipe,
-    FilterByStatusPipe,
     MessageModal,
     DisabledDirective,
     CreateUser,
+    FilterByNamePipe,
+    FilterByRolePipe,
+    FilterByStatusPipe
   ],
   templateUrl: './manage-users.html',
   styleUrls: ['./manage-users.css'],
 })
 export class ManageUsers implements OnInit {
   private adminService = inject(AdminService);
-  private route        = inject(ActivatedRoute);
-  private destroyRef   = inject(DestroyRef);
+  private route = inject(ActivatedRoute);
+  private destroyRef = inject(DestroyRef);
 
-  users      = signal<User[]>([]);
-  totalUsers = signal<number>(0);
-  userId     = signal<string>('');
+  allUsers = signal<User[]>([]);
 
   currentPage = signal(1);
-  limit       = signal(5);
-  totalPages  = signal(1);
+  limit = signal(6);
+
+  searchName = '';
+  debounceValue = signal('');
+  selectedRole = signal('');
+  selectedStatus = signal('');
+
+  private timer: any;
+
+  filteredUsers = computed(() => {
+    let data = this.allUsers();
+
+    if (this.debounceValue()) {
+      const search = this.debounceValue().toLowerCase();
+      data = data.filter(user =>
+        user.name.toLowerCase().includes(search)
+      );
+    }
+
+    if (this.selectedRole()) {
+      data = data.filter(user => user.role === this.selectedRole());
+    }
+
+    if (this.selectedStatus()) {
+      data = data.filter(user => user.status === this.selectedStatus());
+    }
+
+    return data;
+  });
+
+  paginatedUsers = computed(() => {
+    const start = (this.currentPage() - 1) * this.limit();
+    const end = start + this.limit();
+    return this.filteredUsers().slice(start, end);
+  });
+
+  totalPages = computed(() =>
+    Math.ceil(this.filteredUsers().length / this.limit())
+  );
 
   pages = computed(() =>
     Array.from({ length: this.totalPages() }, (_, i) => i + 1)
   );
 
-  searchName     = '';
-  selectedRole   = signal('');
-  selectedStatus = signal('');
-  debounceValue  = signal('');
-  private timer: any;
-
   isProfileOpened = signal(false);
-  selectedUserId  = signal<string>('');
-  successMessage  = signal<string>('');
+  selectedUserId = signal<string>('');
+  successMessage = signal<string>('');
 
   showCreateModal = signal(false);
 
   showConfirm = signal(false);
   pendingUser = signal<any>(null);
 
-  showMessage  = signal(false);
-  modalType    = signal<'success' | 'error'>('success');
-  modalTitle   = signal('');
+  showMessage = signal(false);
+  modalType = signal<'success' | 'error'>('success');
+  modalTitle = signal('');
   modalMessage = signal('');
+
+  userId = signal<string>('');
 
   ngOnInit(): void {
     this.route.parent?.paramMap
@@ -76,37 +107,42 @@ export class ManageUsers implements OnInit {
       });
   }
 
-  debounceSearch(value: string): void {
-    clearTimeout(this.timer);
-    this.timer = setTimeout(() => this.debounceValue.set(value), 300);
-  }
-
-  loadUsers(page: number = this.currentPage()): void {
+  loadUsers(): void {
     this.adminService
-      .getAllUsers(page, this.limit())
+      .getAllUsers(1, 1000)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (res) => {
-          this.totalUsers.set(res?.total ?? 0);
-          this.users.set(res.data);
-          this.currentPage.set(Number(res.page));
-          this.limit.set(Number(res.limit));
-          this.totalPages.set(Number(res.totalPages));
+          this.allUsers.set(res.data || []);
         },
         error: (err) => console.error(err?.error?.message),
       });
   }
 
+  debounceSearch(value: string): void {
+    clearTimeout(this.timer);
+    this.timer = setTimeout(() => {
+      this.debounceValue.set(value);
+      this.currentPage.set(1); 
+    }, 300);
+  }
+
   goToPage(page: number): void {
-    if (page >= 1 && page <= this.totalPages()) this.loadUsers(page);
+    if (page >= 1 && page <= this.totalPages()) {
+      this.currentPage.set(page);
+    }
   }
 
   previousPage(): void {
-    if (this.currentPage() > 1) this.loadUsers(this.currentPage() - 1);
+    if (this.currentPage() > 1) {
+      this.currentPage.set(this.currentPage() - 1);
+    }
   }
 
   nextPage(): void {
-    if (this.currentPage() < this.totalPages()) this.loadUsers(this.currentPage() + 1);
+    if (this.currentPage() < this.totalPages()) {
+      this.currentPage.set(this.currentPage() + 1);
+    }
   }
 
   getUserDetails(userId: string): void {
@@ -121,7 +157,7 @@ export class ManageUsers implements OnInit {
   }
 
   onUserUpdated(updatedUser: any): void {
-    this.users.update((list) =>
+    this.allUsers.update((list) =>
       list.map((u) => (u._id === updatedUser._id ? updatedUser : u))
     );
     this.successMessage.set('User updated successfully!');
@@ -140,13 +176,14 @@ export class ManageUsers implements OnInit {
     this.showConfirm.set(false);
 
     const isActive = user.status === 'active';
-    const request  = isActive
+    const request = isActive
       ? this.adminService.freezeUser(user._id)
       : this.adminService.unFreezeUser(user._id);
 
     request.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         user.status = isActive ? 'inactive' : 'active';
+
         this.modalType.set('success');
         this.modalTitle.set(isActive ? 'User Frozen' : 'User Unfrozen');
         this.modalMessage.set(
@@ -154,6 +191,7 @@ export class ManageUsers implements OnInit {
             ? `${user.name} has been frozen successfully.`
             : `${user.name} has been unfrozen successfully.`
         );
+
         this.showMessage.set(true);
         this.pendingUser.set(null);
       },

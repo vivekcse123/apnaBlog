@@ -3,7 +3,7 @@
     { label: 'Home', routerLink: `/admin/${userId()}` },
     { label: 'Users', routerLink: `/admin/${userId()}/manage-users` },
     { label: 'Blogs', routerLink: `/admin/${userId()}/manage-blogs` },
-    { label: 'Comments', routerLink: `/admin/${userId()}/manage-comments` }
+    { label: 'Settings', routerLink: `/admin/${userId()}/settings` }
   ]"
   [profile]="initial()"
   (open)="openProfile()"

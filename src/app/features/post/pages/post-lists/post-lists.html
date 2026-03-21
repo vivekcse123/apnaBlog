@@ -3,7 +3,7 @@
   <div class="page-header">
     <div>
       <h2>Manage Blogs</h2>
-      <p>View, edit and manage all blog posts | Total Blogs: {{totalBlogs()}}</p>
+      <p>View, edit and manage all blog posts | Total Blogs: {{allBlogs().length}}</p>
     </div>
     <div class="actions">
       <input
@@ -49,13 +49,13 @@
           <th>Status</th>
           <th>Views</th>
           <th>Likes</th>
-          <th>Publish Date</th>
+          <th>Publish</th>
           <th width="160">Actions</th>
         </tr>
       </thead>
       <tbody>
 
-        @for (blog of allBlogs() | blogFilter: debounceValue() : selectedCategory() : selectedStatus(); track blog._id) {
+        @for (blog of paginatedBlogs() | blogFilter: debounceValue() : selectedCategory() : selectedStatus(); track blog._id) {
           <tr>
             <td>
               <div class="blog-title">{{ blog.title }}</div>
@@ -63,8 +63,8 @@
             </td>
             <td>
               <div class="category-list">
-                @for (category of blog.categories; track category) {
-                  <span class="category-badge" [ngClass]="category.toLowerCase()">
+                @for (category of blog.categories.slice(0, 2); track category) {
+                  <span class="category-badge" style="margin: 2px;" [ngClass]="category.toLowerCase()">
                     {{ category }}
                   </span>
                 }

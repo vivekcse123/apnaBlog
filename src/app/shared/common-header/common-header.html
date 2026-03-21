@@ -6,7 +6,10 @@
     <span></span>
   </button>
 
-  <div class="logo">{{logo}}</div>
+  <div class="logo">
+    <span class="logo-hex">⬡</span>
+    <span class="logo-text">{{logo}}</span>
+  </div>
 
   <nav class="nav" [class.nav-open]="menuOpen">
     @for (nav of navs; track nav.label) {

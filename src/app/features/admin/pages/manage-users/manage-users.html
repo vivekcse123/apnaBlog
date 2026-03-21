@@ -3,7 +3,7 @@
   <div class="page-header">
     <div>
       <h2>Manage Users</h2>
-      <p>View, edit and manage all Users | Total Users: {{ totalUsers() }}</p>
+      <p>View, edit and manage all Users | Total Users: {{ allUsers().length }}</p>
     </div>
     <div class="actions">
       <input
@@ -17,7 +17,7 @@
         <option value="user">User</option>
         <option value="admin">Admin</option>
       </select>
-      <!-- ✅ Status filter -->
+
       <select [ngModel]="selectedStatus()" (ngModelChange)="selectedStatus.set($event)">
         <option value="">Filter by Status</option>
         <option value="active">Active</option>
@@ -41,7 +41,7 @@
       </thead>
       <tbody>
 
-        @for (user of users() | filterByName: debounceValue() | filterByRole: selectedRole() | filterByStatus: selectedStatus(); track user._id) {
+        @for (user of paginatedUsers() | filterByName: debounceValue() | filterByRole: selectedRole() | filterByStatus: selectedStatus(); track user._id) {
           <tr [appDisabled]="user.status === 'inactive'">
 
             <td>
@@ -81,7 +81,7 @@
           </tr>
         }
 
-        @if ((users() | filterByName: debounceValue() | filterByRole: selectedRole() | filterByStatus: selectedStatus()).length === 0) {
+        @if ((paginatedUsers() | filterByName: debounceValue() | filterByRole: selectedRole() | filterByStatus: selectedStatus()).length === 0) {
           <tr>
             <td colspan="6" class="empty-row">
               <div class="empty-state">

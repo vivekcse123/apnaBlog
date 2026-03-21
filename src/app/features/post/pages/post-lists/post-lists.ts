@@ -1,66 +1,86 @@
 import { Component, inject, signal, computed, OnInit, DestroyRef } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { BlogFilterPipe } from '../../../../shared/pipes/blog-filter-pipe';
 import { Post } from '../../../../core/models/post.model';
 import { CreatePost } from '../create-post/create-post';
 import { PostService } from '../../services/post-service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ViewPost } from '../../../../shared/view-post/view-post';
 import { MessageModal } from '../../../../shared/message-modal/message-modal';
+import { BlogFilterPipe } from '../../../../shared/pipes/blog-filter-pipe';
 
 @Component({
   selector: 'app-post-lists',
   standalone: true,
-  imports: [CommonModule, FormsModule, BlogFilterPipe, CreatePost, ViewPost, MessageModal],
+  imports: [
+    CommonModule,
+    FormsModule,
+    CreatePost,
+    ViewPost,
+    MessageModal,
+    BlogFilterPipe
+  ],
   templateUrl: './post-lists.html',
   styleUrl: './post-lists.css',
 })
 export class PostLists implements OnInit {
-  private router      = inject(Router);
+
   private route       = inject(ActivatedRoute);
   private postService = inject(PostService);
   private destroyRef  = inject(DestroyRef);
 
-  allBlogs       = signal<Post[]>([]);
-  userId         = signal<string>('');
-  showCreateBlog = signal(false);
-  totalBlogs = signal<number>(0);
+  allBlogs = signal<Post[]>([]);
 
-  searchTitle      : string = '';
-  debounceValue    = signal<string>('');
+  userId = signal<string>('');
+  showCreateBlog = signal(false);
+
+  searchTitle = '';
+  debounceValue = signal<string>('');
   selectedCategory = signal<string>('');
-  selectedStatus   = signal<string>('');
+  selectedStatus = signal<string>('');
+
   private debounceTimer: any;
 
-  debounceSearch(value: string): void {
-    clearTimeout(this.debounceTimer);
-    this.debounceTimer = setTimeout(() => {
-      this.debounceValue.set(value);
-      this.currentPage.set(1);
-      this.loadPosts(1);        
-    }, 400);
-  }
-
   currentPage  = signal<number>(1);
-  itemsPerPage = signal<number>(5);
-  totalPages   = signal<number>(1); 
+  itemsPerPage = signal<number>(6);
+
+  filteredBlogs = computed(() => {
+    let data = this.allBlogs();
+
+    if (this.debounceValue()) {
+      const search = this.debounceValue().toLowerCase();
+      data = data.filter(post =>
+        post.title.toLowerCase().includes(search)
+      );
+    }
+
+    if (this.selectedCategory()) {
+      data = data.filter(post =>
+        post.categories?.includes(this.selectedCategory())
+      );
+    }
+
+    if (this.selectedStatus()) {
+      data = data.filter(post => post.status === this.selectedStatus());
+    }
+
+    return data;
+  });
+
+  paginatedBlogs = computed(() => {
+    const start = (this.currentPage() - 1) * this.itemsPerPage();
+    const end = start + this.itemsPerPage();
+    return this.filteredBlogs().slice(start, end);
+  });
+
+  totalPages = computed(() =>
+    Math.ceil(this.filteredBlogs().length / this.itemsPerPage())
+  );
+
   pages = computed(() =>
     Array.from({ length: this.totalPages() }, (_, i) => i + 1)
   );
-
-  previousPage(): void {
-    if (this.currentPage() > 1) this.loadPosts(this.currentPage() - 1);
-  }
-
-  nextPage(): void {
-    if (this.currentPage() < this.totalPages()) this.loadPosts(this.currentPage() + 1);
-  }
-
-  goToPage(page: number): void {
-    this.loadPosts(page);
-  }
 
   ngOnInit(): void {
     this.route.params
@@ -71,23 +91,47 @@ export class PostLists implements OnInit {
       });
   }
 
-  loadPosts(page: number = this.currentPage()): void {
+  loadPosts(): void {
     this.postService
-      .getAllPost(page, this.itemsPerPage())
+      .getAllPost(1, 1000) 
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (res) => {
-          this.allBlogs.set(res.data);
-          this.totalBlogs.set(res?.total);
-          this.currentPage.set(Number(res.page));
-          this.totalPages.set(Number(res.totalPages)); 
+          this.allBlogs.set(res.data || []);
         },
         error: (err) => console.error(err?.error?.message),
       });
   }
 
+  debounceSearch(value: string): void {
+    clearTimeout(this.debounceTimer);
+    this.debounceTimer = setTimeout(() => {
+      this.debounceValue.set(value);
+      this.currentPage.set(1);
+    }, 400);
+  }
+
+  previousPage(): void {
+    if (this.currentPage() > 1) {
+      this.currentPage.set(this.currentPage() - 1);
+    }
+  }
+
+  nextPage(): void {
+    if (this.currentPage() < this.totalPages()) {
+      this.currentPage.set(this.currentPage() + 1);
+    }
+  }
+
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages()) {
+      this.currentPage.set(page);
+    }
+  }
+
   onPostCreated(): void {
-    this.loadPosts(1); 
+    this.loadPosts();
+    this.currentPage.set(1);
   }
 
   showConfirm        = signal(false);
@@ -114,20 +158,17 @@ export class PostLists implements OnInit {
 
     this.postService.deletePost(id).subscribe({
       next: () => {
-        this.pendingDeleteId.set('');
-        this.pendingDeleteTitle.set('');
         this.modalType.set('success');
         this.modalTitle.set('Post Deleted');
         this.modalMessage.set('The post has been deleted successfully.');
         this.showMessage.set(true);
-        this.loadPosts(this.currentPage()); 
+
+        this.loadPosts();
       },
       error: (err) => {
-        this.pendingDeleteId.set('');
-        this.pendingDeleteTitle.set('');
         this.modalType.set('error');
         this.modalTitle.set('Delete Failed');
-        this.modalMessage.set(err?.error?.message ?? 'Failed to delete post. Please try again.');
+        this.modalMessage.set(err?.error?.message ?? 'Failed to delete post.');
         this.showMessage.set(true);
       },
     });

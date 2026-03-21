@@ -1,244 +1,467 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Poppins', sans-serif;
-}
+/* ═══════════════════════════════════════════════════
+   login.css — matches app CSS variable system
+   Brand gradient page bg is intentionally fixed.
+   Only the form panel uses --bg-surface tokens.
+   ═══════════════════════════════════════════════════ */
 
-/* ── Page background ───────────────────────────── */
-.main {
+/* ── Page Shell ── */
+.login-page {
   min-height: 100vh;
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   position: relative;
   overflow: hidden;
-  background: linear-gradient(135deg, #74ebd5, #ACB6E5);
+  background: var(--bg-base);
+  font-family: 'DM Sans', 'Poppins', sans-serif;
 }
 
-.main::before,
-.main::after {
-  content: '';
+/* ── Ambient Background ── */
+.login-bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.orb {
   position: absolute;
   border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.5;
-  z-index: 0;
+  filter: blur(90px);
+  opacity: 0.2;
+  animation: floatOrb 10s ease-in-out infinite;
 }
 
-.main::before {
-  width: 400px;
-  height: 400px;
+.orb-1 {
+  width: 500px;
+  height: 500px;
   background: #43cea2;
-  top: -100px;
-  right: -100px;
+  top: -150px;
+  left: -100px;
+  animation-delay: 0s;
 }
 
-.main::after {
+.orb-2 {
   width: 400px;
   height: 400px;
   background: #185a9d;
   bottom: -100px;
-  left: -100px;
+  right: -80px;
+  animation-delay: -5s;
 }
 
-/* ── Modal card ────────────────────────────────── */
-.register-container {
+@keyframes floatOrb {
+  0%, 100% { transform: translate(0, 0); }
+  50%       { transform: translate(20px, -20px); }
+}
+
+.grid-overlay {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 48px 48px;
+  opacity: 0.4;
+  mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, black 20%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, black 20%, transparent 100%);
+}
+
+/* ── Login Wrapper ── */
+.login-wrap {
   position: relative;
   z-index: 1;
-  width: 85%;
-  max-width: 900px;
+  width: 90%;
+  max-width: 920px;
   display: flex;
   border-radius: 20px;
   overflow: hidden;
-
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
-
-  animation: modalIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: var(--card-shadow-lg);
+  border: 1px solid var(--border);
+  animation: wrapIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
-@keyframes modalIn {
-  from { transform: scale(0.88) translateY(30px); opacity: 0; }
+@keyframes wrapIn {
+  from { transform: scale(0.92) translateY(24px); opacity: 0; }
   to   { transform: scale(1)    translateY(0);    opacity: 1; }
 }
 
-/* ── Form side ─────────────────────────────────── */
-.form-container {
-  width: 55%;
-  padding: 48px 42px;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(10px);
+/* ── Shared Panel ── */
+.login-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
-.heading {
+/* ── Brand Panel — gradient side, always fixed ── */
+.brand-panel {
+  width: 42%;
+  background: linear-gradient(155deg, #43cea2 0%, #185a9d 100%);
+  padding: 48px 40px;
+  align-items: center;
   text-align: center;
-  margin-bottom: 28px;
+  gap: 24px;
+  position: relative;
+  overflow: hidden;
 }
 
-.heading h2 {
-  font-size: 22px;
-  font-weight: 600;
-  color: #1a1a2e;
-  margin-bottom: 5px;
+/* Subtle inner pattern */
+.brand-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 20% 20%, rgba(255,255,255,0.08) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(255,255,255,0.06) 0%, transparent 50%);
 }
 
-.heading p {
-  font-size: 13px;
-  color: #777;
+.brand-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
 }
 
-/* ── Inputs ────────────────────────────────────── */
-form input {
-  width: 100%;
-  padding: 12px 16px;
-  margin-bottom: 6px;
-  border-radius: 10px;
-  border: 1px solid #ddd;
+.brand-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand-hex {
+  font-size: 2rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.brand-name {
+  font-size: 26px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 0.5px;
+}
+
+.brand-img {
+  width: 130px;
+  filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.2));
+}
+
+.brand-tagline {
   font-size: 14px;
-  font-family: 'Poppins', sans-serif;
-  background: rgba(255, 255, 255, 0.9);
-  transition: 0.3s ease;
-  color: #1a1a2e;
+  color: rgba(255, 255, 255, 0.88);
+  line-height: 1.7;
 }
 
-form input:focus {
-  border-color: #43cea2;
+/* Stats row */
+.brand-stats {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 14px 20px;
+  width: 100%;
+  justify-content: center;
+}
+
+.brand-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.stat-num {
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.stat-lbl {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.75);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.brand-divider {
+  width: 1px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* ── Form Panel — themed via CSS variables ── */
+.form-panel {
+  width: 58%;
+  padding: 52px 48px;
+  background: var(--bg-surface);
+  gap: 28px;
+}
+
+/* ── Form Header ── */
+.form-header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-header h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.3px;
+}
+
+.form-header p {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+/* ── Login Form ── */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ── Field Group ── */
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field-group label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  letter-spacing: 0.03em;
+}
+
+/* ── Input Wrap ── */
+.input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon {
+  position: absolute;
+  left: 14px;
+  font-size: 14px;
+  color: var(--text-muted);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.input-wrap input {
+  width: 100%;
+  padding: 12px 14px 12px 38px;
+  border-radius: 10px;
+  border: 1px solid var(--input-border);
+  background: var(--input-bg);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-family: 'DM Sans', 'Poppins', sans-serif;
   outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease,
+              background-color 0.25s ease, color 0.25s ease;
+}
+
+.input-wrap input::placeholder {
+  color: var(--text-muted);
+}
+
+.input-wrap input:focus {
+  border-color: #43cea2;
   box-shadow: 0 0 0 3px rgba(67, 206, 162, 0.15);
 }
 
-/* ── Validation errors ─────────────────────────── */
-.error {
-  display: block;
-  color: #e74c3c;
-  font-size: 11.5px;
-  margin-bottom: 10px;
-  margin-top: 2px;
-  opacity: 0.85;
+.input-wrap input.field-error {
+  border-color: var(--error);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--error) 15%, transparent);
 }
 
-/* ── Register button ───────────────────────────── */
-.register-btn {
+/* ── Inline Error ── */
+.error {
+  font-size: 12px;
+  color: var(--error);
+  font-weight: 500;
+}
+
+/* ── Forgot Row ── */
+.forgot-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: -8px;
+}
+
+.forgot-link {
+  font-size: 12.5px;
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.forgot-link:hover {
+  color: var(--accent-hover);
+  text-decoration: underline;
+}
+
+/* ── Login Button — brand gradient, always white ── */
+.login-btn {
   width: 100%;
   padding: 13px;
   border: none;
   border-radius: 10px;
   background: linear-gradient(135deg, #43cea2, #185a9d);
-  color: white;
+  color: #ffffff;
   font-size: 15px;
-  font-weight: 500;
-  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  font-family: 'DM Sans', 'Poppins', sans-serif;
   cursor: pointer;
-  transition: 0.3s ease;
   letter-spacing: 0.3px;
-  margin-top: 6px;
+  margin-top: 4px;
+  transition: opacity 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.register-btn:hover {
+.login-btn:hover {
   opacity: 0.9;
   transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(24, 90, 157, 0.3);
+  box-shadow: 0 8px 24px rgba(24, 90, 157, 0.3);
 }
 
-/* ── Login link ────────────────────────────────── */
-.login-link {
+/* ── Register Row ── */
+.register-row {
   text-align: center;
-  margin-top: 20px;
   font-size: 13px;
-  color: #555;
+  color: var(--text-secondary);
 }
 
-.login-link a {
-  color: #185a9d;
+.register-row a {
+  color: var(--accent);
   text-decoration: none;
-  font-weight: 500;
+  font-weight: 600;
 }
 
-.login-link a:hover {
+.register-row a:hover {
+  color: var(--accent-hover);
   text-decoration: underline;
 }
 
-/* ── Success / Error messages ──────────────────── */
-.error_message {
+/* ── Form Messages ── */
+.form-message {
   display: flex;
-  justify-content: center;
-  color: #e74c3c;
-  font-size: 12px;
-  margin-top: 16px;
-  opacity: 0.85;
-}
-
-.success_message {
-  display: flex;
-  justify-content: center;
-  color: #16a34a;
-  font-size: 12px;
-  margin-top: 16px;
-  opacity: 0.85;
-}
-
-/* ── Logo side ─────────────────────────────────── */
-.logo-container {
-  width: 45%;
-  background: rgba(255, 255, 255, 0.08);
-  border-left: 1px solid rgba(255, 255, 255, 0.2);
-  color: white;
-  display: flex;
-  justify-content: center;
   align-items: center;
-  padding: 40px;
-  text-align: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  animation: msgIn 0.25s ease;
 }
 
-.logo-content h1 {
-  font-size: 32px;
+@keyframes msgIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.form-message span {
+  font-size: 12px;
   font-weight: 700;
-  margin-bottom: 15px;
-  letter-spacing: 1px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #ffffff;
 }
 
-.logo-content img {
-  width: 140px;
-  margin: 20px 0;
-  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.2));
+.success-message {
+  background: var(--success-bg);
+  color: var(--success);
+  border: 1px solid color-mix(in srgb, var(--success) 30%, transparent);
 }
 
-.logo-content p {
-  font-size: 14px;
-  opacity: 0.88;
-  line-height: 1.6;
+.success-message span { background: var(--success); }
+
+.error-message {
+  background: var(--error-bg);
+  color: var(--error);
+  border: 1px solid color-mix(in srgb, var(--error) 30%, transparent);
 }
 
-/* ── Responsive ────────────────────────────────── */
-@media (max-width: 850px) {
-  .register-container {
+.error-message span { background: var(--error); }
+
+/* ── Responsive ── */
+@media (max-width: 820px) {
+  .login-wrap {
     flex-direction: column;
     width: 92%;
+    max-width: 480px;
   }
 
-  .form-container,
-  .logo-container {
+  .brand-panel,
+  .form-panel {
     width: 100%;
   }
 
-  .form-container {
-    padding: 36px 28px;
+  .brand-panel {
+    padding: 32px 28px;
   }
 
-  .logo-container {
-    padding: 32px 24px;
-    border-left: none;
-    border-top: 1px solid rgba(255, 255, 255, 0.2);
-    order: -1;
+  .brand-img { width: 90px; }
+
+  .form-panel {
+    padding: 36px 28px;
   }
 }
 
 @media (max-width: 480px) {
-  .logo-content h1  { font-size: 24px; }
-  .form-container   { padding: 28px 20px; }
-  .register-container { width: 96%; border-radius: 14px; }
+  .login-wrap   { width: 96%; border-radius: 14px; }
+  .form-panel   { padding: 28px 20px; }
+  .brand-panel  { padding: 24px 20px; }
+  .brand-name   { font-size: 22px; }
+}
+
+/* ═══════════════════════════════════════════════════
+   register.css
+   Reuses all login-redesign.css classes — only adds
+   register-specific overrides below.
+   Import order in component: login-redesign.css first,
+   then register.css (or just copy login-redesign.css
+   into this file and add the blocks below at the end).
+   ═══════════════════════════════════════════════════ */
+
+/* ── Register: brand panel on RIGHT, form on LEFT ── */
+.register-wrap {
+  flex-direction: row-reverse; /* flips panel order vs login */
+  max-width: 960px;            /* slightly wider for extra fields */
+}
+
+/* ── Two-column field row (DOB + Password side by side) ── */
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+/* ── Date input — icon padding + native picker dark fix ── */
+.input-wrap input[type="date"] {
+  padding-left: 38px;
+  color-scheme: light dark;
+}
+
+/* ── Responsive ── */
+@media (max-width: 820px) {
+  .register-wrap {
+    flex-direction: column; /* stack same as login */
+  }
+
+  .field-row {
+    grid-template-columns: 1fr; /* single column on mobile */
+  }
 }

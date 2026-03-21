@@ -122,7 +122,7 @@ tagOptions = [
     (_, i) => this.tagsArray.at(i).value
   );
 
- const payload: Omit<Post, '_id'| 'user' | 'likesCount' | 'commentsCount' | 'views' | 'createdAt' | 'updatedAt'> = {
+const payload: Omit<Post, '_id' | 'user' | 'userId' | 'likesCount' | 'commentsCount' | 'views' | 'createdAt' | 'updatedAt'> & { user: string } = {
   title: this.createBlogForm.value.title,
   description: this.createBlogForm.value.description,
   content: this.createBlogForm.value.content,
@@ -130,7 +130,7 @@ tagOptions = [
   tags: selectedTags,
   featuredImage: this.createBlogForm.value.featuredImage ?? '',
   status: this.createBlogForm.value.status,
-  userId: userId,
+  user: userId,
 };
   this.postService.createBlog(payload).subscribe({
     next: (res) => {

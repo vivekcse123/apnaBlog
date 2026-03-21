@@ -5,6 +5,9 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
+  background: var(--bg-base);
+  color: var(--text-primary);
+  min-height: 100vh;
 }
 
 /* ── Page Header ── */
@@ -19,14 +22,14 @@
 .page-header h2 {
   font-size: 24px;
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--text-primary);
   margin-bottom: 4px;
   letter-spacing: -0.3px;
 }
 
 .page-header p {
   font-size: 14px;
-  color: #888;
+  color: var(--text-muted);
 }
 
 /* ── Actions ── */
@@ -39,38 +42,45 @@
 
 .actions input,
 .actions select {
+  display: inline-block;          /* ← explicitly inline-block as requested */
   padding: 10px 14px;
   border-radius: 8px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--input-border);
   font-size: 14px;
   font-family: 'DM Sans', sans-serif;
-  color: #333;
-  background: #fff;
-  transition: 0.3s ease;
+  color: var(--text-primary);
+  background: var(--input-bg);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
   outline: none;
+}
+
+.actions input::placeholder {
+  color: var(--text-muted);
 }
 
 .actions input:focus,
 .actions select:focus {
   border-color: #43cea2;
-  box-shadow: 0 0 0 3px rgba(67, 206, 162, 0.12);
+  box-shadow: 0 0 0 3px rgba(67, 206, 162, 0.15);
 }
 
 .actions input {
   width: 220px;
 }
 
+/* add-btn keeps brand gradient */
 .add-btn {
+  display: inline-block;
   padding: 10px 18px;
   border: none;
   border-radius: 8px;
   background: linear-gradient(135deg, #43cea2, #185a9d);
-  color: #fff;
+  color: #ffffff;
   font-size: 14px;
   font-weight: 500;
   font-family: 'DM Sans', sans-serif;
   cursor: pointer;
-  transition: 0.3s ease;
+  transition: opacity 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
   white-space: nowrap;
 }
 
@@ -82,42 +92,50 @@
 
 /* ── Table Card ── */
 .table-card {
-  background: #fff;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
   border-radius: 12px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--card-shadow);
   overflow: hidden;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
+  background: var(--bg-surface);
 }
 
-thead {
-  background: linear-gradient(135deg, #43cea2, #185a9d);
-  color: #fff;
+/* thead keeps brand gradient — white text always works on it */
+.table-card thead,
+.table-card thead tr {
+  background: linear-gradient(135deg, #43cea2, #185a9d) !important;
 }
 
-th {
+.table-card th {
   padding: 15px;
   text-align: left;
   font-weight: 500;
   font-size: 14px;
+  color: #ffffff !important;
+  background: transparent !important;
+  border-bottom: none;
 }
 
 td {
   padding: 12px 15px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border);
   font-size: 14px;
-  color: #333;
+  color: var(--text-primary);
+  background: var(--bg-surface);
+  transition: background-color 0.15s ease;
 }
 
 tbody > tr:last-child td {
   border-bottom: none;
 }
 
-tbody > tr:hover {
-  background: #f9f9f9;
+tbody > tr:hover td {
+  background: var(--bg-hover);
 }
 
 /* ── User Cell ── */
@@ -132,17 +150,22 @@ tbody > tr:hover {
   height: 34px;
   border-radius: 50%;
   background: linear-gradient(135deg, #43cea2, #185a9d);
-  color: #fff;
+  color: #ffffff;
   font-size: 12px;
   font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  border: 2px solid transparent;
+}
+
+[data-theme="dark"] .user-avatar {
+  border-color: var(--border-strong);
 }
 
 .email-cell {
-  color: #888;
+  color: var(--text-muted);
   font-size: 13px;
 }
 
@@ -153,14 +176,39 @@ tbody > tr:hover {
   border-radius: 20px;
   font-size: 12px;
   font-weight: 500;
-  background: rgba(67, 206, 162, 0.15);
-  color: #0f7a5a;
+  background: var(--success-bg);
+  color: var(--success);
   white-space: nowrap;
 }
 
 .role-badge.admin {
-  background: rgba(24, 90, 157, 0.10);
-  color: #185a9d;
+  background: var(--accent-subtle);
+  color: var(--accent-text);
+}
+
+/* ── Status Badges ── */
+.status-active {
+  display: inline-block;
+  color: var(--success);
+  background: var(--success-bg);
+  border: 1px solid color-mix(in srgb, var(--success) 30%, transparent);
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.status-inactive {
+  display: inline-block;
+  color: var(--error);
+  background: var(--error-bg);
+  border: 1px solid color-mix(in srgb, var(--error) 30%, transparent);
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
 }
 
 /* ── Action Buttons ── */
@@ -179,8 +227,13 @@ tbody > tr:hover {
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  color: #fff;
-  transition: 0.3s ease;
+  color: #ffffff;
+  transition: opacity 0.2s ease, transform 0.15s ease;
+}
+
+.action-buttons button:hover {
+  opacity: 0.88;
+  transform: translateY(-1px);
 }
 
 .action-buttons .view       { background-color: #5bc0de; }
@@ -189,8 +242,8 @@ tbody > tr:hover {
 .action-buttons .edit       { background-color: #5cb85c; }
 .action-buttons .edit:hover { background-color: #449d44; }
 
-.action-buttons .delete       { background-color: #d9534f; }
-.action-buttons .delete:hover { background-color: #c9302c; }
+.action-buttons .delete       { background-color: var(--danger); }
+.action-buttons .delete:hover { background-color: var(--danger-hover); }
 
 /* ── Pagination ── */
 .pagination {
@@ -204,33 +257,137 @@ tbody > tr:hover {
 .pagination button {
   padding: 6px 12px;
   border-radius: 6px;
-  border: 1px solid #ddd;
-  background-color: #fff;
-  color: #333;
+  border: 1px solid var(--border);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
   cursor: pointer;
   font-size: 14px;
   font-family: 'DM Sans', sans-serif;
-  transition: all 0.2s ease-in-out;
+  transition: background 0.2s ease, color 0.2s ease,
+              border-color 0.2s ease, transform 0.2s ease;
 }
 
 .pagination button:hover:not(:disabled) {
   background: linear-gradient(135deg, #43cea2, #185a9d);
-  color: #fff;
+  color: #ffffff;
   border-color: transparent;
   transform: translateY(-1px);
 }
 
 .pagination button.active {
   background: linear-gradient(135deg, #43cea2, #185a9d);
-  color: #fff;
+  color: #ffffff;
   border-color: transparent;
   font-weight: 600;
 }
 
 .pagination button:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
 }
+
+/* ── Modal Overlay ── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Confirm Box ── */
+.confirm-box {
+  width: 100%;
+  max-width: 360px;
+  background: var(--bg-surface);
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  padding: 28px 24px 24px;
+  text-align: center;
+  box-shadow: var(--card-shadow-lg);
+  animation: popIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes popIn {
+  from { transform: scale(0.85); opacity: 0; }
+  to   { transform: scale(1);    opacity: 1; }
+}
+
+.confirm-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--warn-bg);
+  color: var(--warn);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+}
+
+.confirm-box h3 {
+  margin: 0 0 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.confirm-box p {
+  margin: 0 0 22px;
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+/* ── Confirm Actions ── */
+.confirm-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-cancel {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.btn-cancel:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-strong);
+  color: var(--text-primary);
+}
+
+.btn-confirm {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  font-size: 13px;
+  font-weight: 500;
+  color: #ffffff;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.btn-confirm.freeze   { background: var(--danger); }
+.btn-confirm.unfreeze { background: var(--success); }
+.btn-confirm:hover    { opacity: 0.88; }
 
 /* ── Responsive ── */
 @media (max-width: 1024px) {
@@ -271,7 +428,6 @@ tbody > tr:hover {
     font-size: 13px;
   }
 
-  /* Hide email on tablet */
   th:nth-child(2),
   td:nth-child(2) {
     display: none;
@@ -283,7 +439,6 @@ tbody > tr:hover {
     padding: 16px;
   }
 
-  /* Hide created at on mobile */
   th:nth-child(4),
   td:nth-child(4) {
     display: none;
@@ -295,119 +450,3 @@ tbody > tr:hover {
     padding: 5px 6px;
   }
 }
-
-/* Overlay backdrop */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(5px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  animation: fadeIn 0.2s ease;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-
-.confirm-box {
-  width: 100%;
-  max-width: 360px;
-  background: #fff;
-  border-radius: 16px;
-  border: 1px solid #eee;
-  padding: 28px 24px 24px;
-  text-align: center;
-  animation: popIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-@keyframes popIn {
-  from { transform: scale(0.85); opacity: 0; }
-  to   { transform: scale(1);    opacity: 1; }
-}
-
-.confirm-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: #fef9c3;
-  color: #ca8a04;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 16px;
-}
-
-.status-active {
-  color: #16a34a;        
-  background-color: #dcfce7;
-  border: 1px solid #86efac;
-  padding: 2px 8px;
-  border-radius: 9999px;    
-  font-size: 0.75rem;
-  font-weight: 500;
-}
-
-.status-inactive {
-  color: #dc2626;         
-  background-color: #fee2e2;
-  border: 1px solid #fca5a5;
-  padding: 2px 8px;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 500;
-}
-
-.confirm-box h3 {
-  margin: 0 0 8px;
-  font-size: 16px;
-  font-weight: 600;
-  color: #111;
-}
-
-.confirm-box p {
-  margin: 0 0 22px;
-  font-size: 13px;
-  color: #666;
-  line-height: 1.6;
-}
-
-/* Action buttons */
-.confirm-actions {
-  display: flex;
-  gap: 10px;
-}
-
-.btn-cancel {
-  flex: 1;
-  padding: 10px;
-  border-radius: 8px;
-  border: 1px solid #e5e7eb;
-  background: transparent;
-  font-size: 13px;
-  color: #555;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.btn-cancel:hover { background: #f3f4f6; }
-
-.btn-confirm {
-  flex: 1;
-  padding: 10px;
-  border-radius: 8px;
-  border: none;
-  font-size: 13px;
-  font-weight: 500;
-  color: #fff;
-  cursor: pointer;
-  transition: opacity 0.2s;
-}
-
-.btn-confirm.freeze   { background: #dc2626; }
-.btn-confirm.unfreeze { background: #16a34a; }
-.btn-confirm:hover    { opacity: 0.88; }

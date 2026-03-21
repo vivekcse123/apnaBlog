@@ -5,6 +5,9 @@
   display: flex;
   flex-direction: column;
   gap: 30px;
+  background: var(--bg-base);
+  color: var(--text-primary);
+  min-height: 100vh;
 }
 
 /* ── Header ── */
@@ -15,16 +18,17 @@
   flex-wrap: wrap;
   gap: 20px;
   padding-bottom: 20px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border);
 }
 
 .heading {
   font-size: 24px;
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--text-primary);
   letter-spacing: -0.3px;
 }
 
+/* date-badge keeps its brand gradient — intentional fixed colour */
 .date-badge {
   font-size: 13px;
   color: #fff;
@@ -39,7 +43,7 @@
 .section-label {
   font-size: 14px;
   font-weight: 600;
-  color: #333;
+  color: var(--text-secondary);
   margin-bottom: 14px;
 }
 
@@ -51,19 +55,20 @@
 }
 
 .info-card {
-  background: #fff;
-  border: 1px solid #eee;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
   border-radius: 12px;
   padding: 18px 20px;
   display: flex;
   align-items: center;
   gap: 14px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
-  transition: 0.3s ease;
+  box-shadow: var(--card-shadow);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
   position: relative;
   overflow: hidden;
 }
 
+/* Brand accent stripe — kept as fixed gradient */
 .info-card::before {
   content: "";
   position: absolute;
@@ -76,10 +81,11 @@
 
 .info-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(67, 206, 162, 0.15);
-  border-color: #43cea2;
+  box-shadow: var(--card-shadow-lg);
+  border-color: var(--border-strong);
 }
 
+/* ── Icon Backgrounds ── */
 .info-icon {
   width: 48px;
   height: 48px;
@@ -90,14 +96,15 @@
   flex-shrink: 0;
 }
 
-.blogs-icon     { background: rgba(67, 206, 162, 0.12); }
-.users-icon     { background: rgba(24, 90, 157, 0.10); }
-.published-icon { background: rgba(15, 122, 90, 0.10); }
-.drafts-icon    { background: rgba(186, 117, 23, 0.10); }
+/* These use semi-transparent brand colours that work in both themes */
+.blogs-icon     { background: rgba(67,  206, 162, 0.12); }
+.users-icon     { background: rgba(24,  90,  157, 0.12); }
+.published-icon { background: rgba(15,  122, 90,  0.12); }
+.drafts-icon    { background: rgba(186, 117, 23,  0.12); }
 .views-icon     { background: rgba(127, 119, 221, 0.12); }
-.comments-icon  { background: rgba(55, 138, 221, 0.10); }
-.likes-icon     { background: rgba(217, 83, 79, 0.10); }
-.active-icon    { background: rgba(92, 184, 92, 0.12); }
+.comments-icon  { background: rgba(55,  138, 221, 0.12); }
+.likes-icon     { background: rgba(217, 83,  79,  0.12); }
+.active-icon    { background: rgba(92,  184, 92,  0.12); }
 
 .info-content {
   display: flex;
@@ -109,7 +116,7 @@
 
 .info-label {
   font-size: 12px;
-  color: #888;
+  color: var(--text-muted);
   font-weight: 500;
   white-space: nowrap;
 }
@@ -117,10 +124,11 @@
 .info-value {
   font-size: 24px;
   font-weight: 700;
-  color: #1a1a1a;
+  color: var(--text-primary);
   line-height: 1.1;
 }
 
+/* ── Info Badges ── */
 .info-badge {
   display: inline-block;
   font-size: 11px;
@@ -131,14 +139,25 @@
   width: fit-content;
 }
 
-.blog-badge      { background: rgba(67, 206, 162, 0.15);  color: #0f7a5a; }
-.user-badge      { background: rgba(24, 90, 157, 0.10);   color: #185a9d; }
-.published-badge { background: rgba(15, 122, 90, 0.12);   color: #0f7a5a; }
-.drafts-badge    { background: rgba(186, 117, 23, 0.12);  color: #BA7517; }
+/* Semi-transparent backgrounds survive both themes; text colours are vivid enough */
+.blog-badge      { background: rgba(67,  206, 162, 0.15); color: #0f7a5a; }
+.user-badge      { background: rgba(24,  90,  157, 0.12); color: #185a9d; }
+.published-badge { background: rgba(15,  122, 90,  0.12); color: #0f7a5a; }
+.drafts-badge    { background: rgba(186, 117, 23,  0.12); color: #BA7517; }
 .views-badge     { background: rgba(127, 119, 221, 0.12); color: #534AB7; }
-.comments-badge  { background: rgba(55, 138, 221, 0.12);  color: #185a9d; }
-.likes-badge     { background: rgba(217, 83, 79, 0.12);   color: #c9302c; }
-.active-badge    { background: rgba(92, 184, 92, 0.12);   color: #3a7a3a; }
+.comments-badge  { background: rgba(55,  138, 221, 0.12); color: #185a9d; }
+.likes-badge     { background: rgba(217, 83,  79,  0.12); color: #c9302c; }
+.active-badge    { background: rgba(92,  184, 92,  0.12); color: #3a7a3a; }
+
+/* Dark-mode badge text boost — keeps them readable on dark surfaces */
+[data-theme="dark"] .blog-badge      { color: #43cea2; }
+[data-theme="dark"] .user-badge      { color: #60a5fa; }
+[data-theme="dark"] .published-badge { color: #34d399; }
+[data-theme="dark"] .drafts-badge    { color: #fbbf24; }
+[data-theme="dark"] .views-badge     { color: #a78bfa; }
+[data-theme="dark"] .comments-badge  { color: #60a5fa; }
+[data-theme="dark"] .likes-badge     { color: #f87171; }
+[data-theme="dark"] .active-badge    { color: #4ade80; }
 
 /* ── Quick Actions ── */
 .quick-actions {
@@ -148,8 +167,8 @@
 }
 
 .action-card {
-  background: #fff;
-  border: 1px solid #eee;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
   border-radius: 12px;
   padding: 16px;
   display: flex;
@@ -157,14 +176,14 @@
   align-items: flex-start;
   gap: 10px;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
-  transition: 0.3s ease;
+  box-shadow: var(--card-shadow);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
 .action-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(67, 206, 162, 0.15);
-  border-color: #43cea2;
+  box-shadow: var(--card-shadow-lg);
+  border-color: var(--border-strong);
 }
 
 .action-card:active {
@@ -181,62 +200,75 @@
   flex-shrink: 0;
 }
 
-.action-card:nth-child(1) .action-icon { background: rgba(67, 206, 162, 0.12); }
-.action-card:nth-child(2) .action-icon { background: rgba(24, 90, 157, 0.10); }
-.action-card:nth-child(3) .action-icon { background: rgba(67, 206, 162, 0.12); }
-.action-card:nth-child(4) .action-icon { background: rgba(24, 90, 157, 0.10); }
-.action-card:nth-child(5) .action-icon { background: #f5f5f5; }
+.action-card:nth-child(1) .action-icon { background: rgba(67,  206, 162, 0.12); }
+.action-card:nth-child(2) .action-icon { background: rgba(24,  90,  157, 0.12); }
+.action-card:nth-child(3) .action-icon { background: rgba(67,  206, 162, 0.12); }
+.action-card:nth-child(4) .action-icon { background: rgba(24,  90,  157, 0.12); }
+.action-card:nth-child(5) .action-icon { background: var(--bg-surface-alt); }
 
 .action-label {
   font-size: 13px;
   font-weight: 500;
-  color: #333;
+  color: var(--text-secondary);
   line-height: 1.3;
 }
 
+/* ── Bottom Grid ── */
 .bottom-grid {
   display: flex;
   flex-direction: column;
-  gap:30px;
+  gap: 30px;
 }
 
+/* ── Table Card ── */
 .table-card {
-  background: #fff;
+  background: var(--bg-surface);
   border-radius: 12px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--border);
+  box-shadow: var(--card-shadow);
   overflow: hidden;
 }
 
+/* ── Table ── */
 table {
   width: 100%;
   border-collapse: collapse;
+  background: var(--bg-surface);
+  color: var(--text-primary);
 }
 
-thead {
-  background: linear-gradient(135deg, #43cea2, #185a9d);
-  color: #fff;
+/* thead keeps the brand gradient — looks great in both modes */
+/* Scoped to .table-card so it beats the global thead/th vars in styles.css */
+.table-card thead,
+.table-card thead tr {
+  background: linear-gradient(135deg, #43cea2, #185a9d) !important;
 }
 
-th {
+.table-card th {
   padding: 15px;
   text-align: left;
   font-weight: 500;
   font-size: 14px;
+  color: #ffffff !important; /* always white — gradient bg is always dark */
+  background: transparent !important;
+  border-bottom: none;
 }
 
 td {
   padding: 12px 15px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border);
   font-size: 14px;
-  color: #333;
+  color: var(--text-primary);
+  background: var(--bg-surface);
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 tbody > tr:last-child td {
   border-bottom: none;
 }
 
-tbody > tr:hover {
-  background: #f9f9f9;
+tbody > tr:hover td {
+  background: var(--bg-hover);
 }
 
 /* ── Status Badges ── */
@@ -250,13 +282,13 @@ tbody > tr:hover {
 }
 
 .status-published {
-  background: rgba(67, 206, 162, 0.15);
-  color: #0f7a5a;
+  background: var(--success-bg);
+  color: var(--success);
 }
 
 .status-draft {
-  background: rgba(24, 90, 157, 0.10);
-  color: #185a9d;
+  background: var(--accent-subtle);
+  color: var(--accent-text);
 }
 
 /* ── User Cell ── */
@@ -273,14 +305,20 @@ tbody > tr:hover {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  color: #ffffff;
   font-size: 12px;
   font-weight: 600;
   flex-shrink: 0;
+  background: linear-gradient(135deg, #43cea2, #185a9d); /* visible in light */
+  border: 2px solid transparent;                          /* base border */
+}
+
+[data-theme="dark"] .user-avatar {
+  border: 2px solid var(--border-strong);                 /* visible ring in dark */
 }
 
 .email-cell {
-  color: #888;
+  color: var(--text-muted);
   font-size: 13px;
 }
 
@@ -294,9 +332,20 @@ tbody > tr:hover {
   white-space: nowrap;
 }
 
-.admin-role  { background: rgba(24, 90, 157, 0.10);  color: #185a9d; }
-.editor-role { background: rgba(186, 117, 23, 0.12); color: #BA7517; }
-.user-role   { background: rgba(67, 206, 162, 0.15); color: #0f7a5a; }
+.admin-role  {
+  background: var(--accent-subtle);
+  color: var(--accent-text);
+}
+
+.editor-role {
+  background: var(--warn-bg);
+  color: var(--warn);
+}
+
+.user-role {
+  background: var(--success-bg);
+  color: var(--success);
+}
 
 /* ── Responsive ── */
 @media (max-width: 1200px) {

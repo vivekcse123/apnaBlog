@@ -1,1 +1,44 @@
-<p>page-not-found works!</p>
+<!-- page-not-found.component.html -->
+<div class="not-found-page">
+
+  <!-- Animated background grid -->
+  <div class="bg-grid"></div>
+
+  <!-- Floating orbs -->
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+
+  <div class="not-found-content">
+
+    <!-- 404 big number -->
+    <div class="error-code">
+      <span class="digit">4</span>
+      <span class="digit zero">
+        <div class="zero-inner">
+          <span class="zero-icon">◎</span>
+        </div>
+      </span>
+      <span class="digit">4</span>
+    </div>
+
+    <!-- Message -->
+    <div class="error-message">
+      <h1>Page Not Found</h1>
+      <p>The page you're looking for doesn't exist or has been moved.<br>Let's get you back on track.</p>
+    </div>
+
+    <!-- Actions -->
+    <div class="error-actions">
+      <a routerLink="/welcome/apna-blog/" class="btn-home">
+        ⬡ &nbsp; Go to Dashboard
+      </a>
+      <button class="btn-back" onclick="history.back()">
+        ← &nbsp; Go Back
+      </button>
+    </div>
+
+    <!-- Footer hint -->
+    <p class="error-hint">Error code: <code>404</code> · Page not found</p>
+
+  </div>
+</div>

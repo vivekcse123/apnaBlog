@@ -1,209 +1,228 @@
+<!-- blog-list.component.html -->
+
+<!-- ══════════════════ HEADER ══════════════════ -->
 <header class="header">
-  <div class="logo">ApnaBlog</div>
-  <div class="nav-buttons">
-    <button class="create-btn" routerLink="/auth/login">+ Create Blog</button>
+  <div class="header-left">
+    <div class="logo">
+      <span class="logo-hex">⬡</span>
+      <span class="logo-text">ApnaBlog</span>
+    </div>
+  </div>
+
+  <div class="header-right">
+    <!-- Theme toggle -->
+    <button class="theme-toggle" (click)="themeService.toggleTheme()"
+      [attr.aria-label]="themeService.theme() === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'">
+      <span class="theme-icon">{{ themeService.theme() === 'dark' ? '☀' : '☾' }}</span>
+    </button>
+
+    <button class="create-btn" routerLink="/auth/login">
+      <span>✦</span> Write a Story
+    </button>
     <button class="signup-btn" routerLink="/auth/register">Sign Up</button>
   </div>
 </header>
 
-<div class="filter-wrap">
-  <input
-    type="text"
-    class="search-box"
-    placeholder="Search blogs..."
-    [(ngModel)]="searchQuery"
-    (ngModelChange)="onSearch($event)"
-  />
-
-  <select class="filter-select"
-    [ngModel]="selectedCategory()"
-    (ngModelChange)="selectedCategory.set($event)">
-    <option value="">All Categories</option>
-    <option value="Technology">Technology</option>
-    <option value="Lifestyle">Lifestyle</option>
-    <option value="Education">Education</option>
-    <option value="Health">Health</option>
-    <option value="Business">Business</option>
-    <option value="Entertainment">Entertainment</option>
-    <option value="Social">Social</option>
-    <option value="Village">Village</option>
-  </select>
-
-  <select class="filter-select"
-    [ngModel]="selectedSort()"
-    (ngModelChange)="selectedSort.set($event)">
-    <option value="newest">Newest</option>
-    <option value="liked">Most Liked</option>
-    <option value="viewed">Most Viewed</option>
-  </select>
+<!-- ══════════════════ HERO ══════════════════ -->
+<div class="hero-wrap">
+  <div class="hero-bg">
+    <div class="hero-orb hero-orb-1"></div>
+    <div class="hero-orb hero-orb-2"></div>
+    <div class="hero-grid"></div>
+  </div>
+  <div class="hero-content">
+    <span class="hero-pill">✦ Community Stories</span>
+    <h1 class="hero-title">Stories from<br><span class="hero-gradient">Every Corner</span></h1>
+    <p class="hero-sub">Discover blogs written by real people sharing real experiences 🌿</p>
+  </div>
 </div>
 
+<!-- ══════════════════ FILTER BAR ══════════════════ -->
+<div class="filter-wrap">
+  <div class="filter-inner">
+    <div class="search-wrap">
+      <span class="search-icon">◎</span>
+      <input
+        type="text"
+        class="search-box"
+        placeholder="Search stories..."
+        [(ngModel)]="searchQuery"
+        (ngModelChange)="onSearch($event)"
+      />
+    </div>
+
+    <select class="filter-select"
+      [ngModel]="selectedCategory()"
+      (ngModelChange)="selectedCategory.set($event)">
+      <option value="">All Categories</option>
+      <option value="Technology">Technology</option>
+      <option value="Lifestyle">Lifestyle</option>
+      <option value="Education">Education</option>
+      <option value="Health">Health</option>
+      <option value="Business">Business</option>
+      <option value="Entertainment">Entertainment</option>
+      <option value="Social">Social</option>
+      <option value="Village">Village</option>
+    </select>
+
+    <select class="filter-select"
+      [ngModel]="selectedSort()"
+      (ngModelChange)="selectedSort.set($event)">
+      <option value="newest">Newest</option>
+      <option value="liked">Most Liked</option>
+      <option value="viewed">Most Viewed</option>
+    </select>
+  </div>
+</div>
+
+<!-- ══════════════════ CATEGORIES ══════════════════ -->
 <section class="category-section">
   @for (cat of categories; track cat) {
-    <div class="category-box" (click)="selectedCategory.set(cat)">
+    <button class="category-chip"
+      [class.active]="selectedCategory() === cat"
+      (click)="selectedCategory.set(cat)">
       {{ categoryEmojis[cat] }} {{ cat }}
-      <span>({{ getCategoryCount(cat) }})</span>
-    </div>
+      <span class="chip-count">{{ getCategoryCount(cat) }}</span>
+    </button>
   }
 </section>
 
+<!-- ══════════════════ LOADING ══════════════════ -->
 @if (isLoading()) {
-  <div class="loading-state">Loading blogs...</div>
+  <div class="loading-state">
+    <div class="loading-dots">
+      <span></span><span></span><span></span>
+    </div>
+    <p>Loading stories...</p>
+  </div>
 }
 
+<!-- ══════════════════ FILTERED RESULTS ══════════════════ -->
 @if (selectedCategory() || searchQuery || selectedSort() !== 'newest') {
   <section class="section">
     <div class="section-header">
       <span class="section-pill">Results</span>
-      <h2 class="section-title">🔍 Filtered Blogs</h2>
+      <h2 class="section-title">🔍 Filtered Stories</h2>
+      <span class="result-count">{{ filteredPosts().length }} found</span>
     </div>
     <div class="blog-grid">
       @for (blog of filteredPosts(); track blog._id; let i = $index) {
-        <div class="blog-card">
+        <article class="blog-card" (click)="readBlog(blog._id)">
           <div class="card-img-wrap">
-            <!-- <img
-              [src]="blog.featuredImage || getFallbackImage(i)"
-              [alt]="blog.title"
-              (error)="$any($event.target).src = getFallbackImage(i)"
-            /> -->
-            <img
-              [src]="blog.featuredImage"
-              [alt]="blog.title"
-            />
+            <img [src]="blog.featuredImage" [alt]="blog.title" loading="lazy" />
             <span class="card-cat">{{ blog.categories[0] }}</span>
           </div>
           <div class="card-body">
             <h3>{{ blog.title }}</h3>
             <p>{{ blog.description }}</p>
           </div>
-          <div class="card-divider"></div>
           <div class="card-footer">
             <div class="card-stats">
-              <span>👍{{ blog.likesCount }}</span>
-              <span>💬{{ blog.commentsCount }}</span>
-              <span>👁{{ blog.views }}</span>
+              <span class="stat">👍 {{ blog.likesCount }}</span>
+              <span class="stat">💬 {{ blog.commentsCount }}</span>
+              <span class="stat">👁 {{ blog.views }}</span>
             </div>
-            <button class="read-btn">Read →</button>
+            <button class="read-btn" (click)="readBlog(blog._id); $event.stopPropagation()">Read →</button>
           </div>
-        </div>
+        </article>
       }
       @if (filteredPosts().length === 0 && !isLoading()) {
-        <p class="no-results">No blogs found.</p>
+        <div class="no-results">
+          <span class="no-results-icon">◎</span>
+          <p>No stories found for this search.</p>
+        </div>
       }
     </div>
   </section>
+
 } @else {
 
+  <!-- Trending -->
   <section class="section">
     <div class="section-header">
-      <span class="section-pill">Trending</span>
-      <h2 class="section-title">🔥 Trending Blogs</h2>
+      <span class="section-pill trending">Trending</span>
+      <h2 class="section-title">🔥 Trending Stories</h2>
     </div>
     <div class="blog-grid">
-      @for (blog of trendingPosts(); track blog._id; let i = $index) {
-        <div class="blog-card">
+      @for (blog of trendingPosts(); track blog._id) {
+        <article class="blog-card" (click)="readBlog(blog._id)">
           <div class="card-img-wrap">
-            <!-- <img
-              [src]="blog.featuredImage || getFallbackImage(i + 1)"
-              [alt]="blog.title"
-              (error)="$any($event.target).src = getFallbackImage(i + 1)"
-            /> -->
-            <img
-              [src]="blog.featuredImage"
-              [alt]="blog.title"
-            />
+            <img [src]="blog.featuredImage" [alt]="blog.title" loading="lazy" />
             <span class="card-cat">{{ blog.categories[0] }}</span>
           </div>
           <div class="card-body">
             <h3>{{ blog.title }}</h3>
             <p>{{ blog.description }}</p>
           </div>
-          <div class="card-divider"></div>
           <div class="card-footer">
             <div class="card-stats">
-              <span>👍{{ blog.likesCount }}</span>
-              <span>💬{{ blog.commentsCount }}</span>
-              <span>👁{{ blog.views }}</span>
+              <span class="stat">👍 {{ blog.likesCount }}</span>
+              <span class="stat">💬 {{ blog.commentsCount }}</span>
+              <span class="stat">👁 {{ blog.views }}</span>
             </div>
-            <button class="read-btn">Read →</button>
+            <button class="read-btn" (click)="readBlog(blog._id); $event.stopPropagation()">Read →</button>
           </div>
-        </div>
+        </article>
       }
     </div>
   </section>
 
+  <!-- Hot Right Now -->
   <section class="section">
     <div class="section-header">
-      <span class="section-pill">Popular</span>
+      <span class="section-pill hot">Popular</span>
       <h2 class="section-title">⭐ Hot Right Now</h2>
     </div>
     <div class="blog-grid">
-      @for (blog of hotPosts(); track blog._id; let i = $index) {
-        <div class="blog-card">
+      @for (blog of hotPosts(); track blog._id) {
+        <article class="blog-card" (click)="readBlog(blog._id)">
           <div class="card-img-wrap">
-            <!-- <img
-              [src]="blog.featuredImage || getFallbackImage(i + 5)"
-              [alt]="blog.title"
-              (error)="$any($event.target).src = getFallbackImage(i + 5)"
-            /> -->
-            <img
-              [src]="blog.featuredImage"
-              [alt]="blog.title"
-            />
+            <img [src]="blog.featuredImage" [alt]="blog.title" loading="lazy" />
             <span class="card-cat">{{ blog.categories[0] }}</span>
           </div>
           <div class="card-body">
             <h3>{{ blog.title }}</h3>
             <p>{{ blog.description }}</p>
           </div>
-          <div class="card-divider"></div>
           <div class="card-footer">
             <div class="card-stats">
-              <span>👍{{ blog.likesCount }}</span>
-              <span>💬{{ blog.commentsCount }}</span>
-              <span>👁{{ blog.views }}</span>
+              <span class="stat">👍 {{ blog.likesCount }}</span>
+              <span class="stat">💬 {{ blog.commentsCount }}</span>
+              <span class="stat">👁 {{ blog.views }}</span>
             </div>
-            <button class="read-btn">Read →</button>
+            <button class="read-btn" (click)="readBlog(blog._id); $event.stopPropagation()">Read →</button>
           </div>
-        </div>
+        </article>
       }
     </div>
   </section>
 
+  <!-- Latest -->
   <section class="section">
     <div class="section-header">
-      <span class="section-pill">New</span>
-      <h2 class="section-title">🆕 Latest Blogs</h2>
+      <span class="section-pill new">New</span>
+      <h2 class="section-title">🆕 Latest Stories</h2>
     </div>
     <div class="blog-grid">
-      @for (blog of latestPosts(); track blog._id; let i = $index) {
-        <div class="blog-card">
+      @for (blog of latestPosts(); track blog._id) {
+        <article class="blog-card" (click)="readBlog(blog._id)">
           <div class="card-img-wrap">
-            <!-- <img
-              [src]="blog.featuredImage || getFallbackImage(i + 9)"
-              [alt]="blog.title"
-              (error)="$any($event.target).src = getFallbackImage(i + 9)"
-            /> -->
-            <img
-              [src]="blog.featuredImage"
-              [alt]="blog.title"
-            />
+            <img [src]="blog.featuredImage" [alt]="blog.title" loading="lazy" />
             <span class="card-cat">{{ blog.categories[0] }}</span>
           </div>
           <div class="card-body">
             <h3>{{ blog.title }}</h3>
             <p>{{ blog.description }}</p>
           </div>
-          <div class="card-divider"></div>
           <div class="card-footer">
             <div class="card-stats">
-              <span>👍{{ blog.likesCount }}</span>
-              <span>💬{{ blog.commentsCount }}</span>
-              <span>👁{{ blog.views }}</span>
+              <span class="stat">👍 {{ blog.likesCount }}</span>
+              <span class="stat">💬 {{ blog.commentsCount }}</span>
+              <span class="stat">👁 {{ blog.views }}</span>
             </div>
-            <button class="read-btn">Read →</button>
+            <button class="read-btn" (click)="readBlog(blog._id); $event.stopPropagation()">Read →</button>
           </div>
-        </div>
+        </article>
       }
     </div>
   </section>
@@ -211,3 +230,10 @@
 }
 
 <div class="page-end"></div>
+
+@if (isViewed()) {
+  <app-read-blog
+    [postId]="selectedId()"
+    (close)="isViewed.set(false)"
+  ></app-read-blog>
+}

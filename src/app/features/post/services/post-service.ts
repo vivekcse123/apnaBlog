@@ -5,7 +5,7 @@ import { apiResponse } from '../../../core/models/api-response.model';
 import { HttpClient } from '@angular/common/http';
 import { Post } from '../../../core/models/post.model';
 
-type CreatePostPayload = Omit<Post, '_id' | 'user' | 'likesCount' | 'commentsCount' | 'views' | 'createdAt' | 'updatedAt'>;
+type CreatePostPayload = Omit<Post, '_id' | 'user' | 'userId' | 'likesCount' | 'commentsCount' | 'views' | 'createdAt' | 'updatedAt'>;
 
 @Injectable({
   providedIn: 'root',

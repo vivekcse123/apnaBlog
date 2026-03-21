@@ -1,32 +1,19 @@
+/* ── Profile Dropdown Container ── */
 .profile-container {
   position: fixed;
   top: 75px;
   right: 20px;
   width: 340px;
-  background: #ffffff;
+  background: var(--bg-surface);
   border-radius: 16px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.12);
-  border: 1px solid #f0f0f0;
+  box-shadow: var(--card-shadow-lg);
+  border: 1px solid var(--border);
   overflow: hidden;
   z-index: 2000;
   animation: slideInFade 0.25s ease;
 }
 
-/* .triangle-symbol {
-  position: absolute;
-  top: -10px;
-  right: 40px;
-  width: 18px;
-  height: 18px;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
-  border: 1px solid #e5e7eb;
-  border-right: none;
-  border-bottom: none;
-  transform: rotate(45deg);
-  z-index: 2001;
-  box-shadow: -2px -2px 8px rgba(0,0,0,0.04);
-} */
-
+/* ── Profile Header — keeps brand gradient, always white text ── */
 .profile-header {
   background: linear-gradient(135deg, #43cea2, #185a9d);
   padding: 28px 24px 24px;
@@ -34,24 +21,27 @@
   align-items: flex-start;
   gap: 14px;
   position: relative;
-  color: white;
+  color: #ffffff;
 }
 
+/* ── Avatar ── */
 .avatar {
   width: 56px;
   height: 56px;
   border-radius: 14px;
-  background: rgba(255,255,255,0.2);
-  color: white;
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
   font-weight: 700;
   font-size: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid rgba(255,255,255,0.3);
+  border: 2px solid rgba(255, 255, 255, 0.3);
   backdrop-filter: blur(4px);
+  flex-shrink: 0;
 }
 
+/* ── User Info ── */
 .user-info {
   flex: 1;
   display: flex;
@@ -62,6 +52,7 @@
 .user-name {
   font-size: 16px;
   font-weight: 700;
+  color: #ffffff;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -74,23 +65,24 @@
   font-size: 10px;
   font-weight: 700;
   border-radius: 12px;
-  background: rgba(255,255,255,0.2);
-  color: white;
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
   letter-spacing: 0.5px;
   text-transform: uppercase;
 }
 
 .user-email {
   font-size: 12px;
-  color: rgba(255,255,255,0.85);
+  color: rgba(255, 255, 255, 0.85);
 }
 
+/* ── Close Button (on gradient bg — stays white) ── */
 .close-btn {
   width: 34px;
   height: 34px;
   border-radius: 8px;
   border: none;
-  background: rgba(255,255,255,0.25);
+  background: rgba(255, 255, 255, 0.25);
   cursor: pointer;
   position: absolute;
   top: 12px;
@@ -98,15 +90,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: 0.3s ease;
 }
 
 .close-btn:hover {
-  background: rgba(255,255,255,0.4);
+  background: rgba(255, 255, 255, 0.4);
   transform: rotate(90deg);
 }
 
-/* Make X clearly visible */
 .close-icon {
   position: relative;
   width: 16px;
@@ -123,23 +113,38 @@
   transform-origin: center;
 }
 
-.close-icon span:first-child {
-  transform: rotate(45deg);
-}
 
-.close-icon span:last-child {
-  transform: rotate(-45deg);
+.close-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: none;
+  background: rgba(255, 255, 255, 0.25);
+  cursor: pointer;
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease, transform 0.3s ease; /* ← add this */
 }
+.close-icon span:first-child  { transform: rotate(45deg); }
+.close-icon span:last-child   { transform: rotate(-45deg); }
 
+/* ── Divider ── */
 .divider {
   height: 1px;
-  background: #f0f0f0;
+  background: var(--border);
 }
 
+/* ── Profile Content ── */
 .profile-content {
   padding: 22px;
+  background: var(--bg-surface);
 }
 
+/* ── Action Buttons ── */
 .profile-actions {
   display: flex;
   flex-direction: column;
@@ -153,38 +158,46 @@
   font-weight: 600;
   cursor: pointer;
   border: none;
-  transition: all 0.25s ease;
+  width: 100%;
+  text-align: left;
 }
 
+/* Primary — brand gradient, always white */
 .action-btn.primary {
   background: linear-gradient(135deg, #43cea2, #185a9d);
-  color: white;
+  color: #ffffff;
 }
 
 .action-btn.primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(24, 90, 157, 0.25);
+  box-shadow: 0 8px 24px rgba(24, 90, 157, 0.3);
 }
 
+/* Secondary — themed surface */
 .action-btn.secondary {
-  background: #f5f9ff;
-  color: #185a9d;
-  border: 1px solid #e0eaff;
+  background: var(--accent-subtle);
+  color: var(--accent-text);
+  border: 1px solid var(--border);
 }
 
 .action-btn.secondary:hover {
-  background: #e6f0ff;
+  background: var(--bg-hover);
+  border-color: var(--border-strong);
 }
 
+/* Logout — danger themed */
 .action-btn.secondary.logout {
-  color: #e11d48;
-  border-color: #fecdd3;
+  background: var(--danger-bg);
+  color: var(--danger);
+  border-color: var(--danger-border);
 }
 
 .action-btn.secondary.logout:hover {
-  background: #fff1f2;
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+  border-color: var(--danger);
 }
 
+/* ── Animation ── */
 @keyframes slideInFade {
   from {
     opacity: 0;

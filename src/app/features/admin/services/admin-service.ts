@@ -40,4 +40,45 @@ updateUser(userId: string, userData: Partial<User>): Observable<apiResponse<User
   );
 }
 
+
+// ─── Add these methods to your existing AdminService ───────────────────────
+
+// Blog Settings
+// getBlogSettings(): Observable<BlogSettings> {
+//   return this.http.get<BlogSettings>(`${this.baseUrl}/settings/blog`);
+// }
+
+// updateBlogSettings(data: BlogSettings): Observable<BlogSettings> {
+//   return this.http.patch<BlogSettings>(`${this.baseUrl}/settings/blog`, data);
+// }
+
+// // Categories
+// getAllCategories(): Observable<Category[]> {
+//   return this.http.get<Category[]>(`${this.baseUrl}/categories`);
+// }
+
+// createCategory(data: { name: string }): Observable<Category> {
+//   return this.http.post<Category>(`${this.baseUrl}/categories`, data);
+// }
+
+// updateCategory(id: string, data: { name: string }): Observable<Category> {
+//   return this.http.patch<Category>(`${this.baseUrl}/categories/${id}`, data);
+// }
+
+// // Tags
+// getAllTags(): Observable<Tag[]> {
+//   return this.http.get<Tag[]>(`${this.baseUrl}/tags`);
+// }
+
+// createTag(data: { name: string }): Observable<Tag> {
+//   return this.http.post<Tag>(`${this.baseUrl}/tags`, data);
+// }
+
+// updateTag(id: string, data: { name: string }): Observable<Tag> {
+//   return this.http.patch<Tag>(`${this.baseUrl}/tags/${id}`, data);
+// }
+
+// deleteTag(id: string): Observable<any> {
+//   return this.http.delete(`${this.baseUrl}/tags/${id}`);
+// }
 }

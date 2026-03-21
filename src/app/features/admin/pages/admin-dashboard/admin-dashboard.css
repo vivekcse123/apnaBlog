@@ -1,13 +1,23 @@
-.logout_btn{
-    color: red;
-    text-decoration: none;
-    transition: 0.3s ease;
+.logout_btn {
+  color: var(--danger);
+  text-decoration: none;
+  transition: color 0.2s ease;
+  font-weight: 500;
 }
-.edit_setting{
-    color: white;
-    text-decoration: none;
-    transition: 0.3s ease;
+
+.logout_btn:hover {
+  color: var(--danger-hover);
+  text-decoration: underline;
 }
-.logout_btn:hover, .edit_setting:hover{
-    text-decoration: underline;
+
+.edit_setting {
+  color: var(--accent-text);
+  text-decoration: none;
+  transition: color 0.2s ease;
+  font-weight: 500;
+}
+
+.edit_setting:hover {
+  color: var(--accent);
+  text-decoration: underline;
 }

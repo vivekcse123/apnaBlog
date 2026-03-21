@@ -6,6 +6,7 @@ import { ManageUsers } from './pages/manage-users/manage-users';
 import { PostLists } from '../post/pages/post-lists/post-lists';
 import { CreatePost } from '../post/pages/create-post/create-post';
 import { CreateUser } from './pages/create-user/create-user';
+import { Settings } from './pages/settings/settings';
 
 const routes: Routes = [
   {
@@ -31,6 +32,10 @@ const routes: Routes = [
       {
         path: 'create-user',
         component: CreateUser
+      },
+      {
+        path: 'settings',
+        component: Settings
       }
     ]
   }

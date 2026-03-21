@@ -1,0 +1,398 @@
+<div class="settings-root">
+
+  <!-- ══ SIDEBAR ══ -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <span class="brand-icon">⬡</span>
+      <span class="brand-text">Settings</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      @for (s of sections; track s.id) {
+        <button
+          class="nav-item"
+          [class.active]="activeSection() === s.id"
+          [class.danger-item]="s.id === 'danger'"
+          (click)="activeSection.set(s.id)">
+          <span class="nav-icon">{{ s.icon }}</span>
+          <span class="nav-label">{{ s.label }}</span>
+          @if (activeSection() === s.id) {
+            <span class="nav-indicator"></span>
+          }
+        </button>
+      }
+    </nav>
+
+    <div class="sidebar-theme-toggle">
+      <span class="toggle-label">{{ themeService.theme() === 'dark' ? '☾ Dark' : '☀ Light' }}</span>
+      <button class="theme-pill" (click)="themeService.toggleTheme()"
+        [class.dark]="themeService.theme() === 'dark'">
+        <span class="pill-thumb"></span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ══ MAIN ══ -->
+  <main class="settings-main">
+
+    <!-- ── PROFILE ── -->
+    @if (activeSection() === 'profile') {
+      <div class="section-wrap">
+        <div class="section-heading">
+          <h1>Profile Information</h1>
+          <p>Your account details fetched from the server</p>
+        </div>
+
+        <!-- Toasts -->
+        @if (saveSuccess()) {
+          <div class="toast success">✓ Profile updated successfully</div>
+        }
+        @if (saveError()) {
+          <div class="toast error">✕ {{ saveError() }}</div>
+        }
+
+        <!-- Loading skeleton -->
+        @if (isLoading()) {
+          <div class="profile-card">
+            <div class="sk-profile-head">
+              <div class="sk sk-avatar"></div>
+              <div class="sk-lines">
+                <div class="sk sk-line w60"></div>
+                <div class="sk sk-line w40"></div>
+              </div>
+            </div>
+            <div class="sk sk-line w80"></div>
+            <div class="sk sk-line w60"></div>
+            <div class="sk sk-line w90"></div>
+          </div>
+        }
+
+        <!-- Loaded -->
+        @if (!isLoading() && user(); as u) {
+          <div class="profile-card">
+            <div class="avatar-area">
+              <div class="avatar-ring">
+                <div class="avatar-circle">{{ avatarInitial() }}</div>
+              </div>
+              <div class="avatar-info">
+                <span class="role-badge">Admin</span>
+                <p class="joined-text">{{ u.email }}</p>
+              </div>
+            </div>
+
+            <!-- View mode -->
+            @if (!isEditing()) {
+              <div class="info-grid">
+                <div class="info-item">
+                  <label>Full Name</label>
+                  <span>{{ u.name || '—' }}</span>
+                </div>
+                <div class="info-item">
+                  <label>Email Address</label>
+                  <span>{{ u.email || '—' }}</span>
+                </div>
+                <div class="info-item">
+                  <label>Date of Birth</label>
+                  <span>{{ u.dob ? (u.dob | date:'MMM d, yyyy') : '—' }}</span>
+                </div>
+                <div class="info-item">
+                  <label>Location</label>
+                  <span>{{ u.location || '—' }}</span>
+                </div>
+              </div>
+              <div class="form-actions">
+                <button class="btn-primary" (click)="startEdit()">Edit Profile</button>
+              </div>
+            }
+
+            <!-- Edit mode -->
+            @if (isEditing()) {
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>Full Name</label>
+                  <input type="text" [(ngModel)]="editForm.name" placeholder="Your name" />
+                </div>
+                <div class="form-group">
+                  <label>Email Address</label>
+                  <input type="email" [(ngModel)]="editForm.email" placeholder="email@example.com" re/>
+                </div>
+                <div class="form-group">
+                  <label>Date of Birth</label>
+                  <input type="date" [(ngModel)]="editForm.dob" />
+                </div>
+                <div class="form-group">
+                  <label>Location</label>
+                  <input type="text" [(ngModel)]="editForm.location" placeholder="City, State" />
+                </div>
+              </div>
+              <div class="form-actions">
+                <button class="btn-ghost" (click)="cancelEdit()">Cancel</button>
+                <button class="btn-primary" (click)="saveProfile()" [disabled]="isSaving()">
+                  {{ isSaving() ? 'Saving…' : 'Save Changes' }}
+                </button>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- No user -->
+        @if (!isLoading() && !user()) {
+          <div class="empty-state">Could not load profile. Please log in again.</div>
+        }
+      </div>
+    }
+
+    <!-- ── APPEARANCE ── -->
+    @if (activeSection() === 'appearance') {
+      <div class="section-wrap">
+        <div class="section-heading">
+          <h1>Appearance</h1>
+          <p>Theme is applied globally across the entire application</p>
+        </div>
+
+        <div class="appearance-card">
+          <span class="appear-title">Color Theme</span>
+          <span class="appear-sub">Changes <code>data-theme</code> on &lt;html&gt; — affects all pages</span>
+
+          <div class="theme-cards">
+            <div class="theme-option" [class.selected]="themeService.theme() === 'light'"
+              (click)="themeService.theme.set('light')">
+              <div class="theme-preview light-preview">
+                <div class="tp-bar"></div>
+                <div class="tp-content">
+                  <div class="tp-line long"></div>
+                  <div class="tp-line short"></div>
+                </div>
+              </div>
+              <div class="theme-option-label">
+                <span>☀ Light</span>
+                @if (themeService.theme() === 'light') {
+                  <span class="selected-check">✓</span>
+                }
+              </div>
+            </div>
+
+            <div class="theme-option" [class.selected]="themeService.theme() === 'dark'"
+              (click)="themeService.theme.set('dark')">
+              <div class="theme-preview dark-preview">
+                <div class="tp-bar"></div>
+                <div class="tp-content">
+                  <div class="tp-line long"></div>
+                  <div class="tp-line short"></div>
+                </div>
+              </div>
+              <div class="theme-option-label">
+                <span>☾ Dark</span>
+                @if (themeService.theme() === 'dark') {
+                  <span class="selected-check">✓</span>
+                }
+              </div>
+            </div>
+          </div>
+
+          <div class="quick-toggle-row">
+            <div>
+              <p class="qt-label">Quick Toggle</p>
+              <p class="qt-sub">Currently: <strong>{{ themeService.theme() === 'dark' ? 'Dark Mode' : 'Light Mode' }}</strong></p>
+            </div>
+            <button class="theme-pill large" (click)="themeService.toggleTheme()"
+              [class.dark]="themeService.theme() === 'dark'">
+              <span class="pill-thumb"></span>
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ── LANGUAGE ── -->
+    @if (activeSection() === 'language') {
+      <div class="section-wrap">
+        <div class="section-heading">
+          <h1>Language & Region</h1>
+          <p>Set your preferred interface language</p>
+        </div>
+        <div class="lang-grid">
+          @for (lang of languages; track lang.code) {
+            <button class="lang-card"
+              [class.active]="themeService.language() === lang.code"
+              (click)="themeService.setLanguage(lang.code)">
+              <span class="lang-flag">{{ lang.flag }}</span>
+              <div class="lang-info">
+                <span class="lang-label">{{ lang.label }}</span>
+                <span class="lang-native">{{ lang.native }}</span>
+              </div>
+              @if (themeService.language() === lang.code) {
+                <span class="lang-check">✓</span>
+              }
+            </button>
+          }
+        </div>
+        <div class="info-note">
+          ◈ Language affects UI labels only. Blog content stays in its original language.
+        </div>
+      </div>
+    }
+
+    <!-- ── NOTIFICATIONS ── -->
+    @if (activeSection() === 'notifications') {
+      <div class="section-wrap">
+        <div class="section-heading">
+          <h1>Notifications</h1>
+          <p>Choose what alerts you receive as admin</p>
+        </div>
+        <div class="notif-list">
+          @for (item of notifItems; track item.key) {
+            <div class="notif-row">
+              <div class="notif-text">
+                <span class="notif-label">{{ item.label }}</span>
+                <span class="notif-desc">{{ item.desc }}</span>
+              </div>
+              <button class="toggle-switch"
+                [class.on]="isNotifOn(item.key)"
+                (click)="toggleNotif(item.key)">
+                <span class="switch-thumb"></span>
+              </button>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- ── SECURITY ── -->
+    @if (activeSection() === 'security') {
+      <div class="section-wrap">
+        <div class="section-heading">
+          <h1>Security</h1>
+          <p>Protect your account and manage access</p>
+        </div>
+
+        <div class="security-card">
+          <div class="card-title">Change Password</div>
+          <div class="form-grid">
+            <div class="form-group full">
+              <label>Current Password</label>
+              <input [type]="showPassword() ? 'text' : 'password'"
+                [(ngModel)]="passwordForm.current" placeholder="••••••••" />
+            </div>
+            <div class="form-group">
+              <label>New Password</label>
+              <input [type]="showPassword() ? 'text' : 'password'"
+                [(ngModel)]="passwordForm.newPass" placeholder="Min. 8 characters" />
+            </div>
+            <div class="form-group">
+              <label>Confirm Password</label>
+              <input [type]="showPassword() ? 'text' : 'password'"
+                [(ngModel)]="passwordForm.confirm" placeholder="Repeat new password" />
+            </div>
+          </div>
+          <div class="form-actions">
+            <label class="show-pass-label">
+              <input type="checkbox" [checked]="showPassword()"
+                (change)="showPassword.set(!showPassword())" />
+              Show password
+            </label>
+            <button class="btn-primary" (click)="updatePassword()">Update Password</button>
+          </div>
+        </div>
+
+        <div class="security-card">
+          <div class="twofa-row">
+            <div>
+              <div class="card-title">Two-Factor Authentication</div>
+              <p class="card-sub">Add an extra layer of security</p>
+            </div>
+            <button class="toggle-switch" [class.on]="twoFactor()"
+              (click)="twoFactor.set(!twoFactor())">
+              <span class="switch-thumb"></span>
+            </button>
+          </div>
+          @if (twoFactor()) {
+            <div class="twofa-active">✓ 2FA is enabled. Your account is more secure.</div>
+          }
+        </div>
+
+        <div class="security-card">
+          <div class="sessions-header" (click)="showSessions.set(!showSessions())">
+            <div>
+              <div class="card-title">Active Sessions</div>
+              <p class="card-sub">Devices currently logged in</p>
+            </div>
+            <span class="chevron" [class.open]="showSessions()">›</span>
+          </div>
+          @if (showSessions()) {
+            <div class="sessions-list">
+              @for (s of sessions; track s.device) {
+                <div class="session-row">
+                  <div class="session-icon">{{ s.current ? '◉' : '◎' }}</div>
+                  <div class="session-info">
+                    <span class="session-device">{{ s.device }}</span>
+                    <span class="session-meta">{{ s.location }} · {{ s.time }}</span>
+                  </div>
+                  @if (s.current) {
+                    <span class="current-badge">Current</span>
+                  } @else {
+                    <button class="revoke-btn">Revoke</button>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- ── DANGER ZONE ── -->
+    @if (activeSection() === 'danger') {
+      <div class="section-wrap">
+        <div class="section-heading danger-heading">
+          <h1>Danger Zone</h1>
+          <p>Irreversible actions — proceed with extreme caution</p>
+        </div>
+
+        <div class="danger-card">
+          <div class="danger-row">
+            <div>
+              <div class="danger-action-title">Export All Data</div>
+              <p class="danger-action-sub">Download a full backup of all blogs, users, and settings</p>
+            </div>
+            <button class="btn-outline">Export JSON</button>
+          </div>
+        </div>
+
+        <div class="danger-card">
+          <div class="danger-row">
+            <div>
+              <div class="danger-action-title">Deactivate Account</div>
+              <p class="danger-action-sub">Temporarily disable this admin account. Reversible.</p>
+            </div>
+            <button class="btn-warn">Deactivate</button>
+          </div>
+        </div>
+
+        <div class="danger-card red-border">
+          <div class="danger-row">
+            <div>
+              <div class="danger-action-title red-text">Delete Account Permanently</div>
+              <p class="danger-action-sub">Removes all your data. Cannot be undone.</p>
+            </div>
+            <button class="btn-danger" (click)="showDeleteConfirm.set(true)">Delete Account</button>
+          </div>
+          @if (showDeleteConfirm()) {
+            <div class="delete-confirm-box">
+              <p>Type <strong>DELETE</strong> to confirm:</p>
+              <input type="text" [(ngModel)]="deleteInput" placeholder="DELETE" />
+              <div class="form-actions">
+                <button class="btn-ghost"
+                  (click)="showDeleteConfirm.set(false); deleteInput = ''">Cancel</button>
+                <button class="btn-danger" [disabled]="deleteInput !== 'DELETE'">
+                  Confirm Delete
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+  </main>
+</div>

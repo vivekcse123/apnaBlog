@@ -5,28 +5,28 @@ import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { PostService } from '../../../post/services/post-service';
 import { Post } from '../../../../core/models/post.model';
+import { ReadBlog } from "../read-blog/read-blog";
+import { ThemeService } from '../../../../core/services/theme-service';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [RouterLink, CommonModule, FormsModule],
+  imports: [RouterLink, CommonModule, FormsModule, ReadBlog],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })
 export class Home implements OnInit {
-  private postService = inject(PostService);
-  private destroyRef  = inject(DestroyRef);
+  private postService  = inject(PostService);
+  private destroyRef   = inject(DestroyRef);
+  themeService         = inject(ThemeService); // ← public (no private) so template can access it
 
-  // ── All published posts ────────────────────────────────
-  allPosts    = signal<Post[]>([]);
-  isLoading   = signal(true);
+  allPosts  = signal<Post[]>([]);
+  isLoading = signal(true);
 
-  // ── Search & Filter ────────────────────────────────────
-  searchQuery     = '';
+  searchQuery      = '';
   selectedCategory = signal('');
   selectedSort     = signal('newest');
 
-  // ── Filtered posts ─────────────────────────────────────
   filteredPosts = computed(() => {
     let posts = this.allPosts();
 
@@ -45,9 +45,9 @@ export class Home implements OnInit {
     }
 
     switch (this.selectedSort()) {
-      case 'liked':   return [...posts].sort((a, b) => b.likesCount  - a.likesCount);
-      case 'viewed':  return [...posts].sort((a, b) => b.views       - a.views);
-      default:        return [...posts].sort((a, b) =>
+      case 'liked':  return [...posts].sort((a, b) => b.likesCount - a.likesCount);
+      case 'viewed': return [...posts].sort((a, b) => b.views - a.views);
+      default:       return [...posts].sort((a, b) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
     }
@@ -106,7 +106,12 @@ export class Home implements OnInit {
   onSearch(value: string): void {
     this.searchQuery = value;
   }
-  // getFallbackImage(index: number): string {
-  //   return `https://picsum.photos/400/250?random=${index}`;
-  // }
+
+  isViewed   = signal(false);
+  selectedId = signal('');
+
+  readBlog(id: string): void {
+    this.selectedId.set(id);
+    this.isViewed.set(true);
+  }
 }

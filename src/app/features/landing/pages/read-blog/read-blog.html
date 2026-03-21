@@ -1,0 +1,121 @@
+<div class="modal-backdrop" [class.visible]="isVisible()" (click)="onBackdropClick($event)" role="dialog" aria-modal="true">
+  <article class="modal-panel" [class.visible]="isVisible()">
+
+    @if (isLoading()) {
+      <div class="skeleton-wrap">
+        <div class="sk sk-image"></div>
+        <div class="sk-body">
+          <div class="sk sk-tag"></div>
+          <div class="sk sk-title"></div>
+          <div class="sk sk-title sk-short"></div>
+          <div class="sk sk-meta"></div>
+          <div class="sk sk-divider"></div>
+          <div class="sk sk-line"></div>
+          <div class="sk sk-line"></div>
+          <div class="sk sk-line sk-short"></div>
+          <div class="sk sk-line"></div>
+        </div>
+      </div>
+    }
+
+    @if (!isLoading() && post(); as p) {
+
+      @if (p.featuredImage) {
+        <div class="hero-wrap">
+          <img [src]="p.featuredImage || '/images/village.png'" [alt]="p.title" class="hero-img"/>
+          <div class="hero-fade"></div>
+          <button class="close-btn close-over-image" (click)="closeModal()" aria-label="Close">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+      }
+
+      <header class="modal-header" [class.no-image]="!p.featuredImage">
+        <div class="categories-row">
+          @for (cat of p.categories; track cat) {
+            <span class="cat-pill">{{ cat }}</span>
+          }
+        </div>
+        @if (!p.featuredImage) {
+          <button class="close-btn" (click)="closeModal()" aria-label="Close">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        }
+      </header>
+
+      <div class="modal-body">
+
+        <h1 class="post-title">{{ p.title }}</h1>
+
+        @if (p.description) {
+          <p class="post-description">{{ p.description }}</p>
+        }
+
+        <div class="meta-row">
+          <div class="meta-left">
+            <div class="avatar">{{ p.user.name.charAt(0) }}</div>
+            <span class="author-name">{{ p.user.name }}</span>
+          </div>
+          <div class="meta-right">
+            <span class="meta-chip">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+              {{ p.createdAt | date:'MMM d, yyyy' }}
+            </span>
+            <span class="meta-chip">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+              {{ p.views | number }}
+            </span>
+            <span class="meta-chip">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+              </svg>
+              {{ p.likesCount }}
+            </span>
+            <span class="meta-chip">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+              {{ p.commentsCount }}
+            </span>
+            <span class="meta-chip reading-time">{{ readingTime() }} min read</span>
+          </div>
+        </div>
+
+        <hr class="divider" />
+
+        @if (p.tags.length) {
+          <div class="tags-row">
+            @for (tag of p.tags; track tag) {
+              <span class="tag">#{{ tag }}</span>
+            }
+          </div>
+        }
+
+        <div class="prose" [innerHTML]="p.content"></div>
+
+      </div>
+
+      <footer class="modal-footer">
+        <div class="footer-stats">
+          <span>👁 {{ p.views | number }}</span>
+          <span>❤️ {{ p.likesCount }}</span>
+          <span>💬 {{ p.commentsCount }}</span>
+        </div>
+        <button class="close-text-btn" (click)="closeModal()">Close article ↗</button>
+      </footer>
+
+    }
+  </article>
+</div>

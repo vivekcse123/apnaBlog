@@ -1,80 +1,161 @@
-<div class="main">
+<!-- register.component.html -->
+<div class="login-page">
 
-  <div class="register-container">
+  <!-- Ambient background -->
+  <div class="login-bg">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="grid-overlay"></div>
+  </div>
 
-    <!-- Form Side -->
-    <div class="form-container">
+  <div class="login-wrap register-wrap">
 
-      <div class="heading">
+    <!-- ── Brand Panel (right side on register) ── -->
+    <div class="login-panel brand-panel">
+      <div class="brand-content">
+        <div class="brand-logo">
+          <span class="brand-hex">⬡</span>
+          <span class="brand-name">ApnaBlog</span>
+        </div>
+        <img src="/images/village.png" alt="Village Illustration" class="brand-img">
+        <p class="brand-tagline">Share your stories<br>with the world 🌿</p>
+        <div class="brand-stats">
+          <div class="brand-stat">
+            <span class="stat-num">2.4k</span>
+            <span class="stat-lbl">Stories</span>
+          </div>
+          <div class="brand-divider"></div>
+          <div class="brand-stat">
+            <span class="stat-num">840</span>
+            <span class="stat-lbl">Authors</span>
+          </div>
+          <div class="brand-divider"></div>
+          <div class="brand-stat">
+            <span class="stat-num">12k</span>
+            <span class="stat-lbl">Readers</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Form Panel ── -->
+    <div class="login-panel form-panel">
+
+      <div class="form-header">
         <h2>Join ApnaBlog 👋</h2>
         <p>Create your account to start sharing stories</p>
       </div>
 
-      <form [formGroup]="registerForm" (ngSubmit)="register()">
+      <form [formGroup]="registerForm" (ngSubmit)="register()" class="login-form">
 
-        <input type="text" placeholder="Full Name" formControlName="name">
-        @if(registerForm.get('name')?.invalid && (isSubmitted() || registerForm.get('name')?.touched)){
-          @if(registerForm.get('name')?.errors?.['required']){
-            <small class="error">Name is required...!</small>
+        <!-- Name -->
+        <div class="field-group">
+          <label>Full Name</label>
+          <div class="input-wrap">
+            <span class="input-icon">◈</span>
+            <input type="text" placeholder="Enter your full name"
+              formControlName="name"
+              [class.field-error]="registerForm.get('name')?.invalid &&
+                (isSubmitted() || registerForm.get('name')?.touched)">
+          </div>
+          @if(registerForm.get('name')?.invalid && (isSubmitted() || registerForm.get('name')?.touched)){
+            @if(registerForm.get('name')?.errors?.['required']){
+              <small class="error">Name is required</small>
+            }
+            @if(registerForm.get('name')?.errors?.['pattern']){
+              <small class="error">Invalid name</small>
+            }
+            @if(registerForm.get('name')?.errors?.['minlength'] || registerForm.get('name')?.errors?.['maxlength']){
+              <small class="error">Name should be 5–15 characters long</small>
+            }
           }
-          @if(registerForm.get('name')?.errors?.['pattern']){
-            <small class="error">Invalid name...!</small>
-          }
-          @if(registerForm.get('name')?.errors?.['minlength'] || registerForm.get('name')?.errors?.['maxlength']){
-            <small class="error">Name should be 5 - 15 characters long...!</small>
-          }
-        }
-
-        <input type="email" placeholder="Email Address" formControlName="email">
-        @if(registerForm.get('email')?.invalid && (isSubmitted() || registerForm.get('email')?.touched)){
-          @if(registerForm.get('email')?.errors?.['required']){
-            <small class="error">Email is required...!</small>
-          }
-          @if(registerForm.get('email')?.errors?.['pattern']){
-            <small class="error">Invalid email address...!</small>
-          }
-        }
-
-        <input type="date" placeholder="Date of Birth" formControlName="dob">
-        @if(registerForm.get('dob')?.invalid && (isSubmitted() || registerForm.get('dob')?.touched)){
-          @if(registerForm.get('dob')?.errors?.['required']){
-            <small class="error">Date of Birth is required...!</small>
-          }
-        }
-
-        <input type="password" placeholder="Password" formControlName="password">
-        @if(registerForm.get('password')?.invalid && (isSubmitted() || registerForm.get('password')?.touched)){
-          @if(registerForm.get('password')?.errors?.['required']){
-            <small class="error">Password is required...!</small>
-          }
-          @if(registerForm.get('password')?.errors?.['minlength'] || registerForm.get('password')?.errors?.['maxlength']){
-            <small class="error">Password should be 5 - 15 characters long...!</small>
-          }
-        }
-
-        <button type="submit" class="register-btn">Register</button>
-
-        <div class="login-link">
-          <p>Already have an account? <a routerLink="/auth/login">Login</a></p>
         </div>
 
+        <!-- Email -->
+        <div class="field-group">
+          <label>Email Address</label>
+          <div class="input-wrap">
+            <span class="input-icon">◎</span>
+            <input type="email" placeholder="Enter your email address"
+              formControlName="email"
+              [class.field-error]="registerForm.get('email')?.invalid &&
+                (isSubmitted() || registerForm.get('email')?.touched)">
+          </div>
+          @if(registerForm.get('email')?.invalid && (isSubmitted() || registerForm.get('email')?.touched)){
+            @if(registerForm.get('email')?.errors?.['required']){
+              <small class="error">Email is required</small>
+            }
+            @if(registerForm.get('email')?.errors?.['pattern']){
+              <small class="error">Invalid email address</small>
+            }
+          }
+        </div>
+
+        <!-- Two-column row: DOB + Password -->
+        <div class="field-row">
+
+          <!-- DOB -->
+          <div class="field-group">
+            <label>Date of Birth</label>
+            <div class="input-wrap">
+              <span class="input-icon">◆</span>
+              <input type="date" formControlName="dob"
+                [class.field-error]="registerForm.get('dob')?.invalid &&
+                  (isSubmitted() || registerForm.get('dob')?.touched)">
+            </div>
+            @if(registerForm.get('dob')?.invalid && (isSubmitted() || registerForm.get('dob')?.touched)){
+              @if(registerForm.get('dob')?.errors?.['required']){
+                <small class="error">Date of Birth is required</small>
+              }
+            }
+          </div>
+
+          <!-- Password -->
+          <div class="field-group">
+            <label>Password</label>
+            <div class="input-wrap">
+              <span class="input-icon">◉</span>
+              <input type="password" placeholder="Create a password"
+                formControlName="password"
+                [class.field-error]="registerForm.get('password')?.invalid &&
+                  (isSubmitted() || registerForm.get('password')?.touched)">
+            </div>
+            @if(registerForm.get('password')?.invalid && (isSubmitted() || registerForm.get('password')?.touched)){
+              @if(registerForm.get('password')?.errors?.['required']){
+                <small class="error">Password is required</small>
+              }
+              @if(registerForm.get('password')?.errors?.['minlength'] || registerForm.get('password')?.errors?.['maxlength']){
+                <small class="error">5–15 characters long</small>
+              }
+            }
+          </div>
+
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" class="login-btn">
+          Create Account →
+        </button>
+
+        <!-- Login link -->
+        <p class="register-row">
+          Already have an account?
+          <a routerLink="/auth/login">Sign in</a>
+        </p>
+
+        <!-- Messages -->
         @if(errorMessage()){
-          <span class="error_message">{{ errorMessage() }}</span>
+          <div class="form-message error-message">
+            <span>✕</span> {{ errorMessage() }}
+          </div>
         }
         @if(successMessage()){
-          <span class="success_message">{{ successMessage() }}</span>
+          <div class="form-message success-message">
+            <span>✓</span> {{ successMessage() }}
+          </div>
         }
 
       </form>
-    </div>
-
-    <!-- Logo Side -->
-    <div class="logo-container">
-      <div class="logo-content">
-        <h1>ApnaBlog</h1>
-        <img src="/images/village.png" alt="Village Illustration">
-        <p>Share your stories with the world 🌿</p>
-      </div>
     </div>
 
   </div>

@@ -16,5 +16,10 @@ export class UserService {
   getUserById(id:  string | null): Observable<apiResponse<User>>{
     return this.http.get<apiResponse<User>>(`${this.endPoint}${id}`);
   }
+
+  updateUser(id: string, data: Partial<User>): Observable<apiResponse<User>> {
+    return this.http.put<apiResponse<User>>(`${this.endPoint}${id}/update`, data);
+  }
+
   
 }
