@@ -12,6 +12,7 @@ import { isPlatformBrowser } from '@angular/common';
 
 export class Auth {
   private authEndpoint = environment.apiAuthEndpoint;
+  
   private http = inject(HttpClient);
   private platformId = inject(PLATFORM_ID);
   private isBrowser = isPlatformBrowser(this.platformId);
