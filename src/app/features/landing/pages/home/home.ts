@@ -114,4 +114,6 @@ export class Home implements OnInit {
     this.selectedId.set(id);
     this.isViewed.set(true);
   }
+
+  menuOpen = false;
 }

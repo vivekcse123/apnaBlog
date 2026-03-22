@@ -1,6 +1,3 @@
-<!-- blog-list.component.html -->
-
-<!-- ══════════════════ HEADER ══════════════════ -->
 <header class="header">
   <div class="header-left">
     <div class="logo">
@@ -10,18 +7,31 @@
   </div>
 
   <div class="header-right">
-    <!-- Theme toggle -->
     <button class="theme-toggle" (click)="themeService.toggleTheme()"
       [attr.aria-label]="themeService.theme() === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'">
       <span class="theme-icon">{{ themeService.theme() === 'dark' ? '☀' : '☾' }}</span>
     </button>
 
-    <button class="create-btn" routerLink="/auth/login">
+    <button class="create-btn desktop-only" routerLink="/auth/login">
       <span>✦</span> Write a Story
     </button>
-    <button class="signup-btn" routerLink="/auth/register">Sign Up</button>
+    <button class="signup-btn desktop-only" routerLink="/auth/register">Sign Up</button>
+
+    <button class="menu-btn" (click)="menuOpen = !menuOpen" [class.open]="menuOpen" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
   </div>
 </header>
+
+<div class="mobile-drawer" [class.open]="menuOpen">
+  <button class="drawer-item" routerLink="/auth/login" (click)="menuOpen = false">
+    <span>✦</span> Write a Story
+  </button>
+  <button class="drawer-item outline" routerLink="/auth/register" (click)="menuOpen = false">
+    Sign Up
+  </button>
+</div>
+<div class="drawer-backdrop" [class.open]="menuOpen" (click)="menuOpen = false"></div>
 
 <!-- ══════════════════ HERO ══════════════════ -->
 <div class="hero-wrap">
