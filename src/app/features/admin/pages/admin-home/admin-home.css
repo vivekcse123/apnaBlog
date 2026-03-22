@@ -1,4 +1,3 @@
-/* ── Base ── */
 .home-container {
   font-family: 'DM Sans', sans-serif;
   padding: 40px 60px;
@@ -8,9 +7,10 @@
   background: var(--bg-base);
   color: var(--text-primary);
   min-height: 100vh;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
-/* ── Header ── */
 .header {
   display: flex;
   align-items: center;
@@ -28,7 +28,6 @@
   letter-spacing: -0.3px;
 }
 
-/* date-badge keeps its brand gradient — intentional fixed colour */
 .date-badge {
   font-size: 13px;
   color: #fff;
@@ -39,7 +38,6 @@
   white-space: nowrap;
 }
 
-/* ── Section Label ── */
 .section-label {
   font-size: 14px;
   font-weight: 600;
@@ -47,7 +45,6 @@
   margin-bottom: 14px;
 }
 
-/* ── Info Cards ── */
 .info-container {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -66,16 +63,14 @@
   transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
   position: relative;
   overflow: hidden;
+  min-width: 0;
 }
 
-/* Brand accent stripe — kept as fixed gradient */
 .info-card::before {
   content: "";
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 4px;
-  height: 100%;
+  top: 0; left: 0;
+  width: 4px; height: 100%;
   background: linear-gradient(180deg, #43cea2, #185a9d);
 }
 
@@ -85,10 +80,8 @@
   border-color: var(--border-strong);
 }
 
-/* ── Icon Backgrounds ── */
 .info-icon {
-  width: 48px;
-  height: 48px;
+  width: 48px; height: 48px;
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -96,7 +89,6 @@
   flex-shrink: 0;
 }
 
-/* These use semi-transparent brand colours that work in both themes */
 .blogs-icon     { background: rgba(67,  206, 162, 0.12); }
 .users-icon     { background: rgba(24,  90,  157, 0.12); }
 .published-icon { background: rgba(15,  122, 90,  0.12); }
@@ -119,6 +111,8 @@
   color: var(--text-muted);
   font-weight: 500;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .info-value {
@@ -128,7 +122,6 @@
   line-height: 1.1;
 }
 
-/* ── Info Badges ── */
 .info-badge {
   display: inline-block;
   font-size: 11px;
@@ -137,9 +130,11 @@
   border-radius: 20px;
   white-space: nowrap;
   width: fit-content;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* Semi-transparent backgrounds survive both themes; text colours are vivid enough */
 .blog-badge      { background: rgba(67,  206, 162, 0.15); color: #0f7a5a; }
 .user-badge      { background: rgba(24,  90,  157, 0.12); color: #185a9d; }
 .published-badge { background: rgba(15,  122, 90,  0.12); color: #0f7a5a; }
@@ -149,7 +144,6 @@
 .likes-badge     { background: rgba(217, 83,  79,  0.12); color: #c9302c; }
 .active-badge    { background: rgba(92,  184, 92,  0.12); color: #3a7a3a; }
 
-/* Dark-mode badge text boost — keeps them readable on dark surfaces */
 [data-theme="dark"] .blog-badge      { color: #43cea2; }
 [data-theme="dark"] .user-badge      { color: #60a5fa; }
 [data-theme="dark"] .published-badge { color: #34d399; }
@@ -178,6 +172,7 @@
   cursor: pointer;
   box-shadow: var(--card-shadow);
   transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  min-width: 0;
 }
 
 .action-card:hover {
@@ -186,13 +181,10 @@
   border-color: var(--border-strong);
 }
 
-.action-card:active {
-  transform: scale(0.98);
-}
+.action-card:active { transform: scale(0.98); }
 
 .action-icon {
-  width: 36px;
-  height: 36px;
+  width: 36px; height: 36px;
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -218,6 +210,8 @@
   display: flex;
   flex-direction: column;
   gap: 30px;
+  min-width: 0;
+  width: 100%;
 }
 
 /* ── Table Card ── */
@@ -227,18 +221,33 @@
   border: 1px solid var(--border);
   box-shadow: var(--card-shadow);
   overflow: hidden;
+  min-width: 0;
+  width: 100%;
 }
 
-/* ── Table ── */
+.table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.table-scroll::-webkit-scrollbar { height: 5px; }
+.table-scroll::-webkit-scrollbar-track { background: transparent; }
+.table-scroll::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 99px;
+}
+
 table {
   width: 100%;
+  min-width: 700px;
   border-collapse: collapse;
   background: var(--bg-surface);
   color: var(--text-primary);
 }
 
-/* thead keeps the brand gradient — looks great in both modes */
-/* Scoped to .table-card so it beats the global thead/th vars in styles.css */
 .table-card thead,
 .table-card thead tr {
   background: linear-gradient(135deg, #43cea2, #185a9d) !important;
@@ -249,9 +258,10 @@ table {
   text-align: left;
   font-weight: 500;
   font-size: 14px;
-  color: #ffffff !important; /* always white — gradient bg is always dark */
+  color: #ffffff !important;
   background: transparent !important;
   border-bottom: none;
+  white-space: nowrap;
 }
 
 td {
@@ -260,18 +270,16 @@ td {
   font-size: 14px;
   color: var(--text-primary);
   background: var(--bg-surface);
-  transition: background-color 0.15s ease, color 0.15s ease;
+  transition: background-color 0.15s ease;
+  white-space: nowrap;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-tbody > tr:last-child td {
-  border-bottom: none;
-}
+tbody > tr:last-child td { border-bottom: none; }
+tbody > tr:hover td { background: var(--bg-hover); }
 
-tbody > tr:hover td {
-  background: var(--bg-hover);
-}
-
-/* ── Status Badges ── */
 .status-badge {
   display: inline-block;
   padding: 5px 12px;
@@ -281,26 +289,18 @@ tbody > tr:hover td {
   white-space: nowrap;
 }
 
-.status-published {
-  background: var(--success-bg);
-  color: var(--success);
-}
+.status-published { background: var(--success-bg); color: var(--success); }
+.status-draft     { background: var(--accent-subtle); color: var(--accent-text); }
 
-.status-draft {
-  background: var(--accent-subtle);
-  color: var(--accent-text);
-}
-
-/* ── User Cell ── */
 .user-cell {
   display: flex;
   align-items: center;
   gap: 10px;
+  min-width: 0;
 }
 
 .user-avatar {
-  width: 34px;
-  height: 34px;
+  width: 34px; height: 34px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -309,20 +309,21 @@ tbody > tr:hover td {
   font-size: 12px;
   font-weight: 600;
   flex-shrink: 0;
-  background: linear-gradient(135deg, #43cea2, #185a9d); /* visible in light */
-  border: 2px solid transparent;                          /* base border */
+  background: linear-gradient(135deg, #43cea2, #185a9d);
+  border: 2px solid transparent;
 }
 
-[data-theme="dark"] .user-avatar {
-  border: 2px solid var(--border-strong);                 /* visible ring in dark */
-}
+[data-theme="dark"] .user-avatar { border: 2px solid var(--border-strong); }
 
 .email-cell {
   color: var(--text-muted);
   font-size: 13px;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-/* ── Role Badges ── */
 .role-badge {
   display: inline-block;
   padding: 5px 12px;
@@ -332,97 +333,41 @@ tbody > tr:hover td {
   white-space: nowrap;
 }
 
-.admin-role  {
-  background: var(--accent-subtle);
-  color: var(--accent-text);
+.admin-role  { background: var(--accent-subtle); color: var(--accent-text); }
+.editor-role { background: var(--warn-bg);       color: var(--warn); }
+.user-role   { background: var(--success-bg);    color: var(--success); }
+
+.empty-row {
+  text-align: center;
+  padding: 30px 0 !important;
+  color: var(--text-muted);
+  font-size: 14px;
 }
 
-.editor-role {
-  background: var(--warn-bg);
-  color: var(--warn);
-}
-
-.user-role {
-  background: var(--success-bg);
-  color: var(--success);
-}
-
-/* ── Responsive ── */
 @media (max-width: 1200px) {
-  .info-container {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
+  .info-container { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
 
 @media (max-width: 1024px) {
-  .home-container {
-    padding: 30px 40px;
-  }
-
-  .info-container {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .quick-actions {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .bottom-grid {
-    grid-template-columns: 1fr;
-  }
+  .home-container { padding: 30px 40px; }
+  .info-container { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .quick-actions  { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
 @media (max-width: 768px) {
-  .home-container {
-    padding: 20px;
-  }
-
-  .header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .info-container {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .quick-actions {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  th, td {
-    padding: 10px 12px;
-    font-size: 13px;
-  }
-
-  .email-cell {
-    display: none;
-  }
+  .home-container { padding: 20px; }
+  .header         { flex-direction: column; align-items: flex-start; }
+  .info-container { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .quick-actions  { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .info-icon      { width: 40px; height: 40px; }
+  .info-value     { font-size: 20px; }
 }
 
 @media (max-width: 480px) {
-  .home-container {
-    padding: 16px;
-  }
-
-  .heading {
-    font-size: 20px;
-  }
-
-  .info-container {
-    grid-template-columns: 1fr;
-  }
-
-  .info-value {
-    font-size: 22px;
-  }
-
-  .quick-actions {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  th:nth-child(3),
-  td:nth-child(3) {
-    display: none;
-  }
+  .home-container { padding: 16px; }
+  .heading        { font-size: 20px; }
+  .info-container { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .info-value     { font-size: 18px; }
+  .info-icon      { width: 36px; height: 36px; }
+  .quick-actions  { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }

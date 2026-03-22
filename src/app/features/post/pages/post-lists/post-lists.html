@@ -32,7 +32,6 @@
     </div>
   </div>
 
-  <!-- Create Blog Modal -->
   @if (showCreateBlog()) {
     <app-create-blog
       (close)="showCreateBlog.set(false)"
@@ -41,92 +40,93 @@
   }
 
   <div class="table-card">
-    <table>
-      <thead>
-        <tr>
-          <th>Title</th>
-          <th>Category</th>
-          <th>Status</th>
-          <th>Views</th>
-          <th>Likes</th>
-          <th>Publish</th>
-          <th width="160">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-
-        @for (blog of paginatedBlogs() | blogFilter: debounceValue() : selectedCategory() : selectedStatus(); track blog._id) {
+    <div class="table-scroll">
+      <table>
+        <thead>
           <tr>
-            <td>
-              <div class="blog-title">{{ blog.title }}</div>
-              <div class="blog-sub">{{ blog.description }}</div>
-            </td>
-            <td>
-              <div class="category-list">
-                @for (category of blog.categories.slice(0, 2); track category) {
-                  <span class="category-badge" style="margin: 2px;" [ngClass]="category.toLowerCase()">
-                    {{ category }}
-                  </span>
-                }
-              </div>
-            </td>
-            <td>
-              <span
-                class="status-badge"
-                [class.status-published]="blog.status === 'published'"
-                [class.status-draft]="blog.status === 'draft'"
-              >
-                {{ blog.status | titlecase }}
-              </span>
-            </td>
-            <td>
-              <div class="stat-cell">
-                <svg width="13" height="13" viewBox="0 0 22 22" fill="none">
-                  <ellipse cx="11" cy="11" rx="8" ry="5" stroke="#7F77DD" stroke-width="2" fill="none"/>
-                  <circle cx="11" cy="11" r="2.5" fill="#7F77DD"/>
-                </svg>
-                {{ blog.views | number }}
-              </div>
-            </td>
-            <td>
-              <div class="stat-cell">
-                <svg width="13" height="13" viewBox="0 0 22 22" fill="none">
-                  <path d="M11 18s-7-4.5-7-9a4 4 0 018 0 4 4 0 018 0c0 4.5-7 9-7 9z"
-                    stroke="#d9534f" stroke-width="2" fill="none" stroke-linejoin="round"/>
-                </svg>
-                {{ blog.likesCount | number }}
-              </div>
-            </td>
-            <td>{{ blog.createdAt | date: 'mediumDate' }}</td>
-            <td>
-              <div class="action-buttons">
-                <button class="edit" (click)="viewPost(blog._id)">View</button>
-                <button class="delete" (click)="confirmDelete(blog._id, blog.title)">Delete</button>
-              </div>
-            </td>
+            <th>Title</th>
+            <th>Category</th>
+            <th>Status</th>
+            <th>Views</th>
+            <th>Likes</th>
+            <th>Publish</th>
+            <th width="160">Actions</th>
           </tr>
-        }
+        </thead>
+        <tbody>
 
-        @if ((allBlogs() | blogFilter: debounceValue() : selectedCategory() : selectedStatus()).length === 0) {
-          <tr>
-            <td colspan="7" class="empty-row">
-              <div class="empty-state">
-                <svg width="40" height="40" viewBox="0 0 22 22" fill="none">
-                  <rect x="3" y="3" width="16" height="3" rx="1.5" fill="#ddd"/>
-                  <rect x="3" y="9" width="11" height="3" rx="1.5" fill="#ddd"/>
-                  <rect x="3" y="15" width="13" height="3" rx="1.5" fill="#ddd"/>
-                </svg>
-                <p>No blogs found</p>
-              </div>
-            </td>
-          </tr>
-        }
+          @for (blog of paginatedBlogs() | blogFilter: debounceValue() : selectedCategory() : selectedStatus(); track blog._id) {
+            <tr>
+              <td>
+                <div class="blog-title">{{ blog.title }}</div>
+                <div class="blog-sub">{{ blog.description }}</div>
+              </td>
+              <td>
+                <div class="category-list">
+                  @for (category of blog.categories.slice(0, 2); track category) {
+                    <span class="category-badge" style="margin: 2px;" [ngClass]="category.toLowerCase()">
+                      {{ category }}
+                    </span>
+                  }
+                </div>
+              </td>
+              <td>
+                <span
+                  class="status-badge"
+                  [class.status-published]="blog.status === 'published'"
+                  [class.status-draft]="blog.status === 'draft'"
+                >
+                  {{ blog.status | titlecase }}
+                </span>
+              </td>
+              <td>
+                <div class="stat-cell">
+                  <svg width="13" height="13" viewBox="0 0 22 22" fill="none">
+                    <ellipse cx="11" cy="11" rx="8" ry="5" stroke="#7F77DD" stroke-width="2" fill="none"/>
+                    <circle cx="11" cy="11" r="2.5" fill="#7F77DD"/>
+                  </svg>
+                  {{ blog.views | number }}
+                </div>
+              </td>
+              <td>
+                <div class="stat-cell">
+                  <svg width="13" height="13" viewBox="0 0 22 22" fill="none">
+                    <path d="M11 18s-7-4.5-7-9a4 4 0 018 0 4 4 0 018 0c0 4.5-7 9-7 9z"
+                      stroke="#d9534f" stroke-width="2" fill="none" stroke-linejoin="round"/>
+                  </svg>
+                  {{ blog.likesCount | number }}
+                </div>
+              </td>
+              <td>{{ blog.createdAt | date: 'mediumDate' }}</td>
+              <td>
+                <div class="action-buttons">
+                  <button class="edit" (click)="viewPost(blog._id)">View</button>
+                  <button class="delete" (click)="confirmDelete(blog._id, blog.title)">Delete</button>
+                </div>
+              </td>
+            </tr>
+          }
 
-      </tbody>
-    </table>
+          @if ((allBlogs() | blogFilter: debounceValue() : selectedCategory() : selectedStatus()).length === 0) {
+            <tr>
+              <td colspan="7" class="empty-row">
+                <div class="empty-state">
+                  <svg width="40" height="40" viewBox="0 0 22 22" fill="none">
+                    <rect x="3" y="3" width="16" height="3" rx="1.5" fill="#ddd"/>
+                    <rect x="3" y="9" width="11" height="3" rx="1.5" fill="#ddd"/>
+                    <rect x="3" y="15" width="13" height="3" rx="1.5" fill="#ddd"/>
+                  </svg>
+                  <p>No blogs found</p>
+                </div>
+              </td>
+            </tr>
+          }
+
+        </tbody>
+      </table>
+    </div>
   </div>
 
-  <!-- Pagination -->
   <div class="pagination">
     <button (click)="previousPage()" [disabled]="currentPage() === 1">Prev</button>
     @for (page of pages(); track page) {
@@ -137,7 +137,6 @@
 
 </div>
 
-<!-- View / Edit Post Modal -->
 @if (isPostViewed()) {
   <app-view-post
     [postId]="selectedPostId()"
@@ -146,7 +145,6 @@
   />
 }
 
-<!-- Delete Confirmation Modal -->
 @if (showConfirm()) {
   <div class="modal-overlay" (click)="cancelDelete()">
     <div class="confirm-box" (click)="$event.stopPropagation()">
@@ -172,7 +170,6 @@
   </div>
 }
 
-<!-- Result Message Modal -->
 <app-message-modal
   [show]="showMessage()"
   [type]="modalType()"
