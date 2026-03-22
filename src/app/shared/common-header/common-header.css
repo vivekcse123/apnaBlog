@@ -1,6 +1,5 @@
 /* ═══════════════════════════════════════════════════
    header.css — fully themed via CSS variables
-   [data-theme="dark"] on <html> handles everything.
    ═══════════════════════════════════════════════════ */
 
 /* ── Base ── */
@@ -16,17 +15,14 @@
   box-shadow: var(--card-shadow);
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 1000;
 }
 
-/* Brand accent line — kept as fixed gradient, always visible */
 .header::after {
   content: "";
   position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 3px;
+  bottom: 0; left: 0;
+  width: 100%; height: 3px;
   background: linear-gradient(135deg, #43cea2, #185a9d);
   z-index: 1;
 }
@@ -63,7 +59,7 @@
   letter-spacing: 0.3px;
 }
 
-/* ── Nav ── */
+/* ── Desktop Nav ── */
 .nav {
   display: flex;
   gap: 35px;
@@ -82,8 +78,7 @@
 .nav-link::after {
   content: "";
   position: absolute;
-  left: 0;
-  bottom: -6px;
+  left: 0; bottom: -6px;
   width: 0%;
   height: 2px;
   background: linear-gradient(135deg, #43cea2, #185a9d);
@@ -99,7 +94,6 @@
 /* ── Right Section ── */
 .right-section {
   display: flex;
-  flex-direction: row;
   align-items: center;
   gap: 20px;
   flex-shrink: 0;
@@ -108,15 +102,13 @@
 /* ── Notification ── */
 .notification {
   position: relative;
-  margin-left: 10px;
   cursor: pointer;
-  margin-top: 5px;
+  margin-top: 4px;
 }
 
 .notification_count {
   position: absolute;
-  top: -6px;
-  right: -6px;
+  top: -6px; right: -6px;
   background: var(--danger);
   color: #ffffff;
   font-size: 11px;
@@ -131,8 +123,7 @@
 
 /* ── Profile ── */
 .profile {
-  width: 42px;
-  height: 42px;
+  width: 42px; height: 42px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -151,7 +142,6 @@
   box-shadow: 0 6px 18px rgba(24, 90, 157, 0.4);
 }
 
-/* ── Gradient Icon ── */
 .gradient-icon {
   background: linear-gradient(135deg, #43cea2, #185a9d);
   -webkit-background-clip: text;
@@ -164,95 +154,126 @@
   display: none;
   flex-direction: column;
   justify-content: center;
-  align-items: center;
   gap: 5px;
-  width: 38px;
-  height: 38px;
-  background: none;
-  border: none;
+  width: 38px; height: 38px;
+  background: var(--bg-surface-alt);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
   cursor: pointer;
-  padding: 4px;
-  border-radius: 8px;
-  z-index: 101;
+  padding: 8px;
+  touch-action: manipulation;
+  transition: background 0.2s ease, border-color 0.2s ease;
 }
-
-.hamburger:hover { background: var(--bg-hover); }
 
 .hamburger span {
   display: block;
-  width: 22px;
-  height: 2px;
-  background: var(--text-primary);
+  width: 100%; height: 2px;
+  background: var(--text-secondary);
   border-radius: 2px;
+  transition: transform 0.3s ease, opacity 0.3s ease, width 0.3s ease;
   transform-origin: center;
 }
 
 .hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
-.hamburger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+.hamburger.open span:nth-child(2) { opacity: 0; width: 0; }
 .hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
-/* ── Tablet (max 1024px) ── */
+.hamburger:hover {
+  background: var(--accent-subtle);
+  border-color: var(--accent);
+}
+
+/* ── Mobile Drawer — slides from RIGHT ── */
+.mobile-drawer {
+  position: fixed;
+  top: 70px; right: 0;
+  width: 260px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 0 16px;
+  padding: 20px 16px;
+  display: none;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 999;
+  transform: translateX(110%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: -4px 8px 24px rgba(0,0,0,0.12);
+}
+
+.mobile-drawer.open { transform: translateX(0); }
+
+.drawer-link {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--text-secondary);
+  text-decoration: none;
+  border: 1.5px solid transparent;
+  touch-action: manipulation;
+  transition: background 0.2s ease, color 0.2s ease,
+              border-color 0.2s ease, transform 0.2s ease;
+}
+
+.drawer-link:hover {
+  background: var(--accent-subtle);
+  border-color: var(--accent);
+  color: var(--accent-text);
+  transform: translateX(-2px);
+}
+
+.drawer-active {
+  background: var(--accent-subtle);
+  color: var(--accent-text);
+  border-color: color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+/* ── Backdrop ── */
+.drawer-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.3);
+  z-index: 998;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.drawer-backdrop.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 @media (max-width: 1024px) {
-  .header    { padding: 0 30px; }
-  .nav       { gap: 22px; }
-  .nav-link  { font-size: 14px; }
+  .header   { padding: 0 30px; }
+  .nav      { gap: 22px; }
+  .nav-link { font-size: 14px; }
 }
 
-/* ── Mobile (max 768px) ── */
 @media (max-width: 768px) {
-  .header {
-    padding: 0 20px;
-    flex-wrap: wrap;
-    height: auto;
-    min-height: 70px;
-  }
+  .header { padding: 0 20px; height: 60px; }
 
-  .hamburger { display: flex; order: 1; }
-  .logo      { order: 2; }
+  .hamburger { display: flex; }
+  .nav       { display: none; }
 
-  .right-section {
-    order: 3;
-    gap: 14px;
-    margin-left: auto;
-  }
+  .mobile-drawer  { display: flex; top: 60px; }
+  .drawer-backdrop { display: block; }
 
-  .nav {
-    order: 4;
-    flex-direction: column;
-    gap: 0;
-    width: 100%;
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.35s ease, padding 0.3s ease;
-    background: var(--bg-surface);
-    border-top: 1px solid var(--border);
-  }
-
-  .nav.nav-open {
-    max-height: 400px;
-    padding: 10px 0 16px;
-  }
-
-  .nav-link {
-    padding: 12px 4px;
-    font-size: 15px;
-    border-bottom: 1px solid var(--border);
-    width: 100%;
-    display: block;
-  }
-
-  .nav-link:last-child { border-bottom: none; }
-  .nav-link::after     { bottom: 0; }
+  .right-section { gap: 14px; }
 }
 
-/* ── Small Mobile (max 480px) ── */
 @media (max-width: 480px) {
   .header    { padding: 0 16px; }
   .logo-text { font-size: 18px; }
 
   .profile {
-    width: 36px;
-    height: 36px;
+    width: 36px; height: 36px;
     font-size: 12px;
   }
 

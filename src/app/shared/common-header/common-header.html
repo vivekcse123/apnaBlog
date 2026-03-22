@@ -11,14 +11,13 @@
     <span class="logo-text">{{logo}}</span>
   </div>
 
-  <nav class="nav" [class.nav-open]="menuOpen">
+  <nav class="nav">
     @for (nav of navs; track nav.label) {
       <a
         [routerLink]="nav.routerLink"
         routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }"
-        class="nav-link"
-        (click)="menuOpen = false">
+        class="nav-link">
         {{ nav.label }}
       </a>
     }
@@ -40,3 +39,18 @@
   </div>
 
 </header>
+
+<!-- Mobile Drawer — slides from right -->
+<div class="mobile-drawer" [class.open]="menuOpen">
+  @for (nav of navs; track nav.label) {
+    <a
+      [routerLink]="nav.routerLink"
+      routerLinkActive="drawer-active"
+      [routerLinkActiveOptions]="{ exact: true }"
+      class="drawer-link"
+      (click)="menuOpen = false">
+      {{ nav.label }}
+    </a>
+  }
+</div>
+<div class="drawer-backdrop" [class.open]="menuOpen" (click)="menuOpen = false"></div>

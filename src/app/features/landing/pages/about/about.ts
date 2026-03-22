@@ -33,5 +33,12 @@ export class About {
     }, 1500);
   }
 
-  navMenuOpen = false; // toggle...
+  navMenuOpen = false;
+
+  scrollToContact() {
+    document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  scrollTo(id: string) {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 }
