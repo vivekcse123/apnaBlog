@@ -60,28 +60,29 @@
         (ngModelChange)="onSearch($event)"
       />
     </div>
+    <div class="filter-selects">
+      <select class="filter-select"
+        [ngModel]="selectedCategory()"
+        (ngModelChange)="selectedCategory.set($event)">
+        <option value="">All Categories</option>
+        <option value="Technology">Technology</option>
+        <option value="Lifestyle">Lifestyle</option>
+        <option value="Education">Education</option>
+        <option value="Health">Health</option>
+        <option value="Business">Business</option>
+        <option value="Entertainment">Entertainment</option>
+        <option value="Social">Social</option>
+        <option value="Village">Village</option>
+      </select>
 
-    <select class="filter-select"
-      [ngModel]="selectedCategory()"
-      (ngModelChange)="selectedCategory.set($event)">
-      <option value="">All Categories</option>
-      <option value="Technology">Technology</option>
-      <option value="Lifestyle">Lifestyle</option>
-      <option value="Education">Education</option>
-      <option value="Health">Health</option>
-      <option value="Business">Business</option>
-      <option value="Entertainment">Entertainment</option>
-      <option value="Social">Social</option>
-      <option value="Village">Village</option>
-    </select>
-
-    <select class="filter-select"
-      [ngModel]="selectedSort()"
-      (ngModelChange)="selectedSort.set($event)">
-      <option value="newest">Newest</option>
-      <option value="liked">Most Liked</option>
-      <option value="viewed">Most Viewed</option>
-    </select>
+      <select class="filter-select"
+        [ngModel]="selectedSort()"
+        (ngModelChange)="selectedSort.set($event)">
+        <option value="newest">Newest</option>
+        <option value="liked">Most Liked</option>
+        <option value="viewed">Most Viewed</option>
+      </select>
+    </div>
   </div>
 </div>
 
@@ -117,12 +118,12 @@
     </div>
     <div class="blog-grid">
       @for (blog of filteredPosts(); track blog._id; let i = $index) {
-        <article class="blog-card" (click)="readBlog(blog._id)">
-          <div class="card-img-wrap">
+        <article class="blog-card">
+          <div class="card-img-wrap" (click)="readBlog(blog._id)">
             <img [src]="blog.featuredImage" [alt]="blog.title" loading="lazy" />
             <span class="card-cat">{{ blog.categories[0] }}</span>
           </div>
-          <div class="card-body">
+          <div class="card-body" (click)="readBlog(blog._id)">
             <h3>{{ blog.title }}</h3>
             <p>{{ blog.description }}</p>
           </div>
@@ -132,7 +133,7 @@
               <span class="stat">💬 {{ blog.commentsCount }}</span>
               <span class="stat">👁 {{ blog.views }}</span>
             </div>
-            <button class="read-btn" (click)="readBlog(blog._id); $event.stopPropagation()">Read →</button>
+            <button class="read-btn" (click)="readBlog(blog._id)">Read →</button>
           </div>
         </article>
       }
@@ -155,12 +156,12 @@
     </div>
     <div class="blog-grid">
       @for (blog of trendingPosts(); track blog._id) {
-        <article class="blog-card" (click)="readBlog(blog._id)">
-          <div class="card-img-wrap">
+        <article class="blog-card">
+          <div class="card-img-wrap" (click)="readBlog(blog._id)">
             <img [src]="blog.featuredImage" [alt]="blog.title" loading="lazy" />
             <span class="card-cat">{{ blog.categories[0] }}</span>
           </div>
-          <div class="card-body">
+          <div class="card-body" (click)="readBlog(blog._id)">
             <h3>{{ blog.title }}</h3>
             <p>{{ blog.description }}</p>
           </div>
@@ -170,7 +171,7 @@
               <span class="stat">💬 {{ blog.commentsCount }}</span>
               <span class="stat">👁 {{ blog.views }}</span>
             </div>
-            <button class="read-btn" (click)="readBlog(blog._id); $event.stopPropagation()">Read →</button>
+            <button class="read-btn" (click)="readBlog(blog._id)">Read →</button>
           </div>
         </article>
       }
@@ -185,12 +186,12 @@
     </div>
     <div class="blog-grid">
       @for (blog of hotPosts(); track blog._id) {
-        <article class="blog-card" (click)="readBlog(blog._id)">
-          <div class="card-img-wrap">
+        <article class="blog-card">
+          <div class="card-img-wrap" (click)="readBlog(blog._id)">
             <img [src]="blog.featuredImage" [alt]="blog.title" loading="lazy" />
             <span class="card-cat">{{ blog.categories[0] }}</span>
           </div>
-          <div class="card-body">
+          <div class="card-body" (click)="readBlog(blog._id)">
             <h3>{{ blog.title }}</h3>
             <p>{{ blog.description }}</p>
           </div>
@@ -200,7 +201,7 @@
               <span class="stat">💬 {{ blog.commentsCount }}</span>
               <span class="stat">👁 {{ blog.views }}</span>
             </div>
-            <button class="read-btn" (click)="readBlog(blog._id); $event.stopPropagation()">Read →</button>
+            <button class="read-btn" (click)="readBlog(blog._id)">Read →</button>
           </div>
         </article>
       }
@@ -215,12 +216,12 @@
     </div>
     <div class="blog-grid">
       @for (blog of latestPosts(); track blog._id) {
-        <article class="blog-card" (click)="readBlog(blog._id)">
-          <div class="card-img-wrap">
+        <article class="blog-card">
+          <div class="card-img-wrap" (click)="readBlog(blog._id)">
             <img [src]="blog.featuredImage" [alt]="blog.title" loading="lazy" />
             <span class="card-cat">{{ blog.categories[0] }}</span>
           </div>
-          <div class="card-body">
+          <div class="card-body" (click)="readBlog(blog._id)">
             <h3>{{ blog.title }}</h3>
             <p>{{ blog.description }}</p>
           </div>
@@ -230,7 +231,7 @@
               <span class="stat">💬 {{ blog.commentsCount }}</span>
               <span class="stat">👁 {{ blog.views }}</span>
             </div>
-            <button class="read-btn" (click)="readBlog(blog._id); $event.stopPropagation()">Read →</button>
+            <button class="read-btn" (click)="readBlog(blog._id)">Read →</button>
           </div>
         </article>
       }
