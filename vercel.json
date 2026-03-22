@@ -2,10 +2,5 @@
   "outputDirectory": "dist/blog-app/browser",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.csr.html" }
-  ],
-  "functions": {
-    "api/**": {
-      "maxDuration": 30
-    }
-  }
+  ]
 }
