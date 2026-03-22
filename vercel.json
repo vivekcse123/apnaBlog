@@ -1,5 +1,5 @@
 {
-  "outputDirectory": "dist/blog-app",
+  "outputDirectory": "dist/blog-app/browser",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.csr.html" }
   ]
