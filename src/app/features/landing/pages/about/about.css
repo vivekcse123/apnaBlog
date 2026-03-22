@@ -1137,7 +1137,6 @@
 
 .nav-drop-item.gradient:hover { opacity: 0.9; }
 
-/* ═══ RESPONSIVE NAV ═══ */
 @media (max-width: 768px) {
   .about-nav-inner { height: 60px; }
 
@@ -1145,7 +1144,6 @@
   .nav-menu-btn { display: flex; }
   .nav-dropdown { display: flex; }
 
-  /* Logo stays centered via absolute — works fine on mobile too */
   .nav-logo .logo-text { font-size: 18px; }
   .nav-logo .logo-hex  { font-size: 1.2rem; }
 
@@ -1153,7 +1151,6 @@
 }
 
 @media (max-width: 400px) {
-  /* On very small screens hide the back text, keep arrow only */
   .back-label { display: none; }
   .back-btn   { padding: 8px 10px; }
 }

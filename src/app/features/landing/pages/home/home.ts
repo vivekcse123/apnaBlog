@@ -28,6 +28,7 @@ export class Home implements OnInit {
   selectedSort     = signal('newest');
 
   filteredPosts = computed(() => {
+    // demo comment..
     let posts = this.allPosts();
 
     if (this.selectedCategory()) {

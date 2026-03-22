@@ -33,5 +33,5 @@ export class About {
     }, 1500);
   }
 
-  navMenuOpen = false;
+  navMenuOpen = false; // toggle...
 }
