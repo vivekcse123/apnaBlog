@@ -15,6 +15,9 @@
           "options": {
             "browser": "src/main.ts",
             "tsConfig": "tsconfig.app.json",
+            "prerender": {
+              "routesFile": "routes.txt"
+            },
             "assets": [
               {
                 "glob": "**/*",
@@ -27,7 +30,10 @@
               "src/styles.css"
             ],
             "server": "src/main.server.ts",
-            "outputMode": "static"
+            "outputMode": "static",
+            "ssr": {
+              "entry": "src/server.ts"
+            }
           },
           "configurations": {
             "production": {

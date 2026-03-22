@@ -1,6 +1,6 @@
 {
-  "outputDirectory": "dist/blog-app/browser",
+  "outputDirectory": "dist/blog-app",
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/(.*)", "destination": "/index.csr.html" }
   ]
 }
