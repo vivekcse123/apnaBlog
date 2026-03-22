@@ -12,6 +12,8 @@
       <span class="theme-icon">{{ themeService.theme() === 'dark' ? '☀' : '☾' }}</span>
     </button>
 
+    <button class="about-btn desktop-only" routerLink="/welcome/about">About</button>
+
     <button class="create-btn desktop-only" routerLink="/auth/login">
       <span>✦</span> Write a Story
     </button>
@@ -24,6 +26,9 @@
 </header>
 
 <div class="mobile-drawer" [class.open]="menuOpen">
+  <button class="drawer-item ghost" routerLink="/welcome/about" (click)="menuOpen = false">
+    About
+  </button>
   <button class="drawer-item" routerLink="/auth/login" (click)="menuOpen = false">
     <span>✦</span> Write a Story
   </button>

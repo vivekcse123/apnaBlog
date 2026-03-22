@@ -82,6 +82,29 @@ body {
 
 .theme-icon { line-height: 1; }
 
+/* ═══ ABOUT BUTTON ═══ */
+.about-btn {
+  background: transparent;
+  border: 1.5px solid var(--border);
+  color: var(--text-secondary);
+  border-radius: 8px;
+  padding: 9px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: background 0.2s ease, color 0.2s ease,
+              border-color 0.2s ease, transform 0.2s ease;
+}
+
+.about-btn:hover {
+  background: var(--accent-subtle);
+  border-color: var(--accent);
+  color: var(--accent-text);
+  transform: translateY(-2px);
+}
+
 /* ═══ HEADER BUTTONS ═══ */
 .create-btn {
   display: flex; align-items: center; gap: 6px;
@@ -90,6 +113,7 @@ body {
   padding: 9px 18px; border-radius: 8px;
   font-size: 14px; font-weight: 600; font-family: 'DM Sans', sans-serif;
   cursor: pointer;
+  touch-action: manipulation;
   transition: opacity 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -100,6 +124,7 @@ body {
   border: 1.5px solid var(--accent); border-radius: 8px;
   padding: 9px 18px; font-size: 14px; font-weight: 600; font-family: 'DM Sans', sans-serif;
   cursor: pointer;
+  touch-action: manipulation;
   transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
 }
 
@@ -120,6 +145,7 @@ body {
   border-radius: 10px;
   cursor: pointer;
   padding: 8px;
+  touch-action: manipulation;
   transition: background 0.2s ease, border-color 0.2s ease;
 }
 
@@ -166,11 +192,26 @@ body {
   font-family: 'DM Sans', sans-serif;
   cursor: pointer;
   touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
   transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
 .drawer-item:hover { opacity: 0.88; transform: translateY(-1px); }
 
+/* Ghost style — for About in drawer */
+.drawer-item.ghost {
+  background: transparent;
+  border: 1.5px solid var(--border);
+  color: var(--text-secondary);
+}
+
+.drawer-item.ghost:hover {
+  background: var(--accent-subtle);
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+
+/* Outline style — for Sign Up in drawer */
 .drawer-item.outline {
   background: var(--bg-surface);
   border: 1.5px solid var(--accent);
@@ -265,7 +306,6 @@ body {
 .hero-sub { font-size: 16px; color: var(--text-secondary); line-height: 1.6; max-width: 480px; }
 
 /* ═══ FILTER BAR ═══ */
-/* ═══ FILTER BAR ═══ */
 .filter-wrap {
   position: sticky; top: 66px; z-index: 800;
   background: var(--bg-surface);
@@ -341,6 +381,7 @@ body {
   font-size: 13px; font-weight: 600; font-family: 'DM Sans', sans-serif;
   cursor: pointer;
   touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
   transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -429,6 +470,7 @@ body {
   background: var(--bg-surface); border-radius: 16px;
   overflow: hidden; border: 1px solid var(--border);
   display: flex; flex-direction: column;
+  position: relative; z-index: 1;
   transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
@@ -438,6 +480,7 @@ body {
 .card-img-wrap {
   position: relative; overflow: hidden;
   cursor: pointer;
+  z-index: 2;
 }
 
 .card-img-wrap img {
@@ -461,6 +504,7 @@ body {
 .card-body {
   padding: 18px 18px 12px; flex: 1;
   cursor: pointer;
+  position: relative; z-index: 2;
 }
 
 .card-body h3 {
@@ -482,15 +526,16 @@ body {
   display: flex; justify-content: space-between; align-items: center;
   padding: 12px 18px 14px;
   border-top: 1px solid var(--border);
+  position: relative; z-index: 3;
 }
 
 .card-stats { display: flex; gap: 10px; }
 .stat { font-size: 12px; color: var(--text-muted); font-weight: 500; }
 
-/* ═══ READ BUTTON — mobile fix ═══ */
+/* ═══ READ BUTTON ═══ */
 .read-btn {
   position: relative;
-  z-index: 2;
+  z-index: 3;
   background: var(--accent-subtle);
   border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
   color: var(--accent-text);
@@ -519,6 +564,7 @@ body {
 .no-results-icon { font-size: 2.5rem; opacity: 0.3; }
 .page-end { height: 80px; }
 
+/* ═══ RESPONSIVE ═══ */
 @media (max-width: 1200px) { .blog-grid { grid-template-columns: repeat(3,1fr); } }
 @media (max-width: 900px)  { .blog-grid { grid-template-columns: repeat(2,1fr); } }
 
@@ -528,11 +574,15 @@ body {
   .menu-btn { display: flex; }
   .drawer-backdrop { display: block; }
   .mobile-drawer { top: 60px; }
-  .filter-wrap { top: 60px; }
+
+  /* Match header height exactly */
+  .filter-wrap { top: 60px; z-index: 800; }
+
   .hero-wrap { padding: 40px 5% 36px; }
   .hero-title { font-size: 32px; }
   .section { margin: 32px auto; }
 
+  /* Filter goes column */
   .filter-inner {
     flex-direction: column;
     align-items: stretch;
@@ -541,22 +591,13 @@ body {
   }
 
   .search-wrap { min-width: unset; width: 100%; }
-
-  .filter-selects {
-    width: 100%;
-    flex-wrap: nowrap;
-  }
-
-  .filter-select {
-    width: 100%;
-    flex: 1;
-  }
+  .filter-selects { width: 100%; flex-wrap: nowrap; }
+  .filter-select  { width: 100%; flex: 1; }
 }
 
 @media (max-width: 600px) {
   .blog-grid { grid-template-columns: 1fr; }
   .hero-title { font-size: 26px; }
-
   .filter-selects { flex-direction: column; }
   .filter-select  { width: 100%; }
 }

@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { Home } from './pages/home/home';
+import { About } from './pages/about/about';
 
 const routes: Routes = [
   {
@@ -11,6 +12,10 @@ const routes: Routes = [
   {
     path: 'apna-blog',
     component: Home
+  },
+  {
+    path: 'about',
+    component: About
   }
 ];
 
