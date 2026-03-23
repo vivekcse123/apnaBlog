@@ -7,6 +7,8 @@ import { Auth } from '../../../../core/services/auth';
 import { UserService } from '../../../user/services/user-service';
 import { ThemeService, Language } from '../../../../core/services/theme-service';
 import { User } from '../../../user/models/user.mode';
+import { AdminService } from '../../services/admin-service';
+import { MessageModal } from '../../../../shared/message-modal/message-modal';
 
 type NotifKey = 'newPosts' | 'comments' | 'likes' | 'newUsers' | 'weeklyDigest' | 'security';
 
@@ -22,17 +24,18 @@ interface NotifState {
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [CommonModule, FormsModule, DatePipe],
+  imports: [CommonModule, FormsModule, DatePipe, MessageModal],
   templateUrl: './settings.html',
   styleUrl:    './settings.css',
 })
 export class Settings implements OnInit {
-  private authService = inject(Auth);
-  private userService = inject(UserService);
-  private destroyRef  = inject(DestroyRef);
-  private route       = inject(ActivatedRoute);
-  private router      = inject(Router);
-  themeService        = inject(ThemeService);
+  private authService  = inject(Auth);
+  private userService  = inject(UserService);
+  private adminService = inject(AdminService);
+  private destroyRef   = inject(DestroyRef);
+  private route        = inject(ActivatedRoute);
+  private router       = inject(Router);
+  themeService         = inject(ThemeService);
 
   activeSection = signal<string>('profile');
 
@@ -48,10 +51,14 @@ export class Settings implements OnInit {
   isLoading      = signal(true);
   isEditing      = signal(false);
   isSaving       = signal(false);
-  successMessage = signal('');
-  errorMessage   = signal('');
   saveSuccess    = signal(false);
   saveError      = signal('');
+
+  // ── Modal state ─────────────────────────────────────────────
+  showModal      = signal(false);
+  modalType      = signal<'success' | 'error'>('success');
+  modalTitle     = signal('');
+  modalMessage   = signal('');
 
   user   = signal<User | null>(null);
   userId = signal<string | null>(null);
@@ -100,9 +107,12 @@ export class Settings implements OnInit {
     { device: 'Firefox · MacBook Pro', location: 'Bangalore, IN', time: 'Yesterday',   current: false },
   ];
 
+  // ── Danger zone ─────────────────────────────────────────────
+  showFreezeConfirm = signal(false);
   showDeleteConfirm = signal(false);
   deleteInput = '';
 
+  // ══ Lifecycle ═══════════════════════════════════════════════
   ngOnInit(): void {
     const paramId = this.route.parent?.snapshot.paramMap.get('id');
     const authId  = this.authService.userId();
@@ -116,7 +126,6 @@ export class Settings implements OnInit {
     }
 
     this.themeService.init(id);
-
     this.loadUser(id);
   }
 
@@ -135,6 +144,19 @@ export class Settings implements OnInit {
       });
   }
 
+  // ── Modal helpers ────────────────────────────────────────────
+  private openModal(type: 'success' | 'error', title: string, message: string): void {
+    this.modalType.set(type);
+    this.modalTitle.set(title);
+    this.modalMessage.set(message);
+    this.showModal.set(true);
+  }
+
+  onModalClosed(): void {
+    this.showModal.set(false);
+  }
+
+  // ══ Profile ══════════════════════════════════════════════════
   startEdit(): void {
     this.editForm = { ...this.user() };
     this.isEditing.set(true);
@@ -179,6 +201,7 @@ export class Settings implements OnInit {
       });
   }
 
+  // ══ Notifications ════════════════════════════════════════════
   toggleNotif(key: NotifKey): void {
     this.notifications.update(n => ({ ...n, [key]: !n[key] }));
   }
@@ -187,21 +210,22 @@ export class Settings implements OnInit {
     return this.notifications()[key];
   }
 
+  // ══ Security ═════════════════════════════════════════════════
   updatePassword(): void {
     const { currentPassword, newPassword, confirm } = this.passwordForm;
 
-    if (!currentPassword || !newPassword) {
-      this.errorMessage.set('Please fill in all password fields.');
+    if (!currentPassword || !newPassword || !confirm) {
+      this.openModal('error', 'Validation Error', 'Please fill in all password fields.');
       return;
     }
 
     if (newPassword !== confirm) {
-      this.errorMessage.set('New password and confirm password do not match.');
+      this.openModal('error', 'Validation Error', 'New password and confirm password do not match.');
       return;
     }
 
     if (newPassword.length < 8) {
-      this.errorMessage.set('New password must be at least 8 characters.');
+      this.openModal('error', 'Validation Error', 'New password must be at least 8 characters.');
       return;
     }
 
@@ -212,15 +236,45 @@ export class Settings implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (res) => {
-          this.errorMessage.set('');
-          this.successMessage.set(res.message);
           this.passwordForm = { currentPassword: '', newPassword: '', confirm: '' };
-          const t = setTimeout(() => this.authService.logout(), 2000);
+          this.openModal('success', 'Password Changed', res.message);
+          // ✅ logout + redirect after modal shows
+          const t = setTimeout(() => {
+            this.showModal.set(false);
+            this.authService.logout();
+            this.router.navigate(['/auth/login']);
+          }, 2000);
           this.destroyRef.onDestroy(() => clearTimeout(t));
         },
         error: (err) => {
-          this.successMessage.set('');
-          this.errorMessage.set(err?.error?.message ?? 'Something went wrong.');
+          this.openModal('error', 'Error', err?.error?.message ?? 'Something went wrong.');
+        },
+      });
+  }
+
+  // ══ Danger Zone ══════════════════════════════════════════════
+  confirmFreeze(): void {
+    this.showFreezeConfirm.set(true);
+  }
+
+  cancelFreeze(): void {
+    this.showFreezeConfirm.set(false);
+  }
+
+  freeze(): void {
+    this.showFreezeConfirm.set(false);
+    const id = this.userId();
+    if (!id) return;
+
+    this.adminService.freezeUser(id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          this.authService.logout();
+          this.router.navigate(['/auth/login']);
+        },
+        error: (err) => {
+          this.openModal('error', 'Error', err?.error?.message ?? 'Failed to deactivate account.');
         },
       });
   }

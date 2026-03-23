@@ -40,7 +40,7 @@ export class CreateUser {
       Validators.required,
       Validators.minLength(5),
       Validators.maxLength(15)
-    ]]
+    ]],
   });
 
   closeModal() {
@@ -68,9 +68,8 @@ export class CreateUser {
       },
       error: (err) =>{
         console.log("Full error object:", err);       
-    console.log("err.error:", err.error);         
-    console.log("err.error.message:", err.error?.message);
-    
+        console.log("err.error:", err.error);         
+        console.log("err.error.message:", err.error?.message);
     const message = err?.error?.message ?? "Something went wrong!";
     this.errorMessage.set(message);
       }

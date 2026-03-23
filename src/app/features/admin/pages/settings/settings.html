@@ -1,5 +1,16 @@
 <div class="settings-root">
 
+  <!-- Global Modal -->
+  @if (showModal()) {
+    <app-message-modal
+      [show]="showModal()"
+      [type]="modalType()"
+      [title]="modalTitle()"
+      [message]="modalMessage()"
+      (closed)="onModalClosed()">
+    </app-message-modal>
+  }
+
   <!-- ══ SIDEBAR ══ -->
   <aside class="sidebar">
     <div class="sidebar-brand">
@@ -43,7 +54,6 @@
           <p>Your account details fetched from the server</p>
         </div>
 
-        <!-- Toasts -->
         @if (saveSuccess()) {
           <div class="toast success">✓ Profile updated successfully</div>
         }
@@ -51,7 +61,6 @@
           <div class="toast error">✕ {{ saveError() }}</div>
         }
 
-        <!-- Loading skeleton -->
         @if (isLoading()) {
           <div class="profile-card">
             <div class="sk-profile-head">
@@ -67,7 +76,6 @@
           </div>
         }
 
-        <!-- Loaded -->
         @if (!isLoading() && user(); as u) {
           <div class="profile-card">
             <div class="avatar-area">
@@ -80,7 +88,6 @@
               </div>
             </div>
 
-            <!-- View mode -->
             @if (!isEditing()) {
               <div class="info-grid">
                 <div class="info-item">
@@ -105,7 +112,6 @@
               </div>
             }
 
-            <!-- Edit mode -->
             @if (isEditing()) {
               <div class="form-grid">
                 <div class="form-group">
@@ -114,7 +120,7 @@
                 </div>
                 <div class="form-group">
                   <label>Email Address</label>
-                  <input type="email" [(ngModel)]="editForm.email" placeholder="email@example.com" re/>
+                  <input type="email" [(ngModel)]="editForm.email" placeholder="email@example.com" />
                 </div>
                 <div class="form-group">
                   <label>Date of Birth</label>
@@ -135,7 +141,6 @@
           </div>
         }
 
-        <!-- No user -->
         @if (!isLoading() && !user()) {
           <div class="empty-state">Could not load profile. Please log in again.</div>
         }
@@ -149,11 +154,9 @@
           <h1>Appearance</h1>
           <p>Theme is applied globally across the entire application</p>
         </div>
-
         <div class="appearance-card">
           <span class="appear-title">Color Theme</span>
           <span class="appear-sub">Changes <code>data-theme</code> on &lt;html&gt; — affects all pages</span>
-
           <div class="theme-cards">
             <div class="theme-option" [class.selected]="themeService.theme() === 'light'"
               (click)="themeService.theme.set('light')">
@@ -171,7 +174,6 @@
                 }
               </div>
             </div>
-
             <div class="theme-option" [class.selected]="themeService.theme() === 'dark'"
               (click)="themeService.theme.set('dark')">
               <div class="theme-preview dark-preview">
@@ -189,7 +191,6 @@
               </div>
             </div>
           </div>
-
           <div class="quick-toggle-row">
             <div>
               <p class="qt-label">Quick Toggle</p>
@@ -291,12 +292,6 @@
                 (change)="showPassword.set(!showPassword())" />
               Show password
             </label>
-            @if(successMessage()){
-              <span class="success-message">{{successMessage()}}</span>
-            }
-            @if(errorMessage()){
-              <span class="error-message">{{errorMessage()}}</span>
-            }
             <button class="btn-primary" (click)="updatePassword()">Update Password</button>
           </div>
         </div>
@@ -365,16 +360,30 @@
           </div>
         </div>
 
+        <!-- ── Deactivate ── -->
         <div class="danger-card">
           <div class="danger-row">
             <div>
               <div class="danger-action-title">Deactivate Account</div>
               <p class="danger-action-sub">Temporarily disable this admin account. Reversible.</p>
             </div>
-            <button class="btn-warn">Deactivate</button>
+            <button class="btn-warn" (click)="confirmFreeze()">Deactivate</button>
           </div>
+
+          <!-- ✅ Inline confirmation box -->
+          @if (showFreezeConfirm()) {
+            <div class="delete-confirm-box">
+              <p>Are you sure you want to <strong>deactivate</strong> your account?
+                You will be <strong>logged out immediately.</strong></p>
+              <div class="form-actions">
+                <button class="btn-ghost" (click)="cancelFreeze()">Cancel</button>
+                <button class="btn-warn" (click)="freeze()">Yes, Deactivate</button>
+              </div>
+            </div>
+          }
         </div>
 
+        <!-- ── Delete ── -->
         <div class="danger-card red-border">
           <div class="danger-row">
             <div>
@@ -397,6 +406,7 @@
             </div>
           }
         </div>
+
       </div>
     }
 

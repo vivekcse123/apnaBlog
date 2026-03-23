@@ -22,7 +22,7 @@ getAllUsers(page: number, limit: number): Observable<apiResponse<User[]>> {
     );
 }
 
-freezeUser(userId: string): Observable<apiResponse<User>>{
+freezeUser(userId: string | null): Observable<apiResponse<User>>{
   return this.http.patch<apiResponse<User>>(`${this.endPoint}${userId}/freeze`, {}).pipe(
     tap((res) => console.log(res))
   )
