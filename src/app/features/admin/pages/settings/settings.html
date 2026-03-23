@@ -383,7 +383,6 @@
           }
         </div>
 
-        <!-- ── Delete ── -->
         <div class="danger-card red-border">
           <div class="danger-row">
             <div>
@@ -397,11 +396,8 @@
               <p>Type <strong>DELETE</strong> to confirm:</p>
               <input type="text" [(ngModel)]="deleteInput" placeholder="DELETE" />
               <div class="form-actions">
-                <button class="btn-ghost"
-                  (click)="showDeleteConfirm.set(false); deleteInput = ''">Cancel</button>
-                <button class="btn-danger" [disabled]="deleteInput !== 'DELETE'">
-                  Confirm Delete
-                </button>
+                <button class="btn-ghost" (click)="showDeleteConfirm.set(false); deleteInput = ''">Cancel</button>
+                <button class="btn-danger" [disabled]="deleteInput !== 'DELETE'">Confirm Delete</button>
               </div>
             </div>
           }

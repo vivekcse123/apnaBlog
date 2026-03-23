@@ -53,8 +53,7 @@ export class Settings implements OnInit {
   isSaving       = signal(false);
   saveSuccess    = signal(false);
   saveError      = signal('');
-
-  // ── Modal state ─────────────────────────────────────────────
+  
   showModal      = signal(false);
   modalType      = signal<'success' | 'error'>('success');
   modalTitle     = signal('');
@@ -107,12 +106,10 @@ export class Settings implements OnInit {
     { device: 'Firefox · MacBook Pro', location: 'Bangalore, IN', time: 'Yesterday',   current: false },
   ];
 
-  // ── Danger zone ─────────────────────────────────────────────
   showFreezeConfirm = signal(false);
   showDeleteConfirm = signal(false);
   deleteInput = '';
 
-  // ══ Lifecycle ═══════════════════════════════════════════════
   ngOnInit(): void {
     const paramId = this.route.parent?.snapshot.paramMap.get('id');
     const authId  = this.authService.userId();
@@ -144,7 +141,6 @@ export class Settings implements OnInit {
       });
   }
 
-  // ── Modal helpers ────────────────────────────────────────────
   private openModal(type: 'success' | 'error', title: string, message: string): void {
     this.modalType.set(type);
     this.modalTitle.set(title);
@@ -156,7 +152,6 @@ export class Settings implements OnInit {
     this.showModal.set(false);
   }
 
-  // ══ Profile ══════════════════════════════════════════════════
   startEdit(): void {
     this.editForm = { ...this.user() };
     this.isEditing.set(true);
@@ -201,7 +196,6 @@ export class Settings implements OnInit {
       });
   }
 
-  // ══ Notifications ════════════════════════════════════════════
   toggleNotif(key: NotifKey): void {
     this.notifications.update(n => ({ ...n, [key]: !n[key] }));
   }
@@ -210,7 +204,6 @@ export class Settings implements OnInit {
     return this.notifications()[key];
   }
 
-  // ══ Security ═════════════════════════════════════════════════
   updatePassword(): void {
     const { currentPassword, newPassword, confirm } = this.passwordForm;
 
@@ -238,7 +231,7 @@ export class Settings implements OnInit {
         next: (res) => {
           this.passwordForm = { currentPassword: '', newPassword: '', confirm: '' };
           this.openModal('success', 'Password Changed', res.message);
-          // ✅ logout + redirect after modal shows
+
           const t = setTimeout(() => {
             this.showModal.set(false);
             this.authService.logout();
@@ -252,7 +245,6 @@ export class Settings implements OnInit {
       });
   }
 
-  // ══ Danger Zone ══════════════════════════════════════════════
   confirmFreeze(): void {
     this.showFreezeConfirm.set(true);
   }
