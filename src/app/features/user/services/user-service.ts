@@ -21,9 +21,4 @@ export class UserService {
     return this.http.put<apiResponse<User>>(`${this.endPoint}${id}/update`, data);
   }
   
-  changePassword(id:  string | null, currentPassword: string, newPassword: string): Observable<apiResponse<User>> {
-    return this.http.put<apiResponse<User>>(`${this.endPoint}${id}/change-password`,{ currentPassword, newPassword });
-  }
-
-  
 }

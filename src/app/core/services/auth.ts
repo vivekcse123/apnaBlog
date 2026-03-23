@@ -44,7 +44,17 @@ export class Auth {
   }
 
   register(userData: User): Observable<apiResponse<User>> {
-    return this.http.post<apiResponse<User>>(`${this.authEndpoint}register`, userData);
+    return this.http.post<apiResponse<User>>(`${this.authEndpoint}register`, userData).pipe(
+      tap(res => console.log(res))
+    );
   }
+
+    
+  changePassword(id: string | null, currentPassword: string, newPassword: string): Observable<{ status: number; message: string; data: User }> {
+  return this.http.put<{ status: number; message: string; data: User }>(
+    `${this.authEndpoint}${id}/change-password`,
+    { currentPassword, newPassword }
+  );
+}
   
 }

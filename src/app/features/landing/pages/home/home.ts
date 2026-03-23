@@ -88,7 +88,7 @@ export class Home implements OnInit {
   }
 
   loadPosts(): void {
-    this.postService.getAllPost(1, 100)
+    this.postService.getAllPost(1, 10)
       .pipe(
         takeUntilDestroyed(this.destroyRef)
       )

@@ -46,7 +46,6 @@ export class Login implements OnInit {
     )
     .subscribe({
       next: (res) =>{
-        console.log(res);
         const role = res.data?.role?.toLowerCase();
         const userId = res.data._id;
 

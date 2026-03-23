@@ -291,6 +291,12 @@
                 (change)="showPassword.set(!showPassword())" />
               Show password
             </label>
+            @if(successMessage()){
+              <span class="success-message">{{successMessage()}}</span>
+            }
+            @if(errorMessage()){
+              <span class="error-message">{{errorMessage()}}</span>
+            }
             <button class="btn-primary" (click)="updatePassword()">Update Password</button>
           </div>
         </div>

@@ -109,7 +109,7 @@ export class ManageUsers implements OnInit {
 
   loadUsers(): void {
     this.adminService
-      .getAllUsers(1, 1000)
+      .getAllUsers(1, 10)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (res) => {

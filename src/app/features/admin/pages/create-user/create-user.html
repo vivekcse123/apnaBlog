@@ -44,7 +44,7 @@
         }
       }
 
-      <input type="password" placeholder="Password" formControlName="password">
+      <input [type]="showPassword ? 'text' : 'password' " placeholder="Password" formControlName="password">
       @if(createUserForm.get('password')?.invalid && (isSubmitted() || createUserForm.get('password')?.touched)){
         @if(createUserForm.get('password')?.errors?.['required']){
           <small class="error">Password is required...!</small>
@@ -53,6 +53,10 @@
           <small class="error">Password should be 5 - 15 characters long...!</small>
         }
       }
+        <div class="show-password-row">
+          <input type="checkbox" id="showPwd" [(ngModel)]="showPassword" [ngModelOptions]="{standalone: true}">
+          <label for="showPwd">Show password</label>
+        </div>
 
       <div class="actions">
         <button type="button" class="cancel-btn" (click)="closeModal()">Cancel</button>

@@ -89,23 +89,20 @@
           <input type="checkbox" id="showPwd" [(ngModel)]="showPassword" [ngModelOptions]="{standalone: true}">
           <label for="showPwd">Show password</label>
         </div>
-        <!-- Forgot -->
+        
         <div class="forgot-row">
           <a href="#" class="forgot-link">Forgot password?</a>
         </div>
 
-        <!-- Submit -->
         <button type="submit" class="login-btn">
           Sign In →
         </button>
 
-        <!-- Register -->
         <p class="register-row">
           Don't have an account?
           <a routerLink="/auth/register">Create one</a>
         </p>
 
-        <!-- Messages -->
         @if(errorMessage()){
           <div class="form-message error-message">
             <span>✕</span> {{ errorMessage() }}

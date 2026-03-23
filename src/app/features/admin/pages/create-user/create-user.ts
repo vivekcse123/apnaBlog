@@ -1,5 +1,5 @@
 import { Component, signal, inject, output, DestroyRef } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Auth } from '../../../../core/services/auth';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -7,7 +7,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 @Component({
   selector: 'app-create-user',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './create-user.html',
   styleUrl: './create-user.css'
 })
@@ -59,15 +59,22 @@ export class CreateUser {
     )
     .subscribe({
       next:(res) =>{
+        console.log(res);
          this.successMessage.set('User created successfully!');
+         setTimeout(() => {
+          this.userCreated.emit();
+          this.closeModal();
+        }, 1000);
       },
       error: (err) =>{
-        this.errorMessage.set(err?.error.message)
+        console.log("Full error object:", err);       
+    console.log("err.error:", err.error);         
+    console.log("err.error.message:", err.error?.message);
+    
+    const message = err?.error?.message ?? "Something went wrong!";
+    this.errorMessage.set(message);
       }
     })
-    setTimeout(() => {
-      this.userCreated.emit();
-      this.closeModal();
-    }, 1500);
   }
+  showPassword = false;
 }
