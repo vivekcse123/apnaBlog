@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, OnInit, DestroyRef } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, DestroyRef, OnDestroy } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -17,8 +17,8 @@ import { ThemeService } from '../../../../core/services/theme-service';
 })
 export class Home implements OnInit {
   private postService  = inject(PostService);
-  private destroyRef   = inject(DestroyRef);
-  themeService         = inject(ThemeService); // ← public (no private) so template can access it
+  private destroyRef = inject(DestroyRef);
+  themeService         = inject(ThemeService);
 
   allPosts  = signal<Post[]>([]);
   isLoading = signal(true);
@@ -28,7 +28,6 @@ export class Home implements OnInit {
   selectedSort     = signal('newest');
 
   filteredPosts = computed(() => {
-    // demo comment..
     let posts = this.allPosts();
 
     if (this.selectedCategory()) {
@@ -90,7 +89,9 @@ export class Home implements OnInit {
 
   loadPosts(): void {
     this.postService.getAllPost(1, 100)
-      .pipe(takeUntilDestroyed(this.destroyRef))
+      .pipe(
+        takeUntilDestroyed(this.destroyRef)
+      )
       .subscribe({
         next: (res) => {
           const published = (res.data ?? []).filter((p: Post) => p.status === 'published');
@@ -117,4 +118,5 @@ export class Home implements OnInit {
   }
 
   menuOpen = false;
+  
 }

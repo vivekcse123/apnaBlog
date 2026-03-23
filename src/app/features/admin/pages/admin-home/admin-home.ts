@@ -1,8 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { forkJoin } from 'rxjs';
 import { PostService } from '../../../post/services/post-service';
 import { AdminService } from '../../services/admin-service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-admin-home',
@@ -14,6 +15,7 @@ import { AdminService } from '../../services/admin-service';
 export class AdminHome implements OnInit {
   private postService  = inject(PostService);
   private adminService = inject(AdminService);
+  private destroyRef = inject(DestroyRef);
 
   currentDate: Date = new Date();
 
@@ -49,7 +51,11 @@ export class AdminHome implements OnInit {
     forkJoin({
       posts: this.postService.getAllPost(1, 1000),
       users: this.adminService.getAllUsers(1, 1000),
-    }).subscribe({
+    })
+    .pipe(
+      takeUntilDestroyed(this.destroyRef)
+    )
+    .subscribe({
       next: ({ posts, users }) => {
         const allPosts = posts.data ?? [];
         const allUsers = users.data ?? [];

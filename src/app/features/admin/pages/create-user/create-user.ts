@@ -1,7 +1,8 @@
-import { Component, signal, inject, output } from '@angular/core';
+import { Component, signal, inject, output, DestroyRef } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Auth } from '../../../../core/services/auth';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-create-user',
@@ -14,6 +15,7 @@ export class CreateUser {
 
   private fb = inject(FormBuilder);
   private authService = inject(Auth);
+  private destroyRef = inject(DestroyRef);
 
   close = output<void>();
   userCreated = output<void>();
@@ -51,7 +53,11 @@ export class CreateUser {
     this.successMessage.set('');
 
     if (this.createUserForm.invalid) return;
-    this.authService.register(this.createUserForm.value).subscribe({
+    this.authService.register(this.createUserForm.value)
+    .pipe(
+      takeUntilDestroyed(this.destroyRef)
+    )
+    .subscribe({
       next:(res) =>{
          this.successMessage.set('User created successfully!');
       },

@@ -21,7 +21,6 @@
 
     <button class="menu-btn" (click)="menuOpen = !menuOpen" [class.open]="menuOpen" aria-label="Toggle menu">
       <span></span><span></span><span></span>
-      <!--demo comment-->
     </button>
   </div>
 </header>
@@ -92,7 +91,6 @@
   </div>
 </div>
 
-<!-- ══════════════════ CATEGORIES ══════════════════ -->
 <section class="category-section">
   @for (cat of categories; track cat) {
     <button class="category-chip"
@@ -104,7 +102,6 @@
   }
 </section>
 
-<!-- ══════════════════ LOADING ══════════════════ -->
 @if (isLoading()) {
   <div class="loading-state">
     <div class="loading-dots">
@@ -114,7 +111,6 @@
   </div>
 }
 
-<!-- ══════════════════ FILTERED RESULTS ══════════════════ -->
 @if (selectedCategory() || searchQuery || selectedSort() !== 'newest') {
   <section class="section">
     <div class="section-header">
@@ -154,7 +150,6 @@
 
 } @else {
 
-  <!-- Trending -->
   <section class="section">
     <div class="section-header">
       <span class="section-pill trending">Trending</span>
@@ -184,7 +179,6 @@
     </div>
   </section>
 
-  <!-- Hot Right Now -->
   <section class="section">
     <div class="section-header">
       <span class="section-pill hot">Popular</span>
@@ -214,7 +208,6 @@
     </div>
   </section>
 
-  <!-- Latest -->
   <section class="section">
     <div class="section-header">
       <span class="section-pill new">New</span>

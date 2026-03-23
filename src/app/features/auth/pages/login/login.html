@@ -73,10 +73,11 @@
           <label>Password</label>
           <div class="input-wrap">
             <span class="input-icon">◉</span>
-            <input type="password" placeholder="Enter your password"
-              formControlName="password"
-              [class.field-error]="loginForm.get('password')?.invalid &&
-                (isSubmitted() || loginForm.get('password')?.touched)">
+            <input [type]="showPassword ? 'text' : 'password'" 
+            placeholder="Enter your password" 
+            formControlName="password" 
+            [class.field-error]="loginForm.get('password')?.invalid &&
+             (isSubmitted() || loginForm.get('password')?.touched)">
           </div>
           @if(loginForm.get('password')?.invalid && (isSubmitted() || loginForm.get('password')?.touched)){
             @if(loginForm.get('password')?.errors?.['required']){
@@ -84,7 +85,10 @@
             }
           }
         </div>
-
+        <div class="show-password-row">
+          <input type="checkbox" id="showPwd" [(ngModel)]="showPassword" [ngModelOptions]="{standalone: true}">
+          <label for="showPwd">Show password</label>
+        </div>
         <!-- Forgot -->
         <div class="forgot-row">
           <a href="#" class="forgot-link">Forgot password?</a>

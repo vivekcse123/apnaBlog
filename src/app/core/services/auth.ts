@@ -46,4 +46,5 @@ export class Auth {
   register(userData: User): Observable<apiResponse<User>> {
     return this.http.post<apiResponse<User>>(`${this.authEndpoint}register`, userData);
   }
+  
 }

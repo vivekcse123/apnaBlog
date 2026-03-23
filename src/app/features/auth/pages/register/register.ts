@@ -1,9 +1,9 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
-import { AdminRoutingModule } from "../../../admin/admin-routing-module";
+import { Component, DestroyRef, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Auth } from '../../../../core/services/auth';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-register',
@@ -16,6 +16,7 @@ export class Register implements OnInit{
   private fb = inject(FormBuilder);
   private authService = inject(Auth);
   private router = inject(Router);
+  private destroyRef = inject(DestroyRef);
 
   registerForm: FormGroup = new FormGroup({});
 
@@ -42,7 +43,11 @@ export class Register implements OnInit{
       return;
     }
 
-    this.authService.register(this.registerForm.value).subscribe({
+    this.authService.register(this.registerForm.value)
+    .pipe(
+      takeUntilDestroyed(this.destroyRef)
+    )
+    .subscribe({
       next: (res) =>{
         this.successMessage.set("User registered successfully...!");
         this.errorMessage.set('');
@@ -56,4 +61,6 @@ export class Register implements OnInit{
       }
     })
   }
+
+  showPassword = false;
 }

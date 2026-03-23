@@ -47,12 +47,15 @@ export class Settings implements OnInit {
   isLoading   = signal(true);
   isEditing   = signal(false);
   isSaving    = signal(false);
+  successMessage = signal('');
+  errorMessage = signal('');
   saveSuccess = signal(false);
   saveError   = signal('');
 
   user = signal<User | null>(null);
 
   editForm: Partial<User> = {};
+  userId = signal<string | null>('');
 
   avatarInitial = computed(() =>
     this.user()?.name?.charAt(0).toUpperCase() ?? 'A'
@@ -60,6 +63,7 @@ export class Settings implements OnInit {
 
   ngOnInit(): void {
     const id = this.authService.userId();
+    this.userId.set(id);
     if (!id) {
       this.isLoading.set(false);
       return;
@@ -83,10 +87,6 @@ export class Settings implements OnInit {
     this.editForm = { ...this.user() };
     this.isEditing.set(true);
     this.saveError.set('');
-  }
-
-  updatePassword(){
-
   }
   
   cancelEdit(): void {
@@ -163,7 +163,7 @@ export class Settings implements OnInit {
   twoFactor    = signal(false);
   showSessions = signal(false);
   showPassword = signal(false);
-  passwordForm = { current: '', newPass: '', confirm: '' };
+  passwordForm = { currentPassword: '', newPassword: '', confirm: '' };
 
   sessions = [
     { device: 'Chrome · Windows 11',   location: 'Hyderabad, IN', time: 'Now',         current: true  },
@@ -173,4 +173,27 @@ export class Settings implements OnInit {
 
   showDeleteConfirm = signal(false);
   deleteInput = '';
+
+  updatePassword() {
+
+  const { currentPassword, newPassword } = this.passwordForm;
+
+  if (!currentPassword || !newPassword) return;
+
+  this.userService.changePassword(this.userId(), currentPassword, newPassword)
+    .pipe(takeUntilDestroyed(this.destroyRef))
+    .subscribe({
+      next: (res) => {
+        this.errorMessage.set('');
+        this.successMessage.set(res.message);
+
+        const t = setTimeout(() => this.authService.logout(), 400);
+        this.destroyRef.onDestroy(() => clearTimeout(t));
+      },
+      error: (err) => {
+        this.successMessage.set('');
+        this.errorMessage.set(err?.error?.message ?? 'Something went wrong');
+      }
+    });
+}
 }

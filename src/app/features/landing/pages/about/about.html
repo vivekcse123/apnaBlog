@@ -498,19 +498,20 @@
                 <span class="char-count">{{ contactData.message.length }} / 500</span>
               </div>
 
-              <button
-                type="submit"
-                class="form-btn"
-                [disabled]="contactForm.invalid || isSubmitting"
-              >
-                @if (isSubmitting) {
+              <button type="submit" class="form-btn" [disabled]="contactForm.invalid || isSubmitting()">
+                @if (isSubmitting()) {
                   <span class="btn-spinner"></span> Sending...
                 } @else {
                   <span>✦</span> Send Message
                 }
               </button>
-
             </form>
+            @if(successMessage()){
+              <span class="success-message">{{successMessage()}}</span>
+            }
+            @if(errorMessage()){
+              <span class="error-message">{{errorMessage()}}</span>
+            }
           }
         </div>
 
