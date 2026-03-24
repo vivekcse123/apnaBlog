@@ -12,6 +12,9 @@ import { MessageModal } from '../../../../shared/message-modal/message-modal';
 
 type NotifKey = 'newPosts' | 'comments' | 'likes' | 'newUsers' | 'weeklyDigest' | 'security';
 
+type Role = 'user' | 'admin';
+const USER_ALLOWED_KEYS = ['comments', 'likes', 'security'] as const;
+
 interface NotifState {
   newPosts:     boolean;
   comments:     boolean;
@@ -78,13 +81,21 @@ export class Settings implements OnInit {
   });
 
   notifItems: { key: NotifKey; label: string; desc: string }[] = [
-    { key: 'newPosts',     label: 'New post published',     desc: 'When any user publishes a blog'      },
-    { key: 'comments',     label: 'New comments',           desc: 'When readers comment on posts'       },
-    { key: 'likes',        label: 'Likes & reactions',      desc: 'Engagement on posts'                 },
-    { key: 'newUsers',     label: 'New user registrations', desc: 'When someone signs up'               },
-    { key: 'weeklyDigest', label: 'Weekly digest',          desc: 'Summary every Monday morning'        },
-    { key: 'security',     label: 'Security alerts',        desc: 'Login attempts, suspicious activity' },
-  ];
+  { key: 'newPosts',     label: 'New post published',     desc: 'When any user publishes a blog'      },
+  { key: 'comments',     label: 'New comments',           desc: 'When readers comment on posts'       },
+  { key: 'likes',        label: 'Likes & reactions',      desc: 'Engagement on posts'                 },
+  { key: 'newUsers',     label: 'New user registrations', desc: 'When someone signs up'               },
+  { key: 'weeklyDigest', label: 'Weekly digest',          desc: 'Summary every Monday morning'        },
+  { key: 'security',     label: 'Security alerts',        desc: 'Login attempts, suspicious activity' },
+];
+
+
+  get visibleNotifItems() {
+  if (this.role === 'admin') return this.notifItems;
+  return this.notifItems.filter(item =>
+    (USER_ALLOWED_KEYS as readonly string[]).includes(item.key)
+  );
+}
 
   languages: { code: Language; label: string; native: string; flag: string }[] = [
     { code: 'en', label: 'English', native: 'English', flag: '🇬🇧' },
@@ -110,11 +121,11 @@ export class Settings implements OnInit {
   showDeleteConfirm = signal(false);
   deleteInput = '';
 
+  role: Role = 'user';
   ngOnInit(): void {
     const paramId = this.route.parent?.snapshot.paramMap.get('id');
     const authId  = this.authService.userId();
     const id      = paramId ?? authId;
-
     this.userId.set(id);
 
     if (!id) {
@@ -132,6 +143,7 @@ export class Settings implements OnInit {
       .subscribe({
         next: (res) => {
           this.user.set(res.data);
+          this.role = (res.data?.role?.toLowerCase() as Role) ?? 'user';
           this.isLoading.set(false);
         },
         error: (err) => {

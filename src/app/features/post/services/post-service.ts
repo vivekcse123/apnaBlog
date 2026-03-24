@@ -18,7 +18,7 @@ export class PostService {
     return this.http.post<apiResponse<Post>>(`${this.endPoint}`, postData);
   }
 
-  getAllPost(page: number = 1, limit: number = 5): Observable<apiResponse<Post[]>> {
+  getAllPost(page: number = 1, limit: number = 10): Observable<apiResponse<Post[]>> {
     return this.http.get<apiResponse<Post[]>>(`${this.endPoint}?page=${page}&limit=${limit}`);
   }
 
@@ -32,6 +32,10 @@ export class PostService {
 
   updatePost(id: string, postData: Partial<CreatePostPayload>): Observable<apiResponse<Post>> {
     return this.http.patch<apiResponse<Post>>(`${this.endPoint}${id}`, postData);
+  }
+
+  getPostByUserId(id: string, page: number = 1, limit: number = 10): Observable<apiResponse<Post[]>> {
+    return this.http.get<apiResponse<Post[]>>(`${this.endPoint}user/${id}?page=${page}&limit=${limit}`);
   }
 
 }

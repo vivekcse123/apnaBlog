@@ -83,7 +83,7 @@
                 <div class="avatar-circle">{{ avatarInitial() }}</div>
               </div>
               <div class="avatar-info">
-                <span class="role-badge">Admin</span>
+                <span class="role-badge">{{u.role}}</span>
                 <p class="joined-text">{{ u.email }}</p>
               </div>
             </div>
@@ -242,7 +242,7 @@
           <p>Choose what alerts you receive as admin</p>
         </div>
         <div class="notif-list">
-          @for (item of notifItems; track item.key) {
+          @for (item of visibleNotifItems; track item.key) {
             <div class="notif-row">
               <div class="notif-text">
                 <span class="notif-label">{{ item.label }}</span>
