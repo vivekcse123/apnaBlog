@@ -35,7 +35,7 @@ export class UserDashboard implements OnInit{
       next: (user) =>{
         this.user.set(user.data);
         const name = user.data.name;
-        const chars = name.charAt(0) + name.slice(1).charAt(0);
+        const chars = name.charAt(0) + name.split(" ")[1].charAt(0);
         this.initial.set(chars.toUpperCase());
       },
       error(err){

@@ -1,3 +1,4 @@
+@if (standalone) {
 <header class="header">
   <div class="header-left">
     <div class="logo">
@@ -24,6 +25,7 @@
     </button>
   </div>
 </header>
+}
 
 <div class="mobile-drawer" [class.open]="menuOpen">
   <button class="drawer-item ghost" routerLink="/welcome/about" (click)="menuOpen = false">

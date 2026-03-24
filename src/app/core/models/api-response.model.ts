@@ -6,4 +6,5 @@ export interface apiResponse<T> {
   limit: number | string;
   total: number | 0;
   totalPages?: number;
+  totalBlogs: number;
 }

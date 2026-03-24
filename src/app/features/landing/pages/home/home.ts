@@ -1,5 +1,5 @@
-import { Component, inject, signal, computed, OnInit, DestroyRef, OnDestroy } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, inject, signal, computed, OnInit, DestroyRef, OnDestroy, Input } from '@angular/core';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -18,6 +18,7 @@ import { ThemeService } from '../../../../core/services/theme-service';
 export class Home implements OnInit {
   private postService  = inject(PostService);
   private destroyRef = inject(DestroyRef);
+  private route = inject(ActivatedRoute);
   themeService         = inject(ThemeService);
 
   allPosts  = signal<Post[]>([]);
@@ -85,6 +86,7 @@ export class Home implements OnInit {
 
   ngOnInit(): void {
     this.loadPosts();
+    this.standalone = this.route.snapshot.data['standalone'] ?? true;
   }
 
   loadPosts(): void {
@@ -118,5 +120,6 @@ export class Home implements OnInit {
   }
 
   menuOpen = false;
+  @Input() standalone: boolean = true;
   
 }

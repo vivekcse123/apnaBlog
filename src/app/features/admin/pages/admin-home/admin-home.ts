@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { forkJoin } from 'rxjs';
 import { PostService } from '../../../post/services/post-service';
 import { AdminService } from '../../services/admin-service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-admin-home',
@@ -16,6 +17,7 @@ export class AdminHome implements OnInit {
   private postService  = inject(PostService);
   private adminService = inject(AdminService);
   private destroyRef = inject(DestroyRef);
+  private route = inject(ActivatedRoute);
 
   currentDate: Date = new Date();
 
@@ -42,9 +44,11 @@ export class AdminHome implements OnInit {
   inactiveList = signal<any[]>([]);
 
   isLoading = signal<boolean>(true);
-
+  userId = signal<string>('');
   ngOnInit(): void {
     this.loadDashboardData();
+
+    this.userId.set(this.route.snapshot.params['id']);
   }
 
   loadDashboardData(): void {

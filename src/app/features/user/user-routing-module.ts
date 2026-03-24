@@ -25,7 +25,8 @@ const routes: Routes = [
       },
       {
         path: 'welcome/apna-blog',
-        component: Home
+        component: Home,
+        data: { standalone: false }
       }
     ]
   },
