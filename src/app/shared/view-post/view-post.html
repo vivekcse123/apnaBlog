@@ -33,33 +33,44 @@
           <h4>{{ post()?.likesCount | number }}</h4>
           <p>Likes</p>
         </div>
-        <div class="stat-item">
+        <div class="stat-item" (click)="toggleComments()" style="cursor:pointer">
           <h4>{{ post()?.commentsCount | number }}</h4>
           <p>Comments</p>
         </div>
-     @for(comment of post()?.comments; track comment._id){
-  <div class="comment">
-    <p>{{ comment.comment }}</p>
-    <span>{{ comment.email }}</span>
-    <small>{{ comment.createdAt | date:'mediumDate' }}</small>
-  </div>
-}
       </div>
+
+      <!-- COMMENTS SECTION -->
+      @if (showComments()) {
+        <div class="comments-section">
+          <p class="comments-title">Comments</p>
+          @for(comment of post()?.comments; track comment._id) {
+            <div class="comment">
+              <p class="comment-text">{{ comment.comment }}</p>
+              <div class="comment-footer">
+               <span class="author-name"> {{ comment.name === post()?.user?.name ? comment.name + ' (you)' : (comment.name || 'Anonymous') }}</span>
+                <span class="comment-date">{{ comment.createdAt | date:'mediumDate' }}</span>
+               <span>
+                <a routerLink="" class="delete-icon" (click)="deleteComment(comment._id)">
+                  🗑️
+                </a>
+              </span>
+              </div>
+            </div>
+          } @empty {
+            <div class="no-comments">No comments yet.</div>
+          }
+        </div>
+      }
     }
 
+    <!-- POST BODY -->
     @if (!isEditing()) {
       <div class="post-body">
 
         @if (post()?.user) {
           <div class="author-block">
             <div class="author-avatar-wrap">
-              @if (post()?.user) {
-                <p class="author-avatar"> {{post()?.user?.name?.charAt(0)}}</p>
-              } @else {
-                <div class="author-avatar-fallback">
-                  {{ post()?.user?.name?.charAt(0)?.toUpperCase() }}
-                </div>
-              }
+              <p class="author-avatar">{{ post()?.user?.name?.charAt(0) }}</p>
             </div>
             <div class="author-meta">
               <span class="author-name">{{ post()?.user?.name }}</span>
@@ -182,7 +193,7 @@
       </form>
     }
 
-    <!-- MESSAGES (bugs fixed — no duplicate, message() used correctly) -->
+    <!-- MESSAGES -->
     @if (message()) {
       <div class="success-message">
         <span>✓</span> {{ message() }}
@@ -205,6 +216,9 @@
     <div class="modal-footer">
       @if (!isEditing()) {
         <button class="btn-cancel" (click)="closeModal()">Close</button>
+        <button class="btn-comments" (click)="toggleComments()">
+          {{ showComments() ? 'Hide Comments' : 'View Comments' }}
+        </button>
         <button class="btn-edit" (click)="startEdit()">Edit Post</button>
       } @else {
         <button class="btn-cancel" (click)="cancelEdit()">Discard</button>

@@ -4,6 +4,7 @@ export interface Comment {
   _id: string;
   comment: string;
   email: string;
+  name: string,
   user?: User | null;
   createdAt: Date;
   updatedAt: Date;

@@ -8,7 +8,7 @@ import { Post } from '../../core/models/post.model';
 @Component({
   selector: 'app-view-post',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule ],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './view-post.html',
   styleUrl: './view-post.css'
 })
@@ -139,8 +139,19 @@ export class ViewPost implements OnInit, OnDestroy {
     this.close.emit();
   }
 
+  showComments = signal(false);
+  toggleComments(): void {
+    this.showComments.set(!this.showComments());
+  }
+
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
   }
+
+  deleteComment(_id: string){
+    
+  }
+
+
 }
