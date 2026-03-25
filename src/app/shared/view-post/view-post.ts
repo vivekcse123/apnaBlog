@@ -8,7 +8,7 @@ import { Post } from '../../core/models/post.model';
 @Component({
   selector: 'app-view-post',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule ],
   templateUrl: './view-post.html',
   styleUrl: './view-post.css'
 })

@@ -37,6 +37,13 @@
           <h4>{{ post()?.commentsCount | number }}</h4>
           <p>Comments</p>
         </div>
+     @for(comment of post()?.comments; track comment._id){
+  <div class="comment">
+    <p>{{ comment.comment }}</p>
+    <span>{{ comment.email }}</span>
+    <small>{{ comment.createdAt | date:'mediumDate' }}</small>
+  </div>
+}
       </div>
     }
 

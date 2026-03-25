@@ -74,6 +74,7 @@ tagOptions = [
     tags: this.fb.array(
       this.tagOptions.map(() => this.fb.control(false))
     ),
+    comments: [''],
     featuredImage: [''],
     status: ['', Validators.required],
   });
@@ -130,6 +131,7 @@ const payload: Omit<Post, '_id' | 'user' | 'userId' | 'likesCount' | 'commentsCo
   tags: selectedTags,
   featuredImage: this.createBlogForm.value.featuredImage ?? '',
   status: this.createBlogForm.value.status,
+  comments: this.createBlogForm.value.comments,
   user: userId,
 };
   this.postService.createBlog(payload).subscribe({
