@@ -24,7 +24,7 @@ const routes: Routes = [
         component: Settings
       },
       {
-        path: 'welcome/apna-blog',
+        path: 'explore-blogs',
         component: Home,
         data: { standalone: false }
       }
