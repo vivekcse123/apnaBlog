@@ -94,7 +94,7 @@ export class PostLists implements OnInit {
           const role = res.data?.role?.toLowerCase();
           this.role.set(role);
           
-          const posts$ = role === 'admin' ? this.postService.getAllPost(1, 10) : this.postService.getPostByUserId(id, 1, 10);
+          const posts$ = role === 'admin' ? this.postService.getAllPost(1, 100) : this.postService.getPostByUserId(id, 1, 10);
 
           posts$
             .pipe(takeUntilDestroyed(this.destroyRef))
