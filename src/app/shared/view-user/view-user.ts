@@ -1,4 +1,4 @@
-import { Component, inject, input, OnDestroy, OnInit, output, signal } from '@angular/core';
+import { Component, effect, inject, input, OnDestroy, OnInit, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
@@ -13,13 +13,13 @@ import { User } from '../../features/user/models/user.mode';
   templateUrl: './view-user.html',
   styleUrl: './view-user.css'
 })
-export class ViewUser implements OnInit, OnDestroy {
+export class ViewUser implements OnDestroy {
   private fb           = inject(FormBuilder);
   private userService  = inject(UserService);
   private adminService = inject(AdminService);
   private destroy$     = new Subject<void>();
 
-  userId      = input<string>('');
+  userId = input<string>('');
   message = input<string>('');
   close       = output<void>();
   userUpdated = output<User>();
@@ -30,8 +30,17 @@ export class ViewUser implements OnInit, OnDestroy {
   errorMessage   = signal('');
   editForm!: FormGroup;
 
-  ngOnInit(): void {
-    this.loadUser();
+  totalBlogs = signal<number>(0);
+  totalViews = signal<number>(0);
+
+  constructor() {
+    // ✅ Runs automatically whenever userId input changes
+    effect(() => {
+      const id = this.userId();
+      if (id) {
+        this.loadUser(id);
+      }
+    });
   }
 
   ngOnDestroy(): void {
@@ -39,12 +48,23 @@ export class ViewUser implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  loadUser(): void {
-    this.userService.getUserById(this.userId())
+  loadUser(id: string): void {
+    // ✅ Always reset before loading new user
+    this.user.set(null);
+    this.totalBlogs.set(0);
+    this.totalViews.set(0);
+    this.isEditing.set(false);
+    this.successMessage.set('');
+    this.errorMessage.set('');
+
+    this.userService.getUserById(id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        // next: (res) => this.user.set(res.data ?? res),
-        next: (res) => console.log(res),
+        next: (res) => {
+          this.user.set(res.data ?? res);
+          this.totalBlogs.set(res.totalBlogs ?? 0);
+          this.totalViews.set(res.totalViews ?? 0);
+        },
         error: (err) => console.error(err)
       });
   }
@@ -87,15 +107,13 @@ export class ViewUser implements OnInit, OnDestroy {
 
           this.user.set(updated);
           this.isEditing.set(false);
-          this.userUpdated.emit(updated);
-           this.successMessage.set('Post updated successfully!');
+          this.successMessage.set('User updated successfully!');
 
-
-        setTimeout(() => {
-          this.successMessage.set('');
-          this.userUpdated.emit(updated);
-          this.closeModal();
-        }, 1500);
+          setTimeout(() => {
+            this.successMessage.set('');
+            this.userUpdated.emit(updated);
+            this.closeModal();
+          }, 1500);
         },
         error: (err) => {
           this.errorMessage.set(err?.error?.message ?? 'Something went wrong. Please try again.');

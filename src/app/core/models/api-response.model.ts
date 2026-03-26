@@ -7,4 +7,5 @@ export interface apiResponse<T> {
   total: number | 0;
   totalPages?: number;
   totalBlogs: number;
+  totalViews: number;
 }

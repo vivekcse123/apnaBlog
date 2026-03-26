@@ -24,11 +24,13 @@
     @if (!isEditing()) {
       <div class="user-stats">
         <div class="stat-item">
-          <h4>{{ user()?.totalBlogs || 0 }}</h4>
+          <!-- ✅ Read from totalBlogs() signal, NOT user()?.totalBlogs -->
+          <h4>{{ totalBlogs() }}</h4>
           <p>Total Blogs</p>
         </div>
         <div class="stat-item">
-          <h4>{{ user()?.totalViews || 0 }}</h4>
+          <!-- ✅ Read from totalViews() signal, NOT user()?.totalViews -->
+          <h4>{{ totalViews() }}</h4>
           <p>Total Views</p>
         </div>
         <div class="stat-item">
@@ -38,7 +40,6 @@
       </div>
     }
 
-    <!-- View Mode -->
     @if (!isEditing()) {
       <div class="details-grid">
         <div class="detail-item">
@@ -112,7 +113,7 @@
       </form>
     }
 
-    @if(message()){
+    @if (message()) {
       <div class="success-message">
         <span>✓</span> {{ message() }}
       </div>

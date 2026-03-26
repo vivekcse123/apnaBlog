@@ -12,12 +12,16 @@
         [(ngModel)]="searchName"
         (ngModelChange)="debounceSearch($event)"
       />
-      <select [ngModel]="selectedRole()" (ngModelChange)="selectedRole.set($event)">
+      <select
+        [ngModel]="selectedRole()"
+        (ngModelChange)="selectedRole.set($event); currentPage.set(1)">
         <option value="">Filter by Role</option>
         <option value="user">User</option>
         <option value="admin">Admin</option>
       </select>
-      <select [ngModel]="selectedStatus()" (ngModelChange)="selectedStatus.set($event)">
+      <select
+        [ngModel]="selectedStatus()"
+        (ngModelChange)="selectedStatus.set($event); currentPage.set(1)">
         <option value="">Filter by Status</option>
         <option value="active">Active</option>
         <option value="inactive">Inactive</option>
@@ -41,7 +45,7 @@
         </thead>
         <tbody>
 
-          @for (user of paginatedUsers() | filterByName: debounceValue() | filterByRole: selectedRole() | filterByStatus: selectedStatus(); track user._id) {
+          @for (user of paginatedUsers(); track user._id) {
             <tr [appDisabled]="user.status === 'inactive'">
 
               <td>
@@ -54,7 +58,7 @@
               <td class="email-cell">{{ user.email }}</td>
 
               <td>
-                <span class="role-badge" [class.admin]="user.role?.toLowerCase() === 'admin'">
+                <span class="role-badge" [class.admin]="user.role.toLowerCase() === 'admin'">
                   {{ user.role | titlecase }}
                 </span>
               </td>
@@ -81,7 +85,7 @@
             </tr>
           }
 
-          @if ((paginatedUsers() | filterByName: debounceValue() | filterByRole: selectedRole() | filterByStatus: selectedStatus()).length === 0) {
+          @if (paginatedUsers().length === 0) {
             <tr>
               <td colspan="6" class="empty-row">
                 <div class="empty-state">

@@ -9,9 +9,6 @@ import { MessageModal } from '../../../../shared/message-modal/message-modal';
 import { DisabledDirective } from '../../../../shared/directives/highlight';
 import { CreateUser } from '../create-user/create-user';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FilterByNamePipe } from '../../../../shared/pipes/filter-by-name-pipe';
-import { FilterByRolePipe } from '../../../../shared/pipes/filter-by-role-pipe';
-import { FilterByStatusPipe } from '../../../../shared/pipes/filter-by-status-pipe';
 
 @Component({
   selector: 'app-manage-users',
@@ -22,10 +19,7 @@ import { FilterByStatusPipe } from '../../../../shared/pipes/filter-by-status-pi
     ViewUser,
     MessageModal,
     DisabledDirective,
-    CreateUser,
-    FilterByNamePipe,
-    FilterByRolePipe,
-    FilterByStatusPipe
+    CreateUser
   ],
   templateUrl: './manage-users.html',
   styleUrls: ['./manage-users.css'],
