@@ -49,7 +49,7 @@ export class ViewUser implements OnDestroy {
   }
 
   loadUser(id: string): void {
-    // ✅ Always reset before loading new user
+    
     this.user.set(null);
     this.totalBlogs.set(0);
     this.totalViews.set(0);

@@ -26,7 +26,13 @@ export class ViewPost implements OnInit, OnDestroy {
   isEditing      = signal(false);
   successMessage = signal('');
   errorMessage   = signal('');
+  showComments   = signal(false);
   editForm!: FormGroup;
+
+  // ── Delete Comment Confirm State ────────────────────────────────────────────
+  showDeleteConfirm      = signal(false);
+  pendingDeleteCommentId = signal<string>('');
+  isDeletingComment      = signal(false);
 
   categoryOptions = [
     'Technology', 'Lifestyle', 'Education',
@@ -38,8 +44,14 @@ export class ViewPost implements OnInit, OnDestroy {
     'News', 'Opinion', 'Guide', 'Update'
   ];
 
+  // ── Lifecycle ───────────────────────────────────────────────────────────────
   ngOnInit(): void {
     this.loadPost();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   loadPost(): void {
@@ -54,6 +66,67 @@ export class ViewPost implements OnInit, OnDestroy {
       });
   }
 
+  // ── Comments ─────────────────────────────────────────────────────────────
+  toggleComments(): void {
+    this.showComments.set(!this.showComments());
+  }
+
+  // ── Delete Comment ────────────────────────────────────────────────────────
+
+  /** Step 1 — user clicks 🗑️ icon: open inline confirm */
+  confirmDeleteComment(commentId: string): void {
+    this.pendingDeleteCommentId.set(commentId);
+    this.showDeleteConfirm.set(true);
+  }
+
+  /** Step 2 — user clicks Cancel */
+  cancelDeleteComment(): void {
+    this.showDeleteConfirm.set(false);
+    this.pendingDeleteCommentId.set('');
+  }
+
+  /** Step 3 — user clicks Yes, Delete */
+  proceedDeleteComment(): void {
+    const commentId = this.pendingDeleteCommentId();
+    const postId    = this.post()?._id;
+    if (!commentId || !postId) return;
+
+    this.isDeletingComment.set(true);
+
+    this.postService.deleteComment(postId, commentId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          // Remove comment from local signal — no need to reload the whole post
+          this.post.update(p => {
+            if (!p) return p;
+            const updatedComments = (p.comments ?? []).filter(
+              (c: any) => c._id !== commentId
+            );
+            return {
+              ...p,
+              comments:      updatedComments,
+              commentsCount: Math.max(0, (p.commentsCount ?? 1) - 1)
+            };
+          });
+
+          this.isDeletingComment.set(false);
+          this.showDeleteConfirm.set(false);
+          this.pendingDeleteCommentId.set('');
+          this.successMessage.set('Comment deleted successfully.');
+          setTimeout(() => this.successMessage.set(''), 3000);
+        },
+        error: (err) => {
+          this.isDeletingComment.set(false);
+          this.showDeleteConfirm.set(false);
+          this.pendingDeleteCommentId.set('');
+          this.errorMessage.set(err?.error?.message ?? 'Failed to delete comment.');
+          setTimeout(() => this.errorMessage.set(''), 3000);
+        }
+      });
+  }
+
+  // ── Edit ──────────────────────────────────────────────────────────────────
   startEdit(): void {
     const p = this.post();
     this.successMessage.set('');
@@ -138,20 +211,4 @@ export class ViewPost implements OnInit, OnDestroy {
   closeModal(): void {
     this.close.emit();
   }
-
-  showComments = signal(false);
-  toggleComments(): void {
-    this.showComments.set(!this.showComments());
-  }
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
-
-  deleteComment(_id: string){
-    
-  }
-
-
 }

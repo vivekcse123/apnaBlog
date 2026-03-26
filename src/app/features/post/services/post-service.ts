@@ -14,14 +14,9 @@ type CreatePostPayload = Omit<
   providedIn: 'root',
 })
 export class PostService {
-  // Normalize endpoint — strip trailing slash so all URL builds are consistent:
-  // e.g.  'http://localhost:3000/api/post/'  →  'http://localhost:3000/api/post'
-  // Then every method appends  '/id/like'  correctly with no double-slash risk.
   private endPoint = environment.apiPostEndpoint.replace(/\/+$/, '');
 
   private http = inject(HttpClient);
-
-  // ── CRUD ──────────────────────────────────────────────────────────────────
 
   createBlog(postData: CreatePostPayload): Observable<apiResponse<Post>> {
     return this.http.post<apiResponse<Post>>(`${this.endPoint}`, postData);
@@ -49,30 +44,21 @@ export class PostService {
     );
   }
 
-  // ── INTERACTIONS ─────────────────────────────────────────────────────────
 
-  /** POST /:id/like — increments likesCount */
   likePost(postId: string): Observable<apiResponse<Post>> {
     return this.http.post<apiResponse<Post>>(`${this.endPoint}/${postId}/like`, {});
   }
 
-  /** POST /:id/view — increments views */
   addView(postId: string): Observable<apiResponse<Post>> {
     return this.http.post<apiResponse<Post>>(`${this.endPoint}/${postId}/view`, {});
   }
 
-  /**
-   * POST /:id/comment
-   * Sends { comment, userId? } — userId is omitted for anonymous/guest users.
-   * Backend sets name to 'Anonymous' when userId is absent.
-   */
   commentPost(
     postId: string,
     comment: string,
     userId?: string
   ): Observable<apiResponse<Post>> {
-    // Only include userId in the payload when a real logged-in user ID is
-    // present. If omitted, the backend sets name = 'Anonymous' automatically.
+
     const body: Record<string, string> = { comment: comment.trim() };
     if (userId && userId.trim()) {
       body['userId'] = userId;
@@ -80,10 +66,6 @@ export class PostService {
     return this.http.post<apiResponse<Post>>(`${this.endPoint}/${postId}/comment`, body);
   }
 
-  /**
-   * GET /:id/comments
-   * Returns { comments: [], totalComments: number }
-   */
   getComments(postId: string): Observable<{
     status: number;
     message: string;
@@ -91,5 +73,11 @@ export class PostService {
     comments: { name: string; comment: string; createdAt?: string }[];
   }> {
     return this.http.get<any>(`${this.endPoint}/${postId}/comments`);
+  }
+
+  deleteComment(postId: string, commentId: string): Observable<apiResponse<null>> {
+    return this.http.delete<apiResponse<null>>(
+      `${this.endPoint}/${postId}/comment/${commentId}`
+    );
   }
 }
