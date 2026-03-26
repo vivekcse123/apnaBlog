@@ -43,7 +43,8 @@ export class ViewUser implements OnInit, OnDestroy {
     this.userService.getUserById(this.userId())
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (res) => this.user.set(res.data ?? res),
+        // next: (res) => this.user.set(res.data ?? res),
+        next: (res) => console.log(res),
         error: (err) => console.error(err)
       });
   }
