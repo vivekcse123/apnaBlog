@@ -11,7 +11,7 @@
 }
 
 .edit_setting {
-  color: var(--accent-text);
+  color: white;
   text-decoration: none;
   transition: color 0.2s ease;
   font-weight: 500;

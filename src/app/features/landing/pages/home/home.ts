@@ -16,6 +16,7 @@ import { ThemeService } from '../../../../core/services/theme-service';
 import { Auth } from '../../../../core/services/auth';                         // adjust path if needed
 import { UserService } from '../../../user/services/user-service';             // adjust path if needed
 import { User } from '../../../user/models/user.mode';                         // adjust path if needed
+import { CommonHeader } from '../../../../shared/common-header/common-header';
 
 const PAGE_SIZE = 4;
 
@@ -37,7 +38,6 @@ export class Home implements OnInit {
 
   @Input() standalone = true;
 
-  // ── Core state ─────────────────────────────────────────────────────────────
   allPosts         = signal<Post[]>([]);
   isLoading        = signal(true);
   isViewed         = signal(false);
@@ -52,30 +52,24 @@ export class Home implements OnInit {
   hotPage      = signal(0);
   latestPage   = signal(0);
 
-  // ── Interaction state ───────────────────────────────────────────────────────
-  /** Set of post IDs the user has liked this session */
+
   likedPostIds     = signal<Set<string>>(new Set());
-  /** Which post's comment drawer is open */
+
   commentDrawerPostId = signal<string | null>(null);
-  /** Current text in the comment input */
+
   commentText      = signal('');
-  /** Loading state for comment submission */
+
   commentSubmitting = signal(false);
-  /** Feedback message after submitting a comment */
+
   commentFeedback  = signal<{ type: 'success' | 'error'; msg: string } | null>(null);
-  /** Comments list for the open drawer */
+
   drawerComments   = signal<{ name: string; comment: string; createdAt?: string }[]>([]);
   drawerCommentsLoading = signal(false);
 
-  /**
-   * Full user object fetched from UserService on init when logged in.
-   * null = guest / not yet loaded.
-   */
   private currentUserData = signal<User | null>(null);
 
   private searchInput$ = new Subject<string>();
 
-  // ── Computed post pools ─────────────────────────────────────────────────────
   private postsWithTs = computed(() =>
     this.allPosts().map(p => ({ ...p, _ts: new Date(p.createdAt).getTime() }))
   );
@@ -170,12 +164,11 @@ export class Home implements OnInit {
     Lifestyle: '🌿', Social: '🤝',
   };
 
-  // ── Lifecycle ───────────────────────────────────────────────────────────────
   ngOnInit(): void {
     this.standalone = this.route.snapshot.data['standalone'] ?? this.standalone;
     this.loadPosts();
     this.restoreLikedIds();
-    this.fetchCurrentUser();   // ← resolve userId → full User object
+    this.fetchCurrentUser();
 
     this.searchInput$.pipe(
       debounceTime(350),
@@ -201,20 +194,15 @@ export class Home implements OnInit {
     });
   }
 
-  /**
-   * If a userId is stored in Auth (localStorage-backed signal),
-   * call UserService to resolve the full User object (name, _id, etc.)
-   * so comments and UI show the real name instead of just an ID.
-   */
   private fetchCurrentUser(): void {
     const userId = this.auth.userId();
-    if (!userId) return;                          // guest — nothing to fetch
+    if (!userId) return;                         
 
     this.userService.getUserById(userId).pipe(
       takeUntilDestroyed(this.destroyRef)
     ).subscribe({
       next: (res) => this.currentUserData.set(res.data ?? null),
-      error: ()    => this.currentUserData.set(null)   // treat fetch failure as guest
+      error: ()    => this.currentUserData.set(null)  
     });
   }
 
@@ -222,7 +210,6 @@ export class Home implements OnInit {
     return this.categoryCounts()[cat] ?? 0;
   }
 
-  // ── Pagination ──────────────────────────────────────────────────────────────
   prevPage(page: WritableSignal<number>): void {
     if (page() > 0) page.set(page() - 1);
   }
@@ -231,7 +218,6 @@ export class Home implements OnInit {
     if (page() < total - 1) page.set(page() + 1);
   }
 
-  // ── View ────────────────────────────────────────────────────────────────────
   readBlog(id: string): void {
     const post = this.allPosts().find(p => p._id === id);
     if (post) this.addView(post);
@@ -240,7 +226,7 @@ export class Home implements OnInit {
   }
 
   addView(post: Post): void {
-    // Guard: only count view once per session per post
+
     const key = `viewed_${post._id}`;
     if (sessionStorage.getItem(key)) return;
     sessionStorage.setItem(key, '1');
@@ -249,23 +235,19 @@ export class Home implements OnInit {
     this.postService.addView(post._id).subscribe();
   }
 
-  // ── Like (toggle) ───────────────────────────────────────────────────────────
-  /**
-   * Restore liked IDs from localStorage so likes persist across page refreshes.
-   */
   private restoreLikedIds(): void {
     try {
       const stored = localStorage.getItem('apna_liked_posts');
       if (stored) {
         this.likedPostIds.set(new Set(JSON.parse(stored)));
       }
-    } catch { /* ignore */ }
+    } catch {  }
   }
 
   private persistLikedIds(ids: Set<string>): void {
     try {
       localStorage.setItem('apna_liked_posts', JSON.stringify([...ids]));
-    } catch { /* ignore */ }
+    } catch { }
   }
 
   isLiked(postId: string): boolean {
@@ -278,21 +260,18 @@ export class Home implements OnInit {
     const newSet = new Set(this.likedPostIds());
 
     if (liked) {
-      // Unlike: decrement locally (no unlike endpoint on backend, so we just track locally)
       newSet.delete(post._id);
       this.likedPostIds.set(newSet);
       this.persistLikedIds(newSet);
       this.patchPost(post._id, { likesCount: Math.max(0, post.likesCount - 1) });
-      // No backend call for unlike since the API only supports incrementing
     } else {
-      // Like: increment locally + call API
+
       newSet.add(post._id);
       this.likedPostIds.set(newSet);
       this.persistLikedIds(newSet);
       this.patchPost(post._id, { likesCount: post.likesCount + 1 });
       this.postService.likePost(post._id).subscribe({
         error: () => {
-          // Rollback on error
           newSet.delete(post._id);
           this.likedPostIds.set(new Set(newSet));
           this.persistLikedIds(newSet);
@@ -302,7 +281,6 @@ export class Home implements OnInit {
     }
   }
 
-  // ── Comment Drawer ──────────────────────────────────────────────────────────
   openCommentDrawer(post: Post, event: Event): void {
     event.stopPropagation();
     this.commentText.set('');
@@ -329,21 +307,14 @@ export class Home implements OnInit {
     });
   }
 
-  /**
-   * Derived from the signal — safe to call in template or class.
-   * Returns the fetched User or null for guests.
-   */
   get currentUser(): User | null {
     return this.currentUserData();
   }
 
-  /** True only when userId exists in Auth AND user data has been fetched. */
   get isLoggedIn(): boolean {
-    // auth.isAuthorized is a computed(() => !!userId())
     return this.auth.isAuthorized() && !!this.currentUserData();
   }
 
-  /** Display name shown in the comment identity chip. */
   get loggedInUserName(): string {
     return this.currentUserData()?.name ?? 'Anonymous';
   }
@@ -351,7 +322,6 @@ export class Home implements OnInit {
   submitComment(): void {
     const text = this.commentText().trim();
 
-    // Hard guard — never send an empty comment
     if (!text) {
       this.commentFeedback.set({ type: 'error', msg: 'Please write something before posting.' });
       return;
@@ -364,8 +334,6 @@ export class Home implements OnInit {
     this.commentSubmitting.set(true);
     this.commentFeedback.set(null);
 
-    // Send userId only for logged-in users; omit entirely for guests so
-    // the backend correctly labels the comment as 'Anonymous'
     const userId: string | undefined = this.currentUserData()?._id ?? undefined;
 
     this.postService.commentPost(postId, text, userId).subscribe({
@@ -374,7 +342,6 @@ export class Home implements OnInit {
         this.commentText.set('');
         this.commentFeedback.set({ type: 'success', msg: 'Comment posted!' });
 
-        // Update comments list and count
         const newComment = {
           name: this.currentUserData()?.name ?? 'Anonymous',
           comment: text,
@@ -387,7 +354,6 @@ export class Home implements OnInit {
           this.patchPost(postId, { commentsCount: post.commentsCount + 1 });
         }
 
-        // Auto-clear feedback after 3s
         setTimeout(() => this.commentFeedback.set(null), 3000);
       },
       error: (err: any) => {
@@ -397,10 +363,10 @@ export class Home implements OnInit {
     });
   }
 
-  // ── Helper: patch a single post in allPosts signal ──────────────────────────
   private patchPost(postId: string, updates: Partial<Post>): void {
     this.allPosts.set(
       this.allPosts().map(p => p._id === postId ? { ...p, ...updates } : p)
     );
   }
+  
 }
