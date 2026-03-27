@@ -52,7 +52,7 @@ export class UserHome implements OnInit {
   createBlogLink  = computed(() => `/user/${this.userId()}/manage-blogs`);
   manageBlogsLink = computed(() => `/user/${this.userId()}/manage-blogs`);
   settingsLink    = computed(() => `/user/${this.userId()}/settings`);
-  exploreLink     = computed(() => `/user/${this.userId()}/welcome/apna-blog`);
+  exploreLink     = computed(() => `/user/${this.userId()}/explore-blogs`);
 
   ngOnInit(): void {
     const userId = this.route.snapshot.params['id'];

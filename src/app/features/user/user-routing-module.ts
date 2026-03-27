@@ -13,20 +13,24 @@ const routes: Routes = [
     children: [
       {
         path: '',
-        component: UserHome
+        component: UserHome,
+        title: 'ApnaBlog | Home'
       },
       {
         path: 'manage-blogs',
-        component: PostLists
+        component: PostLists,
+        title: 'ApnaBlog | Manage Blogs'
       },
       {
         path: 'settings',
-        component: Settings
+        component: Settings,
+        title: 'ApnaBlog | Settings'
       },
       {
         path: 'explore-blogs',
         component: Home,
-        data: { standalone: false }
+        data: { standalone: false },
+        title: 'ApnaBlog | Explore Blogs'
       }
     ]
   },

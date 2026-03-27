@@ -11,12 +11,13 @@ export const routes: Routes = [
     },
     {
         path: 'welcome',
-        loadChildren: () => import('./features/landing/landing-module').then(m => m.LandingModule)
+        loadChildren: () => import('./features/landing/landing-module').then(m => m.LandingModule),
+        title: 'ApnaBlog | About'
     },
     {
         path: 'auth',
         component: AuthLayout,
-        loadChildren: () => import('./features/auth/auth-module').then(m => m.AuthModule)
+        loadChildren: () => import('./features/auth/auth-module').then(m => m.AuthModule),
     },
     {
         path: '',

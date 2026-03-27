@@ -15,27 +15,33 @@ const routes: Routes = [
     children: [
       {
         path: '',
-        component: AdminHome
+        component: AdminHome,
+        title: 'ApnaBlog | Home'
       },
       {
         path: 'manage-users',
-        component: ManageUsers
+        component: ManageUsers,
+        title: 'ApnaBlog | Manage Users'
       },
       {
         path: 'manage-blogs',
-        component: PostLists
+        component: PostLists,
+        title: "ApnaBlog | Manage Blogs"
       },
       {
         path: 'create-blog',
-        component: CreatePost
+        component: CreatePost,
+        title: 'ApnaBlog | Create Blog'
       },
       {
         path: 'create-user',
-        component: CreateUser
+        component: CreateUser,
+        title: 'ApnaBlog | Create User'
       },
       {
         path: 'settings',
-        component: Settings
+        component: Settings,
+        title: 'ApnaBlog | Settings'
       }
     ]
   }
