@@ -55,12 +55,12 @@ export class Login implements OnInit {
         next: (res) => {
           this.isLoading.set(false);
 
-          const data   = res.data as any;  // cast to access _id & token
+          const data   = res.data as any;
           const userId = data?._id;
           const role   = data?.role?.toLowerCase();
           const token  = data?.token;
 
-          console.log('🔍 Login response:', { userId, role, token }); // remove after testing
+          console.log('🔍 Login response:', { userId, role, token });
 
           if (!userId || !role || !token) {
             this.errorMessage.set('Login failed. Please try again.');

@@ -4,6 +4,7 @@ import { MainLayout } from './layouts/main-layout/main-layout';
 import { PageNotFound } from './shared/page-not-found/page-not-found';
 import { authGuard, guestGuard } from './core/guards/auth-guard';
 import { adminGuard } from './core/guards/admin-guard';
+import { roleGuard } from './core/guards/role-guard';
 
 export const routes: Routes = [
     {
@@ -31,12 +32,14 @@ export const routes: Routes = [
         children: [
             {
                 path: 'user/:id',
-                loadChildren: () => import('./features/user/user-module').then(m => m.UserModule)
+                loadChildren: () => import('./features/user/user-module').then(m => m.UserModule),
+                data: {role: 'user'}
             },
             {
                 path: 'admin/:id',
-                canActivate: [adminGuard],
-                loadChildren: () => import('./features/admin/admin-module').then(m => m.AdminModule)
+                canActivate: [adminGuard, roleGuard],
+                loadChildren: () => import('./features/admin/admin-module').then(m => m.AdminModule),
+                data: {role: 'admin'}
             }
         ]
     },

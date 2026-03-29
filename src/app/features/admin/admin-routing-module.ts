@@ -10,7 +10,7 @@ import { Settings } from './pages/settings/settings';
 
 const routes: Routes = [
   {
-    path: ':id',
+    path: '',
     component: AdminDashboard,
     children: [
       {

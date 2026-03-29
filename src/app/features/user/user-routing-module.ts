@@ -8,7 +8,7 @@ import { Home } from '../landing/pages/home/home';
 
 const routes: Routes = [
   {
-    path: ':id',
+    path: '',
     component: UserDashboard,
     children: [
       {
