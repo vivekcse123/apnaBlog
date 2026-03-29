@@ -80,24 +80,11 @@ export class Auth {
     );
   }
 
- resetPassword(
-  token: string,
-  newPassword: string
-): Observable<{ status: number; message: string }> {
-  const payload = { token, newPassword };
-  const url = `${this.authEndpoint}reset-password`;
-  
-  console.log('═══════════════════════════════════════');
-  console.log('📤 AUTH SERVICE - RESET PASSWORD REQUEST');
-  console.log('═══════════════════════════════════════');
-  console.log('URL:', url);
-  console.log('Payload:', { token, newPassword: '***' });
-  console.log('Token length:', token.length);
-  console.log('Full endpoint:', url);
-  console.log('═══════════════════════════════════════');
-
-  return this.http.put<{ status: number; message: string }>(url, payload);
-}
+  resetPassword(token: string, newPassword: string): Observable<{ status: number; message: string }> {
+    const payload = { token, newPassword };
+    const url = `${this.authEndpoint}reset-password`;
+    return this.http.put<{ status: number; message: string }>(url, payload);
+  }
 
   getToken(): string | null {
     return this.isBrowser ? localStorage.getItem('token') : null;

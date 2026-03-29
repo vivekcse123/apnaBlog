@@ -57,8 +57,7 @@ export class ViewPost implements OnInit, OnDestroy {
   loadPost(): void {
     this.postService.getPostById(this.postId())
       .pipe(
-        takeUntil(this.destroy$),
-        tap(res => console.log(res.data.user))
+        takeUntil(this.destroy$)
       )
       .subscribe({
         next: (res) => this.post.set(res.data),
@@ -66,26 +65,20 @@ export class ViewPost implements OnInit, OnDestroy {
       });
   }
 
-  // ── Comments ─────────────────────────────────────────────────────────────
   toggleComments(): void {
     this.showComments.set(!this.showComments());
   }
 
-  // ── Delete Comment ────────────────────────────────────────────────────────
-
-  /** Step 1 — user clicks 🗑️ icon: open inline confirm */
   confirmDeleteComment(commentId: string): void {
     this.pendingDeleteCommentId.set(commentId);
     this.showDeleteConfirm.set(true);
   }
 
-  /** Step 2 — user clicks Cancel */
   cancelDeleteComment(): void {
     this.showDeleteConfirm.set(false);
     this.pendingDeleteCommentId.set('');
   }
 
-  /** Step 3 — user clicks Yes, Delete */
   proceedDeleteComment(): void {
     const commentId = this.pendingDeleteCommentId();
     const postId    = this.post()?._id;
@@ -97,7 +90,7 @@ export class ViewPost implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          // Remove comment from local signal — no need to reload the whole post
+
           this.post.update(p => {
             if (!p) return p;
             const updatedComments = (p.comments ?? []).filter(
@@ -126,7 +119,6 @@ export class ViewPost implements OnInit, OnDestroy {
       });
   }
 
-  // ── Edit ──────────────────────────────────────────────────────────────────
   startEdit(): void {
     const p = this.post();
     this.successMessage.set('');

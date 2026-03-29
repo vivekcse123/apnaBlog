@@ -23,21 +23,15 @@ getAllUsers(page: number, limit: number): Observable<apiResponse<User[]>> {
 }
 
 freezeUser(userId: string | null): Observable<apiResponse<User>>{
-  return this.http.patch<apiResponse<User>>(`${this.endPoint}${userId}/freeze`, {}).pipe(
-    tap((res) => console.log(res))
-  )
+  return this.http.patch<apiResponse<User>>(`${this.endPoint}${userId}/freeze`, {});
 }
 
 unFreezeUser(userId: string): Observable<apiResponse<User>> {
-  return this.http.patch<apiResponse<User>>(`${this.endPoint}${userId}/unfreeze`,{}).pipe(
-    tap(res => console.log(res))
-  );
+  return this.http.patch<apiResponse<User>>(`${this.endPoint}${userId}/unfreeze`,{});
 }
 
 updateUser(userId: string, userData: Partial<User>): Observable<apiResponse<User>> {
-  return this.http.put<apiResponse<User>>(`${this.endPoint}${userId}/update`, userData).pipe(
-    tap(res => console.log('Updated user:', res))
-  );
+  return this.http.put<apiResponse<User>>(`${this.endPoint}${userId}/update`, userData);
 }
 
 }

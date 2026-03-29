@@ -39,7 +39,6 @@ export class UserDashboard implements OnInit{
         this.initial.set(chars.toUpperCase());
       },
       error(err){
-        console.log(err);
       }
     })
 

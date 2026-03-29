@@ -25,7 +25,6 @@ export class ResetPassword implements OnInit {
   showPassword = signal(false);
   token        = signal<string | null>(null);
 
-  // ✅ FIXED: minLength = 8 (matches backend)
   resetForm = new FormGroup({
     newPassword: new FormControl('', [
       Validators.required,
@@ -43,8 +42,6 @@ export class ResetPassword implements OnInit {
     }
 
     this.token.set(tokenFromURL.trim());
-
-    console.log('✅ Token received:', this.token());
   }
 
   passwordMatchValidator(form: any) {

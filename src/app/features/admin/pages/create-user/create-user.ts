@@ -59,7 +59,6 @@ export class CreateUser {
     )
     .subscribe({
       next:(res) =>{
-        console.log(res);
          this.successMessage.set('User created successfully!');
          setTimeout(() => {
           this.userCreated.emit();
@@ -67,9 +66,6 @@ export class CreateUser {
         }, 1000);
       },
       error: (err) =>{
-        console.log("Full error object:", err);       
-        console.log("err.error:", err.error);         
-        console.log("err.error.message:", err.error?.message);
     const message = err?.error?.message ?? "Something went wrong!";
     this.errorMessage.set(message);
       }

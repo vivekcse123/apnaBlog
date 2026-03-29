@@ -9,10 +9,10 @@ export const authGuard: CanActivateFn = () => {
   if (authService.isAuthorized()) {
     return true;
   }
-
   router.navigate(['/auth/login']);
   return false;
 };
+
 
 export const guestGuard: CanActivateFn = () => {
   const authService = inject(Auth);
