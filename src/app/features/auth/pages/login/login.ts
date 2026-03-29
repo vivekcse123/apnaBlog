@@ -57,7 +57,7 @@ export class Login implements OnInit {
 
           const data   = res.data as any;
           const userId = data?._id;
-          const role   = data?.role?.toLowerCase();
+          const role   = data?.role; // REMOVE .toLowerCase() here
           const token  = data?.token;
 
           console.log('🔍 Login response:', { userId, role, token });
@@ -69,8 +69,13 @@ export class Login implements OnInit {
 
           this.successMessage.set('Logged in successfully!');
 
+          // Navigate based on role (case-sensitive)
           setTimeout(() => {
-            this.router.navigate(['/', role, userId]);
+            if (role.toLowerCase() === 'admin') {
+              this.router.navigate(['/admin', userId]);
+            } else {
+              this.router.navigate(['/user', userId]);
+            }
           }, 300);
         },
         error: (err) => {
@@ -80,5 +85,9 @@ export class Login implements OnInit {
           );
         },
       });
+  }
+
+  togglePasswordVisibility() {
+    this.showPassword = !this.showPassword;
   }
 }

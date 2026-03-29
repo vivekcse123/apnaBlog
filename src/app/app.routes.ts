@@ -31,15 +31,15 @@ export const routes: Routes = [
         canActivate: [authGuard],
         children: [
             {
-                path: 'user/:id',
-                loadChildren: () => import('./features/user/user-module').then(m => m.UserModule),
-                data: {role: 'user'}
-            },
-            {
                 path: 'admin/:id',
                 canActivate: [adminGuard, roleGuard],
                 loadChildren: () => import('./features/admin/admin-module').then(m => m.AdminModule),
                 data: {role: 'admin'}
+            },
+            {
+                path: 'user/:id',
+                loadChildren: () => import('./features/user/user-module').then(m => m.UserModule),
+                data: {role: 'user'}
             }
         ]
     },
