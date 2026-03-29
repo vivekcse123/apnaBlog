@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { Auth } from '../../../../core/services/auth';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-reset-password',
@@ -17,7 +18,6 @@ export class ResetPassword implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
 
-  // ── Signals ──
   isLoading    = signal(false);
   isSuccess    = signal(false);
   isSubmitted  = signal(false);
@@ -32,9 +32,8 @@ export class ResetPassword implements OnInit {
   }, { validators: this.passwordMatchValidator });
 
   ngOnInit() {
-    // Subscribe to query params to handle encoded tokens
     this.route.queryParams.subscribe(params => {
-      let tokenFromURL = params['token'];
+      const tokenFromURL = params['token'];
 
       console.log('🔑 Raw token from URL:', tokenFromURL);
       console.log('🔑 Token length:', tokenFromURL?.length);
@@ -44,27 +43,12 @@ export class ResetPassword implements OnInit {
         return;
       }
 
-      // Remove any whitespace that might have been added
-      tokenFromURL = tokenFromURL.trim();
-
-      // The token might be double-encoded, so try decoding
-      try {
-        // First decode attempt
-        let decodedToken = decodeURIComponent(tokenFromURL);
-        
-        // If it still looks encoded (contains %), decode again
-        if (decodedToken.includes('%')) {
-          decodedToken = decodeURIComponent(decodedToken);
-        }
-        
-        this.token.set(decodedToken);
-        console.log('✅ Final decoded token:', decodedToken);
-        console.log('✅ Final token length:', decodedToken.length);
-      } catch (error) {
-        console.error('❌ Token decoding failed:', error);
-        // If decoding fails, use the original token
-        this.token.set(tokenFromURL);
-      }
+      // Store token as-is (it's a hex string, no need to decode)
+      const cleanToken = tokenFromURL.trim();
+      this.token.set(cleanToken);
+      
+      console.log('✅ Final decoded token:', cleanToken);
+      console.log('✅ Final token length:', cleanToken.length);
     });
   }
 
@@ -82,13 +66,11 @@ export class ResetPassword implements OnInit {
     this.isSubmitted.set(true);
     this.errorMessage.set('');
 
-    // Validate form
     if (this.resetForm.invalid) {
       this.resetForm.markAllAsTouched();
       return;
     }
 
-    // Validate token exists
     if (!this.token() || this.token().trim() === '') {
       this.errorMessage.set('Reset token is missing. Please request a new password reset link.');
       return;
@@ -107,14 +89,12 @@ export class ResetPassword implements OnInit {
     console.log('📤 Token (first 20 chars):', this.token().substring(0, 20) + '...');
     console.log('📤 New password length:', newPassword.length);
 
-    // Call the reset password API
     this.auth.resetPassword(this.token(), newPassword).subscribe({
       next: (response) => {
         console.log('✅ Password reset successful:', response);
         this.isLoading.set(false);
         this.isSuccess.set(true);
         
-        // Redirect to login after 2 seconds
         setTimeout(() => {
           this.router.navigate(['/auth/login'], {
             queryParams: { 
@@ -123,20 +103,26 @@ export class ResetPassword implements OnInit {
           });
         }, 2000);
       },
-      error: (err) => {
+      error: (err: HttpErrorResponse) => {
         console.error('❌ Password reset failed:', err);
-        console.error('❌ Error status:', err?.status);
-        console.error('❌ Error response:', err?.error);
+        console.error('❌ Error status:', err.status);
+        console.error('❌ Error response:', err.error);
+        console.error('❌ Full error object:', JSON.stringify(err.error, null, 2));
+        console.error('❌ Error message from backend:', err.error?.message);
         
         this.isLoading.set(false);
         
-        // Handle specific error cases
-        if (err?.status === 400 || err?.status === 401) {
+        // Display the exact error message from backend
+        const backendMessage = err.error?.message || err.error?.error;
+        
+        if (backendMessage) {
+          this.errorMessage.set(backendMessage);
+        } else if (err.status === 400) {
           this.errorMessage.set('Invalid or expired reset token. Please request a new password reset link.');
-        } else if (err?.status === 404) {
+        } else if (err.status === 401) {
+          this.errorMessage.set('Unauthorized. Please request a new password reset link.');
+        } else if (err.status === 404) {
           this.errorMessage.set('Reset token not found. Please request a new password reset link.');
-        } else if (err?.error?.message) {
-          this.errorMessage.set(err.error.message);
         } else {
           this.errorMessage.set('Something went wrong. Please try again or request a new reset link.');
         }
@@ -144,7 +130,6 @@ export class ResetPassword implements OnInit {
     });
   }
 
-  // Helper method to request a new reset link
   requestNewLink() {
     this.router.navigate(['/auth/forgot-password']);
   }

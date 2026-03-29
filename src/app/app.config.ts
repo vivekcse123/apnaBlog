@@ -5,12 +5,14 @@ import { routes } from './app.routes';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 import { loaderInterceptor } from './core/interceptors/loader-interceptor';
+import { authInterceptor } from './core/interceptors/auth-interceptor';
+import { loggingInterceptor } from './core/interceptors/logging-interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideZonelessChangeDetection(),
     provideRouter(routes), provideClientHydration(withEventReplay()),
-    provideHttpClient(withFetch(), withInterceptors([loaderInterceptor])),
+    provideHttpClient(withFetch(), withInterceptors([loaderInterceptor, authInterceptor, loggingInterceptor])),
   ]
 };
