@@ -56,5 +56,19 @@ export class Auth {
     { currentPassword, newPassword }
   );
 }
+
+forgotPassword(email: string): Observable<{ status: number; message: string }> {
+    return this.http.post<{ status: number; message: string }>(
+      `${this.authEndpoint}forgot-password`,
+      { email }
+    );
+  }
+
+resetPassword(token: string, newPassword: string): Observable<{ status: number; message: string }> {
+    return this.http.put<{ status: number; message: string }>(
+      `${this.authEndpoint}reset-password`,
+      { token, newPassword }
+    );
+  }
   
 }
