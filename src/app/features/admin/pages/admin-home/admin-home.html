@@ -82,7 +82,7 @@
         <div class="info-content">
           <span class="info-label">Total Views</span>
           <span class="info-value">{{ totalViews() | number }}</span>
-          <span class="info-badge views-badge">+{{ newViews() }} today</span>
+          <span class="info-badge views-badge">+{{ weekViews () }} thisweek</span>
         </div>
       </div>
 
@@ -96,7 +96,7 @@
         <div class="info-content">
           <span class="info-label">Total Comments</span>
           <span class="info-value">{{ totalComments() }}</span>
-          <span class="info-badge comments-badge">+{{ newComments() }} today</span>
+          <span class="info-badge comments-badge">+{{ weekComments() }} thisweek</span>
         </div>
       </div>
 
@@ -109,7 +109,7 @@
         <div class="info-content">
           <span class="info-label">Total Likes</span>
           <span class="info-value">{{ totalLikes() }}</span>
-          <span class="info-badge likes-badge">+{{ newLikes() }} today</span>
+          <span class="info-badge likes-badge">+{{ weekLikes () }} this week</span>
         </div>
       </div>
 

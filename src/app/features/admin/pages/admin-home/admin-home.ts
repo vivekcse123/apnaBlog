@@ -1,10 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { forkJoin } from 'rxjs';
 import { PostService } from '../../../post/services/post-service';
 import { AdminService } from '../../services/admin-service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActivatedRoute } from '@angular/router';
+import { Auth } from '../../../../core/services/auth';
 
 @Component({
   selector: 'app-admin-home',
@@ -16,11 +16,14 @@ import { ActivatedRoute } from '@angular/router';
 export class AdminHome implements OnInit {
   private postService  = inject(PostService);
   private adminService = inject(AdminService);
-  private destroyRef = inject(DestroyRef);
-  private route = inject(ActivatedRoute);
+  private destroyRef   = inject(DestroyRef);
+  private authService  = inject(Auth);
+
+  readonly currentUser = this.authService.getCurrentUser();
+  readonly userId      = this.currentUser?.id ?? '';
 
   currentDate: Date = new Date();
-
+  
   totalBlogs     = signal<number>(0);
   totalUsers     = signal<number>(0);
   totalPublished = signal<number>(0);
@@ -35,20 +38,19 @@ export class AdminHome implements OnInit {
   newUsers      = signal<number>(0);
   newPublished  = signal<number>(0);
   pendingReview = signal<number>(0);
-  newViews      = signal<number>(0);
-  newComments   = signal<number>(0);
-  newLikes      = signal<number>(0);
+
+  weekViews    = signal<number>(0);
+  weekComments = signal<number>(0);
+  weekLikes    = signal<number>(0);
 
   recentBlogs  = signal<any[]>([]);
   recentUsers  = signal<any[]>([]);
   inactiveList = signal<any[]>([]);
 
   isLoading = signal<boolean>(true);
-  userId = signal<string>('');
+
   ngOnInit(): void {
     this.loadDashboardData();
-
-    this.userId.set(this.route.snapshot.params['id']);
   }
 
   loadDashboardData(): void {
@@ -56,9 +58,7 @@ export class AdminHome implements OnInit {
       posts: this.postService.getAllPost(1, 1000),
       users: this.adminService.getAllUsers(1, 1000),
     })
-    .pipe(
-      takeUntilDestroyed(this.destroyRef)
-    )
+    .pipe(takeUntilDestroyed(this.destroyRef))
     .subscribe({
       next: ({ posts, users }) => {
         const allPosts = posts.data ?? [];
@@ -66,7 +66,6 @@ export class AdminHome implements OnInit {
 
         const now           = new Date();
         const weekAgo       = new Date(now.getTime() - 7  * 24 * 60 * 60 * 1000);
-        const todayStart    = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
         const published            = allPosts.filter((p: any) => p.status === 'published');
@@ -81,23 +80,32 @@ export class AdminHome implements OnInit {
         this.newPublished.set(newPublishedThisWeek.length);
         this.pendingReview.set(drafts.length);
 
-        const views    = allPosts.reduce((s: number, p: any) => s + (p.views         ?? 0), 0);
-        const comments = allPosts.reduce((s: number, p: any) => s + (p.commentsCount ?? 0), 0);
-        const likes    = allPosts.reduce((s: number, p: any) => s + (p.likesCount    ?? 0), 0);
+        const totalViews    = allPosts.reduce((s: number, p: any) => s + (p.views         ?? 0), 0);
+        const totalComments = allPosts.reduce((s: number, p: any) => s + (p.commentsCount ?? 0), 0);
+        const totalLikes    = allPosts.reduce((s: number, p: any) => s + (p.likesCount    ?? 0), 0);
 
-        this.totalViews.set(views);
-        this.totalComments.set(comments);
-        this.totalLikes.set(likes);
+        this.totalViews.set(totalViews);
+        this.totalComments.set(totalComments);
+        this.totalLikes.set(totalLikes);
 
-        const todayPosts = allPosts.filter((p: any) => new Date(p.createdAt) >= todayStart);
-        this.newViews.set(todayPosts.reduce((s: number, p: any) => s + (p.views         ?? 0), 0));
-        this.newComments.set(todayPosts.reduce((s: number, p: any) => s + (p.commentsCount ?? 0), 0));
-        this.newLikes.set(todayPosts.reduce((s: number, p: any) => s + (p.likesCount    ?? 0), 0));
+        const activeThisWeek = allPosts.filter((p: any) => {
+          const lastActivity = p.updatedAt ?? p.createdAt;
+          return new Date(lastActivity) >= weekAgo;
+        });
 
-        const active   = allUsers.filter((u: any) => u.status !== 'inactive');
-        const inactive = allUsers.filter((u: any) => u.status === 'inactive');
+        this.weekViews.set(
+          activeThisWeek.reduce((s: number, p: any) => s + (p.views         ?? 0), 0)
+        );
+        this.weekComments.set(
+          activeThisWeek.reduce((s: number, p: any) => s + (p.commentsCount ?? 0), 0)
+        );
+        this.weekLikes.set(
+          activeThisWeek.reduce((s: number, p: any) => s + (p.likesCount    ?? 0), 0)
+        );
+
+        const active           = allUsers.filter((u: any) => u.status !== 'inactive');
+        const inactive         = allUsers.filter((u: any) => u.status === 'inactive');
         const newUsersThisWeek = allUsers.filter((u: any) => new Date(u.createdAt) >= weekAgo);
-        const activeLast30     = active.filter((u: any) => new Date(u.createdAt) >= thirtyDaysAgo);
 
         this.totalUsers.set(allUsers.length);
         this.newUsers.set(newUsersThisWeek.length);
@@ -133,6 +141,6 @@ export class AdminHome implements OnInit {
 
   getInitials(name: string): string {
     if (!name) return 'U';
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    return name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
   }
 }

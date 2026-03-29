@@ -9,7 +9,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ViewPost } from '../../../../shared/view-post/view-post';
 import { MessageModal } from '../../../../shared/message-modal/message-modal';
 import { BlogFilterPipe } from '../../../../shared/pipes/blog-filter-pipe';
-import { UserService } from '../../../user/services/user-service';
+import { Auth } from '../../../../core/services/auth';
 
 @Component({
   selector: 'app-post-lists',
@@ -23,10 +23,10 @@ export class PostLists implements OnInit {
   private route       = inject(ActivatedRoute);
   private postService = inject(PostService);
   private destroyRef  = inject(DestroyRef);
-  private userService = inject(UserService);
+  private authService = inject(Auth);
 
   allBlogs       = signal<Post[]>([]);
-  userId         = signal<string>('');
+  userId         = signal<string | null>(null);
   role           = signal<string>('');
   showCreateBlog = signal(false);
 
@@ -87,23 +87,19 @@ export class PostLists implements OnInit {
     const id = userId ?? this.userId();
     if (!id) return;
 
-    this.userService.getUserById(id)
+    const currentUser = this.authService.getCurrentUser();
+    const role = currentUser?.role?.toLowerCase() ?? '';
+    this.role.set(role);
+
+    const posts$ = role === 'admin'
+      ? this.postService.getAllPost(1, 100)
+      : this.postService.getPostByUserId(id, 1, 10);
+
+    posts$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (res) => {
-          const role = res.data?.role?.toLowerCase();
-          this.role.set(role);
-          
-          const posts$ = role === 'admin' ? this.postService.getAllPost(1, 100) : this.postService.getPostByUserId(id, 1, 10);
-
-          posts$
-            .pipe(takeUntilDestroyed(this.destroyRef))
-            .subscribe({
-              next:  (res) => this.allBlogs.set(res.data || []),
-              error: (err) => console.error(err?.error?.message),
-            });
-        },
-        error: (err) => console.error('Failed to fetch user:', err),
+        next:  (res) => this.allBlogs.set(res.data || []),
+        error: (err) => console.error(err?.error?.message),
       });
   }
 
