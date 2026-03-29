@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -13,60 +13,72 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
   styleUrl: './login.css',
 })
 export class Login implements OnInit {
-  private fb = inject(FormBuilder);
+  private fb          = inject(FormBuilder);
   private authService = inject(Auth);
-  private router = inject(Router);
-  private destroyRef = inject(DestroyRef);
+  private router      = inject(Router);
+  private destroyRef  = inject(DestroyRef);
 
   loginForm: FormGroup = new FormGroup({});
 
+  isSubmitted    = signal(false);
+  isLoading      = signal(false);
+  errorMessage   = signal('');
+  successMessage = signal('');
+  showPassword   = false;
+
   ngOnInit(): void {
     this.loginForm = this.fb.group({
-      email: new FormControl('', [Validators.required, Validators.pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)]),
+      email:   new FormControl('', [
+        Validators.required,
+        Validators.pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)
+      ]),
       password: new FormControl('', [Validators.required]),
-      loginAt: new FormControl(Date.now())
+      loginAt:  new FormControl(Date.now()),
     });
   }
 
-  isSubmitted = signal(false);
-  errorMessage = signal('');
-  successMessage = signal('');
-
-  login(){
+  login() {
     this.isSubmitted.set(true);
+    this.errorMessage.set('');
+    this.successMessage.set('');
 
-    if(this.loginForm.invalid){
+    if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();
       return;
     }
 
+    this.isLoading.set(true);
+
     this.authService.login(this.loginForm.value)
-    .pipe(
-      takeUntilDestroyed(this.destroyRef)
-    )
-    .subscribe({
-      next: (res) =>{
-        const role = res.data?.role?.toLowerCase();
-        const userId = res.data._id;
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          this.isLoading.set(false);
 
-        if(!userId || !role){
-          this.successMessage.set('');
-          this.errorMessage.set('Internal server error..!');
-          return;
-        }
+          const data   = res.data as any;  // cast to access _id & token
+          const userId = data?._id;
+          const role   = data?.role?.toLowerCase();
+          const token  = data?.token;
 
-        this.successMessage.set('User loggedin successfully...!');
-        this.errorMessage.set('');
-        setTimeout(() =>{
-          this.router.navigate(['/', role, userId]);
-        }, 300);
-      },
-      error: (err) =>{
-        this.errorMessage.set(err?.error?.message || 'Login failed, Please try again...!');
-        this.successMessage.set('');
-      }
-    })
+          console.log('🔍 Login response:', { userId, role, token }); // remove after testing
+
+          if (!userId || !role || !token) {
+            this.errorMessage.set('Login failed. Please try again.');
+            return;
+          }
+
+          this.successMessage.set('Logged in successfully!');
+
+          setTimeout(() => {
+            this.router.navigate(['/', role, userId]);
+          }, 300);
+        },
+        error: (err) => {
+          this.isLoading.set(false);
+          this.errorMessage.set(
+            err?.error?.message || 'Login failed. Please try again.'
+          );
+        },
+      });
   }
-  
-  showPassword = false;
 }

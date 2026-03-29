@@ -9,10 +9,9 @@ import { isPlatformBrowser } from '@angular/common';
 @Injectable({
   providedIn: 'root',
 })
-
 export class Auth {
   private authEndpoint = environment.apiAuthEndpoint;
-  
+
   private http = inject(HttpClient);
   private platformId = inject(PLATFORM_ID);
   private isBrowser = isPlatformBrowser(this.platformId);
@@ -21,16 +20,31 @@ export class Auth {
     this.isBrowser ? localStorage.getItem('userId') : null
   );
 
-  isAuthorized = computed(() => !!this.userId());
+  userRole = signal<string | null>(
+    this.isBrowser ? localStorage.getItem('userRole') : null
+  );
+
+  token = signal<string | null>(
+    this.isBrowser ? localStorage.getItem('token') : null
+  );
+
+  isAuthorized = computed(() => !!this.token());
+  isAdmin = computed(() => this.userRole() === 'admin');
 
   login(userCred: { email: string; password: string }): Observable<apiResponse<User>> {
     return this.http.post<apiResponse<User>>(`${this.authEndpoint}login`, userCred).pipe(
       tap((res) => {
-        const id = res.data._id;
-        this.userId.set(id);
+        const { _id, role, token } = res.data as any;
+        console.log(res)
+
+        this.userId.set(_id);
+        this.userRole.set(role);
+        this.token.set(token);
 
         if (this.isBrowser) {
-          localStorage.setItem('userId', id);
+          localStorage.setItem('userId', _id);
+          localStorage.setItem('userRole', role);
+          localStorage.setItem('token', token);
         }
       })
     );
@@ -38,37 +52,49 @@ export class Auth {
 
   logout(): void {
     this.userId.set(null);
+    this.userRole.set(null);
+    this.token.set(null);
+
     if (this.isBrowser) {
       localStorage.removeItem('userId');
+      localStorage.removeItem('userRole');
+      localStorage.removeItem('token');
     }
   }
 
   register(userData: User): Observable<apiResponse<User>> {
-    return this.http.post<apiResponse<User>>(`${this.authEndpoint}register`, userData).pipe(
-      tap(res => console.log(res))
+    return this.http.post<apiResponse<User>>(`${this.authEndpoint}register`, userData);
+  }
+
+  changePassword(
+    id: string | null,
+    currentPassword: string,
+    newPassword: string
+  ): Observable<{ status: number; message: string; data: User }> {
+    return this.http.put<{ status: number; message: string; data: User }>(
+      `${this.authEndpoint}${id}/change-password`,
+      { currentPassword, newPassword }
     );
   }
 
-    
-  changePassword(id: string | null, currentPassword: string, newPassword: string): Observable<{ status: number; message: string; data: User }> {
-  return this.http.put<{ status: number; message: string; data: User }>(
-    `${this.authEndpoint}${id}/change-password`,
-    { currentPassword, newPassword }
-  );
-}
-
-forgotPassword(email: string): Observable<{ status: number; message: string }> {
+  forgotPassword(email: string): Observable<{ status: number; message: string }> {
     return this.http.post<{ status: number; message: string }>(
       `${this.authEndpoint}forgot-password`,
       { email }
     );
   }
 
-resetPassword(token: string, newPassword: string): Observable<{ status: number; message: string }> {
+  resetPassword(
+    token: string,
+    newPassword: string
+  ): Observable<{ status: number; message: string }> {
     return this.http.put<{ status: number; message: string }>(
       `${this.authEndpoint}reset-password`,
       { token, newPassword }
     );
   }
-  
+
+  getToken(): string | null {
+    return this.isBrowser ? localStorage.getItem('token') : null;
+  }
 }
