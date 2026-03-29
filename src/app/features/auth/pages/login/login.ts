@@ -37,7 +37,6 @@ export class Login implements OnInit {
       loginAt:  new FormControl(Date.now()),
     });
 
-    // Check for access denied error from route guard
     this.route.queryParams.subscribe(params => {
       if (params['error'] && params['message']) {
         this.errorMessage.set(`${params['error']}: ${params['message']}`);
@@ -67,9 +66,7 @@ export class Login implements OnInit {
           const userId = data?._id;
           const role   = data?.role;
           const token  = data?.token;
-
-          console.log('🔍 Login Component - Response:', { userId, role, token });
-
+          
           if (!userId || !role || !token) {
             this.errorMessage.set('Login failed. Please try again.');
             return;
