@@ -1,36 +1,40 @@
 import { inject } from '@angular/core';
 import { Router, CanActivateFn, ActivatedRouteSnapshot } from '@angular/router';
+import { Auth } from '../services/auth';
 
 export const roleGuard: CanActivateFn = (route: ActivatedRouteSnapshot) => {
   const router = inject(Router);
+  const authService = inject(Auth);
 
-  const currentUserId = localStorage.getItem('userId');
-  const currentUserRole = localStorage.getItem('role');
+  const currentUser = authService.getCurrentUser();
   const urlId = route.paramMap.get('id');
   const requiredRole = route.data['role'];
 
-  if (!currentUserId) {
+  if (!currentUser || !currentUser.id) {
     router.navigate(['/auth/login']);
     return false;
   }
 
-  if (currentUserId !== urlId) {
-    if (currentUserRole === 'admin') {
-      router.navigate([`/admin/${currentUserId}`]);
-    } else {
-      router.navigate([`/user/${currentUserId}`]);
-    }
+  if (currentUser.id !== urlId) {
+    authService.logout();
+    router.navigate(['/auth/login'], {
+      queryParams: { 
+        error: 'Access Denied',
+        message: 'You are not authorized to access this resource'
+      }
+    });
     return false;
   }
 
-  if (currentUserRole !== requiredRole) {
-    if (currentUserRole === 'admin') {
-      router.navigate([`/admin/${currentUserId}`]);
-    } else {
-      router.navigate([`/user/${currentUserId}`]);
-    }
+  if (currentUser.role !== requiredRole) {
+    authService.logout();
+    router.navigate(['/auth/login'], {
+      queryParams: { 
+        error: 'Access Denied',
+        message: 'You do not have permission to access this area'
+      }
+    });
     return false;
   }
-
   return true;
 };

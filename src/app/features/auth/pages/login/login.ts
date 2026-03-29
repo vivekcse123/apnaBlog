@@ -1,6 +1,6 @@
 import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Auth } from '../../../../core/services/auth';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -16,6 +16,7 @@ export class Login implements OnInit {
   private fb          = inject(FormBuilder);
   private authService = inject(Auth);
   private router      = inject(Router);
+  private route       = inject(ActivatedRoute);
   private destroyRef  = inject(DestroyRef);
 
   loginForm: FormGroup = new FormGroup({});
@@ -34,6 +35,13 @@ export class Login implements OnInit {
       ]),
       password: new FormControl('', [Validators.required]),
       loginAt:  new FormControl(Date.now()),
+    });
+
+    // Check for access denied error from route guard
+    this.route.queryParams.subscribe(params => {
+      if (params['error'] && params['message']) {
+        this.errorMessage.set(`${params['error']}: ${params['message']}`);
+      }
     });
   }
 
@@ -57,10 +65,10 @@ export class Login implements OnInit {
 
           const data   = res.data as any;
           const userId = data?._id;
-          const role   = data?.role; // REMOVE .toLowerCase() here
+          const role   = data?.role;
           const token  = data?.token;
 
-          console.log('🔍 Login response:', { userId, role, token });
+          console.log('🔍 Login Component - Response:', { userId, role, token });
 
           if (!userId || !role || !token) {
             this.errorMessage.set('Login failed. Please try again.');
@@ -69,9 +77,8 @@ export class Login implements OnInit {
 
           this.successMessage.set('Logged in successfully!');
 
-          // Navigate based on role (case-sensitive)
           setTimeout(() => {
-            if (role.toLowerCase() === 'admin') {
+            if (role === 'admin') {
               this.router.navigate(['/admin', userId]);
             } else {
               this.router.navigate(['/user', userId]);
