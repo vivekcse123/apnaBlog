@@ -7,7 +7,7 @@ import { Chart, registerables } from 'chart.js';
 import { interval, Subscription } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router'; // ✅ Router removed (not needed)
+import { RouterModule } from '@angular/router';
 import { environment } from '../../../../../environments/environments.prod';
 
 Chart.register(...registerables);
@@ -32,16 +32,15 @@ export interface SourceStat  { source: string; count: number; percent: number; }
 })
 export class Visitor implements OnInit, AfterViewInit, OnDestroy {
 
-  @ViewChild('lineChartRef')    lineChartRef!:    ElementRef<HTMLCanvasElement>;
+  @ViewChild('lineChartRef') lineChartRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('doughnutChartRef') doughnutChartRef!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('barChartRef')     barChartRef!:     ElementRef<HTMLCanvasElement>;
+  @ViewChild('barChartRef') barChartRef!: ElementRef<HTMLCanvasElement>;
 
-  private lineChart!:    Chart;
+  private lineChart!: Chart;
   private doughnutChart!: Chart;
-  private barChart!:     Chart;
+  private barChart!: Chart;
   private autoRefreshSub!: Subscription;
 
-  // ✅ CORRECT API
   private readonly API = `${environment.apiUrl}/visitor`;
 
   stats: VisitorStats = {
@@ -49,29 +48,26 @@ export class Visitor implements OnInit, AfterViewInit, OnDestroy {
     thisWeek: 0, lastWeek: 0,
     thisMonth: 0, total: 0
   };
+
   todayChangePercent = 0;
   weekChangePercent  = 0;
 
-  weeklyData:   DailyData[]   = [];
-  topPages:     TopPage[]     = [];
-  deviceStats:  DeviceStat[]  = [];
+  weeklyData: DailyData[] = [];
+  topPages: TopPage[] = [];
+  deviceStats: DeviceStat[] = [];
   recentVisits: RecentVisit[] = [];
-  sourceStats:  SourceStat[]  = [];
+  sourceStats: SourceStat[] = [];
 
-  isLoading     = true;
-  lastUpdated   = '';
+  isLoading = true;
+  lastUpdated = '';
   selectedRange: '7d' | '14d' | '30d' = '14d';
 
-  constructor(
-    private http: HttpClient
-  ) {}
+  constructor(private http: HttpClient) {}
 
-  // ✅ ONLY DATA LOADING (NO TRACKING HERE)
   ngOnInit(): void {
-
     this.loadAllData();
 
-    this.autoRefreshSub = interval(30_000).pipe(
+    this.autoRefreshSub = interval(30000).pipe(
       switchMap(() => this.http.get<VisitorStats>(`${this.API}/stats`))
     ).subscribe(data => {
       this.stats = data;
@@ -91,55 +87,53 @@ export class Visitor implements OnInit, AfterViewInit, OnDestroy {
     this.autoRefreshSub?.unsubscribe();
   }
 
-  // ── Data Loading ────────────────────────────────────────────────────────────
-
   loadAllData(): void {
     this.isLoading = true;
 
     this.http.get<VisitorStats>(`${this.API}/stats`).subscribe({
-      next: data => { this.stats = data; this.calculateChanges(); },
-      error: err => console.error('[visitor/stats] failed:', err)
+      next: data => { this.stats = data; this.calculateChanges(); }
     });
 
     this.http.get<DailyData[]>(`${this.API}/daily?range=${this.selectedRange}`).subscribe({
-      next: data => { this.weeklyData = data; this.updateLineChart(); this.updateBarChart(); },
-      error: err => console.error('[visitor/daily] failed:', err)
-    });
-
-    this.http.get<TopPage[]>(`${this.API}/top-pages`).subscribe({
-      next: data => this.topPages = data,
-      error: err => console.error('[visitor/top-pages] failed:', err)
-    });
-
-    this.http.get<DeviceStat[]>(`${this.API}/devices`).subscribe({
-      next: data => this.deviceStats = data,
-      error: err => console.error('[visitor/devices] failed:', err)
-    });
-
-    this.http.get<RecentVisit[]>(`${this.API}/recent`).subscribe({
-      next: data => this.recentVisits = data,
-      error: err => console.error('[visitor/recent] failed:', err)
-    });
-
-    this.http.get<SourceStat[]>(`${this.API}/sources`).subscribe({
       next: data => {
-        this.sourceStats = data;
+        this.weeklyData = data;
+
+        if (!this.lineChart && this.lineChartRef) {
+          this.initLineChart();
+        } else {
+          this.updateLineChart();
+        }
+
+        if (!this.barChart && this.barChartRef) {
+          this.initBarChart();
+        } else {
+          this.updateBarChart();
+        }
+      }
+    });
+
+    this.http.get<TopPage[]>(`${this.API}/top-pages`).subscribe(data => this.topPages = data);
+    this.http.get<DeviceStat[]>(`${this.API}/devices`).subscribe(data => this.deviceStats = data);
+    this.http.get<RecentVisit[]>(`${this.API}/recent`).subscribe(data => this.recentVisits = data);
+
+    this.http.get<SourceStat[]>(`${this.API}/sources`).subscribe(data => {
+      this.sourceStats = data;
+
+      if (!this.doughnutChart && this.doughnutChartRef) {
+        this.initDoughnutChart();
+      } else {
         this.updateDoughnutChart();
-        this.isLoading = false;
-        this.setLastUpdated();
-      },
-      error: err => console.error('[visitor/sources] failed:', err)
+      }
+
+      this.isLoading = false;
+      this.setLastUpdated();
     });
   }
 
   onRangeChange(range: '7d' | '14d' | '30d'): void {
     this.selectedRange = range;
-    this.http.get<DailyData[]>(`${this.API}/daily?range=${range}`).subscribe({
-      next: data => { this.weeklyData = data; this.updateLineChart(); this.updateBarChart(); }
-    });
+    this.loadAllData();
   }
-
-  // ── Helpers ─────────────────────────────────────────────────────────────────
 
   calculateChanges(): void {
     this.todayChangePercent = this.stats.yesterday > 0
@@ -167,7 +161,7 @@ export class Visitor implements OnInit, AfterViewInit, OnDestroy {
 
   formatRelativeTime(dateStr: string): string {
     const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
-    if (diff < 60)   return `${diff}s ago`;
+    if (diff < 60) return `${diff}s ago`;
     if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
     return `${Math.floor(diff / 3600)}h ago`;
   }
@@ -176,18 +170,75 @@ export class Visitor implements OnInit, AfterViewInit, OnDestroy {
     return n >= 1000 ? (n / 1000).toFixed(1) + 'k' : n.toString();
   }
 
-  // ── Chart Init & Updates (UNCHANGED) ─────────────────────────────────────────
   initCharts(): void {
     this.initLineChart();
     this.initDoughnutChart();
     this.initBarChart();
   }
 
-  initLineChart(): void { /* unchanged */ }
-  initDoughnutChart(): void { /* unchanged */ }
-  initBarChart(): void { /* unchanged */ }
+  initLineChart(): void {
+    if (!this.lineChartRef || !this.weeklyData.length) return;
 
-  updateLineChart(): void { /* unchanged */ }
-  updateBarChart(): void { /* unchanged */ }
-  updateDoughnutChart(): void { /* unchanged */ }
+    this.lineChart = new Chart(this.lineChartRef.nativeElement, {
+      type: 'line',
+      data: {
+        labels: this.weeklyData.map(d => d.date),
+        datasets: [{
+          data: this.weeklyData.map(d => d.count),
+          borderColor: '#6C63FF',
+          backgroundColor: 'rgba(108,99,255,0.08)',
+          fill: true
+        }]
+      }
+    });
+  }
+
+  initDoughnutChart(): void {
+    if (!this.doughnutChartRef) return;
+
+    this.doughnutChart = new Chart(this.doughnutChartRef.nativeElement, {
+      type: 'doughnut',
+      data: {
+        labels: this.sourceStats.map(s => s.source),
+        datasets: [{
+          data: this.sourceStats.map(s => s.percent)
+        }]
+      }
+    });
+  }
+
+  initBarChart(): void {
+    if (!this.barChartRef || !this.weeklyData.length) return;
+
+    this.barChart = new Chart(this.barChartRef.nativeElement, {
+      type: 'bar',
+      data: {
+        labels: this.weeklyData.map(d => d.date),
+        datasets: [{
+          data: this.weeklyData.map(d => d.count)
+        }]
+      }
+    });
+  }
+
+  updateLineChart(): void {
+    if (!this.lineChart) return;
+    this.lineChart.data.labels = this.weeklyData.map(d => d.date);
+    this.lineChart.data.datasets[0].data = this.weeklyData.map(d => d.count);
+    this.lineChart.update();
+  }
+
+  updateBarChart(): void {
+    if (!this.barChart) return;
+    this.barChart.data.labels = this.weeklyData.map(d => d.date);
+    this.barChart.data.datasets[0].data = this.weeklyData.map(d => d.count);
+    this.barChart.update();
+  }
+
+  updateDoughnutChart(): void {
+    if (!this.doughnutChart) return;
+    this.doughnutChart.data.labels = this.sourceStats.map(s => s.source);
+    this.doughnutChart.data.datasets[0].data = this.sourceStats.map(s => s.percent);
+    this.doughnutChart.update();
+  }
 }
