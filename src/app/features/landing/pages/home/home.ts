@@ -3,10 +3,10 @@ import {
   OnInit, DestroyRef, Input,
   ChangeDetectionStrategy, WritableSignal
 } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, NavigationEnd, Router, RouterLink } from '@angular/router';
 import { CommonModule, NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { finalize, debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { finalize, debounceTime, distinctUntilChanged, filter } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { PostService } from '../../../post/services/post-service';
@@ -17,6 +17,7 @@ import { Auth } from '../../../../core/services/auth';                         /
 import { UserService } from '../../../user/services/user-service';             // adjust path if needed
 import { User } from '../../../user/models/user.mode';                         // adjust path if needed
 import { CommonHeader } from '../../../../shared/common-header/common-header';
+import { VisitorService } from '../../../../core/services/visitor';
 
 const PAGE_SIZE = 4;
 
@@ -32,9 +33,11 @@ export class Home implements OnInit {
   private postService = inject(PostService);
   private destroyRef  = inject(DestroyRef);
   private route       = inject(ActivatedRoute);
+  private router = inject(Router);
   private auth        = inject(Auth);
   private userService = inject(UserService);
   themeService        = inject(ThemeService);
+  private visitorService = inject(VisitorService);
 
   @Input() standalone = true;
 
@@ -166,6 +169,15 @@ export class Home implements OnInit {
 
   ngOnInit(): void {
     this.standalone = this.route.snapshot.data['standalone'] ?? this.standalone;
+
+    this.visitorService.trackVisit(window.location.pathname);
+
+  this.router.events
+  .pipe(filter((event: any): event is NavigationEnd => event instanceof NavigationEnd))
+  .subscribe(event => {
+    this.visitorService.trackVisit(event.urlAfterRedirects);
+  });
+
     this.loadPosts();
     this.restoreLikedIds();
     this.fetchCurrentUser();
@@ -369,4 +381,5 @@ export class Home implements OnInit {
     );
   }
   
+
 }

@@ -1,9 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { Component, DestroyRef, inject, signal, OnInit } from '@angular/core'; // ✅ added OnInit
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { RouterLink, Router, NavigationEnd } from '@angular/router'; // ✅ added Router, NavigationEnd
+import { filter } from 'rxjs/operators'; // ✅ added filter
+
 import { ContactService } from '../../../../core/services/contact-service';
+import { VisitorService } from '../../../../core/services/visitor';
 
 @Component({
   selector: 'app-about',
@@ -12,9 +15,13 @@ import { ContactService } from '../../../../core/services/contact-service';
   templateUrl: './about.html',
   styleUrl: './about.css',
 })
-export class About {
+export class About implements OnInit { // ✅ added OnInit
+
   private contactService = inject(ContactService);
   private destroyRef = inject(DestroyRef);
+
+  private router = inject(Router); // ✅ added
+  private visitorService = inject(VisitorService); // ✅ added
 
   currentYear = new Date().getFullYear();
   isSubmitting = signal(false);
@@ -23,6 +30,23 @@ export class About {
   formSubmitted = false;
 
   contactData = { name: '', email: '', subject: '', message: '' };
+
+  // ✅ TRACKING LOGIC
+  ngOnInit(): void {
+
+    // Track initial page load
+    this.visitorService.trackVisit(window.location.pathname);
+
+    // Track route changes
+    this.router.events
+      .pipe(
+        filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe(event => {
+        this.visitorService.trackVisit(event.urlAfterRedirects);
+      });
+  }
 
   submitForm() {
     if (!this.contactData.name || !this.contactData.email ||
@@ -53,6 +77,7 @@ export class About {
   scrollToContact() {
     document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
+
   scrollTo(id: string) {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
