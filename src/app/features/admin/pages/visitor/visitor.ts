@@ -9,7 +9,7 @@ import { switchMap } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
 import { Router, NavigationEnd, RouterModule } from '@angular/router';
 import { filter } from 'rxjs/operators';
-import { environment } from '../../../../../environments/environment';
+import { environment } from '../../../../../environments/environments.prod';
 
 Chart.register(...registerables);
 
@@ -43,11 +43,9 @@ export class Visitor implements OnInit, AfterViewInit, OnDestroy {
   private autoRefreshSub!: Subscription;
   private routerSub!:      Subscription;
 
-  // Use production API endpoint from environment
   private readonly API = `${environment.apiUrl}/visitor`;
 
-  // Only track /welcome and /about pages
-  private readonly TRACKED_PAGES = ['/welcome/apan-blog', '/welcome/about'];
+  private readonly TRACKED_PAGES = ['/welcome/apna-blog', '/welcome/about'];
 
   stats: VisitorStats = {
     today: 0, yesterday: 0,
@@ -72,13 +70,10 @@ export class Visitor implements OnInit, AfterViewInit, OnDestroy {
     private router: Router
   ) {}
 
-  // ── Lifecycle ───────────────────────────────────────────────────────────────
 
   ngOnInit(): void {
-    // 1. Track the current page visit immediately
     this.trackCurrentPage();
 
-    // 2. Track again on every subsequent navigation (SPA route changes)
     this.routerSub = this.router.events
       .pipe(filter(e => e instanceof NavigationEnd))
       .subscribe((e: any) => {
