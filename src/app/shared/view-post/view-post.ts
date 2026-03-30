@@ -1,7 +1,7 @@
-import { Component, inject, input, OnDestroy, OnInit, output, signal } from '@angular/core';
+import { Component, ElementRef, inject, input, OnDestroy, OnInit, output, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Subject, takeUntil, tap } from 'rxjs';
+import { Subject, takeUntil } from 'rxjs';
 import { PostService } from '../../features/post/services/post-service';
 import { Post } from '../../core/models/post.model';
 
@@ -29,14 +29,15 @@ export class ViewPost implements OnInit, OnDestroy {
   showComments   = signal(false);
   editForm!: FormGroup;
 
-  // ── Delete Comment Confirm State ────────────────────────────────────────────
   showDeleteConfirm      = signal(false);
   pendingDeleteCommentId = signal<string>('');
   isDeletingComment      = signal(false);
 
+  @ViewChild('contentEditor') contentEditorRef!: ElementRef<HTMLDivElement>;
+
   categoryOptions = [
     'Technology', 'Lifestyle', 'Education',
-    'Health', 'Business', 'Entertainment', 'Social', 'Village'
+    'Health', 'Business', 'Entertainment', 'Social', 'Village', 'Cooking', 'Quotes', 'Excercise'
   ];
 
   tagOptions = [
@@ -44,7 +45,6 @@ export class ViewPost implements OnInit, OnDestroy {
     'News', 'Opinion', 'Guide', 'Update'
   ];
 
-  // ── Lifecycle ───────────────────────────────────────────────────────────────
   ngOnInit(): void {
     this.loadPost();
   }
@@ -56,9 +56,7 @@ export class ViewPost implements OnInit, OnDestroy {
 
   loadPost(): void {
     this.postService.getPostById(this.postId())
-      .pipe(
-        takeUntil(this.destroy$)
-      )
+      .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (res) => this.post.set(res.data),
         error: (err) => console.error(err)
@@ -90,7 +88,6 @@ export class ViewPost implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-
           this.post.update(p => {
             if (!p) return p;
             const updatedComments = (p.comments ?? []).filter(
@@ -135,6 +132,12 @@ export class ViewPost implements OnInit, OnDestroy {
     });
 
     this.isEditing.set(true);
+
+    setTimeout(() => {
+      if (this.contentEditorRef?.nativeElement) {
+        this.contentEditorRef.nativeElement.innerHTML = p?.content || '';
+      }
+    }, 0);
   }
 
   cancelEdit(): void {
@@ -171,6 +174,11 @@ export class ViewPost implements OnInit, OnDestroy {
       });
   }
 
+  onContentInput(event: Event): void {
+    const html = (event.target as HTMLElement).innerHTML;
+    this.editForm.patchValue({ content: html }, { emitEvent: false });
+  }
+
   toggleCategory(category: string): void {
     const current: string[] = this.editForm.get('categories')?.value ?? [];
     const updated = current.includes(category)
@@ -203,4 +211,10 @@ export class ViewPost implements OnInit, OnDestroy {
   closeModal(): void {
     this.close.emit();
   }
+
+  document = document;
+
+execCommand(command: string): void {
+  document.execCommand(command, false);
+}
 }

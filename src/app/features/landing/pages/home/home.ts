@@ -1,8 +1,5 @@
-import {
-  Component, inject, signal, computed,
-  OnInit, DestroyRef, Input,
-  ChangeDetectionStrategy, WritableSignal
-} from '@angular/core';
+import { Component, inject, signal, computed, OnInit, DestroyRef, Input, ChangeDetectionStrategy, WritableSignal} 
+from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Router, RouterLink } from '@angular/router';
 import { CommonModule, NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -13,10 +10,9 @@ import { PostService } from '../../../post/services/post-service';
 import { Post } from '../../../../core/models/post.model';
 import { ReadBlog } from '../read-blog/read-blog';
 import { ThemeService } from '../../../../core/services/theme-service';
-import { Auth } from '../../../../core/services/auth';                         // adjust path if needed
-import { UserService } from '../../../user/services/user-service';             // adjust path if needed
-import { User } from '../../../user/models/user.mode';                         // adjust path if needed
-import { CommonHeader } from '../../../../shared/common-header/common-header';
+import { Auth } from '../../../../core/services/auth';                        
+import { UserService } from '../../../user/services/user-service';           
+import { User } from '../../../user/models/user.mode';                      
 import { VisitorService } from '../../../../core/services/visitor';
 
 const PAGE_SIZE = 4;
@@ -50,7 +46,6 @@ export class Home implements OnInit {
   selectedCategory = signal('');
   selectedSort     = signal('newest');
 
-  // ── Pagination ──────────────────────────────────────────────────────────────
   trendingPage = signal(0);
   hotPage      = signal(0);
   latestPage   = signal(0);
@@ -136,6 +131,7 @@ export class Home implements OnInit {
     switch (sort) {
       case 'liked':  return [...posts].sort((a, b) => b.likesCount - a.likesCount);
       case 'viewed': return [...posts].sort((a, b) => b.views - a.views);
+      case 'comments': return [...posts].sort((a, b) => b.commentsCount - a.commentsCount)
       default:       return [...posts].sort((a, b) => b._ts - a._ts);
     }
   });
@@ -157,8 +153,17 @@ export class Home implements OnInit {
   );
 
   categories: string[] = [
-    'Village', 'Technology', 'Health',
-    'Education', 'Business', 'Entertainment'
+      "Entertainment",
+      "Health",
+      "Technology",
+      "Business",
+      "Lifestyle",
+      "Education",
+      "Exercise",
+      "Cooking",
+      "Social",
+      "Quotes",
+      "Village"
   ];
 
   categoryEmojis: Record<string, string> = {

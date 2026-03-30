@@ -1,20 +1,5 @@
-import {
-  Component,
-  ElementRef,
-  ViewChild,
-  inject,
-  input,
-  output,
-  signal,
-} from '@angular/core';
-import {
-  AbstractControl,
-  FormArray,
-  FormBuilder,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+import { Component, ElementRef, ViewChild, inject, input, output, signal } from '@angular/core';
+import { AbstractControl, FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Post } from '../../../../core/models/post.model';
 import { Auth } from '../../../../core/services/auth';
 import { PostService } from '../../services/post-service';
@@ -42,9 +27,9 @@ export class CreatePost {
   activeFormats = signal<Set<string>>(new Set());
 
   categoryOptions = [
-    'Technology', 'Lifestyle', 'Education', 'Health',
-    'Business', 'Entertainment', 'Social', 'Village',
-  ];
+   'Technology', 'Lifestyle', 'Education',
+    'Health', 'Business', 'Entertainment', 'Social', 'Village', 'Cooking', 'Quotes', 'Excercise'
+];
 
   tagOptions = [
     'Trending', 'Motivation', 'Tips', 'News',
@@ -75,19 +60,14 @@ export class CreatePost {
     return arr.controls.some((c: AbstractControl) => c.value === true);
   }
 
-  // ── Rich Text Editor ─────────────────────────────────────
-
-  /** Sync contenteditable HTML → reactive form control */
   onEditorInput(): void {
     const html = this.editorRef.nativeElement.innerHTML;
-    // treat a bare <br> as empty
     const isEmpty = html === '' || html === '<br>';
     this.createBlogForm.get('content')?.setValue(isEmpty ? '' : html);
     this.createBlogForm.get('content')?.markAsTouched();
     this.updateActiveFormats();
   }
 
-  /** Update which toolbar buttons should appear "active" */
   updateActiveFormats(): void {
     const commands = ['bold', 'italic', 'underline', 'strikeThrough',
       'justifyLeft', 'justifyCenter', 'justifyRight', 'justifyFull',
@@ -107,14 +87,12 @@ export class CreatePost {
     this.updateActiveFormats();
   }
 
-  /** Apply a formatting command without losing focus */
   format(command: string, value?: string): void {
     this.editorRef.nativeElement.focus();
     document.execCommand(command, false, value ?? '');
     this.onEditorInput();
   }
 
-  /** Insert a heading block */
   formatBlock(tag: string): void {
     this.editorRef.nativeElement.focus();
     document.execCommand('formatBlock', false, tag);
@@ -148,9 +126,7 @@ export class CreatePost {
       return;
     }
 
-    const selectedCategories = this.categoryOptions.filter(
-      (_, i) => this.categoriesArray.at(i).value
-    );
+    const selectedCategories = this.categoryOptions.filter((_, i) => this.categoriesArray.at(i).value);
     const selectedTags = this.tagOptions.filter(
       (_, i) => this.tagsArray.at(i).value
     );
@@ -175,7 +151,7 @@ export class CreatePost {
           this.postCreated.emit(res.data);
           this.successMessage.set('');
           this.createBlogForm.reset();
-          // Clear contenteditable editor
+          
           if (this.editorRef?.nativeElement) {
             this.editorRef.nativeElement.innerHTML = '';
           }

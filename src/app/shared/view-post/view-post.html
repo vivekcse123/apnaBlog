@@ -39,7 +39,7 @@
         </div>
       </div>
 
-      <!-- ═══ COMMENTS SECTION ═══ -->
+      <!-- COMMENTS SECTION -->
       @if (showComments()) {
         <div class="comments-section">
           <p class="comments-title">
@@ -59,8 +59,6 @@
                       : (comment.name || 'Anonymous') }}
                 </span>
                 <span class="comment-date">{{ comment.createdAt | date:'mediumDate' }}</span>
-
-                <!-- 🗑️ DELETE TRIGGER -->
                 <button
                   class="delete-comment-btn"
                   (click)="confirmDeleteComment(comment._id)"
@@ -77,7 +75,7 @@
       }
     }
 
-    <!-- POST BODY -->
+    <!-- POST BODY (view mode) -->
     @if (!isEditing()) {
       <div class="post-body">
 
@@ -100,7 +98,7 @@
 
         <div class="detail-block full">
           <span class="detail-label">Content</span>
-          <p class="detail-text content-text">{{ post()?.content }}</p>
+          <div class="detail-text content-text" [innerHTML]="post()?.content"></div>
         </div>
 
         <div class="detail-row">
@@ -164,9 +162,30 @@
             }
           </div>
 
+          <!-- RICH TEXT EDITOR for Content -->
           <div class="edit-field full">
             <label>Content</label>
-            <textarea formControlName="content" rows="5" placeholder="Write your content..."></textarea>
+            <div class="rich-editor-wrapper">
+              <div class="rich-editor-toolbar">
+                <button type="button" title="Bold"       (click)="document.execCommand('bold')"          ><b>B</b></button>
+                <button type="button" title="Italic"     (click)="document.execCommand('italic')"        ><i>I</i></button>
+                <button type="button" title="Underline"  (click)="document.execCommand('underline')"     ><u>U</u></button>
+                <span class="toolbar-divider"></span>
+                <button type="button" title="Bullet List"   (click)="document.execCommand('insertUnorderedList')">• List</button>
+                <button type="button" title="Numbered List" (click)="document.execCommand('insertOrderedList')">1. List</button>
+                <span class="toolbar-divider"></span>
+                <button type="button" title="Align Left"   (click)="document.execCommand('justifyLeft')"  >&#8676;</button>
+                <button type="button" title="Align Center" (click)="document.execCommand('justifyCenter')">&#8677;</button>
+                <button type="button" title="Align Right"  (click)="document.execCommand('justifyRight')" >&#8678;</button>
+              </div>
+              <div
+                #contentEditor
+                class="rich-content-editor"
+                contenteditable="true"
+                (input)="onContentInput($event)"
+                (blur)="editForm.get('content')?.markAsTouched()">
+              </div>
+            </div>
             @if (editForm.get('content')?.invalid && editForm.get('content')?.touched) {
               <small class="error">Content is required (min 20 chars)</small>
             }
@@ -221,7 +240,7 @@
     <!-- FOOTER -->
     <div class="modal-footer">
       @if (!isEditing()) {
-        <button class="btn-cancel" (click)="closeModal()">Close</button>
+        <button class="btn-cancel"   (click)="closeModal()">Close</button>
         <button class="btn-comments" (click)="toggleComments()">
           {{ showComments() ? 'Hide Comments' : 'View Comments' }}
         </button>
@@ -235,7 +254,7 @@
   </div><!-- /.post-modal -->
 </div><!-- /.modal-overlay -->
 
-<!-- ═══ DELETE COMMENT CONFIRM DIALOG ═══ -->
+<!-- DELETE COMMENT CONFIRM DIALOG -->
 @if (showDeleteConfirm()) {
   <div class="modal-overlay confirm-layer" (click)="cancelDeleteComment()">
     <div class="confirm-box" (click)="$event.stopPropagation()">
