@@ -13,7 +13,7 @@ import { environment } from '../../../../../environments/environments.prod';
 Chart.register(...registerables);
 
 export interface VisitorStats {
-  today: number; yesterday: number;
+  today: number; yesterday: number; 
   thisWeek: number; lastWeek: number;
   thisMonth: number; total: number;
 }
