@@ -1,6 +1,9 @@
 export const environment = {
-  production: true,
-  apiAuthEndpoint: 'https://apnablogserver.onrender.com/api/auth/',
-  apiUserEndpoint: 'https://apnablogserver.onrender.com/api/user/',
-  apiPostEndpoint: 'https://apnablogserver.onrender.com/api/post/'
+  production: false,
+  apiUrl: 'http://localhost:3000/api',
+  
+  // Legacy endpoints (if you're still using them elsewhere)
+  apiAuthEndpoint: 'http://localhost:3000/api/auth/',
+  apiUserEndpoint: 'http://localhost:3000/api/user/',
+  apiPostEndpoint: 'http://localhost:3000/api/post/'
 };

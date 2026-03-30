@@ -1,9 +1,9 @@
 import { inject, Injectable } from '@angular/core';
-import { environment } from '../../../../environments/environment';
 import { Observable } from 'rxjs';
 import { apiResponse } from '../../../core/models/api-response.model';
 import { HttpClient } from '@angular/common/http';
 import { Post } from '../../../core/models/post.model';
+import { environment } from '../../../../environments/environments.prod';
 
 type CreatePostPayload = Omit<
   Post,
