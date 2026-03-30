@@ -7,6 +7,7 @@ import { PostLists } from '../post/pages/post-lists/post-lists';
 import { CreatePost } from '../post/pages/create-post/create-post';
 import { CreateUser } from './pages/create-user/create-user';
 import { Settings } from './pages/settings/settings';
+import { Visitor } from './pages/visitor/visitor';
 
 const routes: Routes = [
   {
@@ -42,6 +43,11 @@ const routes: Routes = [
         path: 'settings',
         component: Settings,
         title: 'ApnaBlog | Settings'
+      },
+      {
+        path: 'visitor',
+        component: Visitor,
+        title: "ApnaBlog | Visitor"
       }
     ]
   }

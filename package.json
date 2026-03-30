@@ -35,6 +35,7 @@
     "@angular/router": "^20.3.0",
     "@angular/ssr": "^20.3.10",
     "bootstrap": "^5.3.8",
+    "chart.js": "^4.5.1",
     "express": "^5.1.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"

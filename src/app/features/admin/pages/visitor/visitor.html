@@ -1,0 +1,224 @@
+<div class="visitor-page">
+
+  <!-- ── Header ── -->
+  <div class="page-header">
+    <div class="header-left">
+      <h1 class="page-title">Visitor Analytics</h1>
+      <span class="live-dot"><span class="dot-pulse"></span> Live</span>
+    </div>
+    <div class="header-right">
+      <span class="last-updated" *ngIf="lastUpdated">Updated {{ lastUpdated }}</span>
+      <button class="refresh-btn" (click)="loadAllData()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+        </svg>
+        Refresh
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Loading ── -->
+  <div class="loading-overlay" *ngIf="isLoading">
+    <div class="spinner"></div>
+    <p>Loading analytics...</p>
+  </div>
+
+  <div [class.hidden]="isLoading">
+
+    <!-- ── Stat Cards ── -->
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-icon icon-purple">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+        </div>
+        <div class="stat-info">
+          <span class="stat-label">Today</span>
+          <span class="stat-value">{{ formatNumber(stats.today) }}</span>
+          <span class="stat-change" [class.positive]="todayChangePercent >= 0" [class.negative]="todayChangePercent < 0">
+            {{ todayChangePercent >= 0 ? '+' : '' }}{{ todayChangePercent }}% vs yesterday
+          </span>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon icon-teal">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+        </div>
+        <div class="stat-info">
+          <span class="stat-label">This Week</span>
+          <span class="stat-value">{{ formatNumber(stats.thisWeek) }}</span>
+          <span class="stat-change" [class.positive]="weekChangePercent >= 0" [class.negative]="weekChangePercent < 0">
+            {{ weekChangePercent >= 0 ? '+' : '' }}{{ weekChangePercent }}% vs last week
+          </span>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon icon-orange">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+          </svg>
+        </div>
+        <div class="stat-info">
+          <span class="stat-label">This Month</span>
+          <span class="stat-value">{{ formatNumber(stats.thisMonth) }}</span>
+          <span class="stat-sub">monthly total</span>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon icon-pink">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+        </div>
+        <div class="stat-info">
+          <span class="stat-label">All Time</span>
+          <span class="stat-value">{{ formatNumber(stats.total) }}</span>
+          <span class="stat-sub">total visitors</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Main Charts Row ── -->
+    <div class="charts-row">
+
+      <!-- Line Chart -->
+      <div class="chart-card wide">
+        <div class="chart-header">
+          <h3>Visitor Trend</h3>
+          <div class="range-tabs">
+            <button [class.active]="selectedRange === '7d'" (click)="onRangeChange('7d')">7D</button>
+            <button [class.active]="selectedRange === '14d'" (click)="onRangeChange('14d')">14D</button>
+            <button [class.active]="selectedRange === '30d'" (click)="onRangeChange('30d')">30D</button>
+          </div>
+        </div>
+        <div class="chart-wrap" style="height: 220px;">
+          <canvas #lineChartRef></canvas>
+        </div>
+      </div>
+
+      <!-- Doughnut Chart -->
+      <div class="chart-card narrow">
+        <div class="chart-header">
+          <h3>Traffic Source</h3>
+        </div>
+        <div class="chart-wrap" style="height: 160px;">
+          <canvas #doughnutChartRef></canvas>
+        </div>
+        <div class="source-legend">
+          <div class="legend-item" *ngFor="let s of sourceStats; let i = index">
+            <span class="legend-dot" [style.background]="['#6C63FF','#43C6AC','#FF6B6B','#FFB347'][i]"></span>
+            <span class="legend-label">{{ s.source }}</span>
+            <span class="legend-val">{{ s.percent }}%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Bar Chart ── -->
+    <div class="chart-card full-width">
+      <div class="chart-header">
+        <h3>Daily Visitor Bar Chart</h3>
+      </div>
+      <div class="chart-wrap" style="height: 180px;">
+        <canvas #barChartRef></canvas>
+      </div>
+    </div>
+
+    <!-- ── Bottom Row ── -->
+    <div class="bottom-row">
+
+      <!-- Top Pages -->
+      <div class="info-card">
+        <div class="info-header">
+          <h3>Top Pages</h3>
+          <span class="info-badge">Today</span>
+        </div>
+        <div class="page-list">
+            @for(p of topPages; track p; let i = $index){
+          <div class="page-row">
+            <div class="page-rank">{{ i + 1 }}</div>
+            <div class="page-detail">
+              <div class="page-url">{{ p._id || '/' }}</div>
+              <div class="page-bar-wrap">
+                <div class="page-bar" [style.width.%]="getPagePercent(p.count)"></div>
+              </div>
+            </div>
+            <div class="page-count">{{ p.count }}</div>
+          </div>
+        }
+          @if(topPages.length === 0){
+          <div class="empty-state">No data yet</div>
+          }
+        </div>
+      </div>
+
+      <!-- Device Breakdown -->
+      <div class="info-card">
+        <div class="info-header">
+          <h3>Devices</h3>
+        </div>
+        <div class="device-list">
+            @for(d of deviceStats; track d){
+          <div class="device-row">
+            <div class="device-info">
+              <span class="device-name">{{ d.device }}</span>
+              <span class="device-pct">{{ d.percent }}%</span>
+            </div>
+            <div class="device-track">
+              <div class="device-fill"
+                [style.width.%]="d.percent"
+                [style.background]="d.device === 'Mobile' ? '#6C63FF' : d.device === 'Desktop' ? '#43C6AC' : '#FFB347'">
+              </div>
+            </div>
+            <span class="device-count">{{ d.count }} visits</span>
+          </div>
+        }
+          @if(deviceStats.length === 0){
+          <div class="empty-state">No data yet</div>
+          }
+        </div>
+      </div>
+
+      <!-- Recent Visits -->
+      <div class="info-card">
+        <div class="info-header">
+          <h3>Recent Visits</h3>
+          <span class="live-indicator">
+            <span class="dot-sm"></span> Live
+          </span>
+        </div>
+        <div class="recent-list">
+            @for(v of recentVisits; track v){
+          <div class="recent-row">
+            <div class="visitor-avatar">
+              {{ v.city ? v.city[0].toUpperCase() : '?' }}
+            </div>
+            <div class="visitor-info">
+              <span class="visitor-page">{{ v.page }}</span>
+              <span class="visitor-meta">{{ v.city || 'Unknown' }} · {{ formatRelativeTime(v.visitedAt) }}</span>
+            </div>
+          </div>
+        }
+          @if(recentVisits.length === 0){
+          <div class="empty-state">No recent visits</div>
+          }
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
