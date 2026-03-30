@@ -1,5 +1,4 @@
 <div class="modal-backdrop" (click)="closeModal()">
-
   <div class="modal-box" (click)="$event.stopPropagation()">
 
     <button class="close-btn" (click)="closeModal()">&#x2715;</button>
@@ -11,15 +10,18 @@
 
     <form [formGroup]="createBlogForm" (ngSubmit)="createBlog()">
 
+      <!-- Title -->
       <input type="text" placeholder="Post Title" formControlName="title" />
       @if (createBlogForm.get('title')?.invalid && (isSubmitted() || createBlogForm.get('title')?.touched)) {
         @if (createBlogForm.get('title')?.errors?.['required']) {
           <small class="error">Title is required...!</small>
         }
         @if (createBlogForm.get('title')?.errors?.['minlength'] || createBlogForm.get('title')?.errors?.['maxlength']) {
-          <small class="error">Title should be 5 - 100 characters long...!</small>
+          <small class="error">Title should be 5–100 characters long...!</small>
         }
       }
+
+      <!-- Description -->
       <input type="text" placeholder="Short Description" formControlName="description" />
       @if (createBlogForm.get('description')?.invalid && (isSubmitted() || createBlogForm.get('description')?.touched)) {
         @if (createBlogForm.get('description')?.errors?.['required']) {
@@ -29,16 +31,180 @@
           <small class="error">Description should be at least 10 characters long...!</small>
         }
       }
-      <textarea placeholder="Write your blog content here..." formControlName="content" rows="4"></textarea>
+
+      <!-- ── Rich Text Editor ── -->
+      <div class="editor-wrapper"
+        [class.editor-error]="createBlogForm.get('content')?.invalid && (isSubmitted() || createBlogForm.get('content')?.touched)">
+
+        <!-- Toolbar -->
+        <div class="editor-toolbar">
+
+          <!-- Text style -->
+          <div class="toolbar-group">
+            <button type="button" class="tool-btn" [class.active]="isActive('bold')"
+              (mousedown)="$event.preventDefault()" (click)="format('bold')" title="Bold">
+              <b>B</b>
+            </button>
+            <button type="button" class="tool-btn italic-btn" [class.active]="isActive('italic')"
+              (mousedown)="$event.preventDefault()" (click)="format('italic')" title="Italic">
+              <i>I</i>
+            </button>
+            <button type="button" class="tool-btn underline-btn" [class.active]="isActive('underline')"
+              (mousedown)="$event.preventDefault()" (click)="format('underline')" title="Underline">
+              <u>U</u>
+            </button>
+            <button type="button" class="tool-btn strike-btn" [class.active]="isActive('strikeThrough')"
+              (mousedown)="$event.preventDefault()" (click)="format('strikeThrough')" title="Strikethrough">
+              <s>S</s>
+            </button>
+          </div>
+
+          <span class="toolbar-sep"></span>
+
+          <!-- Headings -->
+          <div class="toolbar-group">
+            <button type="button" class="tool-btn" title="Heading 1"
+              (mousedown)="$event.preventDefault()" (click)="formatBlock('h1')">
+              H1
+            </button>
+            <button type="button" class="tool-btn" title="Heading 2"
+              (mousedown)="$event.preventDefault()" (click)="formatBlock('h2')">
+              H2
+            </button>
+            <button type="button" class="tool-btn" title="Normal text"
+              (mousedown)="$event.preventDefault()" (click)="formatBlock('p')">
+              ¶
+            </button>
+          </div>
+
+          <span class="toolbar-sep"></span>
+
+          <!-- Alignment -->
+          <div class="toolbar-group">
+            <button type="button" class="tool-btn" [class.active]="isActive('justifyLeft')"
+              (mousedown)="$event.preventDefault()" (click)="format('justifyLeft')" title="Align Left">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+                <rect x="0" y="1" width="14" height="2" rx="1"/>
+                <rect x="0" y="5" width="9" height="2" rx="1"/>
+                <rect x="0" y="9" width="12" height="2" rx="1"/>
+              </svg>
+            </button>
+            <button type="button" class="tool-btn" [class.active]="isActive('justifyCenter')"
+              (mousedown)="$event.preventDefault()" (click)="format('justifyCenter')" title="Align Center">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+                <rect x="0" y="1" width="14" height="2" rx="1"/>
+                <rect x="2.5" y="5" width="9" height="2" rx="1"/>
+                <rect x="1" y="9" width="12" height="2" rx="1"/>
+              </svg>
+            </button>
+            <button type="button" class="tool-btn" [class.active]="isActive('justifyRight')"
+              (mousedown)="$event.preventDefault()" (click)="format('justifyRight')" title="Align Right">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+                <rect x="0" y="1" width="14" height="2" rx="1"/>
+                <rect x="5" y="5" width="9" height="2" rx="1"/>
+                <rect x="2" y="9" width="12" height="2" rx="1"/>
+              </svg>
+            </button>
+            <button type="button" class="tool-btn" [class.active]="isActive('justifyFull')"
+              (mousedown)="$event.preventDefault()" (click)="format('justifyFull')" title="Justify">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+                <rect x="0" y="1" width="14" height="2" rx="1"/>
+                <rect x="0" y="5" width="14" height="2" rx="1"/>
+                <rect x="0" y="9" width="14" height="2" rx="1"/>
+              </svg>
+            </button>
+          </div>
+
+          <span class="toolbar-sep"></span>
+
+          <!-- Lists -->
+          <div class="toolbar-group">
+            <button type="button" class="tool-btn" [class.active]="isActive('insertUnorderedList')"
+              (mousedown)="$event.preventDefault()" (click)="format('insertUnorderedList')" title="Bullet List">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+                <circle cx="1.5" cy="2" r="1.5"/>
+                <rect x="4" y="1" width="10" height="2" rx="1"/>
+                <circle cx="1.5" cy="7" r="1.5"/>
+                <rect x="4" y="6" width="10" height="2" rx="1"/>
+                <circle cx="1.5" cy="12" r="1.5"/>
+                <rect x="4" y="11" width="10" height="2" rx="1"/>
+              </svg>
+            </button>
+            <button type="button" class="tool-btn" [class.active]="isActive('insertOrderedList')"
+              (mousedown)="$event.preventDefault()" (click)="format('insertOrderedList')" title="Numbered List">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+                <text x="0" y="4" font-size="4" font-family="sans-serif">1.</text>
+                <rect x="4" y="1" width="10" height="2" rx="1"/>
+                <text x="0" y="9" font-size="4" font-family="sans-serif">2.</text>
+                <rect x="4" y="6" width="10" height="2" rx="1"/>
+                <text x="0" y="14" font-size="4" font-family="sans-serif">3.</text>
+                <rect x="4" y="11" width="10" height="2" rx="1"/>
+              </svg>
+            </button>
+          </div>
+
+          <span class="toolbar-sep"></span>
+
+          <!-- Indent -->
+          <div class="toolbar-group">
+            <button type="button" class="tool-btn"
+              (mousedown)="$event.preventDefault()" (click)="format('indent')" title="Indent">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+                <rect x="0" y="1" width="14" height="2" rx="1"/>
+                <rect x="3" y="5" width="11" height="2" rx="1"/>
+                <rect x="3" y="9" width="11" height="2" rx="1"/>
+                <polygon points="0,4.5 3,6 0,7.5"/>
+              </svg>
+            </button>
+            <button type="button" class="tool-btn"
+              (mousedown)="$event.preventDefault()" (click)="format('outdent')" title="Outdent">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+                <rect x="0" y="1" width="14" height="2" rx="1"/>
+                <rect x="3" y="5" width="11" height="2" rx="1"/>
+                <rect x="3" y="9" width="11" height="2" rx="1"/>
+                <polygon points="3,4.5 0,6 3,7.5"/>
+              </svg>
+            </button>
+          </div>
+
+          <span class="toolbar-sep"></span>
+
+          <!-- Clear -->
+          <div class="toolbar-group">
+            <button type="button" class="tool-btn"
+              (mousedown)="$event.preventDefault()" (click)="format('removeFormat')" title="Clear Formatting">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+                <text x="0" y="11" font-size="11" font-family="serif" font-style="italic">T</text>
+                <line x1="7" y1="2" x2="13" y2="12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <line x1="13" y1="2" x2="7" y2="12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </button>
+          </div>
+
+        </div>
+
+        <!-- Editable Area -->
+        <div
+          #editorRef
+          class="editor-content"
+          contenteditable="true"
+          data-placeholder="Write your blog content here..."
+          (input)="onEditorInput()"
+          (keyup)="onEditorKeyUp()"
+          (mouseup)="onEditorMouseUp()"
+        ></div>
+      </div>
+
       @if (createBlogForm.get('content')?.invalid && (isSubmitted() || createBlogForm.get('content')?.touched)) {
         @if (createBlogForm.get('content')?.errors?.['required']) {
-          <small class="error">Content is required...!</small>
+          <small class="error editor-field-error">Content is required...!</small>
         }
         @if (createBlogForm.get('content')?.errors?.['minlength']) {
-          <small class="error">Content should be at least 20 characters long...!</small>
+          <small class="error editor-field-error">Content should be at least 20 characters long...!</small>
         }
       }
 
+      <!-- Categories -->
       <div class="field-group">
         <label class="field-label">Categories <span class="required">*</span></label>
         <div class="checkbox-grid" formArrayName="categories">
@@ -54,6 +220,7 @@
         }
       </div>
 
+      <!-- Tags -->
       <div class="field-group">
         <label class="field-label">Tags</label>
         <div class="checkbox-grid" formArrayName="tags">
@@ -66,15 +233,12 @@
         </div>
       </div>
 
+      <!-- Image -->
       <input type="text" placeholder="Featured Image URL (paste link)" formControlName="featuredImage" />
       <div class="or-divider">OR</div>
-      <input
-        type="file"
-        accept="image/*"
-        class="file-input"
-        (change)="onFileChange($event)"
-      />
+      <input type="file" accept="image/*" class="file-input" (change)="onFileChange($event)" />
 
+      <!-- Status -->
       <select formControlName="status">
         <option value="" disabled selected>Select Status</option>
         <option value="draft">Draft</option>
