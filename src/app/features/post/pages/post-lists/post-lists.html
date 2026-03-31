@@ -49,7 +49,8 @@
             <th>Status</th>
             <th>Views</th>
             <th>Likes</th>
-            <th>Publish</th>
+            <th>Published</th>
+            <th>Updated</th>
             <th width="160">Actions</th>
           </tr>
         </thead>
@@ -98,6 +99,7 @@
                 </div>
               </td>
               <td>{{ blog.createdAt | date: 'mediumDate' }}</td>
+              <td>{{ blog.updatedAt | date: 'mediumDate' }}</td>
               <td>
                 <div class="action-buttons">
                   <button class="edit" (click)="viewPost(blog._id)">View</button>

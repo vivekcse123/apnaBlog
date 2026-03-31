@@ -343,68 +343,145 @@
     }
 
     <!-- ── DANGER ZONE ── -->
-    @if (activeSection() === 'danger') {
-      <div class="section-wrap">
-        <div class="section-heading danger-heading">
-          <h1>Danger Zone</h1>
-          <p>Irreversible actions — proceed with extreme caution</p>
+ <!-- Danger Zone Section -->
+<!-- ── DANGER ZONE ── -->
+@if (activeSection() === 'danger') {
+  <div class="section-wrap">
+    <div class="section-heading danger-heading">
+      <h1>Danger Zone</h1>
+      <p>These actions are permanent and cannot be undone</p>
+    </div>
+
+    <!-- Deletion Scheduled Warning Banner -->
+    @if (isDeletionScheduled()) {
+      <div class="deletion-warning-banner">
+        <div class="warning-icon">⚠️</div>
+        <div class="warning-content">
+          <h3>Account Deletion Scheduled</h3>
+          <p>
+            Your account is scheduled for permanent deletion on 
+            <strong>{{ deletionDate() | date:'MMM d, yyyy \'at\' h:mm a' }}</strong>
+            ({{ daysRemaining() }} {{ daysRemaining() === 1 ? 'day' : 'days' }} remaining)
+          </p>
+          <p class="warning-sub">You can cancel this request at any time before the deletion date.</p>
         </div>
-
-        <div class="danger-card">
-          <div class="danger-row">
-            <div>
-              <div class="danger-action-title">Export All Data</div>
-              <p class="danger-action-sub">Download a full backup of all blogs, users, and settings</p>
-            </div>
-            <button class="btn-outline">Export JSON</button>
-          </div>
-        </div>
-
-        <!-- ── Deactivate ── -->
-        <div class="danger-card">
-          <div class="danger-row">
-            <div>
-              <div class="danger-action-title">Deactivate Account</div>
-              <p class="danger-action-sub">Temporarily disable this admin account. Reversible.</p>
-            </div>
-            <button class="btn-warn" (click)="confirmFreeze()">Deactivate</button>
-          </div>
-
-          <!-- ✅ Inline confirmation box -->
-          @if (showFreezeConfirm()) {
-            <div class="delete-confirm-box">
-              <p>Are you sure you want to <strong>deactivate</strong> your account?
-                You will be <strong>logged out immediately.</strong></p>
-              <div class="form-actions">
-                <button class="btn-ghost" (click)="cancelFreeze()">Cancel</button>
-                <button class="btn-warn" (click)="freeze()">Yes, Deactivate</button>
-              </div>
-            </div>
-          }
-        </div>
-
-        <div class="danger-card red-border">
-          <div class="danger-row">
-            <div>
-              <div class="danger-action-title red-text">Delete Account Permanently</div>
-              <p class="danger-action-sub">Removes all your data. Cannot be undone.</p>
-            </div>
-            <button class="btn-danger" (click)="showDeleteConfirm.set(true)">Delete Account</button>
-          </div>
-          @if (showDeleteConfirm()) {
-            <div class="delete-confirm-box">
-              <p>Type <strong>DELETE</strong> to confirm:</p>
-              <input type="text" [(ngModel)]="deleteInput" placeholder="DELETE" />
-              <div class="form-actions">
-                <button class="btn-ghost" (click)="showDeleteConfirm.set(false); deleteInput = ''">Cancel</button>
-                <button class="btn-danger" [disabled]="deleteInput !== 'DELETE'">Confirm Delete</button>
-              </div>
-            </div>
-          }
-        </div>
-
       </div>
     }
+
+    <!-- Freeze Account -->
+    <div class="danger-card">
+      <div class="danger-row">
+        <div>
+          <div class="danger-action-title">Deactivate Account</div>
+          <div class="danger-action-sub">
+            Temporarily disable your account. You can reactivate it anytime by logging in.
+          </div>
+        </div>
+        @if (!showFreezeConfirm()) {
+          <button class="btn-warning" (click)="confirmFreeze()">
+            Deactivate
+          </button>
+        }
+      </div>
+      
+      @if (showFreezeConfirm()) {
+        <div class="confirm-box">
+          <p class="confirm-text">Are you sure you want to deactivate your account?</p>
+          <div class="form-actions">
+            <button class="btn-ghost" (click)="cancelFreeze()">Cancel</button>
+            <button class="btn-warning" (click)="freeze()">Yes, Deactivate</button>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Cancel Deletion (only show if deletion is scheduled) -->
+    @if (isDeletionScheduled()) {
+      <div class="danger-card cancel-delete-card">
+        <div class="danger-row">
+          <div>
+            <div class="danger-action-title" style="color: var(--success);">
+              Cancel Account Deletion
+            </div>
+            <div class="danger-action-sub">
+              Cancel the scheduled deletion and restore your account to active status.
+            </div>
+          </div>
+          <button 
+            class="btn-success" 
+            (click)="cancelDeletion()"
+            [disabled]="isCancelling()"
+          >
+            @if (isCancelling()) {
+              <span>Cancelling...</span>
+            } @else {
+              <span>Cancel Deletion</span>
+            }
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- Delete Account -->
+    <div class="danger-card red-border">
+      <div class="danger-row">
+        <div>
+          <div class="danger-action-title red-text">Delete Account</div>
+          <div class="danger-action-sub">
+            Permanently delete your account and all associated data. This action cannot be reversed.
+            <br><strong>Your account will be deleted automatically in 3 days after confirmation.</strong>
+          </div>
+        </div>
+        @if (!showDeleteConfirm() && !isDeletionScheduled()) {
+          <button class="btn-danger" (click)="showDeleteConfirm.set(true)">
+            Delete Account
+          </button>
+        }
+        @if (isDeletionScheduled()) {
+          <button class="btn-danger" disabled style="opacity: 0.5;">
+            Deletion Pending
+          </button>
+        }
+      </div>
+
+      @if (showDeleteConfirm() && !isDeletionScheduled()) {
+        <div class="delete-confirm-box">
+          <p>Type <strong>DELETE</strong> to confirm permanent deletion:</p>
+          <input 
+            type="text" 
+            [(ngModel)]="deleteInput" 
+            placeholder="Type DELETE" 
+            class="confirm-input"
+            [disabled]="isDeleting()"
+          />
+          <div class="form-actions">
+            <button 
+              class="btn-ghost" 
+              (click)="showDeleteConfirm.set(false); deleteInput = ''"
+              [disabled]="isDeleting()"
+            >
+              Cancel
+            </button>
+            <button 
+              class="btn-danger" 
+              [disabled]="deleteInput !== 'DELETE' || isDeleting()" 
+              (click)="DeleteUser()"
+            >
+              @if (isDeleting()) {
+                <span>Processing...</span>
+              } @else {
+                <span>Confirm Delete</span>
+              }
+            </button>
+          </div>
+          <p class="warning-text">
+            ⚠️ Your account will be permanently deleted in 3 days after confirmation.
+          </p>
+        </div>
+      }
+    </div>
+  </div>
+}
 
   </main>
 </div>

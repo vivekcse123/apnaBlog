@@ -10,5 +10,7 @@ export interface User {
   totalBlogs:   number;
   totalViews:   number;
   createdAt:    Date;
+  updatedAt:    Date;
   lastLoggedInAt: Date;
+  deletionScheduledAt: any
 }

@@ -81,21 +81,20 @@ export class Settings implements OnInit {
   });
 
   notifItems: { key: NotifKey; label: string; desc: string }[] = [
-  { key: 'newPosts',     label: 'New post published',     desc: 'When any user publishes a blog'      },
-  { key: 'comments',     label: 'New comments',           desc: 'When readers comment on posts'       },
-  { key: 'likes',        label: 'Likes & reactions',      desc: 'Engagement on posts'                 },
-  { key: 'newUsers',     label: 'New user registrations', desc: 'When someone signs up'               },
-  { key: 'weeklyDigest', label: 'Weekly digest',          desc: 'Summary every Monday morning'        },
-  { key: 'security',     label: 'Security alerts',        desc: 'Login attempts, suspicious activity' },
-];
-
+    { key: 'newPosts',     label: 'New post published',     desc: 'When any user publishes a blog'      },
+    { key: 'comments',     label: 'New comments',           desc: 'When readers comment on posts'       },
+    { key: 'likes',        label: 'Likes & reactions',      desc: 'Engagement on posts'                 },
+    { key: 'newUsers',     label: 'New user registrations', desc: 'When someone signs up'               },
+    { key: 'weeklyDigest', label: 'Weekly digest',          desc: 'Summary every Monday morning'        },
+    { key: 'security',     label: 'Security alerts',        desc: 'Login attempts, suspicious activity' },
+  ];
 
   get visibleNotifItems() {
-  if (this.role === 'admin') return this.notifItems;
-  return this.notifItems.filter(item =>
-    (USER_ALLOWED_KEYS as readonly string[]).includes(item.key)
-  );
-}
+    if (this.role === 'admin') return this.notifItems;
+    return this.notifItems.filter(item =>
+      (USER_ALLOWED_KEYS as readonly string[]).includes(item.key)
+    );
+  }
 
   languages: { code: Language; label: string; native: string; flag: string }[] = [
     { code: 'en', label: 'English', native: 'English', flag: '🇬🇧' },
@@ -120,8 +119,37 @@ export class Settings implements OnInit {
   showFreezeConfirm = signal(false);
   showDeleteConfirm = signal(false);
   deleteInput = '';
+  isDeleting = signal(false);
+  isCancelling = signal(false);
+
+  // Computed signal to check if deletion is scheduled
+  isDeletionScheduled = computed(() => {
+    const u = this.user();
+    return u?.status === 'pending_deletion' && u?.deletionScheduledAt != null;
+  });
+
+  // Computed signal for deletion date
+  deletionDate = computed(() => {
+    const u = this.user();
+    if (u?.deletionScheduledAt) {
+      return new Date(u.deletionScheduledAt);
+    }
+    return null;
+  });
+
+  // Computed signal for days remaining
+  daysRemaining = computed(() => {
+    const delDate = this.deletionDate();
+    if (!delDate) return 0;
+    
+    const now = new Date();
+    const diff = delDate.getTime() - now.getTime();
+    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+    return days > 0 ? days : 0;
+  });
 
   role: Role = 'user';
+  
   ngOnInit(): void {
     const paramId = this.route.parent?.snapshot.paramMap.get('id');
     const authId  = this.authService.userId();
@@ -279,6 +307,72 @@ export class Settings implements OnInit {
         },
         error: (err) => {
           this.openModal('error', 'Error', err?.error?.message ?? 'Failed to deactivate account.');
+        },
+      });
+  }
+
+  DeleteUser(): void {
+    const id = this.userId();
+    if (!id) return;
+
+    this.isDeleting.set(true);
+
+    this.adminService.requestDeleteUser(id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          this.isDeleting.set(false);
+          this.showDeleteConfirm.set(false);
+          this.deleteInput = '';
+          
+          this.openModal(
+            'success', 
+            'Account Deletion Scheduled', 
+            'Your account will be permanently deleted in 3 days. You can cancel this request by clicking the "Cancel Deletion" button.'
+          );
+
+          // Reload user to update status
+          const t = setTimeout(() => {
+            this.showModal.set(false);
+            this.loadUser(id);
+          }, 2000);
+          this.destroyRef.onDestroy(() => clearTimeout(t));
+        },
+        error: (err) => {
+          this.isDeleting.set(false);
+          this.openModal('error', 'Error', err?.error?.message ?? 'Failed to schedule account deletion.');
+        },
+      });
+  }
+
+  cancelDeletion(): void {
+    const id = this.userId();
+    if (!id) return;
+
+    this.isCancelling.set(true);
+
+    this.adminService.cancelDeleteUser(id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          this.isCancelling.set(false);
+          
+          this.openModal(
+            'success', 
+            'Deletion Cancelled', 
+            'Your account deletion has been cancelled successfully. Your account is now active.'
+          );
+
+          // Reload user to update status
+          const t = setTimeout(() => {
+            this.showModal.set(false);
+            this.loadUser(id);
+          }, 2000);
+          this.destroyRef.onDestroy(() => clearTimeout(t));
+        },
+        error: (err) => {
+          this.isCancelling.set(false);
+          this.openModal('error', 'Error', err?.error?.message ?? 'Failed to cancel account deletion.');
         },
       });
   }

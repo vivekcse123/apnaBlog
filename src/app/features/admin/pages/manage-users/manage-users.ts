@@ -83,11 +83,9 @@ export class ManageUsers implements OnInit {
 
   showCreateModal = signal(false);
 
-  // ── Freeze/Unfreeze confirm ──
   showConfirm = signal(false);
   pendingUser = signal<any>(null);
 
-  // ── Delete confirm ──
   showDeleteConfirm = signal(false);
   pendingDeleteUser = signal<any>(null);
 
@@ -165,7 +163,6 @@ export class ManageUsers implements OnInit {
     setTimeout(() => this.closeProfile(), 1000);
   }
 
-  // ── Freeze / Unfreeze ──
   toggleUserStatus(user: any): void {
     this.pendingUser.set(user);
     this.showConfirm.set(true);
@@ -212,7 +209,6 @@ export class ManageUsers implements OnInit {
     this.pendingUser.set(null);
   }
 
-  // ── Delete ──
   deleteUser(user: any): void {
     this.pendingDeleteUser.set(user);
     this.showDeleteConfirm.set(true);
@@ -250,4 +246,5 @@ export class ManageUsers implements OnInit {
     this.showDeleteConfirm.set(false);
     this.pendingDeleteUser.set(null);
   }
+  
 }

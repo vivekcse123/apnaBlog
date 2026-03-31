@@ -38,4 +38,13 @@ deleteUser(userId: string): Observable<apiResponse<User>>{
   return this.http.delete<apiResponse<User>>(`${this.endPoint}${userId}/delete`);
 }
 
+requestDeleteUser(userId: string): Observable<any> {
+  return this.http.patch(`${this.endPoint}/users/${userId}/request-delete`, {});
+}
+
+
+cancelDeleteUser(userId: string): Observable<any> {
+    return this.http.patch(`${this.endPoint}/${userId}/cancel-delete`, {});
+}
+
 }

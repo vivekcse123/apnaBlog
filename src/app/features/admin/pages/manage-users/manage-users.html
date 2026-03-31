@@ -40,6 +40,7 @@
             <th>Role</th>
             <th>Status</th>
             <th>Created</th>
+             <th>Updated</th>
             <th width="220">Actions</th>
           </tr>
         </thead>
@@ -72,7 +73,7 @@
               </td>
 
               <td>{{ user.createdAt | date: 'mediumDate' }}</td>
-
+              <td>{{user.updatedAt | date: 'mediumDate'}}</td>
               <td>
                 <div class="action-buttons">
                   <button class="view" (click)="getUserDetails(user._id)">View</button>

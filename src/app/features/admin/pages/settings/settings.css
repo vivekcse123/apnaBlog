@@ -946,7 +946,6 @@
   flex-shrink: 0;
 }
 
-/* ── Error Message ── */
 .error-message {
   display: flex;
   align-items: center;
@@ -974,4 +973,261 @@
   font-size: 11px;
   font-weight: 700;
   flex-shrink: 0;
+}
+
+.delete-confirm-box {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: rgba(255, 0, 0, 0.05);
+  border: 1px solid rgba(255, 0, 0, 0.2);
+  border-radius: 8px;
+}
+
+.confirm-input {
+  width: 100%;
+  padding: 0.75rem;
+  margin: 0.5rem 0 1rem 0;
+  border: 2px solid #e53e3e;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-family: monospace;
+}
+
+.confirm-input:focus {
+  outline: none;
+  border-color: #c53030;
+}
+
+.warning-text {
+  margin-top: 0.75rem;
+  font-size: 0.875rem;
+  color: #e53e3e;
+  font-weight: 500;
+}
+
+.danger-critical {
+  border-color: #e53e3e;
+}
+
+/* ═══════════════════════════════════════════════════
+   DANGER ZONE - ADDITIONS
+   ═══════════════════════════════════════════════════ */
+
+.section-heading.danger-heading h1 {
+  color: var(--danger);
+}
+
+/* Deletion Warning Banner */
+.deletion-warning-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.25rem;
+  background: linear-gradient(135deg, 
+    color-mix(in srgb, var(--warn) 8%, transparent),
+    color-mix(in srgb, var(--danger) 8%, transparent)
+  );
+  border: 2px solid var(--warn);
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  animation: pulseWarning 2s ease-in-out infinite;
+}
+
+@keyframes pulseWarning {
+  0%, 100% { border-color: var(--warn); }
+  50% { border-color: var(--danger); }
+}
+
+.warning-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+  animation: shake 3s ease-in-out infinite;
+}
+
+@keyframes shake {
+  0%, 90%, 100% { transform: translateX(0); }
+  92%, 96% { transform: translateX(-3px); }
+  94%, 98% { transform: translateX(3px); }
+}
+
+.warning-content {
+  flex: 1;
+}
+
+.warning-content h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--danger);
+  margin-bottom: 0.5rem;
+}
+
+.warning-content p {
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.warning-content strong {
+  color: var(--danger);
+  font-weight: 700;
+}
+
+.warning-sub {
+  font-size: 0.8rem !important;
+  color: var(--text-muted) !important;
+  margin-top: 0.5rem !important;
+}
+
+/* Cancel Delete Card */
+.cancel-delete-card {
+  border: 2px solid var(--success);
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--success) 5%, transparent),
+    var(--bg-surface)
+  );
+}
+
+/* Confirm Box */
+.confirm-box {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.confirm-text {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* Delete Confirm Box */
+.delete-confirm-box {
+  margin-top: 1.25rem;
+  padding: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--danger-border);
+  background: color-mix(in srgb, var(--danger) 5%, transparent);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.delete-confirm-box p {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.delete-confirm-box strong { 
+  color: var(--danger);
+  font-family: monospace;
+}
+
+.confirm-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  margin: 0;
+  border: 2px solid var(--danger);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-family: monospace;
+  font-weight: 600;
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.confirm-input:focus {
+  outline: none;
+  border-color: var(--danger-hover);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger) 20%, transparent);
+}
+
+.confirm-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.warning-text {
+  margin: 0;
+  padding: 0.75rem;
+  font-size: 0.82rem;
+  color: var(--danger);
+  font-weight: 600;
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
+  border-radius: 6px;
+  border: 1px solid color-mix(in srgb, var(--danger) 25%, transparent);
+}
+
+/* Button Variants */
+.btn-warning {
+  background: var(--warn);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.55rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.btn-warning:hover:not(:disabled) { 
+  background: var(--warn-hover);
+  transform: translateY(-1px);
+}
+
+.btn-warning:disabled { 
+  opacity: 0.5; 
+  cursor: not-allowed; 
+}
+
+.btn-success {
+  background: var(--success);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.55rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.btn-success:hover:not(:disabled) { 
+  background: var(--success-hover);
+  transform: translateY(-1px);
+}
+
+.btn-success:disabled { 
+  opacity: 0.5; 
+  cursor: not-allowed; 
+}
+
+.btn-danger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .deletion-warning-banner {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .danger-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .danger-row button {
+    width: 100%;
+  }
 }
