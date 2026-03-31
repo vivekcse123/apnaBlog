@@ -39,12 +39,12 @@ deleteUser(userId: string): Observable<apiResponse<User>>{
 }
 
 requestDeleteUser(userId: string): Observable<any> {
-  return this.http.patch(`${this.endPoint}/users/${userId}/request-delete`, {});
+  return this.http.patch(`${this.endPoint}${userId}/request-delete`, {});
 }
 
 
 cancelDeleteUser(userId: string): Observable<any> {
-    return this.http.patch(`${this.endPoint}/${userId}/cancel-delete`, {});
+    return this.http.patch(`${this.endPoint}${userId}/cancel-delete`, {});
 }
 
 }
