@@ -1,3 +1,4 @@
+
 <div class="settings-root">
 
   <!-- Global Modal -->
@@ -205,7 +206,6 @@
       </div>
     }
 
-    <!-- ── LANGUAGE ── -->
     @if (activeSection() === 'language') {
       <div class="section-wrap">
         <div class="section-heading">
@@ -234,7 +234,6 @@
       </div>
     }
 
-    <!-- ── NOTIFICATIONS ── -->
     @if (activeSection() === 'notifications') {
       <div class="section-wrap">
         <div class="section-heading">
@@ -258,6 +257,8 @@
         </div>
       </div>
     }
+
+
 
     <!-- ── SECURITY ── -->
     @if (activeSection() === 'security') {
@@ -342,9 +343,6 @@
       </div>
     }
 
-    <!-- ── DANGER ZONE ── -->
- <!-- Danger Zone Section -->
-<!-- ── DANGER ZONE ── -->
 @if (activeSection() === 'danger') {
   <div class="section-wrap">
     <div class="section-heading danger-heading">
@@ -352,7 +350,16 @@
       <p>These actions are permanent and cannot be undone</p>
     </div>
 
-    <!-- Deletion Scheduled Warning Banner -->
+    <div class="danger-card">
+          <div class="danger-row">
+            <div>
+              <div class="danger-action-title">Export All Data</div>
+              <p class="danger-action-sub">Download a full backup of all blogs, users, and settings</p>
+            </div>
+            <button class="btn-outline">Export JSON</button>
+          </div>
+        </div>
+
     @if (isDeletionScheduled()) {
       <div class="deletion-warning-banner">
         <div class="warning-icon">⚠️</div>
