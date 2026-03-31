@@ -76,6 +76,8 @@
               <td>
                 <div class="action-buttons">
                   <button class="view" (click)="getUserDetails(user._id)">View</button>
+                  <!-- Pass the full user object instead of just the id -->
+                  <button class="delete" (click)="deleteUser(user)">Delete</button>
                   <button class="delete" (click)="toggleUserStatus(user)">
                     {{ user.status === 'active' ? 'Freeze' : 'Unfreeze' }}
                   </button>
@@ -121,6 +123,7 @@
   />
 }
 
+<!-- ── Freeze / Unfreeze Confirm Modal ── -->
 @if (showConfirm()) {
   <div class="modal-overlay" (click)="cancelToggle()">
     <div class="confirm-box" (click)="$event.stopPropagation()">
@@ -149,6 +152,40 @@
           [class.unfreeze]="pendingUser()?.status !== 'active'"
           (click)="confirmToggle()">
           {{ pendingUser()?.status === 'active' ? 'Yes, Freeze' : 'Yes, Unfreeze' }}
+        </button>
+      </div>
+
+    </div>
+  </div>
+}
+
+<!-- ── Delete Confirm Modal ── -->
+@if (showDeleteConfirm()) {
+  <div class="modal-overlay" (click)="cancelDelete()">
+    <div class="confirm-box" (click)="$event.stopPropagation()">
+
+      <div class="confirm-icon danger-icon">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+          <path d="M10 11v6"/>
+          <path d="M14 11v6"/>
+          <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+        </svg>
+      </div>
+
+      <h3>Delete User?</h3>
+      <p>
+        Are you sure you want to permanently delete
+        <strong>{{ pendingDeleteUser()?.name }}</strong>?
+        This action <strong>cannot be undone</strong>.
+      </p>
+
+      <div class="confirm-actions">
+        <button class="btn-cancel" (click)="cancelDelete()">Cancel</button>
+        <button class="btn-confirm delete-confirm" (click)="confirmDelete()">
+          Yes, Delete
         </button>
       </div>
 

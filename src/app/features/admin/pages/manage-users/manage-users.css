@@ -375,6 +375,12 @@ tbody > tr:hover td {
   margin: 0 auto 16px;
 }
 
+/* ── Danger icon variant for delete modal ── */
+.confirm-icon.danger-icon {
+  background: var(--error-bg);
+  color: var(--error);
+}
+
 .confirm-box h3 {
   margin: 0 0 8px;
   font-size: 16px;
@@ -427,7 +433,11 @@ tbody > tr:hover td {
 
 .btn-confirm.freeze   { background: var(--danger); }
 .btn-confirm.unfreeze { background: var(--success); }
-.btn-confirm:hover    { opacity: 0.88; }
+
+/* ── Delete confirm button ── */
+.btn-confirm.delete-confirm { background: var(--danger); }
+
+.btn-confirm:hover { opacity: 0.88; }
 
 /* ── Responsive ── */
 @media (max-width: 1024px) {

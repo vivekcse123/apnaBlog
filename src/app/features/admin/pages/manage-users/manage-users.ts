@@ -9,6 +9,7 @@ import { MessageModal } from '../../../../shared/message-modal/message-modal';
 import { DisabledDirective } from '../../../../shared/directives/highlight';
 import { CreateUser } from '../create-user/create-user';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Auth } from '../../../../core/services/auth';
 
 @Component({
   selector: 'app-manage-users',
@@ -82,8 +83,13 @@ export class ManageUsers implements OnInit {
 
   showCreateModal = signal(false);
 
+  // ── Freeze/Unfreeze confirm ──
   showConfirm = signal(false);
   pendingUser = signal<any>(null);
+
+  // ── Delete confirm ──
+  showDeleteConfirm = signal(false);
+  pendingDeleteUser = signal<any>(null);
 
   showMessage = signal(false);
   modalType = signal<'success' | 'error'>('success');
@@ -91,6 +97,7 @@ export class ManageUsers implements OnInit {
   modalMessage = signal('');
 
   userId = signal<string>('');
+  errorMessage = signal('');
 
   ngOnInit(): void {
     this.route.parent?.paramMap
@@ -117,7 +124,7 @@ export class ManageUsers implements OnInit {
     clearTimeout(this.timer);
     this.timer = setTimeout(() => {
       this.debounceValue.set(value);
-      this.currentPage.set(1); 
+      this.currentPage.set(1);
     }, 300);
   }
 
@@ -158,6 +165,7 @@ export class ManageUsers implements OnInit {
     setTimeout(() => this.closeProfile(), 1000);
   }
 
+  // ── Freeze / Unfreeze ──
   toggleUserStatus(user: any): void {
     this.pendingUser.set(user);
     this.showConfirm.set(true);
@@ -202,5 +210,44 @@ export class ManageUsers implements OnInit {
   cancelToggle(): void {
     this.showConfirm.set(false);
     this.pendingUser.set(null);
+  }
+
+  // ── Delete ──
+  deleteUser(user: any): void {
+    this.pendingDeleteUser.set(user);
+    this.showDeleteConfirm.set(true);
+  }
+
+  confirmDelete(): void {
+    const user = this.pendingDeleteUser();
+    if (!user) return;
+
+    this.showDeleteConfirm.set(false);
+
+    this.adminService.deleteUser(user._id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.allUsers.update((list) => list.filter((u) => u._id !== user._id));
+
+          this.modalType.set('success');
+          this.modalTitle.set('User Deleted');
+          this.modalMessage.set(`${user.name} has been deleted successfully.`);
+          this.showMessage.set(true);
+          this.pendingDeleteUser.set(null);
+        },
+        error: (err) => {
+          this.modalType.set('error');
+          this.modalTitle.set('Delete Failed');
+          this.modalMessage.set(err?.error?.message || 'Something went wrong.');
+          this.showMessage.set(true);
+          this.pendingDeleteUser.set(null);
+        },
+      });
+  }
+
+  cancelDelete(): void {
+    this.showDeleteConfirm.set(false);
+    this.pendingDeleteUser.set(null);
   }
 }

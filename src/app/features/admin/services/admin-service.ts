@@ -34,4 +34,8 @@ updateUser(userId: string, userData: Partial<User>): Observable<apiResponse<User
   return this.http.put<apiResponse<User>>(`${this.endPoint}${userId}/update`, userData);
 }
 
+deleteUser(userId: string): Observable<apiResponse<User>>{
+  return this.http.delete<apiResponse<User>>(`${this.endPoint}${userId}/delete`);
+}
+
 }

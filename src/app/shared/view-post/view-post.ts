@@ -37,7 +37,7 @@ export class ViewPost implements OnInit, OnDestroy {
 
   categoryOptions = [
     'Technology', 'Lifestyle', 'Education',
-    'Health', 'Business', 'Entertainment', 'Social', 'Village', 'Cooking', 'Quotes', 'Excercise'
+    'Health', 'Business', 'Entertainment', 'Social', 'Village', 'Cooking', 'Quotes', 'Exercise'
   ];
 
   tagOptions = [
