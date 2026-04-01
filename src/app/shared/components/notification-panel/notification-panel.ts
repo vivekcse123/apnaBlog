@@ -6,6 +6,7 @@ import {
   ElementRef,
   inject,
   ChangeDetectionStrategy,
+  signal
 } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
@@ -29,33 +30,32 @@ import { NotificationService } from '../../../core/services/notification-service
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NotificationPanel implements OnInit, OnDestroy {
+
   private svc = inject(NotificationService);
   private router = inject(Router);
   private elRef = inject(ElementRef);
   private destroy$ = new Subject<void>();
 
-  notifications: Notification[] = [];
-  unreadCount = 0;
-  loading = false;
-  panelOpen = false;
+  // ✅ SIGNALS
+  notifications = signal<Notification[]>([]);
+  unreadCount = signal(0);
+  loading = signal(false);
+  panelOpen = signal(false);
 
   readonly meta = NOTIFICATION_META;
 
-  // ✅ INIT
   ngOnInit(): void {
     this.svc.notifications$
       .pipe(takeUntil(this.destroy$))
-      .subscribe((n: Notification[]) => {
-        this.notifications = n || []; // ✅ FIX (no push)
-      });
+      .subscribe(n => this.notifications.set(n || []));
 
     this.svc.unreadCount$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(c => (this.unreadCount = c));
+      .subscribe(c => this.unreadCount.set(c));
 
     this.svc.loading$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(l => (this.loading = l));
+      .subscribe(l => this.loading.set(l));
   }
 
   ngOnDestroy(): void {
@@ -63,7 +63,6 @@ export class NotificationPanel implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  // ✅ SAFE META ACCESS
   getMeta(type: NotificationType) {
     return this.meta[type] ?? {
       icon: 'notifications',
@@ -72,20 +71,18 @@ export class NotificationPanel implements OnInit, OnDestroy {
     };
   }
 
-  // ✅ PANEL TOGGLE
   togglePanel(event: Event): void {
     event.stopPropagation();
-    this.panelOpen = !this.panelOpen;
+    this.panelOpen.update(v => !v);
   }
 
   @HostListener('document:click', ['$event'])
   onOutsideClick(event: MouseEvent): void {
     if (!this.elRef.nativeElement.contains(event.target)) {
-      this.panelOpen = false;
+      this.panelOpen.set(false);
     }
   }
 
-  // ✅ CLICK HANDLER (SAFE ID)
   onNotificationClick(notification: Notification): void {
     if (!notification?.id) return;
 
@@ -97,7 +94,7 @@ export class NotificationPanel implements OnInit, OnDestroy {
       this.router.navigateByUrl(notification.resourceUrl);
     }
 
-    this.panelOpen = false;
+    this.panelOpen.set(false);
   }
 
   onMarkAllRead(event: Event): void {
@@ -114,10 +111,5 @@ export class NotificationPanel implements OnInit, OnDestroy {
   onRefresh(event: Event): void {
     event.stopPropagation();
     this.svc.fetchNotifications();
-  }
-
-  // ✅ FIX TRACKBY (NO DUPLICATES)
-  trackById(index: number, n: Notification): string {
-    return n.id || index.toString();
   }
 }
