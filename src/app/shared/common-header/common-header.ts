@@ -1,32 +1,37 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+// common-header.ts  (updated)
+import { Component, EventEmitter, Input, OnInit, Output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
+import { NotificationPanel } from '../components/notification-panel/notification-panel';
+import { NotificationService } from '../../core/services/notification-service';
 
 @Component({
   selector: 'app-common-header',
   standalone: true,
-  imports: [RouterLink, CommonModule, RouterLinkActive, MatIconModule],
+  imports: [
+    RouterLink, CommonModule, RouterLinkActive,
+    MatIconModule,
+    NotificationPanel,   // ← added
+  ],
   templateUrl: './common-header.html',
-  styleUrls: ['./common-header.css']
+  styleUrls: ['./common-header.css'],
 })
-export class CommonHeader {
+export class CommonHeader implements OnInit {
 
-  @Input() logo: string = 'ApnaBlog';
+  @Input() logo:    string        = 'ApnaBlog';
   @Input() profile: string | null = '';
-  @Input() navs: { label: string; routerLink: string }[] = [];
-
+  @Input() navs:    { label: string; routerLink: string }[] = [];
   @Output() open = new EventEmitter<void>();
 
-  menuOpen: boolean = false;
+  menuOpen = false;
 
-  toggleMenu(): void {
-    this.menuOpen = !this.menuOpen;
+  private notifSvc = inject(NotificationService);
+
+  ngOnInit(): void {
+    this.notifSvc.startPolling(); 
   }
 
-  openProfile(event: Event): void {
-    event.stopPropagation();
-    this.open.emit();
-  }
-
+  toggleMenu():                 void { this.menuOpen = !this.menuOpen; }
+  openProfile(e: Event):        void { e.stopPropagation(); this.open.emit(); }
 }

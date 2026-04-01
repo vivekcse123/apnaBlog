@@ -360,21 +360,6 @@
           </div>
         </div>
 
-    @if (isDeletionScheduled()) {
-      <div class="deletion-warning-banner">
-        <div class="warning-icon">⚠️</div>
-        <div class="warning-content">
-          <h3>Account Deletion Scheduled</h3>
-          <p>
-            Your account is scheduled for permanent deletion on 
-            <strong>{{ deletionDate() | date:'MMM d, yyyy \'at\' h:mm a' }}</strong>
-            ({{ daysRemaining() }} {{ daysRemaining() === 1 ? 'day' : 'days' }} remaining)
-          </p>
-          <p class="warning-sub">You can cancel this request at any time before the deletion date.</p>
-        </div>
-      </div>
-    }
-
     <!-- Freeze Account -->
     <div class="danger-card">
       <div class="danger-row">
@@ -402,6 +387,20 @@
       }
     </div>
 
+    @if (isDeletionScheduled()) {
+      <div class="deletion-warning-banner">
+        <div class="warning-icon">⚠️</div>
+        <div class="warning-content">
+          <h3>Account Deletion Scheduled</h3>
+          <p>
+            Your account is scheduled for permanent deletion on 
+            <strong>{{ deletionDate() | date:'MMM d, yyyy \'at\' h:mm a' }}</strong>
+            ({{ daysRemaining() }} {{ daysRemaining() === 1 ? 'day' : 'days' }} remaining)
+          </p>
+          <p class="warning-sub">You can cancel this request at any time before the deletion date.</p>
+        </div>
+      </div>
+    }
     <!-- Cancel Deletion (only show if deletion is scheduled) -->
     @if (isDeletionScheduled()) {
       <div class="danger-card cancel-delete-card">

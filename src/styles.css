@@ -15,7 +15,12 @@
    issues because CSS vars pierce Shadow DOM).
    ═══════════════════════════════════════════════════ */
 
+  :root {       /* example orange */
+  --warn-hover: #b76910;  /* darker on hover */
+  --success-hover: green;
+}
 /* ── Light (default) ── */
+
 :root,
 [data-theme="light"] {
   /* Backgrounds */

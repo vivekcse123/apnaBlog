@@ -1,54 +1,38 @@
 <header class="header">
 
   <button class="hamburger" (click)="toggleMenu()" [class.open]="menuOpen">
-    <span></span>
-    <span></span>
-    <span></span>
+    <span></span><span></span><span></span>
   </button>
 
   <div class="logo">
     <span class="logo-hex">⬡</span>
-    <span class="logo-text">{{logo}}</span>
+    <span class="logo-text">{{ logo }}</span>
   </div>
 
   <nav class="nav">
     @for (nav of navs; track nav.label) {
-      <a
-        [routerLink]="nav.routerLink"
-        routerLinkActive="active"
-        [routerLinkActiveOptions]="{ exact: true }"
-        class="nav-link">
+      <a [routerLink]="nav.routerLink" routerLinkActive="active"
+         [routerLinkActiveOptions]="{ exact: true }" class="nav-link">
         {{ nav.label }}
       </a>
     }
   </nav>
 
   <div class="right-section">
-    <div class="notification">
-      <mat-icon
-        class="gradient-icon"
-        aria-hidden="false"
-        aria-label="Notifications"
-        fontIcon="notifications">
-      </mat-icon>
-      <sup class="notification_count">5</sup>
-    </div>
+    <app-notification-panel />
+
     <div class="profile" (click)="openProfile($event)">
-      {{profile}}
+      {{ profile }}
     </div>
   </div>
 
 </header>
 
-<!-- Mobile Drawer — slides from right -->
 <div class="mobile-drawer" [class.open]="menuOpen">
   @for (nav of navs; track nav.label) {
-    <a
-      [routerLink]="nav.routerLink"
-      routerLinkActive="drawer-active"
-      [routerLinkActiveOptions]="{ exact: true }"
-      class="drawer-link"
-      (click)="menuOpen = false">
+    <a [routerLink]="nav.routerLink" routerLinkActive="drawer-active"
+       [routerLinkActiveOptions]="{ exact: true }" class="drawer-link"
+       (click)="menuOpen = false">
       {{ nav.label }}
     </a>
   }
