@@ -102,8 +102,8 @@
               <td>{{ blog.updatedAt | date: 'mediumDate' }}</td>
               <td>
                 <div class="action-buttons">
-                  <button class="edit" (click)="viewPost(blog._id)">View</button>
-                  <button class="delete" (click)="confirmDelete(blog._id, blog.title)">Delete</button>
+                  <button class="edit" (click)="viewPost(blog._id)"><i class="bi bi-eye"></i></button>
+                  <button class="delete" (click)="confirmDelete(blog._id, blog.title)"><i class="bi bi-trash3"></i></button>
                 </div>
               </td>
             </tr>

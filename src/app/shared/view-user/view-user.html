@@ -134,7 +134,7 @@
     <div class="modal-footer">
       @if (!isEditing()) {
         <button class="btn-cancel" (click)="closeModal()">Cancel</button>
-        <button class="btn-edit" (click)="startEdit()">Edit User</button>
+        <button class="btn-edit" (click)="startEdit()"><i class="bi bi-pencil-fill"></i></button>
       } @else {
         <button class="btn-cancel" (click)="cancelEdit()">Discard</button>
         <button class="btn-save" (click)="saveUser()" [disabled]="editForm.invalid">Save Changes</button>
