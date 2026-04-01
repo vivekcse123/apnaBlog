@@ -1,92 +1,79 @@
-<!-- src/app/shared/components/notification-panel/notification-panel.component.html -->
+<div class="notification-wrapper">
 
-<div class="notif-host">
+  <!-- 🔔 ICON -->
+  <button class="bell-btn" (click)="togglePanel($event)">
+    <mat-icon>notifications</mat-icon>
 
-  <!-- Bell trigger -->
-  <button class="bell-btn" (click)="togglePanel($event)" [attr.aria-expanded]="panelOpen">
-    <mat-icon class="bell-icon">notifications</mat-icon>
-    @if (unreadCount > 0) {
-      <span class="badge">{{ unreadCount > 99 ? '99+' : unreadCount }}</span>
-    }
+    <span *ngIf="unreadCount > 0" class="badge">
+      {{ unreadCount }}
+    </span>
   </button>
 
-  <!-- Drop-down panel -->
-  @if (panelOpen) {
-    <div class="notif-panel" role="dialog" aria-label="Notifications">
+  <!-- 📦 PANEL -->
+  <div class="panel" *ngIf="panelOpen">
 
-      <!-- Header -->
-      <div class="panel-header">
-        <span class="panel-title">Notifications</span>
-        <div class="panel-actions">
-          @if (unreadCount > 0) {
-            <button class="action-btn" (click)="onMarkAllRead($event)" title="Mark all as read">
-              <mat-icon>done_all</mat-icon>
-            </button>
-          }
-          <button class="action-btn" (click)="onRefresh($event)" title="Refresh">
-            <mat-icon>refresh</mat-icon>
-          </button>
+    <!-- HEADER -->
+    <div class="panel-header">
+      <span>Notifications</span>
+
+      <div class="actions">
+        <button (click)="onRefresh($event)">
+          <mat-icon>refresh</mat-icon>
+        </button>
+
+        <button (click)="onMarkAllRead($event)">
+          <mat-icon>done_all</mat-icon>
+        </button>
+      </div>
+    </div>
+
+    <!-- LOADING -->
+    <div *ngIf="loading" class="loader">
+      <mat-spinner diameter="30"></mat-spinner>
+    </div>
+
+    <!-- EMPTY -->
+    <div *ngIf="!loading && notifications.length === 0" class="empty">
+      No notifications
+    </div>
+
+    <!-- LIST -->
+    <div
+      *ngFor="let n of notifications; trackBy: trackById"
+      class="notification-item"
+      [class.unread]="!n.isRead"
+      (click)="onNotificationClick(n)"
+    >
+      <!-- ICON -->
+      <mat-icon
+        [style.color]="getMeta(n.type).color"
+      >
+        {{ getMeta(n.type).icon }}
+      </mat-icon>
+
+      <!-- CONTENT -->
+      <div class="content">
+        <div class="title">
+          {{ n.title || getMeta(n.type).label }}
+        </div>
+
+        <div class="message">
+          {{ n.message }}
+        </div>
+
+        <div class="time">
+          {{ n.createdAt | date:'short' }}
         </div>
       </div>
 
-      <!-- Loading -->
-      @if (loading) {
-        <div class="loading-wrap">
-          <mat-spinner diameter="32" />
-        </div>
-      }
-
-      <!-- List -->
-      @if (!loading) {
-        <ul class="notif-list" role="list">
-          @for (n of notifications; track trackById($index, n)) {
-            <li
-              class="notif-item"
-              [class.unread]="!n.isRead"
-              (click)="onNotificationClick(n)"
-              role="listitem">
-
-              <!-- Coloured icon -->
-              <span
-                class="notif-icon"
-                [style.background]="meta[n.type].color + '20'"
-                [style.color]="meta[n.type].color">
-                <mat-icon>{{ meta[n.type].icon }}</mat-icon>
-              </span>
-
-              <!-- Content -->
-              <div class="notif-body">
-                <p class="notif-title">{{ n.title }}</p>
-                <p class="notif-msg">{{ n.message }}</p>
-                <span class="notif-time">
-                  {{ n.createdAt | date: 'MMM d, h:mm a' }}
-                </span>
-              </div>
-
-              <!-- Unread dot + delete -->
-              <div class="notif-right">
-                @if (!n.isRead) {
-                  <span class="unread-dot"></span>
-                }
-                <button
-                  class="delete-btn"
-                  (click)="onDelete($event, n.id)"
-                  title="Dismiss">
-                  <mat-icon>close</mat-icon>
-                </button>
-              </div>
-
-            </li>
-          } @empty {
-            <li class="empty-state">
-              <mat-icon>notifications_none</mat-icon>
-              <p>You're all caught up!</p>
-            </li>
-          }
-        </ul>
-      }
-
+      <!-- DELETE -->
+      <button
+        class="delete-btn"
+        (click)="onDelete($event, n.id)"
+      >
+        <mat-icon>close</mat-icon>
+      </button>
     </div>
-  }
 
+  </div>
 </div>

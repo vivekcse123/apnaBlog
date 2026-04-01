@@ -1,5 +1,3 @@
-// src/app/shared/components/notification-panel/notification-panel.component.ts
-
 import {
   Component,
   OnInit,
@@ -17,6 +15,7 @@ import { Subject, takeUntil } from 'rxjs';
 
 import {
   Notification,
+  NotificationType,
   NOTIFICATION_META,
 } from '../../models/notification.model';
 import { NotificationService } from '../../../core/services/notification-service';
@@ -30,41 +29,50 @@ import { NotificationService } from '../../../core/services/notification-service
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NotificationPanel implements OnInit, OnDestroy {
+  private svc = inject(NotificationService);
+  private router = inject(Router);
+  private elRef = inject(ElementRef);
+  private destroy$ = new Subject<void>();
 
-  private svc     = inject(NotificationService);
-  private router  = inject(Router);
-  private elRef   = inject(ElementRef);
-  private destroy = new Subject<void>();
-
-  notifications:  Notification[] = [];
-  unreadCount:    number = 0;
-  loading:        boolean = false;
-  panelOpen:      boolean = false;
+  notifications: Notification[] = [];
+  unreadCount = 0;
+  loading = false;
+  panelOpen = false;
 
   readonly meta = NOTIFICATION_META;
 
-
+  // ✅ INIT
   ngOnInit(): void {
     this.svc.notifications$
-      .pipe(takeUntil(this.destroy))
-      .subscribe((n: any) => this.notifications.push(n));
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((n: Notification[]) => {
+        this.notifications = n || []; // ✅ FIX (no push)
+      });
 
     this.svc.unreadCount$
-      .pipe(takeUntil(this.destroy))
+      .pipe(takeUntil(this.destroy$))
       .subscribe(c => (this.unreadCount = c));
 
     this.svc.loading$
-      .pipe(takeUntil(this.destroy))
+      .pipe(takeUntil(this.destroy$))
       .subscribe(l => (this.loading = l));
   }
 
   ngOnDestroy(): void {
-    this.destroy.next();
-    this.destroy.complete();
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
-  // ── Panel toggle ─────────────────────────────────────────────────────────────
+  // ✅ SAFE META ACCESS
+  getMeta(type: NotificationType) {
+    return this.meta[type] ?? {
+      icon: 'notifications',
+      color: '#999',
+      label: 'Unknown',
+    };
+  }
 
+  // ✅ PANEL TOGGLE
   togglePanel(event: Event): void {
     event.stopPropagation();
     this.panelOpen = !this.panelOpen;
@@ -77,15 +85,18 @@ export class NotificationPanel implements OnInit, OnDestroy {
     }
   }
 
-  // ── Actions ──────────────────────────────────────────────────────────────────
-
+  // ✅ CLICK HANDLER (SAFE ID)
   onNotificationClick(notification: Notification): void {
+    if (!notification?.id) return;
+
     if (!notification.isRead) {
       this.svc.markAsRead(notification.id).subscribe();
     }
+
     if (notification.resourceUrl) {
       this.router.navigateByUrl(notification.resourceUrl);
     }
+
     this.panelOpen = false;
   }
 
@@ -94,8 +105,9 @@ export class NotificationPanel implements OnInit, OnDestroy {
     this.svc.markAllAsRead().subscribe();
   }
 
-  onDelete(event: Event, id: string): void {
+  onDelete(event: Event, id?: string): void {
     event.stopPropagation();
+    if (!id) return;
     this.svc.deleteNotification(id).subscribe();
   }
 
@@ -104,7 +116,8 @@ export class NotificationPanel implements OnInit, OnDestroy {
     this.svc.fetchNotifications();
   }
 
-  trackById(_: number, n: Notification): string {
-    return n.id;
+  // ✅ FIX TRACKBY (NO DUPLICATES)
+  trackById(index: number, n: Notification): string {
+    return n.id || index.toString();
   }
 }
