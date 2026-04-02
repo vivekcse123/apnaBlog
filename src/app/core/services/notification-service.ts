@@ -1,152 +1,150 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import {
-  BehaviorSubject,
-  Observable,
-  Subscription,
-  interval,
-  switchMap,
-  tap,
-  catchError,
-  of,
-  filter,
-} from 'rxjs';
-import { environment } from '../../../environments/environment';
-import {
-  NotificationResponse,
-  Notification
-} from '../../shared/models/notification.model';
+  BehaviorSubject, Observable, Subscription,
+  interval, switchMap, tap, catchError, of, filter,} from 'rxjs';
+import { NotificationResponse, Notification } from '../../shared/models/notification.model';
+import { Auth } from './auth';
+import { environment } from '../../../environments/environments.prod';
 
 @Injectable({ providedIn: 'root' })
 export class NotificationService implements OnDestroy {
 
-  private readonly API = `${environment.apiUrl}/admin/notifications`;
-  private readonly POLL_INTERVAL_MS = 30_000;
+  private readonly ADMIN_API = `${environment.apiUrl}/admin/notifications`;
+  private readonly USER_API  = `${environment.apiUrl}/notifications`;
+  private readonly POLL_MS   = 30_000;
 
   private _notifications$ = new BehaviorSubject<Notification[]>([]);
   private _unreadCount$   = new BehaviorSubject<number>(0);
   private _loading$       = new BehaviorSubject<boolean>(false);
 
-  notifications$  = this._notifications$.asObservable();
-  unreadCount$    = this._unreadCount$.asObservable();
-  loading$        = this._loading$.asObservable();
+  notifications$ = this._notifications$.asObservable();
+  unreadCount$   = this._unreadCount$.asObservable();
+  loading$       = this._loading$.asObservable();
 
   private pollSub?: Subscription;
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private authService: Auth,
+  ) {}
 
-  // ✅ START POLLING (SAFE)
+  private get api(): string {
+    return this.authService.isAdmin() ? this.ADMIN_API : this.USER_API;
+  }
+
+
   startPolling(): void {
-    if (this.pollSub) return; // 🚫 prevent duplicate polling
+    if (this.pollSub) return;
 
     this.fetchNotifications();
 
-    this.pollSub = interval(this.POLL_INTERVAL_MS)
+    this.pollSub = interval(this.POLL_MS)
       .pipe(
         switchMap(() => this._fetch()),
-        filter((res): res is NotificationResponse => !!res) // ✅ removes null
+        filter((res): res is NotificationResponse => !!res),
       )
       .subscribe(res => this._apply(res));
   }
 
-  // ✅ STOP POLLING (CLEAN)
   stopPolling(): void {
     this.pollSub?.unsubscribe();
-    this.pollSub = undefined; // ✅ reset
+    this.pollSub = undefined;
   }
 
-  // ✅ FETCH WITH LOADING + SAFETY
+  // ── Fetch ───────────────────────────────────────────────────────────────────
+
   fetchNotifications(page = 1, limit = 20): void {
     this._loading$.next(true);
 
     const params = new HttpParams()
-      .set('page', page)
+      .set('page',  page)
       .set('limit', limit);
 
     this.http
-      .get<NotificationResponse>(this.API, { params })
-      .pipe(
-        catchError(err => {
-          console.error('Fetch notifications failed:', err);
-          return of(null);
-        })
-      )
+      .get<NotificationResponse>(this.api, { params })
+      .pipe(catchError(err => { 
+        console.error('Notification fetch error:', err); 
+        return of(null); 
+      }))
       .subscribe(res => {
         if (res) this._apply(res);
         this._loading$.next(false);
       });
   }
 
-  // ✅ MARK AS READ
-  markAsRead(notificationId: string): Observable<void> {
+  // ── Mark as read ─────────────────────────────────────────────────────────────
+
+  markAsRead(id: string): Observable<void> {
     return this.http
-      .patch<void>(`${this.API}/${notificationId}/read`, {})
+      .patch<void>(`${this.api}/${id}/read`, {})
       .pipe(
         tap(() => {
           const updated = this._notifications$.value.map(n =>
-            n.id === notificationId ? { ...n, isRead: true } : n
+            n.id === id ? { ...n, isRead: true } : n,
           );
           this._notifications$.next(updated);
-
-          this._unreadCount$.next(
-            Math.max(0, this._unreadCount$.value - 1)
-          );
+          this._unreadCount$.next(Math.max(0, this._unreadCount$.value - 1));
+        }),
+        catchError(err => {
+          console.error('Mark as read error:', err);
+          return of(void 0);
         })
       );
   }
 
-  // ✅ MARK ALL
   markAllAsRead(): Observable<void> {
     return this.http
-      .patch<void>(`${this.API}/read-all`, {})
+      .patch<void>(`${this.api}/read-all`, {})
       .pipe(
         tap(() => {
-          const updated = this._notifications$.value.map(n => ({
-            ...n,
-            isRead: true,
-          }));
-
-          this._notifications$.next(updated);
+          this._notifications$.next(
+            this._notifications$.value.map(n => ({ ...n, isRead: true })),
+          );
           this._unreadCount$.next(0);
+        }),
+        catchError(err => {
+          console.error('Mark all as read error:', err);
+          return of(void 0);
         })
       );
   }
 
-  // ✅ DELETE
-  deleteNotification(notificationId: string): Observable<void> {
+  // ── Delete ───────────────────────────────────────────────────────────────────
+
+  deleteNotification(id: string): Observable<void> {
     return this.http
-      .delete<void>(`${this.API}/${notificationId}`)
+      .delete<void>(`${this.api}/${id}`)
       .pipe(
         tap(() => {
-          const filtered = this._notifications$.value.filter(
-            n => n.id !== notificationId
-          );
-
+          const filtered = this._notifications$.value.filter(n => n.id !== id);
           this._notifications$.next(filtered);
-          this._unreadCount$.next(
-            filtered.filter(n => !n.isRead).length
-          );
+          this._unreadCount$.next(filtered.filter(n => !n.isRead).length);
+        }),
+        catchError(err => {
+          console.error('Delete notification error:', err);
+          return of(void 0);
         })
       );
   }
 
-  // ✅ SAFE FETCH (NEVER CRASH)
+  // ── Internals ─────────────────────────────────────────────────────────────────
+
   private _fetch(): Observable<NotificationResponse | null> {
-    return this.http.get<NotificationResponse>(this.API).pipe(
-      catchError(err => {
-        console.error('Polling failed:', err);
-        return of(null);
-      })
+    return this.http.get<NotificationResponse>(this.api).pipe(
+      catchError(err => { 
+        console.error('Poll failed:', err); 
+        return of(null); 
+      }),
     );
   }
 
-  // ✅ SAFE APPLY (CRITICAL FIX)
   private _apply(res: NotificationResponse): void {
     this._notifications$.next(res.notifications ?? []);
-    this._unreadCount$.next(res.unreadCount ?? 0);
+    this._unreadCount$.next(res.unreadCount    ?? 0);
   }
 
-  ngOnDestroy(): void {
-    this.stopPolling();
+  ngOnDestroy(): void { 
+    this.stopPolling(); 
   }
 }

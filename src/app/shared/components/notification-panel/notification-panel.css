@@ -1,11 +1,9 @@
-/* ✅ WRAPPER */
 .notification-wrapper {
   position: relative;
   display: inline-flex;
   align-items: center;
 }
 
-/* 🔔 BUTTON */
 .bell-btn {
   position: relative;
   background: none;
@@ -24,7 +22,6 @@
   background: rgba(255, 255, 255, 0.12);
 }
 
-/* 🔴 BADGE */
 .badge {
   position: absolute;
   top: 2px;
@@ -43,20 +40,22 @@
   border: 2px solid var(--header-bg, #1a1a2e);
 }
 
-/* 📦 PANEL */
 .panel {
   position: absolute;
   top: calc(100% + 12px);
   right: 0;
   width: 360px;
   max-height: 520px;
+
   background: #1e1e2e;
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: 16px;
   box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-  overflow: hidden;
+
   display: flex;
   flex-direction: column;
+
+  overflow: hidden;
   z-index: 9999;
   animation: slideDown 0.2s ease;
 }
@@ -66,13 +65,14 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* 🧾 HEADER */
 .panel-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 16px 20px 12px;
   border-bottom: 1px solid rgba(255,255,255,0.07);
+
+  flex-shrink: 0;
 }
 
 .panel-header span {
@@ -102,7 +102,30 @@
   background: rgba(255,255,255,0.08);
 }
 
-/* 📜 LIST */
+.notification-list {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  scroll-behavior: smooth;
+
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.2) transparent;
+}
+
+.notification-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.notification-list::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.2);
+  border-radius: 6px;
+}
+
+.notification-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.35);
+}
+
 .notification-item {
   display: flex;
   align-items: flex-start;
@@ -121,14 +144,12 @@
   background: rgba(99,102,241,0.08);
 }
 
-/* 🎯 ICON */
 .notification-item mat-icon {
   font-size: 20px;
   width: 20px;
   height: 20px;
 }
 
-/* 📄 CONTENT */
 .content {
   flex: 1;
   min-width: 0;
@@ -157,7 +178,6 @@
   color: rgba(255,255,255,0.35);
 }
 
-/* ❌ DELETE BUTTON */
 .delete-btn {
   background: none;
   border: none;
@@ -180,7 +200,6 @@
   color: #f44336;
 }
 
-/* 🟣 UNREAD DOT */
 .notification-item.unread::after {
   content: '';
   width: 8px;
@@ -192,7 +211,6 @@
   top: 16px;
 }
 
-/* 📭 EMPTY */
 .empty {
   text-align: center;
   padding: 40px 20px;
@@ -200,17 +218,122 @@
   font-size: 13px;
 }
 
-/* ⏳ LOADER */
 .loader {
   display: flex;
   justify-content: center;
   padding: 30px;
 }
 
-/* 📱 MOBILE */
+@media (max-width: 600px) {
+  .panel {
+    width: calc(100vw - 20px);
+    right: -10px;
+    max-height: 80vh;
+  }
+}
+
 @media (max-width: 400px) {
   .panel {
-    width: calc(100vw - 24px);
-    right: -12px;
+    width: calc(100vw - 16px);
+    right: -8px;
+    border-radius: 12px;
+  }
+}
+
+@media (max-width: 768px) {
+
+  .panel {
+    position: fixed; 
+    top: 70px;       
+    right: 10px;
+    left: 10px;
+
+    width: auto;
+    max-height: calc(100vh - 90px);
+
+    border-radius: 14px;
+    animation: slideUp 0.25s ease;
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .panel-header {
+    padding: 14px 16px 10px;
+  }
+
+  .panel-header span {
+    font-size: 14px;
+  }
+
+  .notification-item {
+    padding: 12px 14px;
+    gap: 10px;
+  }
+
+  .title {
+    font-size: 13px;
+  }
+
+  .message {
+    font-size: 12px;
+  }
+
+  .time {
+    font-size: 10px;
+  }
+
+  .delete-btn {
+    opacity: 1;
+  }
+}
+
+
+@media (max-width: 480px) {
+
+  .panel {
+    top: 60px;
+    left: 8px;
+    right: 8px;
+    max-height: calc(100vh - 70px);
+    border-radius: 12px;
+  }
+
+  .panel-header {
+    padding: 12px 14px 8px;
+  }
+
+  .notification-item {
+    padding: 10px 12px;
+  }
+
+  .badge {
+    min-width: 16px;
+    height: 16px;
+    font-size: 9px;
+  }
+
+  .notification-item.unread::after {
+    right: 8px;
+    top: 14px;
+  }
+}
+
+
+@media (max-width: 360px) {
+
+  .panel {
+    left: 6px;
+    right: 6px;
+  }
+
+  .title {
+    font-size: 12px;
+  }
+
+  .message {
+    font-size: 11px;
   }
 }

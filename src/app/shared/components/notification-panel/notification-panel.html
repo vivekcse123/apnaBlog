@@ -13,6 +13,7 @@
   @if (panelOpen()) {
     <div class="panel">
 
+      <!-- 🧾 HEADER -->
       <div class="panel-header">
         <span>Notifications</span>
 
@@ -27,21 +28,26 @@
         </div>
       </div>
 
-      @if (loading()) {
-        <div class="loader">
-          <mat-spinner diameter="30"></mat-spinner>
-        </div>
-      }
+      <!-- 📜 SCROLLABLE AREA -->
+      <div class="notification-list">
 
-      @if (!loading() && notifications().length === 0) {
-        <div class="empty">
-          <mat-icon>notifications_off</mat-icon>
-          <p>No notifications</p>
-        </div>
-      }
+        <!-- ⏳ LOADING -->
+        @if (loading()) {
+          <div class="loader">
+            <mat-spinner diameter="30"></mat-spinner>
+          </div>
+        }
 
-      @if (!loading() && notifications().length > 0) {
-        <div class="notif-list">
+        <!-- 📭 EMPTY -->
+        @if (!loading() && notifications().length === 0) {
+          <div class="empty">
+            <mat-icon>notifications_off</mat-icon>
+            <p>No notifications</p>
+          </div>
+        }
+
+        <!-- 📩 LIST -->
+        @if (!loading() && notifications().length > 0) {
 
           @for (n of notifications(); track n.id ?? $index) {
             <div
@@ -50,12 +56,12 @@
               (click)="onNotificationClick(n)"
             >
 
-              <div class="notif-icon">
-                <mat-icon [style.color]="getMeta(n.type).color">
-                  {{ getMeta(n.type).icon }}
-                </mat-icon>
-              </div>
+              <!-- 🎯 ICON -->
+              <mat-icon [style.color]="getMeta(n.type).color">
+                {{ getMeta(n.type).icon }}
+              </mat-icon>
 
+              <!-- 📄 CONTENT -->
               <div class="content">
                 <div class="title">
                   {{ n.title || getMeta(n.type).label }}
@@ -70,26 +76,20 @@
                 </div>
               </div>
 
-              <div class="notif-right">
-
-                @if (!n.isRead) {
-                  <span class="unread-dot"></span>
-                }
-
-                <button
-                  class="delete-btn"
-                  (click)="onDelete($event, n.id)"
-                >
-                  <mat-icon>close</mat-icon>
-                </button>
-
-              </div>
+              <!-- ❌ DELETE -->
+              <button
+                class="delete-btn"
+                (click)="onDelete($event, n.id)"
+              >
+                <mat-icon>close</mat-icon>
+              </button>
 
             </div>
           }
 
-        </div>
-      }
+        }
+
+      </div>
 
     </div>
   }
