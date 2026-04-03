@@ -11,7 +11,7 @@ const routes: Routes = [
   {
     path: 'about',
     component: About,
-    title: 'Apna Blog About'
+    title: 'ApnaBlogs - About'
   }
 ];
 
