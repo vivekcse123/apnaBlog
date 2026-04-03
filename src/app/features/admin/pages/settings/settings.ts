@@ -376,4 +376,35 @@ export class Settings implements OnInit {
         },
       });
   }
+
+  exportAllData(): void {
+  const id = this.userId();
+  if (!id) return;
+
+  this.adminService.exportAllData(id)
+    .pipe(takeUntilDestroyed(this.destroyRef))
+    .subscribe({
+      next: (res: any) => {
+        try {
+          const dataStr = JSON.stringify(res.data ?? res, null, 2);
+          const blob = new Blob([dataStr], { type: 'application/json' });
+
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `backup-${new Date().toISOString()}.json`;
+          a.click();
+
+          window.URL.revokeObjectURL(url);
+
+          this.openModal('success', 'Export Successful', 'Your data has been downloaded.');
+        } catch (e) {
+          this.openModal('error', 'Export Failed', 'Could not process export file.');
+        }
+      },
+      error: (err) => {
+        this.openModal('error', 'Export Failed', err?.error?.message ?? 'Something went wrong.');
+      }
+    });
+}
 }

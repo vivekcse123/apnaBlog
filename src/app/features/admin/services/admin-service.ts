@@ -47,4 +47,8 @@ cancelDeleteUser(userId: string): Observable<any> {
     return this.http.patch(`${this.endPoint}${userId}/cancel-delete`, {});
 }
 
+exportAllData(userId: string) {
+  return this.http.get(`${this.endPoint}export/${userId}`);
+}
+
 }

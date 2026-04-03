@@ -18,7 +18,11 @@
 [role]="user()?.role"
 (close)="closeProfile()"
 >
-<a routerLink="/" primary-action class="edit_setting">Edit Setting</a>
+<a [routerLink]="['/admin', userId(), 'settings']"
+   class="edit_setting"
+   primary-action>
+  Edit Setting
+</a>
 <a routerLink="/" secondary-action (click)="logout()" class="logout_btn">Logout</a>
 </app-user-profile>
 }

@@ -6,7 +6,7 @@ import { environment } from '../../../environments/environments.prod';
 @Injectable({ providedIn: 'root' })
 export class ContactService {
   private http = inject(HttpClient);
-  // private endPoint = 'http://localhost:3000/api/contact/';
+  
   private endPoint = environment.apiUrl;
 
   sendMessage(data: { name: string; email: string; subject: string; message: string }): Observable<any> {

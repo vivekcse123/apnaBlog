@@ -1,6 +1,5 @@
 <div class="visitor-page">
 
-  <!-- ── Header ── -->
   <div class="page-header">
     <div class="header-left">
       <h1 class="page-title">Visitor Analytics</h1>
@@ -18,7 +17,6 @@
     </div>
   </div>
 
-  <!-- ── Loading ── -->
   <div class="loading-overlay" *ngIf="isLoading">
     <div class="spinner"></div>
     <p>Loading analytics...</p>
@@ -26,7 +24,6 @@
 
   <div [class.hidden]="isLoading">
 
-    <!-- ── Stat Cards ── -->
     <div class="stat-grid">
 
       <div class="stat-card">
@@ -39,11 +36,20 @@
         <div class="stat-info">
           <span class="stat-label">Today</span>
           <span class="stat-value">{{ formatNumber(stats.today) }}</span>
-          <span class="stat-change"
-            [class.positive]="todayChangePercent >= 0"
-            [class.negative]="todayChangePercent < 0">
-            {{ todayChangePercent >= 0 ? '+' : '' }}{{ todayChangePercent }}% vs yesterday
-          </span>
+
+          <!-- ✅ Show "New" when no baseline, otherwise show % -->
+          @if (todayIsNew) {
+            <span class="stat-change positive">✦ New activity</span>
+          } @else if (stats.yesterday > 0 || stats.today > 0) {
+            <span class="stat-change"
+              [class.positive]="todayChangePercent >= 0"
+              [class.negative]="todayChangePercent < 0">
+              {{ todayChangePercent >= 0 ? '+' : '' }}{{ todayChangePercent }}% vs yesterday
+            </span>
+          } @else {
+            <span class="stat-change neutral">No data yet</span>
+          }
+
         </div>
       </div>
 
@@ -59,11 +65,20 @@
         <div class="stat-info">
           <span class="stat-label">This Week</span>
           <span class="stat-value">{{ formatNumber(stats.thisWeek) }}</span>
-          <span class="stat-change"
-            [class.positive]="weekChangePercent >= 0"
-            [class.negative]="weekChangePercent < 0">
-            {{ weekChangePercent >= 0 ? '+' : '' }}{{ weekChangePercent }}% vs last week
-          </span>
+
+          <!-- ✅ Show "First week" when lastWeek is 0 but thisWeek has data -->
+          @if (weekIsNew) {
+            <span class="stat-change positive">✦ First week of data</span>
+          } @else if (stats.lastWeek > 0 || stats.thisWeek > 0) {
+            <span class="stat-change"
+              [class.positive]="weekChangePercent >= 0"
+              [class.negative]="weekChangePercent < 0">
+              {{ weekChangePercent >= 0 ? '+' : '' }}{{ weekChangePercent }}% vs last week
+            </span>
+          } @else {
+            <span class="stat-change neutral">No data yet</span>
+          }
+
         </div>
       </div>
 
@@ -98,7 +113,6 @@
 
     </div>
 
-    <!-- ── Main Charts Row ── -->
     <div class="charts-row">
 
       <div class="chart-card wide">
@@ -135,7 +149,6 @@
 
     </div>
 
-    <!-- ── Bar Chart ── -->
     <div class="chart-card full-width">
       <div class="chart-header">
         <h3>Daily Visitors</h3>
@@ -145,10 +158,8 @@
       </div>
     </div>
 
-    <!-- ── Bottom Row ── -->
     <div class="bottom-row">
 
-      <!-- Top Pages -->
       <div class="info-card">
         <div class="info-header">
           <h3>Top Pages</h3>
@@ -173,7 +184,6 @@
         </div>
       </div>
 
-      <!-- Device Breakdown -->
       <div class="info-card">
         <div class="info-header">
           <h3>Devices</h3>
@@ -202,7 +212,6 @@
         </div>
       </div>
 
-      <!-- Recent Visits -->
       <div class="info-card">
         <div class="info-header">
           <h3>Recent Visits</h3>
@@ -211,20 +220,33 @@
           </span>
         </div>
         <div class="recent-list">
-          @for (v of recentVisits; track v) {
+          @for (v of groupedVisits; track v.page) {
             <div class="recent-row">
+
               <div class="visitor-avatar">
-                {{ v.city ? v.city[0].toUpperCase() : '?' }}
+                <!-- {{ v.page === '/' ? '🏠' : v.page.replace(/\//g, '').charAt(0).toUpperCase() || '?' }} -->
+                  {{ getPageAvatar(v.page) }}
               </div>
+
               <div class="visitor-info">
-                <span class="visitor-page">{{ v.page }}</span>
+                <span class="visitor-page">{{ v.page || '/' }}</span>
                 <span class="visitor-meta">
-                  {{ v.city || 'Unknown' }} · {{ formatRelativeTime(v.visitedAt) }}
+                  
+                  {{ v.visitors }} visitor{{ v.visitors !== 1 ? 's' : '' }}
+                  @if (v.cities.length > 0) {
+                    · {{ v.cities.join(', ') }}
+                  }
+                  · {{ formatRelativeTime(v.lastVisit) }}
                 </span>
               </div>
+
+              <div class="visit-count-badge">
+                {{ v.visitors }}
+              </div>
+
             </div>
           }
-          @if (recentVisits.length === 0) {
+          @if (groupedVisits.length === 0) {
             <div class="empty-state">No recent visits</div>
           }
         </div>

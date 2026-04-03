@@ -23,6 +23,13 @@ export interface DeviceStat  { device: string; count: number; percent: number; }
 export interface RecentVisit { ip: string; page: string; city: string; visitedAt: string; }
 export interface SourceStat  { source: string; count: number; percent: number; }
 
+export interface GroupedVisit {
+  page:       string;
+  visitors:   number;  
+  cities:     string[];
+  lastVisit:  string; 
+}
+
 @Component({
   selector: 'app-visitor',
   standalone: true,
@@ -36,9 +43,9 @@ export class Visitor implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('doughnutChartRef') doughnutChartRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('barChartRef')      barChartRef!:      ElementRef<HTMLCanvasElement>;
 
-  private lineChart!: Chart;
+  private lineChart!:    Chart;
   private doughnutChart!: Chart;
-  private barChart!: Chart;
+  private barChart!:     Chart;
   private autoRefreshSub!: Subscription;
 
   private readonly API = `${environment.apiUrl}/visitor`;
@@ -46,20 +53,25 @@ export class Visitor implements OnInit, AfterViewInit, OnDestroy {
   stats: VisitorStats = {
     today: 0, yesterday: 0,
     thisWeek: 0, lastWeek: 0,
-    thisMonth: 0, total: 0
+    thisMonth: 0, total: 0,
   };
 
-  todayChangePercent = 0;
-  weekChangePercent  = 0;
+  todayChangePercent  = 0;
+  weekChangePercent   = 0;
 
-  weeklyData:   DailyData[]    = [];
-  topPages:     TopPage[]      = [];
-  deviceStats:  DeviceStat[]   = [];
-  recentVisits: RecentVisit[]  = [];
-  sourceStats:  SourceStat[]   = [];
+  todayIsNew = false;
+  weekIsNew  = false;
 
-  isLoading   = true;
-  lastUpdated = '';
+  weeklyData:   DailyData[]   = [];
+  topPages:     TopPage[]     = [];
+  deviceStats:  DeviceStat[]  = [];
+  recentVisits: RecentVisit[] = [];
+  sourceStats:  SourceStat[]  = [];
+
+  groupedVisits: GroupedVisit[] = [];
+
+  isLoading    = true;
+  lastUpdated  = '';
   selectedRange: '7d' | '14d' | '30d' = '14d';
 
   constructor(private http: HttpClient) {}
@@ -67,11 +79,10 @@ export class Visitor implements OnInit, AfterViewInit, OnDestroy {
   ngOnInit(): void {
     this.loadAllData();
 
-    // Auto-refresh stats every 30s
-    this.autoRefreshSub = interval(30000).pipe(
+    this.autoRefreshSub = interval(30_000).pipe(
       switchMap(() =>
         this.http.get<VisitorStats>(`${this.API}/stats`).pipe(
-          catchError(() => of(this.stats))   // keep existing stats on error
+          catchError(() => of(this.stats))
         )
       )
     ).subscribe(data => {
@@ -95,8 +106,6 @@ export class Visitor implements OnInit, AfterViewInit, OnDestroy {
   loadAllData(): void {
     this.isLoading = true;
 
-    // All requests fire in parallel; forkJoin waits for ALL to finish
-    // catchError on each so one failure doesn't kill the rest
     forkJoin({
       stats: this.http.get<VisitorStats>(`${this.API}/stats`).pipe(
         catchError(() => of(this.stats))
@@ -118,32 +127,29 @@ export class Visitor implements OnInit, AfterViewInit, OnDestroy {
       ),
     }).subscribe({
       next: ({ stats, daily, topPages, devices, recent, sources }) => {
-        // Stats
         this.stats = stats;
         this.calculateChanges();
 
-        // Daily data → line + bar charts
         this.weeklyData = daily;
         this.buildOrUpdateLineChart();
         this.buildOrUpdateBarChart();
 
-        // Lists
-        this.topPages     = topPages;
-        this.deviceStats  = devices;
-        this.recentVisits = recent;
+        this.topPages    = topPages;
+        this.deviceStats = devices;
 
-        // Sources → doughnut
+        this.recentVisits = recent;
+        this.groupedVisits = this.buildGroupedVisits(recent);
+
         this.sourceStats = sources;
         this.buildOrUpdateDoughnutChart();
 
-        this.isLoading = false;          // ← always runs, even if some calls failed
+        this.isLoading = false;
         this.setLastUpdated();
       },
       error: () => {
-        // forkJoin error only fires if catchError itself throws — safety net
         this.isLoading = false;
         this.setLastUpdated();
-      }
+      },
     });
   }
 
@@ -151,19 +157,39 @@ export class Visitor implements OnInit, AfterViewInit, OnDestroy {
     this.selectedRange = range;
     this.loadAllData();
   }
-
   calculateChanges(): void {
-    this.todayChangePercent = this.stats.yesterday > 0
-      ? Math.round(((this.stats.today - this.stats.yesterday) / this.stats.yesterday) * 100)
-      : 0;
-    this.weekChangePercent = this.stats.lastWeek > 0
-      ? Math.round(((this.stats.thisWeek - this.stats.lastWeek) / this.stats.lastWeek) * 100)
-      : 0;
+
+    if (this.stats.yesterday > 0) {
+      this.todayIsNew            = false;
+      this.todayChangePercent    = Math.round(
+        ((this.stats.today - this.stats.yesterday) / this.stats.yesterday) * 100
+      );
+    } else if (this.stats.today > 0) {
+
+      this.todayIsNew         = true;
+      this.todayChangePercent = 100;
+    } else {
+      this.todayIsNew         = false;
+      this.todayChangePercent = 0;
+    }
+    if (this.stats.lastWeek > 0) {
+      this.weekIsNew          = false;
+      this.weekChangePercent  = Math.round(
+        ((this.stats.thisWeek - this.stats.lastWeek) / this.stats.lastWeek) * 100
+      );
+    } else if (this.stats.thisWeek > 0) {
+
+      this.weekIsNew         = true;
+      this.weekChangePercent = 100;
+    } else {
+      this.weekIsNew         = false;
+      this.weekChangePercent = 0;
+    }
   }
 
   setLastUpdated(): void {
     this.lastUpdated = new Date().toLocaleTimeString('en-IN', {
-      hour: '2-digit', minute: '2-digit'
+      hour: '2-digit', minute: '2-digit',
     });
   }
 
@@ -179,14 +205,49 @@ export class Visitor implements OnInit, AfterViewInit, OnDestroy {
     const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
     if (diff < 60)   return `${diff}s ago`;
     if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-    return `${Math.floor(diff / 3600)}h ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+    return `${Math.floor(diff / 86400)}d ago`;
   }
 
   formatNumber(n: number): string {
     return n >= 1000 ? (n / 1000).toFixed(1) + 'k' : n.toString();
   }
 
-  // ── Chart helpers ────────────────────────────────────────────
+  private buildGroupedVisits(visits: RecentVisit[]): GroupedVisit[] {
+    const map = new Map<string, {
+      ips:      Set<string>;
+      cities:   Set<string>;
+      lastVisit: string;
+    }>();
+
+    for (const v of visits) {
+      const key      = v.page || '/';
+      const existing = map.get(key);
+
+      if (existing) {
+        existing.ips.add(v.ip);
+        if (v.city) existing.cities.add(v.city);
+        if (new Date(v.visitedAt) > new Date(existing.lastVisit)) {
+          existing.lastVisit = v.visitedAt;
+        }
+      } else {
+        map.set(key, {
+          ips:       new Set([v.ip]),
+          cities:    v.city ? new Set([v.city]) : new Set(),
+          lastVisit: v.visitedAt,
+        });
+      }
+    }
+
+    return Array.from(map.entries())
+      .map(([page, data]) => ({
+        page,
+        visitors:  data.ips.size,
+        cities:    [...data.cities].slice(0, 3), 
+        lastVisit: data.lastVisit,
+      }))
+      .sort((a, b) => new Date(b.lastVisit).getTime() - new Date(a.lastVisit).getTime());
+  }
 
   initCharts(): void {
     this.buildOrUpdateLineChart();
@@ -196,12 +257,12 @@ export class Visitor implements OnInit, AfterViewInit, OnDestroy {
 
   private buildOrUpdateLineChart(): void {
     if (!this.lineChartRef) return;
-    const labels  = this.weeklyData.map(d => d.date);
-    const data    = this.weeklyData.map(d => d.count);
+    const labels = this.weeklyData.map(d => d.date);
+    const data   = this.weeklyData.map(d => d.count);
 
     if (this.lineChart) {
-      this.lineChart.data.labels              = labels;
-      this.lineChart.data.datasets[0].data   = data;
+      this.lineChart.data.labels            = labels;
+      this.lineChart.data.datasets[0].data  = data;
       this.lineChart.update();
       return;
     }
@@ -218,7 +279,7 @@ export class Visitor implements OnInit, AfterViewInit, OnDestroy {
           fill: true,
           tension: 0.4,
           pointRadius: 3,
-        }]
+        }],
       },
       options: {
         responsive: true,
@@ -226,21 +287,21 @@ export class Visitor implements OnInit, AfterViewInit, OnDestroy {
         plugins: { legend: { display: false } },
         scales: {
           x: { grid: { display: false } },
-          y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.04)' } }
-        }
-      }
+          y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.04)' } },
+        },
+      },
     });
   }
 
   private buildOrUpdateDoughnutChart(): void {
     if (!this.doughnutChartRef) return;
-    const labels  = this.sourceStats.map(s => s.source);
-    const data    = this.sourceStats.map(s => s.percent);
-    const colors  = ['#6C63FF', '#43C6AC', '#FF6B6B', '#FFB347'];
+    const labels = this.sourceStats.map(s => s.source);
+    const data   = this.sourceStats.map(s => s.percent);
+    const colors = ['#6C63FF', '#43C6AC', '#FF6B6B', '#FFB347'];
 
     if (this.doughnutChart) {
-      this.doughnutChart.data.labels                        = labels;
-      this.doughnutChart.data.datasets[0].data             = data;
+      this.doughnutChart.data.labels                              = labels;
+      this.doughnutChart.data.datasets[0].data                   = data;
       (this.doughnutChart.data.datasets[0] as any).backgroundColor = colors;
       this.doughnutChart.update();
       return;
@@ -250,28 +311,24 @@ export class Visitor implements OnInit, AfterViewInit, OnDestroy {
       type: 'doughnut',
       data: {
         labels,
-        datasets: [{
-          data,
-          backgroundColor: colors,
-          borderWidth: 2,
-        }]
+        datasets: [{ data, backgroundColor: colors, borderWidth: 2 }],
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
         plugins: { legend: { display: false } },
         cutout: '70%',
-      }
+      },
     });
   }
 
   private buildOrUpdateBarChart(): void {
     if (!this.barChartRef) return;
-    const labels  = this.weeklyData.map(d => d.date);
-    const data    = this.weeklyData.map(d => d.count);
+    const labels = this.weeklyData.map(d => d.date);
+    const data   = this.weeklyData.map(d => d.count);
 
     if (this.barChart) {
-      this.barChart.data.labels            = labels;
+      this.barChart.data.labels           = labels;
       this.barChart.data.datasets[0].data = data;
       this.barChart.update();
       return;
@@ -288,7 +345,7 @@ export class Visitor implements OnInit, AfterViewInit, OnDestroy {
           borderColor: '#6C63FF',
           borderWidth: 1,
           borderRadius: 4,
-        }]
+        }],
       },
       options: {
         responsive: true,
@@ -296,17 +353,23 @@ export class Visitor implements OnInit, AfterViewInit, OnDestroy {
         plugins: { legend: { display: false } },
         scales: {
           x: { grid: { display: false } },
-          y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.04)' } }
-        }
-      }
+          y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.04)' } },
+        },
+      },
     });
   }
 
-  // keep old names in case template still references them
-  updateLineChart()     { this.buildOrUpdateLineChart();    }
-  updateBarChart()      { this.buildOrUpdateBarChart();     }
-  updateDoughnutChart() { this.buildOrUpdateDoughnutChart();}
-  initLineChart()       { this.buildOrUpdateLineChart();    }
-  initBarChart()        { this.buildOrUpdateBarChart();     }
-  initDoughnutChart()   { this.buildOrUpdateDoughnutChart();}
+  getPageAvatar(page: string): string {
+  if (!page || page === '/') return '🏠';
+
+  const clean = page.replace(/\//g, '');
+  return clean ? clean.charAt(0).toUpperCase() : '?';
+}
+
+  updateLineChart()     { this.buildOrUpdateLineChart();     }
+  updateBarChart()      { this.buildOrUpdateBarChart();      }
+  updateDoughnutChart() { this.buildOrUpdateDoughnutChart(); }
+  initLineChart()       { this.buildOrUpdateLineChart();     }
+  initBarChart()        { this.buildOrUpdateBarChart();      }
+  initDoughnutChart()   { this.buildOrUpdateDoughnutChart(); }
 }

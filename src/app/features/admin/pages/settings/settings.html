@@ -356,7 +356,7 @@
               <div class="danger-action-title">Export All Data</div>
               <p class="danger-action-sub">Download a full backup of all blogs, users, and settings</p>
             </div>
-            <button class="btn-outline">Export JSON</button>
+            <button class="btn-outline" (click)="exportAllData()">Export JSON</button>
           </div>
         </div>
 
@@ -401,7 +401,7 @@
         </div>
       </div>
     }
-    <!-- Cancel Deletion (only show if deletion is scheduled) -->
+
     @if (isDeletionScheduled()) {
       <div class="danger-card cancel-delete-card">
         <div class="danger-row">
@@ -428,7 +428,6 @@
       </div>
     }
 
-    <!-- Delete Account -->
     <div class="danger-card red-border">
       <div class="danger-row">
         <div>
