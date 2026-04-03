@@ -29,7 +29,7 @@ export class CommonHeader implements OnInit {
   private notifSvc = inject(NotificationService);
 
   ngOnInit(): void {
-    this.notifSvc.startPolling(); 
+    //this.notifSvc.startPolling(); 
   }
 
   toggleMenu():                 void { this.menuOpen = !this.menuOpen; }
