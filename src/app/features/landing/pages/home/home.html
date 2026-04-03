@@ -231,17 +231,14 @@
   </article>
 </ng-template>
 
-<!-- ═══ READ BLOG MODAL ═══ -->
 @if (isViewed()) {
   <app-read-blog [postId]="selectedId()" (close)="isViewed.set(false)"></app-read-blog>
 }
 
-<!-- ═══ COMMENT DRAWER BACKDROP ═══ -->
 @if (commentDrawerPostId()) {
   <div class="comment-backdrop" (click)="closeCommentDrawer()"></div>
 }
 
-<!-- ═══ COMMENT DRAWER ═══ -->
 <div class="comment-drawer" [class.open]="!!commentDrawerPostId()">
 
   <div class="drawer-header">
@@ -310,8 +307,6 @@
     <span>{{ drawerComments().length }} comment{{ drawerComments().length !== 1 ? 's' : '' }}</span>
   </div>
 
-  <!-- Replace only the comments-list section in your existing template -->
-
 <div class="comments-list">
   @if (drawerCommentsLoading()) {
     <div class="comments-loading">
@@ -337,11 +332,6 @@
           <p class="comment-text">{{ c.comment }}</p>
         </div>
 
-        <!--
-          ✅ Delete button — only visible to the post owner
-          Hidden entirely for non-owners (no role check needed on frontend
-          since backend also enforces ownership via verifyToken)
-        -->
         @if (isDrawerPostOwner() && c._id) {
           <button
             class="comment-delete-btn"

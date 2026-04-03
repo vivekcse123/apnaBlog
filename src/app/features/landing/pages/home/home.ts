@@ -17,15 +17,6 @@ import { VisitorService } from '../../../../core/services/visitor';
 
 const PAGE_SIZE = 4;
 
-// ✅ Extended comment type that includes _id and user for delete support
-interface DrawerComment {
-  _id?:      string;
-  name:      string;
-  comment:   string;
-  user?:     string | null;   // userId of commenter — null if anonymous
-  createdAt?: string;
-}
-
 @Component({
   selector: 'app-home',
   standalone: true,
@@ -66,17 +57,13 @@ export class Home implements OnInit {
   commentSubmitting   = signal(false);
   commentFeedback     = signal<{ type: 'success' | 'error'; msg: string } | null>(null);
 
-  // ✅ Updated to use full DrawerComment type
   drawerComments        = signal<DrawerComment[]>([]);
   drawerCommentsLoading = signal(false);
 
-  // ✅ Track which comment is being deleted to show inline spinner
   deletingCommentId = signal<string | null>(null);
 
   private currentUserData = signal<User | null>(null);
   private searchInput$    = new Subject<string>();
-
-  // ── Computed pools ────────────────────────────────────────────────────────────
 
   private postsWithTs = computed(() =>
     this.allPosts().map(p => ({ ...p, _ts: new Date(p.createdAt).getTime() }))
@@ -162,7 +149,6 @@ export class Home implements OnInit {
     this.selectedSort() !== 'newest'
   );
 
-  // ✅ True when the logged-in user owns the post currently open in the drawer
   isDrawerPostOwner = computed(() => {
     const postId = this.commentDrawerPostId();
     const userId = this.currentUserData()?._id;
@@ -171,7 +157,6 @@ export class Home implements OnInit {
     const post = this.allPosts().find(p => p._id === postId);
     if (!post) return false;
 
-    // post.user can be a populated object or a plain ObjectId string
     const postOwnerId = (post.user as any)?._id ?? (post.user as any);
     return postOwnerId?.toString() === userId.toString();
   });
@@ -187,8 +172,6 @@ export class Home implements OnInit {
     Education: '🎓', Business: '💼', Entertainment: '🎬',
     Lifestyle: '🌿', Social: '🤝',
   };
-
-  // ── Lifecycle ─────────────────────────────────────────────────────────────────
 
   ngOnInit(): void {
     this.standalone = this.route.snapshot.data['standalone'] ?? this.standalone;
@@ -328,7 +311,6 @@ export class Home implements OnInit {
     this.drawerCommentsLoading.set(true);
     this.postService.getComments(postId).subscribe({
       next: (res: any) => {
-        // ✅ Keep full comment objects including _id and user
         this.drawerComments.set(res.comments ?? []);
         this.drawerCommentsLoading.set(false);
       },
@@ -370,7 +352,6 @@ export class Home implements OnInit {
         this.commentText.set('');
         this.commentFeedback.set({ type: 'success', msg: 'Comment posted!' });
 
-        // ✅ Include _id and user from the API response for delete support
         const newComment: DrawerComment = {
           _id:       res.data?.comment?._id,
           name:      this.currentUserData()?.name ?? 'Anonymous',
@@ -395,7 +376,6 @@ export class Home implements OnInit {
     });
   }
 
-  // ✅ Delete a comment — only callable by post owner (enforced in template + backend)
   deleteComment(comment: DrawerComment, event: Event): void {
     event.stopPropagation();
 
@@ -403,18 +383,17 @@ export class Home implements OnInit {
     const commentId = comment._id;
 
     if (!postId || !commentId) return;
-    if (this.deletingCommentId()) return;   // prevent double-tap
+    if (this.deletingCommentId()) return; 
 
     this.deletingCommentId.set(commentId);
 
     this.postService.deleteComment(postId, commentId).subscribe({
       next: () => {
-        // ✅ Remove from drawer immediately
+
         this.drawerComments.set(
           this.drawerComments().filter(c => c._id !== commentId)
         );
 
-        // ✅ Decrement post commentsCount in allPosts
         const post = this.allPosts().find(p => p._id === postId);
         if (post) {
           this.patchPost(postId, { commentsCount: Math.max(0, post.commentsCount - 1) });
