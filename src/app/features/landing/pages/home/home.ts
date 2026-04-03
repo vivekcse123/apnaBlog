@@ -10,12 +10,21 @@ import { PostService } from '../../../post/services/post-service';
 import { Post } from '../../../../core/models/post.model';
 import { ReadBlog } from '../read-blog/read-blog';
 import { ThemeService } from '../../../../core/services/theme-service';
-import { Auth } from '../../../../core/services/auth';                        
-import { UserService } from '../../../user/services/user-service';           
-import { User } from '../../../user/models/user.mode';                      
+import { Auth } from '../../../../core/services/auth';
+import { UserService } from '../../../user/services/user-service';
+import { User } from '../../../user/models/user.mode';
 import { VisitorService } from '../../../../core/services/visitor';
 
 const PAGE_SIZE = 4;
+
+// ✅ Extended comment type that includes _id and user for delete support
+interface DrawerComment {
+  _id?:      string;
+  name:      string;
+  comment:   string;
+  user?:     string | null;   // userId of commenter — null if anonymous
+  createdAt?: string;
+}
 
 @Component({
   selector: 'app-home',
@@ -26,13 +35,13 @@ const PAGE_SIZE = 4;
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Home implements OnInit {
-  private postService = inject(PostService);
-  private destroyRef  = inject(DestroyRef);
-  private route       = inject(ActivatedRoute);
-  private router = inject(Router);
-  private auth        = inject(Auth);
-  private userService = inject(UserService);
-  themeService        = inject(ThemeService);
+  private postService    = inject(PostService);
+  private destroyRef     = inject(DestroyRef);
+  private route          = inject(ActivatedRoute);
+  private router         = inject(Router);
+  private auth           = inject(Auth);
+  private userService    = inject(UserService);
+  themeService           = inject(ThemeService);
   private visitorService = inject(VisitorService);
 
   @Input() standalone = true;
@@ -50,23 +59,24 @@ export class Home implements OnInit {
   hotPage      = signal(0);
   latestPage   = signal(0);
 
-
   likedPostIds     = signal<Set<string>>(new Set());
 
   commentDrawerPostId = signal<string | null>(null);
+  commentText         = signal('');
+  commentSubmitting   = signal(false);
+  commentFeedback     = signal<{ type: 'success' | 'error'; msg: string } | null>(null);
 
-  commentText      = signal('');
-
-  commentSubmitting = signal(false);
-
-  commentFeedback  = signal<{ type: 'success' | 'error'; msg: string } | null>(null);
-
-  drawerComments   = signal<{ name: string; comment: string; createdAt?: string }[]>([]);
+  // ✅ Updated to use full DrawerComment type
+  drawerComments        = signal<DrawerComment[]>([]);
   drawerCommentsLoading = signal(false);
 
-  private currentUserData = signal<User | null>(null);
+  // ✅ Track which comment is being deleted to show inline spinner
+  deletingCommentId = signal<string | null>(null);
 
-  private searchInput$ = new Subject<string>();
+  private currentUserData = signal<User | null>(null);
+  private searchInput$    = new Subject<string>();
+
+  // ── Computed pools ────────────────────────────────────────────────────────────
 
   private postsWithTs = computed(() =>
     this.allPosts().map(p => ({ ...p, _ts: new Date(p.createdAt).getTime() }))
@@ -129,10 +139,10 @@ export class Home implements OnInit {
     );
 
     switch (sort) {
-      case 'liked':  return [...posts].sort((a, b) => b.likesCount - a.likesCount);
-      case 'viewed': return [...posts].sort((a, b) => b.views - a.views);
-      case 'comments': return [...posts].sort((a, b) => b.commentsCount - a.commentsCount)
-      default:       return [...posts].sort((a, b) => b._ts - a._ts);
+      case 'liked':    return [...posts].sort((a, b) => b.likesCount - a.likesCount);
+      case 'viewed':   return [...posts].sort((a, b) => b.views - a.views);
+      case 'comments': return [...posts].sort((a, b) => b.commentsCount - a.commentsCount);
+      default:         return [...posts].sort((a, b) => b._ts - a._ts);
     }
   });
 
@@ -152,18 +162,24 @@ export class Home implements OnInit {
     this.selectedSort() !== 'newest'
   );
 
+  // ✅ True when the logged-in user owns the post currently open in the drawer
+  isDrawerPostOwner = computed(() => {
+    const postId = this.commentDrawerPostId();
+    const userId = this.currentUserData()?._id;
+    if (!postId || !userId) return false;
+
+    const post = this.allPosts().find(p => p._id === postId);
+    if (!post) return false;
+
+    // post.user can be a populated object or a plain ObjectId string
+    const postOwnerId = (post.user as any)?._id ?? (post.user as any);
+    return postOwnerId?.toString() === userId.toString();
+  });
+
   categories: string[] = [
-      "Entertainment",
-      "Health",
-      "Technology",
-      "Business",
-      "Lifestyle",
-      "Education",
-      "Exercise",
-      "Cooking",
-      "Social",
-      "Quotes",
-      "Village"
+    'Entertainment', 'Health', 'Technology', 'Business',
+    'Lifestyle', 'Education', 'Exercise', 'Cooking',
+    'Social', 'Quotes', 'Village',
   ];
 
   categoryEmojis: Record<string, string> = {
@@ -172,16 +188,16 @@ export class Home implements OnInit {
     Lifestyle: '🌿', Social: '🤝',
   };
 
+  // ── Lifecycle ─────────────────────────────────────────────────────────────────
+
   ngOnInit(): void {
     this.standalone = this.route.snapshot.data['standalone'] ?? this.standalone;
 
     this.visitorService.trackVisit(window.location.pathname);
 
-  this.router.events
-  .pipe(filter((event: any): event is NavigationEnd => event instanceof NavigationEnd))
-  .subscribe(event => {
-    this.visitorService.trackVisit(event.urlAfterRedirects);
-  });
+    this.router.events
+      .pipe(filter((event: any): event is NavigationEnd => event instanceof NavigationEnd))
+      .subscribe(event => this.visitorService.trackVisit(event.urlAfterRedirects));
 
     this.loadPosts();
     this.restoreLikedIds();
@@ -213,13 +229,13 @@ export class Home implements OnInit {
 
   private fetchCurrentUser(): void {
     const userId = this.auth.userId();
-    if (!userId) return;                         
+    if (!userId) return;
 
     this.userService.getUserById(userId).pipe(
       takeUntilDestroyed(this.destroyRef)
     ).subscribe({
       next: (res) => this.currentUserData.set(res.data ?? null),
-      error: ()    => this.currentUserData.set(null)  
+      error: ()    => this.currentUserData.set(null),
     });
   }
 
@@ -243,11 +259,9 @@ export class Home implements OnInit {
   }
 
   addView(post: Post): void {
-
     const key = `viewed_${post._id}`;
     if (sessionStorage.getItem(key)) return;
     sessionStorage.setItem(key, '1');
-
     this.patchPost(post._id, { views: post.views + 1 });
     this.postService.addView(post._id).subscribe();
   }
@@ -255,10 +269,8 @@ export class Home implements OnInit {
   private restoreLikedIds(): void {
     try {
       const stored = localStorage.getItem('apna_liked_posts');
-      if (stored) {
-        this.likedPostIds.set(new Set(JSON.parse(stored)));
-      }
-    } catch {  }
+      if (stored) this.likedPostIds.set(new Set(JSON.parse(stored)));
+    } catch { }
   }
 
   private persistLikedIds(ids: Set<string>): void {
@@ -273,7 +285,7 @@ export class Home implements OnInit {
 
   toggleLike(post: Post, event: Event): void {
     event.stopPropagation();
-    const liked = this.isLiked(post._id);
+    const liked  = this.isLiked(post._id);
     const newSet = new Set(this.likedPostIds());
 
     if (liked) {
@@ -282,7 +294,6 @@ export class Home implements OnInit {
       this.persistLikedIds(newSet);
       this.patchPost(post._id, { likesCount: Math.max(0, post.likesCount - 1) });
     } else {
-
       newSet.add(post._id);
       this.likedPostIds.set(newSet);
       this.persistLikedIds(newSet);
@@ -293,7 +304,7 @@ export class Home implements OnInit {
           this.likedPostIds.set(new Set(newSet));
           this.persistLikedIds(newSet);
           this.patchPost(post._id, { likesCount: post.likesCount });
-        }
+        },
       });
     }
   }
@@ -317,10 +328,11 @@ export class Home implements OnInit {
     this.drawerCommentsLoading.set(true);
     this.postService.getComments(postId).subscribe({
       next: (res: any) => {
+        // ✅ Keep full comment objects including _id and user
         this.drawerComments.set(res.comments ?? []);
         this.drawerCommentsLoading.set(false);
       },
-      error: () => this.drawerCommentsLoading.set(false)
+      error: () => this.drawerCommentsLoading.set(false),
     });
   }
 
@@ -338,7 +350,6 @@ export class Home implements OnInit {
 
   submitComment(): void {
     const text = this.commentText().trim();
-
     if (!text) {
       this.commentFeedback.set({ type: 'error', msg: 'Please write something before posting.' });
       return;
@@ -359,24 +370,62 @@ export class Home implements OnInit {
         this.commentText.set('');
         this.commentFeedback.set({ type: 'success', msg: 'Comment posted!' });
 
-        const newComment = {
-          name: this.currentUserData()?.name ?? 'Anonymous',
-          comment: text,
-          createdAt: new Date().toISOString()
+        // ✅ Include _id and user from the API response for delete support
+        const newComment: DrawerComment = {
+          _id:       res.data?.comment?._id,
+          name:      this.currentUserData()?.name ?? 'Anonymous',
+          comment:   text,
+          user:      this.currentUserData()?._id ?? null,
+          createdAt: new Date().toISOString(),
         };
         this.drawerComments.set([newComment, ...this.drawerComments()]);
 
         const post = this.allPosts().find(p => p._id === postId);
-        if (post) {
-          this.patchPost(postId, { commentsCount: post.commentsCount + 1 });
-        }
+        if (post) this.patchPost(postId, { commentsCount: post.commentsCount + 1 });
 
         setTimeout(() => this.commentFeedback.set(null), 3000);
       },
       error: (err: any) => {
         this.commentSubmitting.set(false);
-        this.commentFeedback.set({ type: 'error', msg: err?.error?.message ?? 'Failed to post comment.' });
-      }
+        this.commentFeedback.set({
+          type: 'error',
+          msg: err?.error?.message ?? 'Failed to post comment.',
+        });
+      },
+    });
+  }
+
+  // ✅ Delete a comment — only callable by post owner (enforced in template + backend)
+  deleteComment(comment: DrawerComment, event: Event): void {
+    event.stopPropagation();
+
+    const postId    = this.commentDrawerPostId();
+    const commentId = comment._id;
+
+    if (!postId || !commentId) return;
+    if (this.deletingCommentId()) return;   // prevent double-tap
+
+    this.deletingCommentId.set(commentId);
+
+    this.postService.deleteComment(postId, commentId).subscribe({
+      next: () => {
+        // ✅ Remove from drawer immediately
+        this.drawerComments.set(
+          this.drawerComments().filter(c => c._id !== commentId)
+        );
+
+        // ✅ Decrement post commentsCount in allPosts
+        const post = this.allPosts().find(p => p._id === postId);
+        if (post) {
+          this.patchPost(postId, { commentsCount: Math.max(0, post.commentsCount - 1) });
+        }
+
+        this.deletingCommentId.set(null);
+      },
+      error: (err: any) => {
+        console.error('Delete comment failed:', err?.error?.message);
+        this.deletingCommentId.set(null);
+      },
     });
   }
 
@@ -385,6 +434,4 @@ export class Home implements OnInit {
       this.allPosts().map(p => p._id === postId ? { ...p, ...updates } : p)
     );
   }
-  
-
 }

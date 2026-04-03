@@ -48,9 +48,8 @@ export class NotificationService implements OnDestroy {
     });
   }
 
-  // ── Public API ────────────────────────────────────────────────────────────────
 
-  startPolling(): void { /* no-op — handled by effect() */ }
+  startPolling(): void { }
 
   fetchNotifications(page = 1, limit = 20): void {
     this._loading$.next(true);
@@ -70,8 +69,6 @@ export class NotificationService implements OnDestroy {
         this._loading$.next(false);
       });
   }
-
-  // ── Mark as read ──────────────────────────────────────────────────────────────
 
   markAsRead(id: string): Observable<void> {
     return this.http
@@ -108,14 +105,12 @@ export class NotificationService implements OnDestroy {
       );
   }
 
-  // ── Delete ────────────────────────────────────────────────────────────────────
 
   deleteNotification(id: string): Observable<void> {
     return this.http
       .delete<void>(`${this.api}/${id}`)
       .pipe(
         tap(() => {
-          // ✅ filter by normalized id — guaranteed string after _apply()
           const filtered = this._notifications$.value.filter(n => n.id !== id);
           this._notifications$.next(filtered);
           this._unreadCount$.next(filtered.filter(n => !n.isRead).length);
@@ -130,8 +125,6 @@ export class NotificationService implements OnDestroy {
   ngOnDestroy(): void {
     this._reset();
   }
-
-  // ── Private ───────────────────────────────────────────────────────────────────
 
   private get api(): string {
     return this.authService.isAdmin() ? this.ADMIN_API : this.USER_API;
@@ -165,11 +158,6 @@ export class NotificationService implements OnDestroy {
     );
   }
 
-  /**
-   * ✅ KEY FIX: MongoDB returns _id, frontend expects id.
-   * Normalize every notification so n.id is always a valid string.
-   * Without this, deleteNotification/markAsRead call .../undefined
-   */
   private _apply(res: NotificationResponse): void {
     const normalized = (res.notifications ?? []).map(n => ({
       ...n,

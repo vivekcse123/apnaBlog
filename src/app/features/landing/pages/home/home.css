@@ -730,3 +730,31 @@ body {
   .card-footer { flex-wrap: wrap; gap: 8px; }
   .ctrl-enter-hint { display: none; }
 }
+
+/* ── Comment delete button ───────────────────────────── */
+.comment-delete-btn {
+  flex-shrink: 0;
+  align-self: flex-start;
+  margin-top: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 4px 6px;
+  border-radius: 6px;
+  opacity: 0;                        /* hidden until row is hovered */
+  transition: opacity 0.2s, background 0.2s;
+}
+
+.comment-item:hover .comment-delete-btn {
+  opacity: 1;
+}
+
+.comment-delete-btn:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.comment-delete-btn.deleting {
+  opacity: 1;
+  cursor: not-allowed;
+}

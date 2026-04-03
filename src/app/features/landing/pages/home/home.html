@@ -310,32 +310,56 @@
     <span>{{ drawerComments().length }} comment{{ drawerComments().length !== 1 ? 's' : '' }}</span>
   </div>
 
-  <div class="comments-list">
-    @if (drawerCommentsLoading()) {
-      <div class="comments-loading">
-        <div class="loading-dots"><span></span><span></span><span></span></div>
-      </div>
-    } @else if (drawerComments().length === 0) {
-      <div class="no-comments">
-        <span class="no-comments-icon">💭</span>
-        <p>No comments yet. Be the first!</p>
-      </div>
-    } @else {
-      @for (c of drawerComments(); track $index) {
-        <div class="comment-item">
-          <div class="comment-avatar">{{ c.name.charAt(0).toUpperCase() }}</div>
-          <div class="comment-content">
-            <div class="comment-meta">
-              <span class="comment-author">{{ c.name }}</span>
-              @if (c.createdAt) {
-                <span class="comment-time">{{ c.createdAt | date:'MMM d, y' }}</span>
-              }
-            </div>
-            <p class="comment-text">{{ c.comment }}</p>
+  <!-- Replace only the comments-list section in your existing template -->
+
+<div class="comments-list">
+  @if (drawerCommentsLoading()) {
+    <div class="comments-loading">
+      <div class="loading-dots"><span></span><span></span><span></span></div>
+    </div>
+  } @else if (drawerComments().length === 0) {
+    <div class="no-comments">
+      <span class="no-comments-icon">💭</span>
+      <p>No comments yet. Be the first!</p>
+    </div>
+  } @else {
+    @for (c of drawerComments(); track c._id ?? $index) {
+      <div class="comment-item">
+        <div class="comment-avatar">{{ c.name.charAt(0).toUpperCase() }}</div>
+
+        <div class="comment-content">
+          <div class="comment-meta">
+            <span class="comment-author">{{ c.name }}</span>
+            @if (c.createdAt) {
+              <span class="comment-time">{{ c.createdAt | date:'MMM d, y' }}</span>
+            }
           </div>
+          <p class="comment-text">{{ c.comment }}</p>
         </div>
-      }
+
+        <!--
+          ✅ Delete button — only visible to the post owner
+          Hidden entirely for non-owners (no role check needed on frontend
+          since backend also enforces ownership via verifyToken)
+        -->
+        @if (isDrawerPostOwner() && c._id) {
+          <button
+            class="comment-delete-btn"
+            [class.deleting]="deletingCommentId() === c._id"
+            [disabled]="deletingCommentId() === c._id"
+            (click)="deleteComment(c, $event)"
+            aria-label="Delete comment">
+            @if (deletingCommentId() === c._id) {
+              <span class="btn-spinner"></span>
+            } @else {
+              🗑
+            }
+          </button>
+        }
+
+      </div>
     }
-  </div>
+  }
+</div>
 
 </div>
