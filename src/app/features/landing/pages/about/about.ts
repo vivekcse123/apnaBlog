@@ -1,9 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, inject, signal, OnInit } from '@angular/core'; // ✅ added OnInit
+import { Component, DestroyRef, inject, signal, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { RouterLink, Router, NavigationEnd } from '@angular/router'; // ✅ added Router, NavigationEnd
-import { filter } from 'rxjs/operators'; // ✅ added filter
+import { RouterLink, Router, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs/operators'; 
 
 import { ContactService } from '../../../../core/services/contact-service';
 import { VisitorService } from '../../../../core/services/visitor';
@@ -15,13 +15,13 @@ import { VisitorService } from '../../../../core/services/visitor';
   templateUrl: './about.html',
   styleUrl: './about.css',
 })
-export class About implements OnInit { // ✅ added OnInit
+export class About implements OnInit {
 
   private contactService = inject(ContactService);
   private destroyRef = inject(DestroyRef);
 
-  private router = inject(Router); // ✅ added
-  private visitorService = inject(VisitorService); // ✅ added
+  private router = inject(Router);
+  private visitorService = inject(VisitorService);
 
   currentYear = new Date().getFullYear();
   isSubmitting = signal(false);
@@ -31,13 +31,10 @@ export class About implements OnInit { // ✅ added OnInit
 
   contactData = { name: '', email: '', subject: '', message: '' };
 
-  // ✅ TRACKING LOGIC
   ngOnInit(): void {
 
-    // Track initial page load
     this.visitorService.trackVisit(window.location.pathname);
 
-    // Track route changes
     this.router.events
       .pipe(
         filter((event): event is NavigationEnd => event instanceof NavigationEnd),
