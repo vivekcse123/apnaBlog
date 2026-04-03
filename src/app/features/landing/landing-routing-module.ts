@@ -6,11 +6,6 @@ import { About } from './pages/about/about';
 const routes: Routes = [
   {
     path: '',
-    redirectTo: 'apna-blog',
-    pathMatch: 'full'
-  },
-  {
-    path: 'apna-blog',
     component: Home
   },
   {
