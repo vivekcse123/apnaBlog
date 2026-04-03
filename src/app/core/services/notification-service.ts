@@ -33,20 +33,16 @@ export class NotificationService implements OnDestroy {
   private platformId  = inject(PLATFORM_ID);
 
   constructor() {
-    // ✅ React to EVERY auth state change (login, logout, role switch)
-    // effect() re-runs automatically whenever token() or userRole() signal changes
     effect(() => {
-      const token = this.authService.token();   // reactive read
-      const role  = this.authService.userRole(); // reactive read — also resets on role switch
+      const token = this.authService.token();
+      const role  = this.authService.userRole();
 
       if (!isPlatformBrowser(this.platformId)) return;
 
       if (token && role) {
-        // Logged in (or role changed): clear stale data and restart with correct API
         this._reset();
         this._startPolling();
       } else {
-        // Logged out: clear everything and stop polling
         this._reset();
       }
     });
@@ -54,7 +50,8 @@ export class NotificationService implements OnDestroy {
 
   // ── Public API ────────────────────────────────────────────────────────────────
 
-  /** Call this from a component if you want to manually trigger a fresh fetch */
+  startPolling(): void { /* no-op — handled by effect() */ }
+
   fetchNotifications(page = 1, limit = 20): void {
     this._loading$.next(true);
 
@@ -118,6 +115,7 @@ export class NotificationService implements OnDestroy {
       .delete<void>(`${this.api}/${id}`)
       .pipe(
         tap(() => {
+          // ✅ filter by normalized id — guaranteed string after _apply()
           const filtered = this._notifications$.value.filter(n => n.id !== id);
           this._notifications$.next(filtered);
           this._unreadCount$.next(filtered.filter(n => !n.isRead).length);
@@ -139,20 +137,16 @@ export class NotificationService implements OnDestroy {
     return this.authService.isAdmin() ? this.ADMIN_API : this.USER_API;
   }
 
-  /** Stop polling + clear all state — called on logout and before every restart */
   private _reset(): void {
     this.pollSub?.unsubscribe();
     this.pollSub = undefined;
-
-    // ✅ Immediately clear stale data so old role's notifications don't linger
     this._notifications$.next([]);
     this._unreadCount$.next(0);
     this._loading$.next(false);
   }
 
-  /** Start polling fresh — always call _reset() before this */
   private _startPolling(): void {
-    this.fetchNotifications();   // immediate first fetch
+    this.fetchNotifications();
 
     this.pollSub = interval(this.POLL_MS)
       .pipe(
@@ -171,8 +165,17 @@ export class NotificationService implements OnDestroy {
     );
   }
 
+  /**
+   * ✅ KEY FIX: MongoDB returns _id, frontend expects id.
+   * Normalize every notification so n.id is always a valid string.
+   * Without this, deleteNotification/markAsRead call .../undefined
+   */
   private _apply(res: NotificationResponse): void {
-    this._notifications$.next(res.notifications ?? []);
-    this._unreadCount$.next(res.unreadCount    ?? 0);
+    const normalized = (res.notifications ?? []).map(n => ({
+      ...n,
+      id: n.id ?? (n as any)._id?.toString(),
+    }));
+    this._notifications$.next(normalized);
+    this._unreadCount$.next(res.unreadCount ?? 0);
   }
 }
