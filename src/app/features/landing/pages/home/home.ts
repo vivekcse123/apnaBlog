@@ -1,9 +1,9 @@
 import { Component, inject, signal, computed, OnInit, DestroyRef, Input, ChangeDetectionStrategy, WritableSignal, PLATFORM_ID} 
 from '@angular/core';
-import { ActivatedRoute, NavigationEnd, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule, isPlatformBrowser, NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { finalize, debounceTime, distinctUntilChanged, filter } from 'rxjs/operators';
+import { finalize, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { PostService } from '../../../post/services/post-service';
@@ -34,7 +34,7 @@ export class Home implements OnInit {
   private userService    = inject(UserService);
   themeService           = inject(ThemeService);
   private visitorService = inject(VisitorService);
-  private platformId = inject(PLATFORM_ID);
+  private platformId     = inject(PLATFORM_ID);
 
   @Input() standalone = true;
 
@@ -177,12 +177,23 @@ export class Home implements OnInit {
   ngOnInit(): void {
     this.standalone = this.route.snapshot.data['standalone'] ?? this.standalone;
 
-    if(isPlatformBrowser(this.platformId)){
-      this.visitorService.trackVisit(window.location.pathname);
+    // ── Visitor tracking ──────────────────────────────────────────
+    // Only track the exact route this component owns: /welcome
+    // Do NOT subscribe to router events here — child/sibling routes
+    // (/welcome/about etc.) handle their own tracking independently.
+    if (isPlatformBrowser(this.platformId)) {
+      const path = window.location.pathname;
+
+      // Normalise: strip trailing slash, e.g. "/welcome/" → "/welcome"
+      const normalisedPath = path.replace(/\/$/, '') || '/';
+
+      // Only fire for /welcome — guard against accidental re-use of
+      // this component on other routes
+      if (normalisedPath === '/welcome') {
+        this.visitorService.trackVisit('/welcome');
+      }
     }
-    this.router.events
-      .pipe(filter((event: any): event is NavigationEnd => event instanceof NavigationEnd))
-      .subscribe(event => this.visitorService.trackVisit(event.urlAfterRedirects));
+    // ─────────────────────────────────────────────────────────────
 
     this.loadPosts();
     this.restoreLikedIds();
@@ -385,13 +396,12 @@ export class Home implements OnInit {
     const commentId = comment._id;
 
     if (!postId || !commentId) return;
-    if (this.deletingCommentId()) return; 
+    if (this.deletingCommentId()) return;
 
     this.deletingCommentId.set(commentId);
 
     this.postService.deleteComment(postId, commentId).subscribe({
       next: () => {
-
         this.drawerComments.set(
           this.drawerComments().filter(c => c._id !== commentId)
         );

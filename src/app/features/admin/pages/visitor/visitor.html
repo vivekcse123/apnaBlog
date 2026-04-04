@@ -214,45 +214,89 @@
         </div>
       </div>
 
-      <div class="info-card">
-        <div class="info-header">
-          <h3>Recent Visits</h3>
-          <span class="live-indicator">
-            <span class="dot-sm"></span> Live
+      <div class="info-card visits-card">
+
+  <!-- Header -->
+  <div class="visits-header">
+    <div class="visits-title-group">
+      <h3 class="visits-title">Recent Visits</h3>
+      <span class="visits-count-chip">{{ recentVisits.length }}</span>
+    </div>
+    <span class="visits-live-badge">
+      <span class="pulse-ring"></span>
+      <span class="pulse-dot"></span>
+      Live
+    </span>
+  </div>
+
+  <!-- List -->
+  <div class="visits-list">
+    @for (v of recentVisits; track v.visitedAt) {
+
+      <div class="visit-item">
+
+        <!-- Avatar -->
+        <div class="visit-avatar">
+          <span class="visit-avatar-letter">{{ getPageAvatar(v.page) }}</span>
+          <span class="visit-device-dot"
+            [class.dot-mobile]="v.device === 'Mobile'"
+            [class.dot-tablet]="v.device === 'Tablet'"
+            [class.dot-desktop]="v.device === 'Desktop'">
           </span>
         </div>
-        <div class="recent-list">
-          @for (v of groupedVisits; track v.page) {
-            <div class="recent-row">
 
-              <div class="visitor-avatar">
-                <!-- {{ v.page === '/' ? '🏠' : v.page.replace(/\//g, '').charAt(0).toUpperCase() || '?' }} -->
-                  {{ getPageAvatar(v.page) }}
-              </div>
-
-              <div class="visitor-info">
-                <span class="visitor-page">{{ v.page || '/' }}</span>
-                <span class="visitor-meta">
-                  
-                  {{ v.visitors }} visitor{{ v.visitors !== 1 ? 's' : '' }}
-                  @if (v.cities.length > 0) {
-                    · {{ v.cities.join(', ') }}
-                  }
-                  · {{ formatRelativeTime(v.lastVisit) }}
-                </span>
-              </div>
-
-              <div class="visit-count-badge">
-                {{ v.visitors }}
-              </div>
-
-            </div>
-          }
-          @if (groupedVisits.length === 0) {
-            <div class="empty-state">No recent visits</div>
-          }
+        <!-- Details -->
+        <div class="visit-details">
+          <div class="visit-page-row">
+            <span class="visit-page-path" [title]="v.page">{{ v.page || '/' }}</span>
+            <span class="visit-source-pill"
+              [class.pill-direct]="v.source === 'Direct'"
+              [class.pill-search]="v.source === 'Search'"
+              [class.pill-social]="v.source === 'Social'"
+              [class.pill-referral]="v.source === 'Referral'">
+              {{ v.source || 'Direct' }}
+            </span>
+          </div>
+          <div class="visit-sub-row">
+            <span class="visit-ip-text">{{ v.ip }}</span>
+            @if (v.city) {
+              <span class="visit-sep">·</span>
+              <span class="visit-city">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2.5">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                  <circle cx="12" cy="10" r="3"/>
+                </svg>
+                {{ v.city }}
+              </span>
+            }
+            <span class="visit-sep">·</span>
+            <span class="visit-device-label">{{ v.device || 'Desktop' }}</span>
+          </div>
         </div>
+
+        <!-- Time -->
+        <div class="visit-time-block">
+          <span class="visit-time-rel">{{ formatRelativeTime(v.visitedAt) }}</span>
+        </div>
+
       </div>
+
+    }
+
+    @if (recentVisits.length === 0) {
+      <div class="visits-empty">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="1.5">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+          <circle cx="12" cy="12" r="3"/>
+        </svg>
+        <p>No visits recorded yet</p>
+      </div>
+    }
+  </div>
+
+</div>
 
     </div>
   </div>

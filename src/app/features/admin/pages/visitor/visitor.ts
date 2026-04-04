@@ -22,12 +22,14 @@ export interface TopPage     { _id: string; count: number; }
 export interface DeviceStat  { device: string; count: number; percent: number; }
 export interface RecentVisit { ip: string; page: string; city: string; visitedAt: string; }
 export interface SourceStat  { source: string; count: number; percent: number; }
+export interface RecentVisit { ip: string; page: string; city: string; visitedAt: string; }
+export interface RecentVisit { ip: string; page: string; city: string; visitedAt: string; device: string; source: string; }
 
 export interface GroupedVisit {
   page:       string;
   visitors:   number;  
   cities:     string[];
-  lastVisit:  string; 
+  lastVisit:  string;
 }
 
 @Component({

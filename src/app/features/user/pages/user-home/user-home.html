@@ -16,7 +16,7 @@
     </div>
   }
 
-  <!-- Stats -->
+  <!-- ── Statistics ── -->
   <section class="statistics-section">
     <p class="section-label">Your Statistics</p>
     <div class="info-container">
@@ -81,7 +81,8 @@
       <div class="info-card">
         <div class="info-icon likes-icon">
           <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-            <path d="M11 18s-7-4.5-7-9a4 4 0 018 0 4 4 0 018 0c0 4.5-7 9-7 9z" stroke="#d9534f" stroke-width="2" fill="none" stroke-linejoin="round"/>
+            <path d="M11 18s-7-4.5-7-9a4 4 0 018 0 4 4 0 018 0c0 4.5-7 9-7 9z"
+              stroke="#d9534f" stroke-width="2" fill="none" stroke-linejoin="round"/>
           </svg>
         </div>
         <div class="info-content">
@@ -94,7 +95,8 @@
       <div class="info-card">
         <div class="info-icon comments-icon">
           <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-            <path d="M4 4h14a2 2 0 012 2v8a2 2 0 01-2 2H8l-4 3V6a2 2 0 012-2z" stroke="#378ADD" stroke-width="2" fill="none" stroke-linejoin="round"/>
+            <path d="M4 4h14a2 2 0 012 2v8a2 2 0 01-2 2H8l-4 3V6a2 2 0 012-2z"
+              stroke="#378ADD" stroke-width="2" fill="none" stroke-linejoin="round"/>
             <path d="M8 9h6M8 12h4" stroke="#378ADD" stroke-width="1.5" stroke-linecap="round"/>
           </svg>
         </div>
@@ -108,7 +110,8 @@
       <div class="info-card">
         <div class="info-icon top-icon">
           <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-            <path d="M11 3l2.5 5 5.5.8-4 3.9.9 5.5L11 15.5l-4.9 2.7.9-5.5L3 8.8l5.5-.8z" stroke="#f59e0b" stroke-width="1.8" fill="none" stroke-linejoin="round"/>
+            <path d="M11 3l2.5 5 5.5.8-4 3.9.9 5.5L11 15.5l-4.9 2.7.9-5.5L3 8.8l5.5-.8z"
+              stroke="#f59e0b" stroke-width="1.8" fill="none" stroke-linejoin="round"/>
           </svg>
         </div>
         <div class="info-content">
@@ -121,7 +124,8 @@
       <div class="info-card">
         <div class="info-icon avg-icon">
           <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-            <path d="M3 17l4-5 4 3 4-6 4 2" stroke="#5cb85c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            <path d="M3 17l4-5 4 3 4-6 4 2"
+              stroke="#5cb85c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
           </svg>
         </div>
         <div class="info-content">
@@ -134,10 +138,197 @@
     </div>
   </section>
 
-  <!-- Quick Actions -->
+  <!-- ── Charts Section ── -->
+  <section class="charts-section">
+    <p class="section-label">Analytics Overview</p>
+
+    <div class="charts-top-row">
+
+      <!-- Blog Growth Line Chart -->
+      <div class="chart-card wide-chart">
+        <div class="chart-header">
+          <div class="chart-title-group">
+            <h3 class="chart-title">My Blog Growth</h3>
+            <span class="chart-subtitle">Published vs Drafts over time</span>
+          </div>
+          <div class="range-tabs">
+            <button [class.active]="selectedRange === '7d'"  (click)="onRangeChange('7d')">7D</button>
+            <button [class.active]="selectedRange === '14d'" (click)="onRangeChange('14d')">30D</button>
+            <button [class.active]="selectedRange === '30d'" (click)="onRangeChange('30d')">90D</button>
+          </div>
+        </div>
+        <div class="chart-wrap" style="height:220px;">
+          <canvas #blogGrowthRef></canvas>
+        </div>
+      </div>
+
+      <!-- Content Status Donut -->
+      <div class="chart-card narrow-chart">
+        <div class="chart-header">
+          <div class="chart-title-group">
+            <h3 class="chart-title">Content Status</h3>
+            <span class="chart-subtitle">Distribution</span>
+          </div>
+        </div>
+        <div class="chart-wrap" style="height:170px;">
+          <canvas #contentDonutRef></canvas>
+        </div>
+        <div class="doughnut-legend">
+          <div class="legend-item">
+            <span class="legend-dot" style="background:#43cea2"></span>
+            <span class="legend-label">Published</span>
+            <span class="legend-val">{{ totalPublished() }}</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-dot" style="background:#BA7517"></span>
+            <span class="legend-label">Drafts</span>
+            <span class="legend-val">{{ totalDrafts() }}</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-dot" style="background:#185a9d"></span>
+            <span class="legend-label">Total</span>
+            <span class="legend-val">{{ totalBlogs() }}</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="charts-bottom-row">
+
+      <!-- Weekly Engagement Bar -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title-group">
+            <h3 class="chart-title">Weekly Engagement</h3>
+            <span class="chart-subtitle">Views · Comments · Likes</span>
+          </div>
+        </div>
+        <div class="chart-wrap" style="height:190px;">
+          <canvas #engagementRef></canvas>
+        </div>
+      </div>
+
+      <!-- Top Posts Horizontal Bar -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title-group">
+            <h3 class="chart-title">Top Posts</h3>
+            <span class="chart-subtitle">By views</span>
+          </div>
+        </div>
+        <div class="chart-wrap" style="height:190px;">
+          <canvas #topPostsRef></canvas>
+        </div>
+      </div>
+
+      <!-- This Week Metrics Summary -->
+      <div class="chart-card metrics-summary-card">
+        <div class="chart-header">
+          <div class="chart-title-group">
+            <h3 class="chart-title">This Week</h3>
+            <span class="chart-subtitle">Performance snapshot</span>
+          </div>
+        </div>
+        <div class="metrics-list">
+
+          <div class="metric-row">
+            <div class="metric-icon" style="background:rgba(67,206,162,0.12)">
+              <svg width="14" height="14" viewBox="0 0 22 22" fill="none">
+                <rect x="3" y="3" width="16" height="3" rx="1.5" fill="#43cea2"/>
+                <rect x="3" y="9" width="11" height="3" rx="1.5" fill="#43cea2"/>
+                <rect x="3" y="15" width="13" height="3" rx="1.5" fill="#43cea2"/>
+              </svg>
+            </div>
+            <div class="metric-info">
+              <span class="metric-label">New Blogs</span>
+              <div class="metric-bar-wrap">
+                <div class="metric-bar" style="background:#43cea2"
+                  [style.width.%]="getPercent(newBlogs(), totalBlogs())"></div>
+              </div>
+            </div>
+            <span class="metric-val">+{{ newBlogs() }}</span>
+          </div>
+
+          <div class="metric-row">
+            <div class="metric-icon" style="background:rgba(127,119,221,0.12)">
+              <svg width="14" height="14" viewBox="0 0 22 22" fill="none">
+                <ellipse cx="11" cy="11" rx="8" ry="5" stroke="#7F77DD" stroke-width="2" fill="none"/>
+                <circle cx="11" cy="11" r="2.5" fill="#7F77DD"/>
+              </svg>
+            </div>
+            <div class="metric-info">
+              <span class="metric-label">Total Views</span>
+              <div class="metric-bar-wrap">
+                <div class="metric-bar" style="background:#7F77DD"
+                  [style.width.%]="getPercent(totalViews(), totalViews())"></div>
+              </div>
+            </div>
+            <span class="metric-val">{{ totalViews() }}</span>
+          </div>
+
+          <div class="metric-row">
+            <div class="metric-icon" style="background:rgba(55,138,221,0.12)">
+              <svg width="14" height="14" viewBox="0 0 22 22" fill="none">
+                <path d="M4 4h14a2 2 0 012 2v8a2 2 0 01-2 2H8l-4 3V6a2 2 0 012-2z"
+                  stroke="#378ADD" stroke-width="2" fill="none"/>
+              </svg>
+            </div>
+            <div class="metric-info">
+              <span class="metric-label">Comments</span>
+              <div class="metric-bar-wrap">
+                <div class="metric-bar" style="background:#378ADD"
+                  [style.width.%]="getPercent(totalComments(), totalComments())"></div>
+              </div>
+            </div>
+            <span class="metric-val">{{ totalComments() }}</span>
+          </div>
+
+          <div class="metric-row">
+            <div class="metric-icon" style="background:rgba(217,83,79,0.12)">
+              <svg width="14" height="14" viewBox="0 0 22 22" fill="none">
+                <path d="M11 18s-7-4.5-7-9a4 4 0 018 0 4 4 0 018 0c0 4.5-7 9-7 9z"
+                  stroke="#d9534f" stroke-width="2" fill="none"/>
+              </svg>
+            </div>
+            <div class="metric-info">
+              <span class="metric-label">Likes</span>
+              <div class="metric-bar-wrap">
+                <div class="metric-bar" style="background:#d9534f"
+                  [style.width.%]="getPercent(totalLikes(), totalLikes())"></div>
+              </div>
+            </div>
+            <span class="metric-val">{{ totalLikes() }}</span>
+          </div>
+
+          <div class="metric-row">
+            <div class="metric-icon" style="background:rgba(245,158,11,0.12)">
+              <svg width="14" height="14" viewBox="0 0 22 22" fill="none">
+                <path d="M11 3l2.5 5 5.5.8-4 3.9.9 5.5L11 15.5l-4.9 2.7.9-5.5L3 8.8l5.5-.8z"
+                  stroke="#f59e0b" stroke-width="1.8" fill="none"/>
+              </svg>
+            </div>
+            <div class="metric-info">
+              <span class="metric-label">Avg Views/Post</span>
+              <div class="metric-bar-wrap">
+                <div class="metric-bar" style="background:#f59e0b"
+                  [style.width.%]="getPercent(avgViews(), topPostViews())"></div>
+              </div>
+            </div>
+            <span class="metric-val">{{ avgViews() }}</span>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── Quick Actions ── -->
   <section class="quick-actions-section">
     <p class="section-label">Quick Actions</p>
     <div class="quick-actions">
+
       <div class="action-card" [routerLink]="createBlogLink()">
         <div class="action-icon">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -168,7 +359,8 @@
         <div class="action-icon">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
             <circle cx="8" cy="8" r="2" stroke="#5F5E5A" stroke-width="1.3" fill="none"/>
-            <path d="M8 2v2M8 12v2M2 8h2M12 8h2M3.5 3.5l1.4 1.4M11.1 11.1l1.4 1.4M3.5 12.5l1.4-1.4M11.1 4.9l1.4-1.4" stroke="#5F5E5A" stroke-width="1.2" stroke-linecap="round"/>
+            <path d="M8 2v2M8 12v2M2 8h2M12 8h2M3.5 3.5l1.4 1.4M11.1 11.1l1.4 1.4M3.5 12.5l1.4-1.4M11.1 4.9l1.4-1.4"
+              stroke="#5F5E5A" stroke-width="1.2" stroke-linecap="round"/>
           </svg>
         </div>
         <span class="action-label">Settings</span>
@@ -178,18 +370,19 @@
         <div class="action-icon">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
             <circle cx="8" cy="8" r="6" stroke="#43cea2" stroke-width="1.4" fill="none"/>
-            <path d="M10.5 5.5l-2 4-4 2 2-4 4-2z" stroke="#43cea2" stroke-width="1.2" stroke-linejoin="round" fill="none"/>
+            <path d="M10.5 5.5l-2 4-4 2 2-4 4-2z"
+              stroke="#43cea2" stroke-width="1.2" stroke-linejoin="round" fill="none"/>
           </svg>
         </div>
         <span class="action-label">Explore Blogs</span>
       </div>
+
     </div>
   </section>
 
-  <!-- Bottom Grid -->
+  <!-- ── Bottom Grid: Tables ── -->
   <div class="bottom-grid">
 
-    <!-- My Recent Blogs -->
     <section class="recent-blogs-section">
       <p class="section-label">My Recent Blogs</p>
       <div class="table-card">
@@ -231,7 +424,6 @@
       </div>
     </section>
 
-    <!-- Top Performing -->
     <section class="top-blogs-section">
       <p class="section-label">🏆 Top Performing Posts</p>
       <div class="table-card">
@@ -250,7 +442,7 @@
               @for (blog of topBlogs(); track blog._id; let i = $index) {
                 <tr>
                   <td>
-                    <span class="rank-badge" [class.gold]="i===0" [class.silver]="i===1" [class.bronze]="i===2">
+                    <span class="rank-badge">
                       {{ i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1 }}
                     </span>
                   </td>
