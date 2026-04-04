@@ -1,7 +1,7 @@
-import { Component, inject, signal, computed, OnInit, DestroyRef, Input, ChangeDetectionStrategy, WritableSignal} 
+import { Component, inject, signal, computed, OnInit, DestroyRef, Input, ChangeDetectionStrategy, WritableSignal, PLATFORM_ID} 
 from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Router, RouterLink } from '@angular/router';
-import { CommonModule, NgTemplateOutlet } from '@angular/common';
+import { CommonModule, isPlatformBrowser, NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { finalize, debounceTime, distinctUntilChanged, filter } from 'rxjs/operators';
 import { Subject } from 'rxjs';
@@ -34,6 +34,7 @@ export class Home implements OnInit {
   private userService    = inject(UserService);
   themeService           = inject(ThemeService);
   private visitorService = inject(VisitorService);
+  private platformId = inject(PLATFORM_ID);
 
   @Input() standalone = true;
 
@@ -176,8 +177,9 @@ export class Home implements OnInit {
   ngOnInit(): void {
     this.standalone = this.route.snapshot.data['standalone'] ?? this.standalone;
 
-    this.visitorService.trackVisit(window?.location.pathname);
-
+    if(isPlatformBrowser(this.platformId)){
+      this.visitorService.trackVisit(window.location.pathname);
+    }
     this.router.events
       .pipe(filter((event: any): event is NavigationEnd => event instanceof NavigationEnd))
       .subscribe(event => this.visitorService.trackVisit(event.urlAfterRedirects));

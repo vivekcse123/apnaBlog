@@ -74,8 +74,6 @@ export class PostLists implements OnInit {
     Array.from({ length: this.totalPages() }, (_, i) => i + 1)
   );
 
-  // ── Lifecycle ────────────────────────────────────────────────
-
   ngOnInit(): void {
     this.route?.parent?.params
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -87,7 +85,6 @@ export class PostLists implements OnInit {
       });
   }
 
-  // ── Load posts ───────────────────────────────────────────────
 
   loadPosts(userId?: string): void {
     const id = userId ?? this.userId();
