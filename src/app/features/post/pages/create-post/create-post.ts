@@ -3,7 +3,7 @@ import { AbstractControl, FormArray, FormBuilder, FormGroup, ReactiveFormsModule
 import { Post } from '../../../../core/models/post.model';
 import { Auth } from '../../../../core/services/auth';
 import { PostService } from '../../services/post-service';
-import { HttpClient } from '@angular/common/http';
+import { UploadService } from '../../services/upload-service';
 
 @Component({
   selector: 'app-create-blog',
@@ -13,35 +13,32 @@ import { HttpClient } from '@angular/common/http';
   styleUrl: './create-post.css',
 })
 export class CreatePost {
-  private fb          = inject(FormBuilder);
-  private authService = inject(Auth);
-  private postService = inject(PostService);
-  private http        = inject(HttpClient);
+  private fb            = inject(FormBuilder);
+  private authService   = inject(Auth);
+  private postService   = inject(PostService);
+  private uploadService = inject(UploadService); 
 
   @ViewChild('editorRef') editorRef!: ElementRef<HTMLDivElement>;
 
-  close        = output<void>();
-  postCreated  = output<Post>();
+  close       = output<void>();
+  postCreated = output<Post>();
 
   isSubmitted      = signal(false);
   errorMessage     = signal('');
   successMessage   = signal('');
   activeFormats    = signal<Set<string>>(new Set());
-
-  // upload state
   imageUploading   = signal(false);
   imageUploadError = signal('');
   imagePreviewUrl  = signal('');
-  uploadMode       = signal<'url' | 'file'>('url'); // track which input is active
+  uploadMode       = signal<'url' | 'file'>('url');
 
   categoryOptions = [
-    'Technology', 'Lifestyle', 'Education',
-    'Health', 'Business', 'Entertainment', 'Social', 'Village', 'Cooking', 'Quotes', 'Exercise'
+    'Technology', 'Lifestyle', 'Education', 'Health', 'Business',
+    'Entertainment', 'Social', 'Village', 'Cooking', 'Quotes', 'Exercise',
   ];
 
   tagOptions = [
-    'Trending', 'Motivation', 'Tips', 'News',
-    'Opinion', 'Guide', 'Update',
+    'Trending', 'Motivation', 'Tips', 'News', 'Opinion', 'Guide', 'Update',
   ];
 
   createBlogForm: FormGroup = this.fb.group({
@@ -68,8 +65,6 @@ export class CreatePost {
     return arr.controls.some((c: AbstractControl) => c.value === true);
   }
 
-  // ── Rich text editor ────────────────────────────────────────
-
   onEditorInput(): void {
     const html    = this.editorRef.nativeElement.innerHTML;
     const isEmpty = html === '' || html === '<br>';
@@ -79,12 +74,14 @@ export class CreatePost {
   }
 
   updateActiveFormats(): void {
-    const commands = ['bold', 'italic', 'underline', 'strikeThrough',
+    const commands = [
+      'bold', 'italic', 'underline', 'strikeThrough',
       'justifyLeft', 'justifyCenter', 'justifyRight', 'justifyFull',
-      'insertUnorderedList', 'insertOrderedList'];
+      'insertUnorderedList', 'insertOrderedList',
+    ];
     const active = new Set<string>();
     commands.forEach(cmd => {
-      try { if (document.queryCommandState(cmd)) active.add(cmd); } catch { /* noop */ }
+      try { if (document.queryCommandState(cmd)) active.add(cmd); } catch { }
     });
     this.activeFormats.set(active);
   }
@@ -108,9 +105,7 @@ export class CreatePost {
     return this.activeFormats().has(command);
   }
 
-  // ── Image handling ──────────────────────────────────────────
 
-  /** User typed / pasted a URL manually */
   onUrlInput(value: string): void {
     this.uploadMode.set('url');
     this.imageUploadError.set('');
@@ -118,12 +113,10 @@ export class CreatePost {
     this.createBlogForm.patchValue({ featuredImage: value.trim() });
   }
 
-  /** User picked a file from disk */
-  async onFileChange(event: Event): Promise<void> {
+  onFileChange(event: Event): void {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (!file) return;
 
-    // validate on client before hitting server
     const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
     if (!allowed.includes(file.type)) {
       this.imageUploadError.set('Only JPG, PNG, WEBP or GIF images are allowed.');
@@ -140,17 +133,11 @@ export class CreatePost {
     this.imagePreviewUrl.set('');
     this.createBlogForm.patchValue({ featuredImage: '' });
 
-    // local preview while uploading
     const reader = new FileReader();
     reader.onload = e => this.imagePreviewUrl.set(e.target?.result as string);
     reader.readAsDataURL(file);
 
-    const formData = new FormData();
-    formData.append('image', file);
-
-    this.http.post<{ success: boolean; url: string; message: string }>(
-      '/api/upload', formData
-    ).subscribe({
+    this.uploadService.uploadImage(file).subscribe({
       next: (res) => {
         this.imageUploading.set(false);
         if (res.success) {
@@ -169,21 +156,16 @@ export class CreatePost {
     });
   }
 
-  /** Remove selected image (both preview and form value) */
   removeImage(fileInput: HTMLInputElement): void {
     this.imagePreviewUrl.set('');
     this.imageUploadError.set('');
+    this.uploadMode.set('url');
     this.createBlogForm.patchValue({ featuredImage: '' });
     fileInput.value = '';
-    if (this.uploadMode() === 'url') {
-      (document.querySelector('input[data-url-input]') as HTMLInputElement | null)
-        ? ((document.querySelector('input[data-url-input]') as HTMLInputElement).value = '')
-        : null;
-    }
-    this.uploadMode.set('url');
-  }
 
-  // ── Submit ──────────────────────────────────────────────────
+    const urlInput = document.querySelector('input[data-url-input]') as HTMLInputElement | null;
+    if (urlInput) urlInput.value = '';
+  }
 
   createBlog(): void {
     this.isSubmitted.set(true);

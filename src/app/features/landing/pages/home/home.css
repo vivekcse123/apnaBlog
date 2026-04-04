@@ -356,7 +356,6 @@ body {
   pointer-events: none;
   transition: transform 0.4s ease;
 }
-/* ── No-image block — matches card-img-wrap height exactly ── */
 
 .no-img-block {
   width: 100%;
@@ -380,7 +379,6 @@ body {
   pointer-events: none;
 }
 
-/* Big decorative first-letter */
 .no-img-letter {
   font-family: 'Playfair Display', serif;
   font-size: 80px;
@@ -393,14 +391,11 @@ body {
   user-select: none;
 }
 
-/* Hover zoom — same as the real image */
 .blog-card:hover .no-img-block {
-  /* a subtle brightness lift instead of scale, since there's no img to zoom */
   filter: brightness(1.08);
   transition: filter 0.4s ease;
 }
 
-/* Remove old placeholder */
 .no-image-placeholder { display: none; }
 .blog-card:hover .card-img-wrap img { transform: scale(1.04); }
 
