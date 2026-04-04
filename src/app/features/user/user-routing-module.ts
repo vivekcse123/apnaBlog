@@ -14,23 +14,23 @@ const routes: Routes = [
       {
         path: '',
         component: UserHome,
-        title: 'ApnaBlog | Home'
+        title: 'ApnaBlogs - Home'
       },
       {
         path: 'manage-blogs',
         component: PostLists,
-        title: 'ApnaBlog | Manage Blogs'
+        title: 'ApnaBlogs - Manage Blogs'
       },
       {
         path: 'settings',
         component: Settings,
-        title: 'ApnaBlog | Settings'
+        title: 'ApnaBlogs - Settings'
       },
       {
         path: 'explore-blogs',
         component: Home,
         data: { standalone: false },
-        title: 'ApnaBlog | Explore Blogs'
+        title: 'ApnaBlogs - Explore Blogs'
       }
     ]
   },

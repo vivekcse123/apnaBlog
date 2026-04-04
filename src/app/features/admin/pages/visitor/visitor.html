@@ -6,7 +6,9 @@
       <span class="live-dot"><span class="dot-pulse"></span> Live</span>
     </div>
     <div class="header-right">
-      <span class="last-updated" *ngIf="lastUpdated">Updated {{ lastUpdated }}</span>
+      @if(lastUpdated){
+      <span class="last-updated">Updated {{ lastUpdated }}</span>
+      }
       <button class="refresh-btn" (click)="loadAllData()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <polyline points="23 4 23 10 17 10"></polyline>
@@ -17,10 +19,12 @@
     </div>
   </div>
 
-  <div class="loading-overlay" *ngIf="isLoading">
+  @if(isLoading){
+  <div class="loading-overlay">
     <div class="spinner"></div>
     <p>Loading analytics...</p>
   </div>
+}
 
   <div [class.hidden]="isLoading">
 
@@ -37,7 +41,6 @@
           <span class="stat-label">Today</span>
           <span class="stat-value">{{ formatNumber(stats.today) }}</span>
 
-          <!-- ✅ Show "New" when no baseline, otherwise show % -->
           @if (todayIsNew) {
             <span class="stat-change positive">✦ New activity</span>
           } @else if (stats.yesterday > 0 || stats.today > 0) {
@@ -66,7 +69,6 @@
           <span class="stat-label">This Week</span>
           <span class="stat-value">{{ formatNumber(stats.thisWeek) }}</span>
 
-          <!-- ✅ Show "First week" when lastWeek is 0 but thisWeek has data -->
           @if (weekIsNew) {
             <span class="stat-change positive">✦ First week of data</span>
           } @else if (stats.lastWeek > 0 || stats.thisWeek > 0) {

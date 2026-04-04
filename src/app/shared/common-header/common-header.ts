@@ -19,7 +19,7 @@ import { NotificationService } from '../../core/services/notification-service';
 })
 export class CommonHeader implements OnInit {
 
-  @Input() logo:    string        = 'ApnaBlog';
+  @Input() logo:    string        = 'ApnaBlogs';
   @Input() profile: string | null = '';
   @Input() navs:    { label: string; routerLink: string }[] = [];
   @Output() open = new EventEmitter<void>();

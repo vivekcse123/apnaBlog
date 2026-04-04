@@ -17,37 +17,37 @@ const routes: Routes = [
       {
         path: '',
         component: AdminHome,
-        title: 'ApnaBlog | Home'
+        title: 'ApnaBlogs - Home'
       },
       {
         path: 'manage-users',
         component: ManageUsers,
-        title: 'ApnaBlog | Manage Users'
+        title: 'ApnaBlogs - Manage Users'
       },
       {
         path: 'manage-blogs',
         component: PostLists,
-        title: "ApnaBlog | Manage Blogs"
+        title: "ApnaBlogs - Manage Blogs"
       },
       {
         path: 'create-blog',
         component: CreatePost,
-        title: 'ApnaBlog | Create Blog'
+        title: 'ApnaBlogs - Create Blog'
       },
       {
         path: 'create-user',
         component: CreateUser,
-        title: 'ApnaBlog | Create User'
+        title: 'ApnaBlogs - Create User'
       },
       {
         path: 'settings',
         component: Settings,
-        title: 'ApnaBlog | Settings'
+        title: 'ApnaBlogs - Settings'
       },
       {
         path: 'visitor',
         component: Visitor,
-        title: "ApnaBlog | Visitor"
+        title: "ApnaBlogs - Visitor"
       }
     ]
   }
