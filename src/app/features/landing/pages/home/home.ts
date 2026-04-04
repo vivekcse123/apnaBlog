@@ -248,11 +248,14 @@ export class Home implements OnInit {
   }
 
   readBlog(id: string): void {
-    const post = this.allPosts().find(p => p._id === id);
-    if (post) this.addView(post);
-    this.selectedId.set(id);
-    this.isViewed.set(true);
+    // const post = this.allPosts().find(p => p._id === id);
+    // if (post) this.addView(post);
+    // this.selectedId.set(id);
+    // this.isViewed.set(true);
+    this.router.navigate(['/welcome/blog', id]);
   }
+
+
 
   addView(post: Post): void {
     const key = `viewed_${post._id}`;
