@@ -10,6 +10,7 @@ import { ViewPost } from '../../../../shared/view-post/view-post';
 import { MessageModal } from '../../../../shared/message-modal/message-modal';
 import { BlogFilterPipe } from '../../../../shared/pipes/blog-filter-pipe';
 import { Auth } from '../../../../core/services/auth';
+import { LoaderService } from '../../../../core/services/loader-service';
 
 @Component({
   selector: 'app-post-lists',
@@ -20,10 +21,11 @@ import { Auth } from '../../../../core/services/auth';
 })
 export class PostLists implements OnInit {
 
-  private route       = inject(ActivatedRoute);
-  private postService = inject(PostService);
-  private destroyRef  = inject(DestroyRef);
-  private authService = inject(Auth);
+  private route        = inject(ActivatedRoute);
+  private postService  = inject(PostService);
+  private destroyRef   = inject(DestroyRef);
+  private authService  = inject(Auth);
+  private loader       = inject(LoaderService);
 
   allBlogs       = signal<Post[]>([]);
   userId         = signal<string | null>(null);
@@ -72,6 +74,8 @@ export class PostLists implements OnInit {
     Array.from({ length: this.totalPages() }, (_, i) => i + 1)
   );
 
+  // ── Lifecycle ────────────────────────────────────────────────
+
   ngOnInit(): void {
     this.route?.parent?.params
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -82,6 +86,8 @@ export class PostLists implements OnInit {
         this.loadPosts(id);
       });
   }
+
+  // ── Load posts ───────────────────────────────────────────────
 
   loadPosts(userId?: string): void {
     const id = userId ?? this.userId();
@@ -95,13 +101,23 @@ export class PostLists implements OnInit {
       ? this.postService.getAllPost(1, 100)
       : this.postService.getPostByUserId(id, 1, 10);
 
+    this.loader.show('skeleton', 'md', this.itemsPerPage());
+
     posts$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next:  (res) => this.allBlogs.set(res.data || []),
-        error: (err) => console.error(err?.error?.message),
+        next: (res) => {
+          this.allBlogs.set(res.data || []);
+          this.loader.hide();
+        },
+        error: (err) => {
+          console.error(err?.error?.message);
+          this.loader.hide();
+        },
       });
   }
+
+  // ── Search & filter ──────────────────────────────────────────
 
   debounceSearch(value: string): void {
     clearTimeout(this.debounceTimer);
@@ -110,6 +126,8 @@ export class PostLists implements OnInit {
       this.currentPage.set(1);
     }, 400);
   }
+
+  // ── Pagination ───────────────────────────────────────────────
 
   previousPage(): void {
     if (this.currentPage() > 1) this.currentPage.set(this.currentPage() - 1);
@@ -123,10 +141,14 @@ export class PostLists implements OnInit {
     if (page >= 1 && page <= this.totalPages()) this.currentPage.set(page);
   }
 
+  // ── Create ───────────────────────────────────────────────────
+
   onPostCreated(): void {
     this.loadPosts();
     this.currentPage.set(1);
   }
+
+  // ── Delete ───────────────────────────────────────────────────
 
   showConfirm        = signal(false);
   pendingDeleteId    = signal<string>('');
@@ -149,8 +171,11 @@ export class PostLists implements OnInit {
     if (!id) return;
 
     this.showConfirm.set(false);
+    this.loader.show('overlay', 'md');
+
     this.postService.deletePost(id).subscribe({
       next: () => {
+        this.loader.hide();
         this.modalType.set('success');
         this.modalTitle.set('Post Deleted');
         this.modalMessage.set('The post has been deleted successfully.');
@@ -158,6 +183,7 @@ export class PostLists implements OnInit {
         this.loadPosts();
       },
       error: (err) => {
+        this.loader.hide();
         this.modalType.set('error');
         this.modalTitle.set('Delete Failed');
         this.modalMessage.set(err?.error?.message ?? 'Failed to delete post.');
@@ -166,10 +192,14 @@ export class PostLists implements OnInit {
     });
   }
 
+  // ── Message modal ────────────────────────────────────────────
+
   showMessage  = signal(false);
   modalType    = signal<'success' | 'error'>('success');
   modalTitle   = signal('');
   modalMessage = signal('');
+
+  // ── View / edit post ─────────────────────────────────────────
 
   isPostViewed   = signal(false);
   selectedPostId = signal<string>('');
@@ -185,8 +215,8 @@ export class PostLists implements OnInit {
   }
 
   onPostUpdated(updatedPost: Post): void {
-    this.allBlogs.update((blogs) =>
-      blogs.map((b) => (b._id === updatedPost._id ? updatedPost : b))
+    this.allBlogs.update(blogs =>
+      blogs.map(b => b._id === updatedPost._id ? updatedPost : b)
     );
     this.closeModal();
   }

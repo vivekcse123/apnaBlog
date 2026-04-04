@@ -10,6 +10,11 @@ import { CommonModule } from '@angular/common';
 })
 export class Loader {
   @Input() loading = false;
-
   @Input() size: 'sm' | 'md' | 'lg' = 'md';
+  @Input() type: 'overlay' | 'skeleton' = 'overlay';
+  @Input() skeletonCount = 4; 
+
+  get skeletonItems(): number[] {
+    return Array.from({ length: this.skeletonCount }, (_, i) => i);
+  }
 }

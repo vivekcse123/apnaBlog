@@ -1,2 +1,7 @@
-<app-loader [loading]="loaderService.loading()" [size]="loaderSize" />
+<app-loader
+  [loading]="loaderService.loading()"
+  [type]="loaderService.type()"
+  [size]="loaderService.size()"
+  [skeletonCount]="loaderService.skeletonCount()"
+/>
 <router-outlet />

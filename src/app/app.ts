@@ -3,6 +3,7 @@ import { RouterOutlet, Router, NavigationStart, NavigationEnd, NavigationCancel,
 import { Subscription } from 'rxjs';
 import { Loader } from './shared/loader/loader';
 import { LoaderService } from './core/services/loader-service';
+import { AliveService } from './core/services/alive-server/alive-service';
 
 @Component({
   selector: 'app-root',
@@ -16,6 +17,7 @@ export class App implements OnInit, OnDestroy {
   loaderSize: 'sm' | 'md' | 'lg' = 'md';
 
   private routerSub!: Subscription;
+  private aliveService = inject(AliveService);
 
   constructor(private router: Router) {}
 
@@ -32,6 +34,8 @@ export class App implements OnInit, OnDestroy {
       ) {
         this.loaderService.hide();
       }
+
+      this.aliveService.start();
     });
   }
 

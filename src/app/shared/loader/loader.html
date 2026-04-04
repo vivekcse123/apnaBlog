@@ -1,11 +1,34 @@
 @if (loading) {
-  <div class="overlay">
-    <div class="spinner" [class]="size">
-      <div class="ring ring-a"></div>
-      <div class="ring ring-b"></div>
-      <div class="ring ring-c"></div>
-      <div class="core"></div>
+
+  @if (type === 'overlay') {
+    <div class="overlay">
+      <div class="spinner" [class]="size">
+        <div class="ring ring-a"></div>
+        <div class="ring ring-b"></div>
+        <div class="ring ring-c"></div>
+        <div class="core"></div>
+      </div>
+      <span class="label">Loading</span>
     </div>
-    <span class="label">Loading</span>
-  </div>
+  }
+
+  @if (type === 'skeleton') {
+    <div class="skeleton-grid">
+      @for (n of skeletonItems; track n) {
+        <div class="skeleton-card">
+          <div class="skeleton-img"></div>
+          <div class="skeleton-body">
+            <div class="skeleton-line title"></div>
+            <div class="skeleton-line medium"></div>
+            <div class="skeleton-line short"></div>
+          </div>
+          <div class="skeleton-footer">
+            <div class="skeleton-line short"></div>
+            <div class="skeleton-pill"></div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
 }
