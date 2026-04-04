@@ -188,25 +188,28 @@
 
 <ng-template #blogCard let-blog>
   <article class="blog-card">
+
     <div class="card-img-wrap" (click)="readBlog(blog._id)">
-     @if (blog.featuredImage) {
-  <img 
-    [src]="blog.featuredImage" 
-    [alt]="blog.title" 
-    loading="lazy"
-    (error)="blog.featuredImage = null"
-  />
-} @else {
-  <div class="no-image-placeholder">
-    <img src="/images/village.png" />
-  </div>
-}
+      @if (blog.featuredImage) {
+        <img
+          [src]="blog.featuredImage"
+          [alt]="blog.title"
+          loading="lazy"
+          (error)="blog.featuredImage = null"
+        />
+      } @else {
+        <div class="no-img-block">
+          <span class="no-img-letter">{{ blog.title?.charAt(0)?.toUpperCase() }}</span>
+        </div>
+      }
       <span class="card-cat">{{ blog.categories[0] }}</span>
     </div>
+
     <div class="card-body" (click)="readBlog(blog._id)">
       <h3>{{ blog.title }}</h3>
       <p>{{ blog.description }}</p>
     </div>
+
     <div class="card-footer">
       <div class="card-stats">
         <button
@@ -228,6 +231,7 @@
       </div>
       <button class="read-btn" (click)="readBlog(blog._id)">Read →</button>
     </div>
+
   </article>
 </ng-template>
 

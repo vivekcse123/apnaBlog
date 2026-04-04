@@ -32,14 +32,12 @@
         }
       }
 
-      <!-- ── Rich Text Editor ── -->
+      <!-- Rich Text Editor -->
       <div class="editor-wrapper"
         [class.editor-error]="createBlogForm.get('content')?.invalid && (isSubmitted() || createBlogForm.get('content')?.touched)">
 
-        <!-- Toolbar -->
         <div class="editor-toolbar">
 
-          <!-- Text style -->
           <div class="toolbar-group">
             <button type="button" class="tool-btn" [class.active]="isActive('bold')"
               (mousedown)="$event.preventDefault()" (click)="format('bold')" title="Bold">
@@ -61,47 +59,39 @@
 
           <span class="toolbar-sep"></span>
 
-          <!-- Headings -->
           <div class="toolbar-group">
             <button type="button" class="tool-btn" title="Heading 1"
-              (mousedown)="$event.preventDefault()" (click)="formatBlock('h1')">
-              H1
-            </button>
+              (mousedown)="$event.preventDefault()" (click)="formatBlock('h1')">H1</button>
             <button type="button" class="tool-btn" title="Heading 2"
-              (mousedown)="$event.preventDefault()" (click)="formatBlock('h2')">
-              H2
-            </button>
+              (mousedown)="$event.preventDefault()" (click)="formatBlock('h2')">H2</button>
             <button type="button" class="tool-btn" title="Normal text"
-              (mousedown)="$event.preventDefault()" (click)="formatBlock('p')">
-              ¶
-            </button>
+              (mousedown)="$event.preventDefault()" (click)="formatBlock('p')">¶</button>
           </div>
 
           <span class="toolbar-sep"></span>
 
-          <!-- Alignment -->
           <div class="toolbar-group">
             <button type="button" class="tool-btn" [class.active]="isActive('justifyLeft')"
               (mousedown)="$event.preventDefault()" (click)="format('justifyLeft')" title="Align Left">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
                 <rect x="0" y="1" width="14" height="2" rx="1"/>
-                <rect x="0" y="5" width="9" height="2" rx="1"/>
+                <rect x="0" y="5" width="9"  height="2" rx="1"/>
                 <rect x="0" y="9" width="12" height="2" rx="1"/>
               </svg>
             </button>
             <button type="button" class="tool-btn" [class.active]="isActive('justifyCenter')"
               (mousedown)="$event.preventDefault()" (click)="format('justifyCenter')" title="Align Center">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
-                <rect x="0" y="1" width="14" height="2" rx="1"/>
-                <rect x="2.5" y="5" width="9" height="2" rx="1"/>
-                <rect x="1" y="9" width="12" height="2" rx="1"/>
+                <rect x="0"   y="1" width="14" height="2" rx="1"/>
+                <rect x="2.5" y="5" width="9"  height="2" rx="1"/>
+                <rect x="1"   y="9" width="12" height="2" rx="1"/>
               </svg>
             </button>
             <button type="button" class="tool-btn" [class.active]="isActive('justifyRight')"
               (mousedown)="$event.preventDefault()" (click)="format('justifyRight')" title="Align Right">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
                 <rect x="0" y="1" width="14" height="2" rx="1"/>
-                <rect x="5" y="5" width="9" height="2" rx="1"/>
+                <rect x="5" y="5" width="9"  height="2" rx="1"/>
                 <rect x="2" y="9" width="12" height="2" rx="1"/>
               </svg>
             </button>
@@ -117,26 +107,22 @@
 
           <span class="toolbar-sep"></span>
 
-          <!-- Lists -->
           <div class="toolbar-group">
             <button type="button" class="tool-btn" [class.active]="isActive('insertUnorderedList')"
               (mousedown)="$event.preventDefault()" (click)="format('insertUnorderedList')" title="Bullet List">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
-                <circle cx="1.5" cy="2" r="1.5"/>
-                <rect x="4" y="1" width="10" height="2" rx="1"/>
-                <circle cx="1.5" cy="7" r="1.5"/>
-                <rect x="4" y="6" width="10" height="2" rx="1"/>
-                <circle cx="1.5" cy="12" r="1.5"/>
-                <rect x="4" y="11" width="10" height="2" rx="1"/>
+                <circle cx="1.5" cy="2" r="1.5"/><rect x="4" y="1"  width="10" height="2" rx="1"/>
+                <circle cx="1.5" cy="7" r="1.5"/><rect x="4" y="6"  width="10" height="2" rx="1"/>
+                <circle cx="1.5" cy="12" r="1.5"/><rect x="4" y="11" width="10" height="2" rx="1"/>
               </svg>
             </button>
             <button type="button" class="tool-btn" [class.active]="isActive('insertOrderedList')"
               (mousedown)="$event.preventDefault()" (click)="format('insertOrderedList')" title="Numbered List">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
-                <text x="0" y="4" font-size="4" font-family="sans-serif">1.</text>
-                <rect x="4" y="1" width="10" height="2" rx="1"/>
-                <text x="0" y="9" font-size="4" font-family="sans-serif">2.</text>
-                <rect x="4" y="6" width="10" height="2" rx="1"/>
+                <text x="0" y="4"  font-size="4" font-family="sans-serif">1.</text>
+                <rect x="4" y="1"  width="10" height="2" rx="1"/>
+                <text x="0" y="9"  font-size="4" font-family="sans-serif">2.</text>
+                <rect x="4" y="6"  width="10" height="2" rx="1"/>
                 <text x="0" y="14" font-size="4" font-family="sans-serif">3.</text>
                 <rect x="4" y="11" width="10" height="2" rx="1"/>
               </svg>
@@ -145,7 +131,6 @@
 
           <span class="toolbar-sep"></span>
 
-          <!-- Indent -->
           <div class="toolbar-group">
             <button type="button" class="tool-btn"
               (mousedown)="$event.preventDefault()" (click)="format('indent')" title="Indent">
@@ -174,8 +159,8 @@
               (mousedown)="$event.preventDefault()" (click)="format('removeFormat')" title="Clear Formatting">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
                 <text x="0" y="11" font-size="11" font-family="serif" font-style="italic">T</text>
-                <line x1="7" y1="2" x2="13" y2="12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                <line x1="13" y1="2" x2="7" y2="12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <line x1="7"  y1="2"  x2="13" y2="12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <line x1="13" y1="2"  x2="7"  y2="12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
               </svg>
             </button>
           </div>
@@ -202,21 +187,23 @@
         }
       }
 
+      <!-- Categories -->
       <div class="field-group">
         <label class="field-label">Categories <span class="required">*</span></label>
         <div class="checkbox-grid" formArrayName="categories">
           @for (category of categoryOptions; track category; let i = $index) {
             <label class="checkbox-item">
               <input type="checkbox" [formControlName]="i" />
-              <span>{{category}}</span>
+              <span>{{ category }}</span>
             </label>
           }
         </div>
         @if (isSubmitted() && !hasAtLeastOneChecked('categories')) {
-          <small class="error" style="position: relative; top: 10px;">Select at least one category...!</small>
+          <small class="error" style="position:relative;top:10px;">Select at least one category...!</small>
         }
       </div>
 
+      <!-- Tags -->
       <div class="field-group">
         <label class="field-label">Tags</label>
         <div class="checkbox-grid" formArrayName="tags">
@@ -229,10 +216,73 @@
         </div>
       </div>
 
-      <input type="text" placeholder="Featured Image URL (paste link)" formControlName="featuredImage" />
-      <div class="or-divider">OR</div>
-      <input type="file" accept="image/*" class="file-input" (change)="onFileChange($event)" />
+      <!-- ── Featured Image ─────────────────────────── -->
+      <div class="image-section">
+        <label class="field-label">Featured Image</label>
 
+        <!-- URL input -->
+        <input
+          type="text"
+          placeholder="Paste an image URL…"
+          data-url-input
+          [value]="uploadMode() === 'url' ? (createBlogForm.get('featuredImage')?.value ?? '') : ''"
+          (input)="onUrlInput($any($event.target).value)"
+          [disabled]="imageUploading()"
+        />
+
+        <div class="or-divider">OR</div>
+
+        <!-- File picker -->
+        <label class="file-upload-label" [class.uploading]="imageUploading()" #fileLabel>
+          <input
+            #fileInput
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            class="file-input-hidden"
+            (change)="onFileChange($event)"
+            [disabled]="imageUploading()"
+          />
+          @if (imageUploading()) {
+            <span class="upload-spinner"></span>
+            <span>Uploading…</span>
+          } @else {
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <span>Upload from device</span>
+          }
+        </label>
+
+        <!-- Upload error -->
+        @if (imageUploadError()) {
+          <small class="error">{{ imageUploadError() }}</small>
+        }
+
+        <!-- Preview -->
+        @if (imagePreviewUrl()) {
+          <div class="image-preview-wrap">
+            <img [src]="imagePreviewUrl()" alt="Preview" class="image-preview" />
+            @if (imageUploading()) {
+              <div class="preview-overlay">
+                <span class="upload-spinner large"></span>
+              </div>
+            } @else {
+              <button
+                type="button"
+                class="remove-image-btn"
+                (click)="removeImage(fileInput)"
+                title="Remove image">
+                ✕
+              </button>
+            }
+          </div>
+        }
+      </div>
+      <!-- ─────────────────────────────────────────── -->
+       <br>
+      <!-- Status -->
       <select formControlName="status">
         <option value="" disabled selected>Select Status</option>
         <option value="draft">Draft</option>
@@ -246,7 +296,9 @@
 
       <div class="actions">
         <button type="button" class="cancel-btn" (click)="closeModal()">Cancel</button>
-        <button type="submit" class="submit-btn">Publish Post</button>
+        <button type="submit" class="submit-btn" [disabled]="imageUploading()">
+          @if (imageUploading()) { Uploading Image… } @else { Publish Post }
+        </button>
       </div>
 
       @if (errorMessage()) {
