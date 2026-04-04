@@ -176,7 +176,7 @@ export class Home implements OnInit {
   ngOnInit(): void {
     this.standalone = this.route.snapshot.data['standalone'] ?? this.standalone;
 
-    this.visitorService.trackVisit(window.location.pathname);
+    this.visitorService.trackVisit(window?.location.pathname);
 
     this.router.events
       .pipe(filter((event: any): event is NavigationEnd => event instanceof NavigationEnd))
