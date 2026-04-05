@@ -13,14 +13,6 @@ const routes: Routes = [
     path: 'about',
     component: About,
     title: 'ApnaBlogs - About'
-  },
-  {
-    path: 'blog/:id',
-    component: BlogDetail,
-    data : {
-      title: 'Blog Post',
-      description: 'Read our latest blog post'
-    }
   }
 ];
 

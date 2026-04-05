@@ -34,8 +34,6 @@
 <div class="drawer-backdrop" [class.open]="menuOpen()" (click)="menuOpen.set(false)"></div>
 }
 
-
-<!-- ══════════════════════════════════════════════════════════ HERO -->
 <div class="hero-wrap">
   <div class="hero-content">
     <span class="hero-pill">✦ Community Stories</span>
@@ -65,8 +63,6 @@
   </div>
 </div>
 
-
-<!-- ══════════════════════════════════════════════════════════ FILTERS -->
 <div class="filter-wrap">
   <div class="filter-inner">
     <div class="search-wrap">
@@ -86,6 +82,7 @@
         [ngModel]="selectedCategory()"
         (ngModelChange)="selectedCategory.set($event)">
         <option value="">All Categories</option>
+        <option value="Sports">Sports</option>
         <option value="Entertainment">Entertainment</option>
         <option value="Health">Health</option>
         <option value="Technology">Technology</option>
@@ -128,8 +125,6 @@
   </div>
 </div>
 
-
-<!-- ══════════════════════════════════════════════════════════ SKELETON TEMPLATE -->
 <ng-template #skeletonGrid>
   <div class="blog-grid">
     @for (s of skeletonItems; track $index) {
@@ -150,8 +145,6 @@
   </div>
 </ng-template>
 
-
-<!-- ══════════════════════════════════════════════════════════ FILTER RESULTS -->
 @if (isFiltering()) {
   <section class="section">
     <div class="section-header">
@@ -180,8 +173,6 @@
   </section>
 }
 
-
-<!-- ══════════════════════════════════════════════════════════ TRENDING -->
 <section class="section">
   <div class="section-header">
     <span class="section-pill trending">HOT</span>
@@ -204,8 +195,6 @@
   }
 </section>
 
-
-<!-- ══════════════════════════════════════════════════════════ MOST VIEWED -->
 <section class="section">
   <div class="section-header">
     <span class="section-pill hot">VIEWS</span>
@@ -228,8 +217,6 @@
   }
 </section>
 
-
-<!-- ══════════════════════════════════════════════════════════ LATEST -->
 <section class="section">
   <div class="section-header">
     <span class="section-pill new">NEW</span>
@@ -252,8 +239,6 @@
   }
 </section>
 
-
-<!-- ══════════════════════════════════════════════════════════ BLOG CARD TEMPLATE -->
 <ng-template #blogCard let-blog>
   <article class="blog-card">
 
@@ -321,14 +306,10 @@
   </article>
 </ng-template>
 
-
-<!-- ══════════════════════════════════════════════════════════ READ BLOG MODAL -->
 @if (isViewed()) {
   <app-read-blog [postId]="selectedId()" (close)="isViewed.set(false)"></app-read-blog>
 }
 
-
-<!-- ══════════════════════════════════════════════════════════ COMMENT DRAWER -->
 @if (commentDrawerPostId()) {
   <div class="comment-backdrop" (click)="closeCommentDrawer()"></div>
 }
@@ -447,8 +428,6 @@
 
 </div>
 
-
-<!-- ══════════════════════════════════════════════════════════ SCROLL TO TOP -->
 <button
   class="scroll-top-fab"
   [class.visible]="showScrollTop()"

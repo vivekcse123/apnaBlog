@@ -17,14 +17,20 @@ export const routes: Routes = [
         loadChildren: () => import('./features/landing/landing-module').then(m => m.LandingModule),
         title: 'ApnaBlogs - Welcome'
     },
-
+    {
+        path: 'blog/:id',
+        loadComponent: () => import('./features/landing/pages/blog-detail/blog-detail').then(m => m.BlogDetail),
+        data : {
+            title: 'Blog Post',
+            description: 'Read our latest blog post'
+        }
+    },
     {
         path: 'auth',
         component: AuthLayout,
         canActivate: [guestGuard],
         loadChildren: () => import('./features/auth/auth-module').then(m => m.AuthModule),
     },
-
     {
         path: '',
         component: MainLayout,

@@ -50,7 +50,6 @@ export class Home implements OnInit {
   @Input() standalone = true;
   @ViewChild('searchInput') searchInputEl?: ElementRef<HTMLInputElement>;
 
-  // ── Core state ───────────────────────────────────────────────
   allPosts         = signal<Post[]>([]);
   isLoading        = signal(true);
   isViewed         = signal(false);
@@ -61,16 +60,13 @@ export class Home implements OnInit {
   selectedSort     = signal('newest');
   showScrollTop    = signal(false);
 
-  // ── Pagination ───────────────────────────────────────────────
   trendingPage = signal(0);
   hotPage      = signal(0);
   latestPage   = signal(0);
 
-  // ── Likes / Bookmarks ────────────────────────────────────────
   likedPostIds      = signal<Set<string>>(new Set());
   bookmarkedPostIds = signal<Set<string>>(new Set());
 
-  // ── Comments ─────────────────────────────────────────────────
   commentDrawerPostId   = signal<string | null>(null);
   commentText           = signal('');
   commentSubmitting     = signal(false);
@@ -82,23 +78,20 @@ export class Home implements OnInit {
   private currentUserData = signal<User | null>(null);
   private searchInput$    = new Subject<string>();
 
-  // ── Skeleton ─────────────────────────────────────────────────
   readonly skeletonItems: null[] = new Array(8).fill(null);
 
-  // ── Static data ───────────────────────────────────────────────
   readonly categories: string[] = [
-    'Entertainment', 'Health', 'Technology', 'Business',
+    'Sports', 'Entertainment', 'Health', 'Technology', 'Business',
     'Lifestyle', 'Education', 'Exercise', 'Cooking',
     'Social', 'Quotes', 'Village',
   ];
 
   readonly categoryEmojis: Record<string, string> = {
-    Entertainment: '🎬', Health: '🏥', Technology: '💻', Business: '💼',
+    Sports: '🏏', Entertainment: '🎬', Health: '🏥', Technology: '💻', Business: '💼',
     Lifestyle: '🌿', Education: '🎓', Exercise: '🏋️', Cooking: '🍳',
     Social: '🤝', Quotes: '💬', Village: '🌾',
   };
 
-  // ── Computed: base sorted pools ──────────────────────────────
   private postsWithTs = computed(() =>
     this.allPosts().map(p => ({ ...p, _ts: new Date(p.createdAt).getTime() }))
   );
@@ -128,7 +121,6 @@ export class Home implements OnInit {
     return this.byDate().filter(p => !usedIds.has(p._id));
   });
 
-  // ── Computed: paginated sections ─────────────────────────────
   trendingPosts = computed(() => {
     const start = this.trendingPage() * PAGE_SIZE;
     return this.trendingPool().slice(start, start + PAGE_SIZE);
@@ -148,7 +140,6 @@ export class Home implements OnInit {
   hotPageCount      = computed(() => Math.max(1, Math.ceil(this.hotPool().length / PAGE_SIZE)));
   latestPageCount   = computed(() => Math.max(1, Math.ceil(this.latestPool().length / PAGE_SIZE)));
 
-  // ── Computed: filters ────────────────────────────────────────
   filteredPosts = computed(() => {
     const cat  = this.selectedCategory();
     const q    = this.searchQuery().trim().toLowerCase();
@@ -196,7 +187,6 @@ export class Home implements OnInit {
     return postOwnerId?.toString() === userId.toString();
   });
 
-  // ── Keyboard shortcuts ───────────────────────────────────────
   @HostListener('document:keydown', ['$event'])
   onKeydown(event: KeyboardEvent): void {
     const tag = (event.target as Element).tagName;
@@ -217,7 +207,6 @@ export class Home implements OnInit {
     }
   }
 
-  // ── Lifecycle ─────────────────────────────────────────────────
   ngOnInit(): void {
     this.standalone = this.route.snapshot.data['standalone'] ?? this.standalone;
 
@@ -228,7 +217,6 @@ export class Home implements OnInit {
       }
     }
 
-    // Sync category from query param — used by blog-detail's filterByTag()
     this.route.queryParamMap.pipe(
       takeUntilDestroyed(this.destroyRef)
     ).subscribe(params => {
@@ -276,7 +264,6 @@ export class Home implements OnInit {
     });
   }
 
-  // ── Helpers ───────────────────────────────────────────────────
   isNew(post: Post): boolean {
     return (Date.now() - new Date(post.createdAt).getTime()) < 48 * 60 * 60 * 1000;
   }
@@ -296,7 +283,6 @@ export class Home implements OnInit {
     return n.toString();
   }
 
-  // ── Pagination ────────────────────────────────────────────────
   prevPage(page: WritableSignal<number>): void {
     if (page() > 0) page.set(page() - 1);
   }
@@ -305,9 +291,8 @@ export class Home implements OnInit {
     if (page() < total - 1) page.set(page() + 1);
   }
 
-  // ── Navigation ────────────────────────────────────────────────
   readBlog(id: string): void {
-    this.router.navigate(['/welcome/blog', id]);
+    this.router.navigate(['/blog', id]);
   }
 
   scrollToTop(): void {
@@ -324,7 +309,6 @@ export class Home implements OnInit {
     this.postService.addView(post._id).subscribe();
   }
 
-  // ── Likes ─────────────────────────────────────────────────────
   private restoreLikedIds(): void {
     try {
       const stored = localStorage.getItem('apna_liked_posts');
@@ -368,7 +352,6 @@ export class Home implements OnInit {
     }
   }
 
-  // ── Bookmarks ─────────────────────────────────────────────────
   private restoreBookmarkedIds(): void {
     try {
       const stored = localStorage.getItem('apna_bookmarked_posts');
@@ -395,7 +378,6 @@ export class Home implements OnInit {
     this.persistBookmarkedIds(newSet);
   }
 
-  // ── Comments ──────────────────────────────────────────────────
   openCommentDrawer(post: Post, event: Event): void {
     event.stopPropagation();
     this.commentText.set('');

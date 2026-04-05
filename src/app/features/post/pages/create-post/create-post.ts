@@ -33,7 +33,7 @@ export class CreatePost {
   uploadMode       = signal<'url' | 'file'>('url');
 
   categoryOptions = [
-    'Technology', 'Lifestyle', 'Education', 'Health', 'Business',
+    'Sports', 'Technology', 'Lifestyle', 'Education', 'Health', 'Business',
     'Entertainment', 'Social', 'Village', 'Cooking', 'Quotes', 'Exercise',
   ];
 

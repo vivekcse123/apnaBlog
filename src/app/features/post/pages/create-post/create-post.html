@@ -10,7 +10,6 @@
 
     <form [formGroup]="createBlogForm" (ngSubmit)="createBlog()">
 
-      <!-- Title -->
       <input type="text" placeholder="Post Title" formControlName="title" />
       @if (createBlogForm.get('title')?.invalid && (isSubmitted() || createBlogForm.get('title')?.touched)) {
         @if (createBlogForm.get('title')?.errors?.['required']) {
@@ -21,7 +20,6 @@
         }
       }
 
-      <!-- Description -->
       <input type="text" placeholder="Short Description" formControlName="description" />
       @if (createBlogForm.get('description')?.invalid && (isSubmitted() || createBlogForm.get('description')?.touched)) {
         @if (createBlogForm.get('description')?.errors?.['required']) {
@@ -32,7 +30,6 @@
         }
       }
 
-      <!-- Rich Text Editor -->
       <div class="editor-wrapper"
         [class.editor-error]="createBlogForm.get('content')?.invalid && (isSubmitted() || createBlogForm.get('content')?.touched)">
 
@@ -187,7 +184,6 @@
         }
       }
 
-      <!-- Categories -->
       <div class="field-group">
         <label class="field-label">Categories <span class="required">*</span></label>
         <div class="checkbox-grid" formArrayName="categories">
@@ -203,7 +199,6 @@
         }
       </div>
 
-      <!-- Tags -->
       <div class="field-group">
         <label class="field-label">Tags</label>
         <div class="checkbox-grid" formArrayName="tags">
@@ -216,11 +211,9 @@
         </div>
       </div>
 
-      <!-- ── Featured Image ─────────────────────────── -->
       <div class="image-section">
         <label class="field-label">Featured Image</label>
 
-        <!-- URL input -->
         <input
           type="text"
           placeholder="Paste an image URL…"
@@ -232,7 +225,6 @@
 
         <div class="or-divider">OR</div>
 
-        <!-- File picker -->
         <label class="file-upload-label" [class.uploading]="imageUploading()" #fileLabel>
           <input
             #fileInput
@@ -255,12 +247,10 @@
           }
         </label>
 
-        <!-- Upload error -->
         @if (imageUploadError()) {
           <small class="error">{{ imageUploadError() }}</small>
         }
 
-        <!-- Preview -->
         @if (imagePreviewUrl()) {
           <div class="image-preview-wrap">
             <img [src]="imagePreviewUrl()" alt="Preview" class="image-preview" />
