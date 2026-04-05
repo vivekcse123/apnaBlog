@@ -591,6 +591,237 @@
   border-radius: 99px;
 }
 
+/* ═══════════════════════════════════════════
+   INSPIRATION SECTION
+   ═══════════════════════════════════════════ */
+
+.inspiration-section {
+  background: var(--bg-base);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.inspiration-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 48px;
+  position: relative;
+  overflow: hidden;
+  transition: box-shadow 0.3s ease;
+}
+
+.inspiration-card:hover {
+  box-shadow: var(--card-shadow-lg);
+}
+
+.inspiration-decoration {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.deco-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.06;
+}
+
+.deco-orb-1 {
+  width: 400px;
+  height: 400px;
+  background: #43cea2;
+  top: -150px;
+  right: -100px;
+}
+
+.deco-orb-2 {
+  width: 350px;
+  height: 350px;
+  background: #185a9d;
+  bottom: -120px;
+  left: -80px;
+}
+
+.inspiration-content {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 40px;
+  align-items: start;
+}
+
+.inspiration-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  position: sticky;
+  top: 100px;
+}
+
+.avatar-xl {
+  width: 140px;
+  height: 140px;
+  font-size: 42px;
+  border: 5px solid transparent;
+  box-shadow: 
+    0 0 0 5px color-mix(in srgb, #43cea2 20%, transparent),
+    0 12px 40px rgba(67, 206, 162, 0.2);
+}
+
+.avatar-inspiration {
+  background: linear-gradient(135deg, #43cea2, #185a9d);
+}
+
+.inspiration-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 8px 18px;
+  border-radius: 99px;
+  background: linear-gradient(135deg, rgba(67, 206, 162, 0.15), rgba(24, 90, 157, 0.15));
+  border: 1.5px solid color-mix(in srgb, #43cea2 30%, transparent);
+  color: var(--accent-text);
+}
+
+.inspiration-badge svg {
+  color: #43cea2;
+}
+
+.inspiration-right {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.inspiration-header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--border);
+}
+
+.inspiration-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.2;
+  letter-spacing: -0.5px;
+}
+
+.inspiration-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--accent-text);
+  background: var(--accent-subtle);
+  padding: 6px 16px;
+  border-radius: 8px;
+  width: fit-content;
+}
+
+.inspiration-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.meta-item svg {
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.inspiration-bio {
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 1.8;
+  text-align: justify;
+}
+
+.inspiration-values {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.value-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  background: var(--bg-base);
+  border: 1.5px solid var(--border);
+  padding: 8px 14px;
+  border-radius: 99px;
+  transition: all 0.2s ease;
+}
+
+.value-pill:hover {
+  background: var(--accent-subtle);
+  border-color: var(--accent);
+  color: var(--accent-text);
+  transform: translateY(-2px);
+}
+
+.value-pill svg {
+  color: #43cea2;
+  flex-shrink: 0;
+}
+
+.inspiration-quote {
+  margin-top: 12px;
+  padding: 24px 28px;
+  background: linear-gradient(135deg, rgba(67, 206, 162, 0.08), rgba(24, 90, 157, 0.08));
+  border-left: 4px solid #43cea2;
+  border-radius: 12px;
+  position: relative;
+}
+
+.quote-icon {
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  opacity: 0.15;
+  color: #43cea2;
+}
+
+.inspiration-quote p {
+  font-family: 'Playfair Display', serif;
+  font-size: 17px;
+  font-style: italic;
+  color: var(--text-primary);
+  line-height: 1.7;
+  margin-bottom: 12px;
+}
+
+.quote-author {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  font-style: normal;
+}
+
 /* ═══ FEATURES ═══ */
 .features-section {
   background: var(--bg-surface);
@@ -1048,12 +1279,32 @@
 
 .footer-copy strong { color: var(--text-secondary); font-weight: 600; }
 
-/* ═══ RESPONSIVE ═══ */
+/* ═══════════════════════════════════════════
+   RESPONSIVE STYLES
+   ═══════════════════════════════════════════ */
+
 @media (max-width: 1024px) {
   .mission-grid  { grid-template-columns: repeat(2, 1fr); }
   .features-grid { grid-template-columns: repeat(2, 1fr); }
   .stack-grid    { grid-template-columns: repeat(3, 1fr); }
   .contact-wrap  { grid-template-columns: 1fr; }
+  
+  .inspiration-content {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  
+  .inspiration-left {
+    position: static;
+    flex-direction: row;
+    justify-content: center;
+  }
+  
+  .avatar-xl {
+    width: 100px;
+    height: 100px;
+    font-size: 32px;
+  }
 }
 
 @media (max-width: 768px) {
@@ -1087,6 +1338,21 @@
   .avatar-lg    { width: 60px; height: 60px; font-size: 18px; }
   .contact-form-wrap { padding: 24px 20px; }
   .contact-info-card { padding: 24px 20px; }
+  
+  .inspiration-card { padding: 32px 24px; }
+  
+  .inspiration-left {
+    flex-direction: column;
+  }
+  
+  .avatar-xl {
+    width: 90px;
+    height: 90px;
+    font-size: 28px;
+  }
+  
+  .inspiration-name { font-size: 26px; }
+  .inspiration-bio { text-align: left; }
 }
 
 @media (max-width: 480px) {
@@ -1099,4 +1365,10 @@
   .legal-card    { padding: 20px; }
   .back-label    { display: none; }
   .back-btn      { padding: 8px 10px; }
+  
+  .inspiration-card { padding: 24px 16px; }
+  .inspiration-name { font-size: 22px; }
+  .inspiration-title { font-size: 14px; }
+  .inspiration-quote { padding: 18px 20px; }
+  .inspiration-quote p { font-size: 15px; }
 }

@@ -1,5 +1,8 @@
-import { Component, inject, signal, computed, OnInit, DestroyRef, Input, ChangeDetectionStrategy, WritableSignal, PLATFORM_ID} 
-from '@angular/core';
+import {
+  Component, inject, signal, computed, OnInit, DestroyRef,
+  Input, ChangeDetectionStrategy, WritableSignal, PLATFORM_ID,
+  HostListener, ElementRef, ViewChild
+} from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule, isPlatformBrowser, NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -15,7 +18,15 @@ import { UserService } from '../../../user/services/user-service';
 import { User } from '../../../user/models/user.mode';
 import { VisitorService } from '../../../../core/services/visitor';
 
-const PAGE_SIZE = 4;
+interface DrawerComment {
+  _id?: string;
+  name: string;
+  comment: string;
+  user: string | null;
+  createdAt: string;
+}
+
+const PAGE_SIZE = 8;
 
 @Component({
   selector: 'app-home',
@@ -37,7 +48,9 @@ export class Home implements OnInit {
   private platformId     = inject(PLATFORM_ID);
 
   @Input() standalone = true;
+  @ViewChild('searchInput') searchInputEl?: ElementRef<HTMLInputElement>;
 
+  // ── Core state ───────────────────────────────────────────────
   allPosts         = signal<Post[]>([]);
   isLoading        = signal(true);
   isViewed         = signal(false);
@@ -46,26 +59,46 @@ export class Home implements OnInit {
   searchQuery      = signal('');
   selectedCategory = signal('');
   selectedSort     = signal('newest');
+  showScrollTop    = signal(false);
 
+  // ── Pagination ───────────────────────────────────────────────
   trendingPage = signal(0);
   hotPage      = signal(0);
   latestPage   = signal(0);
 
-  likedPostIds     = signal<Set<string>>(new Set());
+  // ── Likes / Bookmarks ────────────────────────────────────────
+  likedPostIds      = signal<Set<string>>(new Set());
+  bookmarkedPostIds = signal<Set<string>>(new Set());
 
-  commentDrawerPostId = signal<string | null>(null);
-  commentText         = signal('');
-  commentSubmitting   = signal(false);
-  commentFeedback     = signal<{ type: 'success' | 'error'; msg: string } | null>(null);
-
+  // ── Comments ─────────────────────────────────────────────────
+  commentDrawerPostId   = signal<string | null>(null);
+  commentText           = signal('');
+  commentSubmitting     = signal(false);
+  commentFeedback       = signal<{ type: 'success' | 'error'; msg: string } | null>(null);
   drawerComments        = signal<DrawerComment[]>([]);
   drawerCommentsLoading = signal(false);
-
-  deletingCommentId = signal<string | null>(null);
+  deletingCommentId     = signal<string | null>(null);
 
   private currentUserData = signal<User | null>(null);
   private searchInput$    = new Subject<string>();
 
+  // ── Skeleton ─────────────────────────────────────────────────
+  readonly skeletonItems: null[] = new Array(8).fill(null);
+
+  // ── Static data ───────────────────────────────────────────────
+  readonly categories: string[] = [
+    'Entertainment', 'Health', 'Technology', 'Business',
+    'Lifestyle', 'Education', 'Exercise', 'Cooking',
+    'Social', 'Quotes', 'Village',
+  ];
+
+  readonly categoryEmojis: Record<string, string> = {
+    Entertainment: '🎬', Health: '🏥', Technology: '💻', Business: '💼',
+    Lifestyle: '🌿', Education: '🎓', Exercise: '🏋️', Cooking: '🍳',
+    Social: '🤝', Quotes: '💬', Village: '🌾',
+  };
+
+  // ── Computed: base sorted pools ──────────────────────────────
   private postsWithTs = computed(() =>
     this.allPosts().map(p => ({ ...p, _ts: new Date(p.createdAt).getTime() }))
   );
@@ -95,6 +128,7 @@ export class Home implements OnInit {
     return this.byDate().filter(p => !usedIds.has(p._id));
   });
 
+  // ── Computed: paginated sections ─────────────────────────────
   trendingPosts = computed(() => {
     const start = this.trendingPage() * PAGE_SIZE;
     return this.trendingPool().slice(start, start + PAGE_SIZE);
@@ -110,10 +144,11 @@ export class Home implements OnInit {
     return this.latestPool().slice(start, start + PAGE_SIZE);
   });
 
-  trendingPageCount = computed(() => Math.ceil(this.trendingPool().length / PAGE_SIZE));
-  hotPageCount      = computed(() => Math.ceil(this.hotPool().length / PAGE_SIZE));
-  latestPageCount   = computed(() => Math.ceil(this.latestPool().length / PAGE_SIZE));
+  trendingPageCount = computed(() => Math.max(1, Math.ceil(this.trendingPool().length / PAGE_SIZE)));
+  hotPageCount      = computed(() => Math.max(1, Math.ceil(this.hotPool().length / PAGE_SIZE)));
+  latestPageCount   = computed(() => Math.max(1, Math.ceil(this.latestPool().length / PAGE_SIZE)));
 
+  // ── Computed: filters ────────────────────────────────────────
   filteredPosts = computed(() => {
     const cat  = this.selectedCategory();
     const q    = this.searchQuery().trim().toLowerCase();
@@ -122,8 +157,7 @@ export class Home implements OnInit {
     let posts = this.postsWithTs();
     if (cat) posts = posts.filter(p => p.categories.includes(cat));
     if (q)   posts = posts.filter(p =>
-      p.title.toLowerCase().includes(q) ||
-      p.description.toLowerCase().includes(q)
+      p.title.toLowerCase().includes(q) || p.description.toLowerCase().includes(q)
     );
 
     switch (sort) {
@@ -145,58 +179,66 @@ export class Home implements OnInit {
   });
 
   isFiltering = computed(() =>
-    !!this.selectedCategory() ||
-    !!this.searchQuery().trim() ||
-    this.selectedSort() !== 'newest'
+    !!this.selectedCategory() || !!this.searchQuery().trim() || this.selectedSort() !== 'newest'
+  );
+
+  totalViews = computed(() =>
+    this.allPosts().reduce((sum, p) => sum + (p.views ?? 0), 0)
   );
 
   isDrawerPostOwner = computed(() => {
     const postId = this.commentDrawerPostId();
     const userId = this.currentUserData()?._id;
     if (!postId || !userId) return false;
-
     const post = this.allPosts().find(p => p._id === postId);
     if (!post) return false;
-
     const postOwnerId = (post.user as any)?._id ?? (post.user as any);
     return postOwnerId?.toString() === userId.toString();
   });
 
-  categories: string[] = [
-    'Entertainment', 'Health', 'Technology', 'Business',
-    'Lifestyle', 'Education', 'Exercise', 'Cooking',
-    'Social', 'Quotes', 'Village',
-  ];
+  // ── Keyboard shortcuts ───────────────────────────────────────
+  @HostListener('document:keydown', ['$event'])
+  onKeydown(event: KeyboardEvent): void {
+    const tag = (event.target as Element).tagName;
+    if (event.key === '/' && !['INPUT', 'TEXTAREA'].includes(tag)) {
+      event.preventDefault();
+      this.searchInputEl?.nativeElement?.focus();
+    }
+    if (event.key === 'Escape') {
+      if (this.commentDrawerPostId()) this.closeCommentDrawer();
+      if (this.menuOpen()) this.menuOpen.set(false);
+    }
+  }
 
-  categoryEmojis: Record<string, string> = {
-    Village: '🌾', Technology: '💻', Health: '🏥',
-    Education: '🎓', Business: '💼', Entertainment: '🎬',
-    Lifestyle: '🌿', Social: '🤝',
-  };
+  @HostListener('window:scroll')
+  onScroll(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      this.showScrollTop.set(window.scrollY > 500);
+    }
+  }
 
+  // ── Lifecycle ─────────────────────────────────────────────────
   ngOnInit(): void {
     this.standalone = this.route.snapshot.data['standalone'] ?? this.standalone;
 
-    // ── Visitor tracking ──────────────────────────────────────────
-    // Only track the exact route this component owns: /welcome
-    // Do NOT subscribe to router events here — child/sibling routes
-    // (/welcome/about etc.) handle their own tracking independently.
     if (isPlatformBrowser(this.platformId)) {
-      const path = window.location.pathname;
-
-      // Normalise: strip trailing slash, e.g. "/welcome/" → "/welcome"
-      const normalisedPath = path.replace(/\/$/, '') || '/';
-
-      // Only fire for /welcome — guard against accidental re-use of
-      // this component on other routes
+      const normalisedPath = window.location.pathname.replace(/\/$/, '') || '/';
       if (normalisedPath === '/welcome') {
         this.visitorService.trackVisit('/welcome');
       }
     }
-    // ─────────────────────────────────────────────────────────────
+
+    // Sync category from query param — used by blog-detail's filterByTag()
+    this.route.queryParamMap.pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(params => {
+      const cat = params.get('category');
+      if (cat) this.selectedCategory.set(cat);
+    });
 
     this.loadPosts();
     this.restoreLikedIds();
+    this.restoreBookmarkedIds();
     this.fetchCurrentUser();
 
     this.searchInput$.pipe(
@@ -226,7 +268,6 @@ export class Home implements OnInit {
   private fetchCurrentUser(): void {
     const userId = this.auth.userId();
     if (!userId) return;
-
     this.userService.getUserById(userId).pipe(
       takeUntilDestroyed(this.destroyRef)
     ).subscribe({
@@ -235,10 +276,27 @@ export class Home implements OnInit {
     });
   }
 
+  // ── Helpers ───────────────────────────────────────────────────
+  isNew(post: Post): boolean {
+    return (Date.now() - new Date(post.createdAt).getTime()) < 48 * 60 * 60 * 1000;
+  }
+
+  getReadingTime(post: Post): number {
+    const text = (post as any).content?.replace(/<[^>]*>/g, '') ?? post.description ?? '';
+    return Math.max(1, Math.ceil(text.trim().split(/\s+/).length / 200));
+  }
+
   getCatCount(cat: string): number {
     return this.categoryCounts()[cat] ?? 0;
   }
 
+  formatCount(n: number): string {
+    if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M';
+    if (n >= 1_000)     return (n / 1_000).toFixed(1) + 'K';
+    return n.toString();
+  }
+
+  // ── Pagination ────────────────────────────────────────────────
   prevPage(page: WritableSignal<number>): void {
     if (page() > 0) page.set(page() - 1);
   }
@@ -247,15 +305,16 @@ export class Home implements OnInit {
     if (page() < total - 1) page.set(page() + 1);
   }
 
+  // ── Navigation ────────────────────────────────────────────────
   readBlog(id: string): void {
-    // const post = this.allPosts().find(p => p._id === id);
-    // if (post) this.addView(post);
-    // this.selectedId.set(id);
-    // this.isViewed.set(true);
     this.router.navigate(['/welcome/blog', id]);
   }
 
-
+  scrollToTop(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
 
   addView(post: Post): void {
     const key = `viewed_${post._id}`;
@@ -265,6 +324,7 @@ export class Home implements OnInit {
     this.postService.addView(post._id).subscribe();
   }
 
+  // ── Likes ─────────────────────────────────────────────────────
   private restoreLikedIds(): void {
     try {
       const stored = localStorage.getItem('apna_liked_posts');
@@ -308,6 +368,34 @@ export class Home implements OnInit {
     }
   }
 
+  // ── Bookmarks ─────────────────────────────────────────────────
+  private restoreBookmarkedIds(): void {
+    try {
+      const stored = localStorage.getItem('apna_bookmarked_posts');
+      if (stored) this.bookmarkedPostIds.set(new Set(JSON.parse(stored)));
+    } catch { }
+  }
+
+  private persistBookmarkedIds(ids: Set<string>): void {
+    try {
+      localStorage.setItem('apna_bookmarked_posts', JSON.stringify([...ids]));
+    } catch { }
+  }
+
+  isBookmarked(postId: string): boolean {
+    return this.bookmarkedPostIds().has(postId);
+  }
+
+  toggleBookmark(postId: string, event: Event): void {
+    event.stopPropagation();
+    const newSet = new Set(this.bookmarkedPostIds());
+    if (newSet.has(postId)) newSet.delete(postId);
+    else newSet.add(postId);
+    this.bookmarkedPostIds.set(newSet);
+    this.persistBookmarkedIds(newSet);
+  }
+
+  // ── Comments ──────────────────────────────────────────────────
   openCommentDrawer(post: Post, event: Event): void {
     event.stopPropagation();
     this.commentText.set('');
@@ -334,17 +422,9 @@ export class Home implements OnInit {
     });
   }
 
-  get currentUser(): User | null {
-    return this.currentUserData();
-  }
-
-  get isLoggedIn(): boolean {
-    return this.auth.isAuthorized() && !!this.currentUserData();
-  }
-
-  get loggedInUserName(): string {
-    return this.currentUserData()?.name ?? 'Anonymous';
-  }
+  get currentUser(): User | null { return this.currentUserData(); }
+  get isLoggedIn(): boolean { return this.auth.isAuthorized() && !!this.currentUserData(); }
+  get loggedInUserName(): string { return this.currentUserData()?.name ?? 'Anonymous'; }
 
   submitComment(): void {
     const text = this.commentText().trim();
@@ -394,26 +474,17 @@ export class Home implements OnInit {
 
   deleteComment(comment: DrawerComment, event: Event): void {
     event.stopPropagation();
-
     const postId    = this.commentDrawerPostId();
     const commentId = comment._id;
-
     if (!postId || !commentId) return;
     if (this.deletingCommentId()) return;
 
     this.deletingCommentId.set(commentId);
-
     this.postService.deleteComment(postId, commentId).subscribe({
       next: () => {
-        this.drawerComments.set(
-          this.drawerComments().filter(c => c._id !== commentId)
-        );
-
+        this.drawerComments.set(this.drawerComments().filter(c => c._id !== commentId));
         const post = this.allPosts().find(p => p._id === postId);
-        if (post) {
-          this.patchPost(postId, { commentsCount: Math.max(0, post.commentsCount - 1) });
-        }
-
+        if (post) this.patchPost(postId, { commentsCount: Math.max(0, post.commentsCount - 1) });
         this.deletingCommentId.set(null);
       },
       error: (err: any) => {

@@ -1,8 +1,9 @@
-import { Component, inject, signal, OnInit, DestroyRef, PLATFORM_ID, computed } from '@angular/core';
+import { Component, inject, signal, OnInit, DestroyRef, PLATFORM_ID, computed, AfterViewInit, ElementRef, HostListener } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { CommonModule, isPlatformBrowser, DOCUMENT } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { finalize } from 'rxjs/operators';
+import { finalize, fromEvent } from 'rxjs';
+import { debounceTime, throttleTime } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Meta, Title } from '@angular/platform-browser';
 
@@ -22,6 +23,12 @@ interface DrawerComment {
   createdAt: string;
 }
 
+interface TableOfContentsItem {
+  id: string;
+  text: string;
+  level: number;
+}
+
 @Component({
   selector: 'app-blog-detail',
   standalone: true,
@@ -29,7 +36,7 @@ interface DrawerComment {
   templateUrl: './blog-detail.html',
   styleUrl: './blog-detail.css',
 })
-export class BlogDetail implements OnInit {
+export class BlogDetail implements OnInit, AfterViewInit {
   private postService = inject(PostService);
   private destroyRef = inject(DestroyRef);
   private route = inject(ActivatedRoute);
@@ -40,6 +47,8 @@ export class BlogDetail implements OnInit {
   private platformId = inject(PLATFORM_ID);
   private meta = inject(Meta);
   private titleService = inject(Title);
+  private elementRef = inject(ElementRef);
+  private document = inject(DOCUMENT);
   
   themeService = inject(ThemeService);
 
@@ -48,6 +57,7 @@ export class BlogDetail implements OnInit {
   relatedPosts = signal<Post[]>([]);
   
   likedPostIds = signal<Set<string>>(new Set());
+  bookmarkedPostIds = signal<Set<string>>(new Set());
   commentText = signal('');
   commentSubmitting = signal(false);
   commentFeedback = signal<{ type: 'success' | 'error'; msg: string } | null>(null);
@@ -58,6 +68,16 @@ export class BlogDetail implements OnInit {
   
   private currentUserData = signal<User | null>(null);
 
+  // Advanced Features Signals
+  tableOfContents = signal<TableOfContentsItem[]>([]);
+  activeHeadingId = signal<string>('');
+  readingProgress = signal(0);
+  readingTime = signal(0);
+  showToc = signal(false);
+  shareCount = signal(0);
+  shareMenuOpen = signal(false);
+  copyLinkSuccess = signal(false);
+
   isPostOwner = computed(() => {
     const postData = this.post();
     const userId = this.currentUserData()?._id;
@@ -67,23 +87,61 @@ export class BlogDetail implements OnInit {
     return postOwnerId?.toString() === userId.toString();
   });
 
-  ngOnInit(): void {
-    const postId = this.route.snapshot.paramMap.get('id');
-    
+  isBookmarked = computed(() => {
+    const postData = this.post();
+    if (!postData) return false;
+    return this.bookmarkedPostIds().has(postData._id);
+  });
+
+ // ✅ AFTER — reacts every time the :id param changes
+ngOnInit(): void {
+  this.route.paramMap.pipe(
+    takeUntilDestroyed(this.destroyRef)
+  ).subscribe(params => {
+    const postId = params.get('id');
+
     if (!postId) {
       this.router.navigate(['/welcome']);
       return;
     }
 
-    // Track visit
-    if (isPlatformBrowser(this.platformId)) {
-      const path = window.location.pathname;
-      this.visitorService.trackVisit(path);
-    }
+    // Reset state for the new post
+    this.isLoading.set(true);
+    this.post.set(null);
+    this.comments.set([]);
+    this.relatedPosts.set([]);
+    this.tableOfContents.set([]);
+    this.readingProgress.set(0);
+    this.shareMenuOpen.set(false);
+    this.showToc.set(false);
 
     this.loadPost(postId);
-    this.restoreLikedIds();
-    this.fetchCurrentUser();
+    this.loadShareCount(postId);
+  });
+
+  // These only need to run once — keep outside the paramMap sub
+  this.restoreLikedIds();
+  this.restoreBookmarkedIds();
+  this.fetchCurrentUser();
+
+  if (isPlatformBrowser(this.platformId)) {
+    fromEvent(window, 'scroll')
+      .pipe(throttleTime(100), takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        this.updateReadingProgress();
+        this.updateActiveHeading();
+      });
+  }
+}
+
+  ngAfterViewInit(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      // Small delay to ensure content is rendered
+      setTimeout(() => {
+        this.generateTableOfContents();
+        this.addHeadingIds();
+      }, 100);
+    }
   }
 
   private loadPost(postId: string): void {
@@ -103,6 +161,7 @@ export class BlogDetail implements OnInit {
         this.loadComments(postId);
         this.loadRelatedPosts(postData);
         this.updateMetaTags(postData);
+        this.calculateReadingTime(postData);
       },
       error: () => {
         this.router.navigate(['/welcome']);
@@ -124,6 +183,7 @@ export class BlogDetail implements OnInit {
     this.meta.updateTag({ property: 'og:title', content: post.title });
     this.meta.updateTag({ property: 'og:description', content: post.description || post.title });
     this.meta.updateTag({ property: 'og:type', content: 'article' });
+    this.meta.updateTag({ property: 'og:url', content: window.location.href });
     
     if (post.featuredImage) {
       this.meta.updateTag({ property: 'og:image', content: post.featuredImage });
@@ -190,6 +250,239 @@ export class BlogDetail implements OnInit {
     // Update local post view count
     this.post.set({ ...post, views: post.views + 1 });
   }
+
+  // ══════════════════════════════════════════════════════════════
+  // ADVANCED FEATURES
+  // ══════════════════════════════════════════════════════════════
+
+  // Reading Time Calculation
+  private calculateReadingTime(post: Post): void {
+    // Remove HTML tags and count words
+    const text = post.content.replace(/<[^>]*>/g, '');
+    const wordCount = text.trim().split(/\s+/).length;
+    
+    // Average reading speed: 200 words per minute
+    const minutes = Math.ceil(wordCount / 200);
+    this.readingTime.set(minutes);
+  }
+
+  // Table of Contents Generation
+  private generateTableOfContents(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    
+    const contentEl = this.elementRef.nativeElement.querySelector('.blog-content');
+    if (!contentEl) return;
+
+    const headings = contentEl.querySelectorAll('h2, h3');
+    const toc: TableOfContentsItem[] = [];
+
+    headings.forEach((heading: Element, index: number) => {
+      const id = `heading-${index}`;
+      heading.id = id;
+      
+      toc.push({
+        id,
+        text: heading.textContent || '',
+        level: parseInt(heading.tagName.substring(1))
+      });
+    });
+
+    this.tableOfContents.set(toc);
+  }
+
+  private addHeadingIds(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    
+    const contentEl = this.elementRef.nativeElement.querySelector('.blog-content');
+    if (!contentEl) return;
+
+    const headings = contentEl.querySelectorAll('h2, h3, h4');
+    headings.forEach((heading: Element, index: number) => {
+      if (!heading.id) {
+        heading.id = `heading-${index}`;
+      }
+    });
+  }
+
+  scrollToHeading(headingId: string): void {
+    const element = this.document.getElementById(headingId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
+  toggleToc(): void {
+    this.showToc.set(!this.showToc());
+  }
+
+  // Reading Progress Bar
+  private updateReadingProgress(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+
+    const contentEl = this.elementRef.nativeElement.querySelector('.blog-content');
+    if (!contentEl) return;
+
+    const windowHeight = window.innerHeight;
+    const documentHeight = this.document.documentElement.scrollHeight;
+    const scrollTop = window.scrollY;
+    
+    const contentTop = contentEl.offsetTop;
+    const contentHeight = contentEl.offsetHeight;
+    const contentBottom = contentTop + contentHeight;
+
+    if (scrollTop < contentTop) {
+      this.readingProgress.set(0);
+    } else if (scrollTop + windowHeight >= contentBottom) {
+      this.readingProgress.set(100);
+    } else {
+      const scrolled = scrollTop - contentTop;
+      const total = contentHeight - windowHeight;
+      const progress = (scrolled / total) * 100;
+      this.readingProgress.set(Math.min(Math.max(progress, 0), 100));
+    }
+  }
+
+  // Active Heading Detection
+  private updateActiveHeading(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+
+    const headings = this.document.querySelectorAll('.blog-content h2, .blog-content h3');
+    let activeId = '';
+
+    headings.forEach((heading: Element) => {
+      const rect = heading.getBoundingClientRect();
+      if (rect.top <= 150 && rect.top >= -100) {
+        activeId = heading.id;
+      }
+    });
+
+    this.activeHeadingId.set(activeId);
+  }
+
+  // Bookmark Feature
+  private restoreBookmarkedIds(): void {
+    try {
+      const stored = localStorage.getItem('apna_bookmarked_posts');
+      if (stored) this.bookmarkedPostIds.set(new Set(JSON.parse(stored)));
+    } catch { }
+  }
+
+  private persistBookmarkedIds(ids: Set<string>): void {
+    try {
+      localStorage.setItem('apna_bookmarked_posts', JSON.stringify([...ids]));
+    } catch { }
+  }
+
+  toggleBookmark(): void {
+    const postData = this.post();
+    if (!postData) return;
+
+    const newSet = new Set(this.bookmarkedPostIds());
+    
+    if (newSet.has(postData._id)) {
+      newSet.delete(postData._id);
+    } else {
+      newSet.add(postData._id);
+    }
+    
+    this.bookmarkedPostIds.set(newSet);
+    this.persistBookmarkedIds(newSet);
+  }
+
+  // Share Features
+  private loadShareCount(postId: string): void {
+    // Get share count from localStorage (in real app, this would be from backend)
+    try {
+      const shares = localStorage.getItem(`share_count_${postId}`);
+      this.shareCount.set(shares ? parseInt(shares) : 0);
+    } catch { }
+  }
+
+  private incrementShareCount(): void {
+    const postData = this.post();
+    if (!postData) return;
+
+    const newCount = this.shareCount() + 1;
+    this.shareCount.set(newCount);
+    
+    try {
+      localStorage.setItem(`share_count_${postData._id}`, newCount.toString());
+    } catch { }
+  }
+
+  toggleShareMenu(): void {
+    this.shareMenuOpen.set(!this.shareMenuOpen());
+  }
+
+  shareOnTwitter(): void {
+    const postData = this.post();
+    if (!postData) return;
+
+    const url = encodeURIComponent(window.location.href);
+    const text = encodeURIComponent(postData.title);
+    window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, '_blank');
+    
+    this.incrementShareCount();
+    this.shareMenuOpen.set(false);
+  }
+
+  shareOnFacebook(): void {
+    const url = encodeURIComponent(window.location.href);
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
+    
+    this.incrementShareCount();
+    this.shareMenuOpen.set(false);
+  }
+
+  shareOnLinkedIn(): void {
+    const postData = this.post();
+    if (!postData) return;
+
+    const url = encodeURIComponent(window.location.href);
+    const title = encodeURIComponent(postData.title);
+    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}&title=${title}`, '_blank');
+    
+    this.incrementShareCount();
+    this.shareMenuOpen.set(false);
+  }
+
+  shareOnWhatsApp(): void {
+    const postData = this.post();
+    if (!postData) return;
+
+    const url = encodeURIComponent(window.location.href);
+    const text = encodeURIComponent(`${postData.title} - ${window.location.href}`);
+    window.open(`https://wa.me/?text=${text}`, '_blank');
+    
+    this.incrementShareCount();
+    this.shareMenuOpen.set(false);
+  }
+
+  async copyLink(): Promise<void> {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      this.copyLinkSuccess.set(true);
+      this.incrementShareCount();
+      
+      setTimeout(() => {
+        this.copyLinkSuccess.set(false);
+        this.shareMenuOpen.set(false);
+      }, 2000);
+    } catch (err) {
+      console.error('Failed to copy link:', err);
+    }
+  }
+
+  // Print Functionality
+  printArticle(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      window.print();
+    }
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // EXISTING FEATURES (LIKES, COMMENTS)
+  // ══════════════════════════════════════════════════════════════
 
   private restoreLikedIds(): void {
     try {
@@ -327,7 +620,16 @@ export class BlogDetail implements OnInit {
     this.router.navigate(['/welcome']);
   }
 
-  navigateToBlog(postId: string): void {
-    this.router.navigate(['/welcome/blog', postId]);
+navigateToBlog(postId: string): void {
+  this.router.navigate(['/welcome/blog', postId]);
+  if (isPlatformBrowser(this.platformId)) {
+    window.scrollTo({ top: 0, behavior: 'instant' }); // 'smooth' feels slow
+  }
+}
+
+  filterByTag(tag: string): void {
+    this.router.navigate(['/welcome'], { 
+      queryParams: { category: tag } 
+    });
   }
 }

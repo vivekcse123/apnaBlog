@@ -16,12 +16,121 @@
   </div>
 </header>
 
+<!-- Reading Progress Bar -->
+<div class="reading-progress-bar" [style.width.%]="readingProgress()"></div>
+
 @if (isLoading()) {
   <div class="loading-container">
     <div class="loading-dots"><span></span><span></span><span></span></div>
     <span>Loading story…</span>
   </div>
 } @else if (post()) {
+  
+  <!-- Floating Action Buttons -->
+  <div class="floating-actions">
+    
+    <!-- Table of Contents Toggle -->
+    @if (tableOfContents().length > 0) {
+      <button 
+        class="float-btn toc-btn" 
+        (click)="toggleToc()"
+        [class.active]="showToc()"
+        title="Table of Contents">
+        <span class="float-icon">📋</span>
+      </button>
+    }
+    
+    <!-- Bookmark Button -->
+    <button 
+      class="float-btn bookmark-btn" 
+      (click)="toggleBookmark()"
+      [class.bookmarked]="isBookmarked()"
+      [title]="isBookmarked() ? 'Remove bookmark' : 'Bookmark this article'">
+      <span class="float-icon">{{ isBookmarked() ? '🔖' : '📑' }}</span>
+    </button>
+    
+    <!-- Print Button -->
+    <button 
+      class="float-btn print-btn" 
+      (click)="printArticle()"
+      title="Print article">
+      <span class="float-icon">🖨️</span>
+    </button>
+    
+    <!-- Share Button -->
+    <button 
+      class="float-btn share-btn" 
+      (click)="toggleShareMenu()"
+      [class.active]="shareMenuOpen()"
+      title="Share article">
+      <span class="float-icon">↗</span>
+      @if (shareCount() > 0) {
+        <span class="share-count-badge">{{ shareCount() }}</span>
+      }
+    </button>
+    
+    <!-- Share Menu Dropdown -->
+    @if (shareMenuOpen()) {
+      <div class="share-menu">
+        <div class="share-menu-header">
+          <span>Share this article</span>
+          <button class="share-menu-close" (click)="shareMenuOpen.set(false)">✕</button>
+        </div>
+        
+        <button class="share-option twitter" (click)="shareOnTwitter()">
+          <span class="share-option-icon">🐦</span>
+          <span class="share-option-text">Twitter</span>
+        </button>
+        
+        <button class="share-option facebook" (click)="shareOnFacebook()">
+          <span class="share-option-icon">📘</span>
+          <span class="share-option-text">Facebook</span>
+        </button>
+        
+        <button class="share-option linkedin" (click)="shareOnLinkedIn()">
+          <span class="share-option-icon">💼</span>
+          <span class="share-option-text">LinkedIn</span>
+        </button>
+        
+        <button class="share-option whatsapp" (click)="shareOnWhatsApp()">
+          <span class="share-option-icon">💬</span>
+          <span class="share-option-text">WhatsApp</span>
+        </button>
+        
+        <button class="share-option copy" (click)="copyLink()">
+          <span class="share-option-icon">{{ copyLinkSuccess() ? '✅' : '🔗' }}</span>
+          <span class="share-option-text">{{ copyLinkSuccess() ? 'Copied!' : 'Copy Link' }}</span>
+        </button>
+      </div>
+    }
+    
+  </div>
+
+  <!-- Table of Contents Sidebar -->
+  @if (showToc() && tableOfContents().length > 0) {
+    <div class="toc-sidebar" [class.open]="showToc()">
+      <div class="toc-header">
+        <h3 class="toc-title">📋 Contents</h3>
+        <button class="toc-close" (click)="showToc.set(false)">✕</button>
+      </div>
+      
+      <nav class="toc-nav">
+        @for (item of tableOfContents(); track item.id) {
+          <a 
+            class="toc-item"
+            [class.level-2]="item.level === 2"
+            [class.level-3]="item.level === 3"
+            [class.active]="activeHeadingId() === item.id"
+            (click)="scrollToHeading(item.id)">
+            {{ item.text }}
+          </a>
+        }
+      </nav>
+    </div>
+    
+    <div class="toc-backdrop" (click)="showToc.set(false)"></div>
+  }
+
   <article class="blog-detail-container">
     
     <!-- Featured Image -->
@@ -39,7 +148,7 @@
     <header class="blog-header">
       <div class="category-pills">
         @for (cat of post()!.categories; track cat) {
-          <span class="category-pill">{{ cat }}</span>
+          <span class="category-pill" (click)="filterByTag(cat)">{{ cat }}</span>
         }
       </div>
       
@@ -53,14 +162,28 @@
             <span class="meta-icon">📅</span>
             {{ post()!.createdAt | date:'MMM d, y' }}
           </span>
+          
+          <span class="meta-item">
+            <span class="meta-icon">⏱️</span>
+            {{ readingTime() }} min read
+          </span>
+          
           <span class="meta-item">
             <span class="meta-icon">👁</span>
             {{ post()!.views }} views
           </span>
+          
           <span class="meta-item">
             <span class="meta-icon">💬</span>
             {{ post()!.commentsCount }} comments
           </span>
+          
+          @if (shareCount() > 0) {
+            <span class="meta-item">
+              <span class="meta-icon">↗</span>
+              {{ shareCount() }} shares
+            </span>
+          }
         </div>
         
         <button
@@ -75,6 +198,23 @@
 
     <!-- Blog Content -->
     <div class="blog-content" [innerHTML]="post()!.content"></div>
+
+    <!-- Tags Section -->
+    @if (post()!.categories && post()!.categories.length > 0) {
+      <div class="tags-section">
+        <h3 class="tags-title">
+          <span class="tags-icon">🏷️</span>
+          Tags
+        </h3>
+        <div class="tags-list">
+          @for (tag of post()!.categories; track tag) {
+            <button class="tag-badge" (click)="filterByTag(tag)">
+              {{ tag }}
+            </button>
+          }
+        </div>
+      </div>
+    }
 
     <!-- Comments Section -->
     <section class="comments-section">
@@ -186,7 +326,6 @@
       </div>
     </section>
 
-    <!-- Related Posts -->
     @if (relatedPosts().length > 0) {
       <section class="related-section">
         <h2 class="related-title">
