@@ -1,13 +1,14 @@
 {
   "outputDirectory": "dist/blog-app/browser",
-  "routes": [
-    {
-      "src": "/sitemap.xml",
-      "dest": "/sitemap.xml"
-    }
-  ],
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.csr.html" }
+    {
+      "source": "/sitemap.xml",
+      "destination": "https://apnablogserver.onrender.com/sitemap.xml"
+    },
+    {
+      "source": "/((?!sitemap\\.xml$).*)",
+      "destination": "/index.csr.html"
+    }
   ],
   "headers": [
     {
