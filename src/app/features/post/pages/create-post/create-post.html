@@ -209,6 +209,7 @@
           contenteditable="true"
           data-placeholder="Write your blog content here..."
           (input)="onEditorInput()"
+          (paste)="onEditorPaste($event)"
           (keyup)="onEditorKeyUp()"
           (mouseup)="onEditorMouseUp()"
         ></div>

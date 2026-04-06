@@ -6,7 +6,14 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 import { PostService } from '../../features/post/services/post-service';
+import { UploadService } from '../../features/post/services/upload-service';
 import { Post } from '../../core/models/post.model';
+
+interface ImageItem {
+  url: string;
+  isUploading: boolean;
+  uploadProgress?: number;
+}
 
 @Component({
   selector: 'app-view-post',
@@ -16,9 +23,10 @@ import { Post } from '../../core/models/post.model';
   styleUrl: './view-post.css'
 })
 export class ViewPost implements OnInit, OnDestroy {
-  private fb          = inject(FormBuilder);
-  private postService = inject(PostService);
-  private destroy$    = new Subject<void>();
+  private fb           = inject(FormBuilder);
+  private postService  = inject(PostService);
+  private uploadService = inject(UploadService);
+  private destroy$     = new Subject<void>();
 
   postId      = input<string>('');
   message     = input<string>('');
@@ -38,6 +46,10 @@ export class ViewPost implements OnInit, OnDestroy {
 
   activeFormats = signal<Set<string>>(new Set());
   activeBlock   = signal<string>('');
+
+  // Image gallery management
+  imageGallery = signal<ImageItem[]>([]);
+  uploadError  = signal('');
 
   @ViewChild('contentEditor') contentEditorRef!: ElementRef<HTMLDivElement>;
 
@@ -129,6 +141,13 @@ export class ViewPost implements OnInit, OnDestroy {
       status:        [p?.status        || 'draft', Validators.required],
     });
 
+    // Initialize image gallery with featured image if exists
+    if (p?.featuredImage) {
+      this.imageGallery.set([{ url: p.featuredImage, isUploading: false }]);
+    } else {
+      this.imageGallery.set([]);
+    }
+
     this.isEditing.set(true);
 
     setTimeout(() => {
@@ -142,13 +161,125 @@ export class ViewPost implements OnInit, OnDestroy {
     this.isEditing.set(false);
     this.successMessage.set('');
     this.errorMessage.set('');
+    this.uploadError.set('');
     this.activeFormats.set(new Set());
     this.activeBlock.set('');
+    this.imageGallery.set([]);
     this.editForm.reset();
+  }
+
+  onImageUpload(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const files = input.files;
+    if (!files || files.length === 0) return;
+
+    this.uploadError.set('');
+
+    const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    
+    Array.from(files).forEach(file => {
+      // Validate file type
+      if (!allowed.includes(file.type)) {
+        this.uploadError.set('Only JPG, PNG, WEBP or GIF images are allowed.');
+        return;
+      }
+
+      // Validate file size
+      if (file.size > 5 * 1024 * 1024) {
+        this.uploadError.set('Each image must be smaller than 5 MB.');
+        return;
+      }
+
+      // Create preview immediately
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const previewUrl = e.target?.result as string;
+        
+        // Add to gallery with uploading state
+        this.imageGallery.update(gallery => [
+          ...gallery,
+          { url: previewUrl, isUploading: true }
+        ]);
+
+        const currentIndex = this.imageGallery().length - 1;
+
+        // Upload the image
+        this.uploadService.uploadImage(file).subscribe({
+          next: (res) => {
+            if (res.success && res.url) {
+              // Update gallery with actual URL
+              this.imageGallery.update(gallery => {
+                const updated = [...gallery];
+                updated[currentIndex] = { url: res.url, isUploading: false };
+                return updated;
+              });
+
+              // Update form value with first image as featured
+              if (currentIndex === 0) {
+                this.editForm.patchValue({ featuredImage: res.url });
+              }
+            } else {
+              // Remove failed upload from gallery
+              this.imageGallery.update(gallery => 
+                gallery.filter((_, idx) => idx !== currentIndex)
+              );
+              this.uploadError.set(res.message ?? 'Upload failed.');
+            }
+          },
+          error: (err) => {
+            // Remove failed upload from gallery
+            this.imageGallery.update(gallery => 
+              gallery.filter((_, idx) => idx !== currentIndex)
+            );
+            this.uploadError.set(err?.error?.message ?? 'Upload failed.');
+          }
+        });
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // Clear input so same file can be uploaded again
+    input.value = '';
+  }
+
+  removeImageFromGallery(index: number): void {
+    this.imageGallery.update(gallery => gallery.filter((_, idx) => idx !== index));
+    
+    // Update featured image in form (use first image or empty)
+    const remainingImages = this.imageGallery();
+    if (remainingImages.length > 0) {
+      this.editForm.patchValue({ featuredImage: remainingImages[0].url });
+    } else {
+      this.editForm.patchValue({ featuredImage: '' });
+    }
+  }
+
+  setAsFeatured(index: number): void {
+    const image = this.imageGallery()[index];
+    if (image && !image.isUploading) {
+      this.editForm.patchValue({ featuredImage: image.url });
+      
+      // Reorder gallery to put featured image first
+      this.imageGallery.update(gallery => {
+        const updated = [...gallery];
+        const [selected] = updated.splice(index, 1);
+        updated.unshift(selected);
+        return updated;
+      });
+    }
+  }
+
+  hasUploadingImages(): boolean {
+    return this.imageGallery().some(img => img.isUploading);
   }
 
   savePost(): void {
     if (this.editForm.invalid) return;
+    if (this.hasUploadingImages()) {
+      this.errorMessage.set('Please wait for all images to finish uploading.');
+      return;
+    }
+
     this.successMessage.set('');
     this.errorMessage.set('');
 
@@ -159,6 +290,7 @@ export class ViewPost implements OnInit, OnDestroy {
           const updated = res.data ?? { ...this.post(), ...this.editForm.value };
           this.post.set(updated);
           this.isEditing.set(false);
+          this.imageGallery.set([]);
           this.successMessage.set('Post updated successfully!');
           setTimeout(() => {
             this.successMessage.set('');
@@ -179,6 +311,98 @@ export class ViewPost implements OnInit, OnDestroy {
     this.updateEditorFormats();
   }
 
+  onContentPaste(event: ClipboardEvent): void {
+    event.preventDefault();
+    
+    const clipboardData = event.clipboardData;
+    if (!clipboardData) return;
+
+    const text = clipboardData.getData('text/plain');
+    let html = clipboardData.getData('text/html');
+    
+    if (html) {
+      html = this.cleanPastedHTML(html);
+    } else {
+      html = text.replace(/\n/g, '<br>');
+    }
+
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) return;
+
+    const range = selection.getRangeAt(0);
+    range.deleteContents();
+
+    const fragment = range.createContextualFragment(html);
+    range.insertNode(fragment);
+
+    range.collapse(false);
+    selection.removeAllRanges();
+    selection.addRange(range);
+
+    this.onContentInput(event);
+  }
+
+  private cleanPastedHTML(html: string): string {
+    const temp = document.createElement('div');
+    temp.innerHTML = html;
+
+    const unwantedSelectors = [
+      'script', 'style', 'meta', 'link', 'object', 'embed',
+      'iframe', 'applet', 'xml', 'o\\:p', 'w\\:sdt'
+    ];
+    unwantedSelectors.forEach(selector => {
+      temp.querySelectorAll(selector).forEach(el => el.remove());
+    });
+
+    this.cleanElement(temp);
+    return temp.innerHTML;
+  }
+
+  private cleanElement(element: Element): void {
+    const allowedAttrs: { [key: string]: string[] } = {
+      'a': ['href', 'title'],
+      'img': ['src', 'alt', 'width', 'height'],
+      'table': ['border', 'cellpadding', 'cellspacing'],
+      'td': ['colspan', 'rowspan'],
+      'th': ['colspan', 'rowspan'],
+    };
+
+    Array.from(element.childNodes).forEach(node => {
+      if (node.nodeType === Node.ELEMENT_NODE) {
+        const el = node as Element;
+        const tagName = el.tagName.toLowerCase();
+
+        const attrs = Array.from(el.attributes);
+        attrs.forEach(attr => {
+          const attrName = attr.name.toLowerCase();
+          const allowed = allowedAttrs[tagName] || [];
+          
+          if (!allowed.includes(attrName) || 
+              attrName.startsWith('data-') || 
+              attrName === 'style' || 
+              attrName === 'class' || 
+              attrName === 'id') {
+            el.removeAttribute(attr.name);
+          }
+        });
+
+        this.cleanElement(el);
+
+        if (['span', 'font', 'div'].includes(tagName)) {
+          if (el.querySelector('p, h1, h2, h3, h4, ul, ol, table')) {
+            const wrapper = document.createElement('div');
+            while (el.firstChild) {
+              wrapper.appendChild(el.firstChild);
+            }
+            el.replaceWith(...Array.from(wrapper.childNodes));
+          } else {
+            el.replaceWith(...Array.from(el.childNodes));
+          }
+        }
+      }
+    });
+  }
+
   updateEditorFormats(): void {
     const commands = [
       'bold', 'italic', 'underline', 'strikeThrough',
@@ -191,7 +415,6 @@ export class ViewPost implements OnInit, OnDestroy {
     });
     this.activeFormats.set(active);
 
-    // Detect current block tag (h1–h4, p)
     const selection = window.getSelection();
     if (selection && selection.rangeCount > 0) {
       let node: Node | null = selection.getRangeAt(0).commonAncestorContainer;
@@ -213,7 +436,6 @@ export class ViewPost implements OnInit, OnDestroy {
     this.contentEditorRef.nativeElement.focus();
     document.execCommand(command, false, '');
     this.updateEditorFormats();
-    // sync value after format
     const html = this.contentEditorRef.nativeElement.innerHTML;
     this.editForm.patchValue({ content: html }, { emitEvent: false });
   }
@@ -230,7 +452,6 @@ export class ViewPost implements OnInit, OnDestroy {
     return this.activeFormats().has(command);
   }
 
-  // ── Categories & Tags ──
   toggleCategory(category: string): void {
     const current: string[] = this.editForm.get('categories')?.value ?? [];
     this.editForm.patchValue({

@@ -27,9 +27,7 @@ export class CreatePost {
   errorMessage     = signal('');
   successMessage   = signal('');
   activeFormats    = signal<Set<string>>(new Set());
-
-  // ── Tracks which block-level tag is active (h1–h4, p) ──
-  activeBlock = signal<string>('');
+  activeBlock      = signal<string>('');
 
   imageUploading   = signal(false);
   imageUploadError = signal('');
@@ -77,8 +75,118 @@ export class CreatePost {
     this.updateActiveFormats();
   }
 
+  onEditorPaste(event: ClipboardEvent): void {
+    event.preventDefault();
+    
+    const clipboardData = event.clipboardData;
+    if (!clipboardData) return;
+
+    // Get plain text
+    const text = clipboardData.getData('text/plain');
+    
+    // Get HTML if available
+    let html = clipboardData.getData('text/html');
+    
+    if (html) {
+      // Clean the HTML - strip out Word/Google Docs formatting
+      html = this.cleanPastedHTML(html);
+    } else {
+      // Convert plain text to HTML with line breaks
+      html = text.replace(/\n/g, '<br>');
+    }
+
+    // Insert cleaned HTML at cursor
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) return;
+
+    const range = selection.getRangeAt(0);
+    range.deleteContents();
+
+    const fragment = range.createContextualFragment(html);
+    range.insertNode(fragment);
+
+    // Move cursor to end of inserted content
+    range.collapse(false);
+    selection.removeAllRanges();
+    selection.addRange(range);
+
+    this.onEditorInput();
+  }
+
+  private cleanPastedHTML(html: string): string {
+    // Create a temporary div to parse HTML
+    const temp = document.createElement('div');
+    temp.innerHTML = html;
+
+    // Remove unwanted elements
+    const unwantedSelectors = [
+      'script', 'style', 'meta', 'link', 'object', 'embed',
+      'iframe', 'applet', 'xml', 'o\\:p', 'w\\:sdt'
+    ];
+    unwantedSelectors.forEach(selector => {
+      temp.querySelectorAll(selector).forEach(el => el.remove());
+    });
+
+    // Clean all elements
+    this.cleanElement(temp);
+
+    return temp.innerHTML;
+  }
+
+  private cleanElement(element: Element): void {
+    // Allowed attributes per tag
+    const allowedAttrs: { [key: string]: string[] } = {
+      'a': ['href', 'title'],
+      'img': ['src', 'alt', 'width', 'height'],
+      'table': ['border', 'cellpadding', 'cellspacing'],
+      'td': ['colspan', 'rowspan'],
+      'th': ['colspan', 'rowspan'],
+    };
+
+    // Process all child nodes
+    Array.from(element.childNodes).forEach(node => {
+      if (node.nodeType === Node.ELEMENT_NODE) {
+        const el = node as Element;
+        const tagName = el.tagName.toLowerCase();
+
+        // Remove all attributes except allowed ones
+        const attrs = Array.from(el.attributes);
+        attrs.forEach(attr => {
+          const attrName = attr.name.toLowerCase();
+          const allowed = allowedAttrs[tagName] || [];
+          
+          // Remove style, class, id, and other formatting attributes
+          if (!allowed.includes(attrName) || 
+              attrName.startsWith('data-') || 
+              attrName === 'style' || 
+              attrName === 'class' || 
+              attrName === 'id') {
+            el.removeAttribute(attr.name);
+          }
+        });
+
+        // Recursively clean children
+        this.cleanElement(el);
+
+        // Convert certain elements to simpler versions
+        if (['span', 'font', 'div'].includes(tagName)) {
+          // Replace with paragraph if it has block content
+          if (el.querySelector('p, h1, h2, h3, h4, ul, ol, table')) {
+            const wrapper = document.createElement('div');
+            while (el.firstChild) {
+              wrapper.appendChild(el.firstChild);
+            }
+            el.replaceWith(...Array.from(wrapper.childNodes));
+          } else {
+            // Just unwrap inline spans/fonts
+            el.replaceWith(...Array.from(el.childNodes));
+          }
+        }
+      }
+    });
+  }
+
   updateActiveFormats(): void {
-    // ── Inline format states ──
     const commands = [
       'bold', 'italic', 'underline', 'strikeThrough',
       'justifyLeft', 'justifyCenter', 'justifyRight', 'justifyFull',
@@ -90,11 +198,9 @@ export class CreatePost {
     });
     this.activeFormats.set(active);
 
-    // ── Block-level tag detection (h1–h4, p) ──
     const selection = window.getSelection();
     if (selection && selection.rangeCount > 0) {
       let node: Node | null = selection.getRangeAt(0).commonAncestorContainer;
-      // Walk up until we find a block-level element inside the editor
       while (node && node !== this.editorRef.nativeElement) {
         if (node.nodeType === Node.ELEMENT_NODE) {
           const tag = (node as Element).tagName.toLowerCase();

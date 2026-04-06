@@ -319,6 +319,7 @@
                 contenteditable="true"
                 data-placeholder="Write your blog content here..."
                 (input)="onContentInput($event)"
+                (paste)="onContentPaste($event)"
                 (keyup)="updateEditorFormats()"
                 (mouseup)="updateEditorFormats()"
                 (blur)="editForm.get('content')?.markAsTouched()">
@@ -357,10 +358,68 @@
             </div>
           </div>
 
-          <!-- Featured Image -->
+          <!-- ── Image Gallery Section ── -->
           <div class="edit-field full">
-            <label>Featured Image URL</label>
-            <input type="text" formControlName="featuredImage" placeholder="Paste image URL" />
+            <label>Images</label>
+            
+            <label class="file-upload-btn">
+              <input
+                #imageInput
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                multiple
+                class="file-input-hidden"
+                (change)="onImageUpload($event)"
+              />
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+              <span>Upload Images</span>
+            </label>
+
+            @if (uploadError()) {
+              <small class="error">{{ uploadError() }}</small>
+            }
+
+            @if (imageGallery().length > 0) {
+              <div class="image-gallery">
+                @for (image of imageGallery(); track $index; let idx = $index) {
+                  <div class="gallery-item" [class.uploading]="image.isUploading">
+                    <img [src]="image.url" alt="Gallery image" class="gallery-image" />
+                    
+                    @if (image.isUploading) {
+                      <div class="gallery-overlay">
+                        <span class="upload-spinner"></span>
+                      </div>
+                    } @else {
+                      <div class="gallery-actions">
+                        @if (idx === 0) {
+                          <span class="featured-badge">Featured</span>
+                        } @else {
+                          <button
+                            type="button"
+                            class="gallery-btn set-featured"
+                            (click)="setAsFeatured(idx)"
+                            title="Set as featured image">
+                            ⭐
+                          </button>
+                        }
+                        <button
+                          type="button"
+                          class="gallery-btn remove"
+                          (click)="removeImageFromGallery(idx)"
+                          title="Remove image">
+                          ✕
+                        </button>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+              <small class="image-gallery-hint">First image will be used as featured image. Click ⭐ to change.</small>
+            }
           </div>
 
         </div>
@@ -387,7 +446,13 @@
         <button class="btn-edit" (click)="startEdit()"><i class="bi bi-pencil-fill"></i></button>
       } @else {
         <button class="btn-cancel" (click)="cancelEdit()">Discard</button>
-        <button class="btn-save" (click)="savePost()" [disabled]="editForm.invalid">Save Changes</button>
+        <button class="btn-save" (click)="savePost()" [disabled]="editForm.invalid || hasUploadingImages()">
+          @if (hasUploadingImages()) {
+            Uploading…
+          } @else {
+            Save Changes
+          }
+        </button>
       }
     </div>
 
