@@ -4,37 +4,43 @@ const { Readable } = require('stream');
 module.exports = async function handler(req, res) {
   try {
     let allPosts = [];
-    let page = 1;
-    let totalPages = 1;
 
-    // ✅ Fetch all pages
-    do {
-      const response = await fetch(`https://apnablogserver.onrender.com/api/post?page=${page}&limit=100`);
+    // ✅ Abort if Render takes too long
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000); // 8 sec max
 
-      if (!response.ok) {
-        throw new Error(`Backend fetch failed: ${response.status}`);
-      }
+    try {
+      let page = 1;
+      let totalPages = 1;
 
-      const data = await response.json();
+      do {
+        const response = await fetch(
+          `https://apnablogserver.onrender.com/api/post?page=${page}&limit=100`,
+          { signal: controller.signal }
+        );
 
-      // Your API uses { data: [...], totalPages: N }
-      const posts = Array.isArray(data.data) ? data.data : [];
-      allPosts = [...allPosts, ...posts];
+        if (!response.ok) throw new Error(`Backend fetch failed: ${response.status}`);
 
-      totalPages = data.totalPages || 1;
-      page++;
+        const data = await response.json();
+        const posts = Array.isArray(data.data) ? data.data : [];
+        allPosts = [...allPosts, ...posts];
+        totalPages = data.totalPages || 1;
+        page++;
 
-    } while (page <= totalPages);
+      } while (page <= totalPages);
 
-    console.log('Total posts fetched:', allPosts.length);
+    } catch (fetchErr) {
+      // ✅ If Render is down/slow, continue with just static routes
+      console.warn('Backend unavailable, serving static-only sitemap:', fetchErr.message);
+    } finally {
+      clearTimeout(timeout);
+    }
 
-    // ✅ Static routes
     const staticLinks = [
       { url: '/welcome',       changefreq: 'daily',   priority: 1.0 },
       { url: '/welcome/about', changefreq: 'monthly', priority: 0.8 },
     ];
 
-    // ✅ Dynamic blog routes
     const postLinks = allPosts.map(post => ({
       url:        `/blog/${post._id}`,
       changefreq: 'weekly',
@@ -42,10 +48,10 @@ module.exports = async function handler(req, res) {
       lastmod:     post.updatedAt,
     }));
 
-    const allLinks = [...staticLinks, ...postLinks];
-
     const stream = new SitemapStream({ hostname: 'https://apnablogs.vercel.app' });
-    const xmlData = await streamToPromise(Readable.from(allLinks).pipe(stream));
+    const xmlData = await streamToPromise(
+      Readable.from([...staticLinks, ...postLinks]).pipe(stream)
+    );
 
     res.setHeader('Content-Type', 'application/xml');
     res.setHeader('Cache-Control', 'public, max-age=3600');
@@ -56,4 +62,4 @@ module.exports = async function handler(req, res) {
     res.setHeader('Content-Type', 'text/plain');
     res.status(500).send(`Sitemap error: ${err.message}`);
   }
-}
+};
