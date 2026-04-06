@@ -37,6 +37,9 @@ export class PostLists implements OnInit {
   selectedCategory = signal<string>('');
   selectedStatus   = signal<string>('');
 
+  // ── Today filter ──
+  showTodayOnly = signal<boolean>(false);
+
   private debounceTimer: any;
 
   currentPage  = signal<number>(1);
@@ -44,6 +47,19 @@ export class PostLists implements OnInit {
 
   filteredBlogs = computed(() => {
     let data = this.allBlogs();
+
+    // Today filter: match blogs whose createdAt is today's date
+    if (this.showTodayOnly()) {
+      const today = new Date();
+      data = data.filter(post => {
+        const postDate = new Date(post.createdAt);
+        return (
+          postDate.getFullYear() === today.getFullYear() &&
+          postDate.getMonth()    === today.getMonth()    &&
+          postDate.getDate()     === today.getDate()
+        );
+      });
+    }
 
     if (this.debounceValue()) {
       const search = this.debounceValue().toLowerCase();
@@ -85,7 +101,6 @@ export class PostLists implements OnInit {
       });
   }
 
-
   loadPosts(userId?: string): void {
     const id = userId ?? this.userId();
     if (!id) return;
@@ -114,7 +129,11 @@ export class PostLists implements OnInit {
       });
   }
 
-  // ── Search & filter ──────────────────────────────────────────
+  // ── Toggle today filter & reset to page 1 ──
+  toggleTodayFilter(): void {
+    this.showTodayOnly.update(val => !val);
+    this.currentPage.set(1);
+  }
 
   debounceSearch(value: string): void {
     clearTimeout(this.debounceTimer);
@@ -123,8 +142,6 @@ export class PostLists implements OnInit {
       this.currentPage.set(1);
     }, 400);
   }
-
-  // ── Pagination ───────────────────────────────────────────────
 
   previousPage(): void {
     if (this.currentPage() > 1) this.currentPage.set(this.currentPage() - 1);
@@ -138,14 +155,10 @@ export class PostLists implements OnInit {
     if (page >= 1 && page <= this.totalPages()) this.currentPage.set(page);
   }
 
-  // ── Create ───────────────────────────────────────────────────
-
   onPostCreated(): void {
     this.loadPosts();
     this.currentPage.set(1);
   }
-
-  // ── Delete ───────────────────────────────────────────────────
 
   showConfirm        = signal(false);
   pendingDeleteId    = signal<string>('');
@@ -189,14 +202,10 @@ export class PostLists implements OnInit {
     });
   }
 
-  // ── Message modal ────────────────────────────────────────────
-
   showMessage  = signal(false);
   modalType    = signal<'success' | 'error'>('success');
   modalTitle   = signal('');
   modalMessage = signal('');
-
-  // ── View / edit post ─────────────────────────────────────────
 
   isPostViewed   = signal(false);
   selectedPostId = signal<string>('');

@@ -13,32 +13,27 @@
   @if (panelOpen()) {
     <div class="panel">
 
-      <!-- 🧾 HEADER -->
       <div class="panel-header">
         <span>Notifications</span>
 
         <div class="actions">
-          <button (click)="onRefresh($event)">
+          <button type="button" [class.spinning]="refreshing()" (click)="onRefresh($event)" title="Refresh"> 
             <mat-icon>refresh</mat-icon>
           </button>
-
-          <button (click)="onMarkAllRead($event)">
+          <button type="button" (click)="onMarkAllRead($event)" title="Mark all read">
             <mat-icon>done_all</mat-icon>
           </button>
         </div>
       </div>
 
-      <!-- 📜 SCROLLABLE AREA -->
       <div class="notification-list">
 
-        <!-- ⏳ LOADING -->
         @if (loading()) {
           <div class="loader">
             <mat-spinner diameter="30"></mat-spinner>
           </div>
         }
 
-        <!-- 📭 EMPTY -->
         @if (!loading() && notifications().length === 0) {
           <div class="empty">
             <mat-icon>notifications_off</mat-icon>
@@ -46,7 +41,6 @@
           </div>
         }
 
-        <!-- 📩 LIST -->
         @if (!loading() && notifications().length > 0) {
 
           @for (n of notifications(); track n.id ?? $index) {
@@ -56,12 +50,10 @@
               (click)="onNotificationClick(n)"
             >
 
-              <!-- 🎯 ICON -->
               <mat-icon [style.color]="getMeta(n.type).color">
                 {{ getMeta(n.type).icon }}
               </mat-icon>
 
-              <!-- 📄 CONTENT -->
               <div class="content">
                 <div class="title">
                   {{ n.title || getMeta(n.type).label }}
@@ -76,7 +68,6 @@
                 </div>
               </div>
 
-              <!-- ❌ DELETE -->
               <button
                 class="delete-btn"
                 (click)="onDelete($event, n.id)"

@@ -1,7 +1,6 @@
 <div class="modal-overlay" (click)="closeModal()">
   <div class="post-modal" (click)="$event.stopPropagation()">
 
-    <!-- HEADER -->
     <div class="modal-header">
       <div class="header-info">
         <div class="post-icon">✍️</div>
@@ -22,7 +21,6 @@
       </div>
     </div>
 
-    <!-- STATS (view mode only) -->
     @if (!isEditing()) {
       <div class="post-stats">
         <div class="stat-item">
@@ -39,7 +37,6 @@
         </div>
       </div>
 
-      <!-- COMMENTS SECTION -->
       @if (showComments()) {
         <div class="comments-section">
           <p class="comments-title">
@@ -75,7 +72,6 @@
       }
     }
 
-    <!-- POST BODY (view mode) -->
     @if (!isEditing()) {
       <div class="post-body">
 
@@ -133,7 +129,6 @@
       </div>
     }
 
-    <!-- EDIT MODE -->
     @if (isEditing()) {
       <form class="edit-form" [formGroup]="editForm" (ngSubmit)="savePost()">
         <div class="edit-grid">
@@ -162,27 +157,170 @@
             }
           </div>
 
-          <!-- RICH TEXT EDITOR for Content -->
+          <!-- ── Full Rich Text Editor ── -->
           <div class="edit-field full">
             <label>Content</label>
-            <div class="rich-editor-wrapper">
-              <div class="rich-editor-toolbar">
-                <button type="button" title="Bold"       (click)="document.execCommand('bold')"          ><b>B</b></button>
-                <button type="button" title="Italic"     (click)="document.execCommand('italic')"        ><i>I</i></button>
-                <button type="button" title="Underline"  (click)="document.execCommand('underline')"     ><u>U</u></button>
-                <span class="toolbar-divider"></span>
-                <button type="button" title="Bullet List"   (click)="document.execCommand('insertUnorderedList')">• List</button>
-                <button type="button" title="Numbered List" (click)="document.execCommand('insertOrderedList')">1. List</button>
-                <span class="toolbar-divider"></span>
-                <button type="button" title="Align Left"   (click)="document.execCommand('justifyLeft')"  >&#8676;</button>
-                <button type="button" title="Align Center" (click)="document.execCommand('justifyCenter')">&#8677;</button>
-                <button type="button" title="Align Right"  (click)="document.execCommand('justifyRight')" >&#8678;</button>
+            <div class="editor-wrapper" [class.editor-error]="editForm.get('content')?.invalid && editForm.get('content')?.touched">
+
+              <div class="editor-toolbar">
+
+                <!-- Text Style -->
+                <div class="toolbar-group">
+                  <button type="button" class="tool-btn" [class.active]="isFormatActive('bold')"
+                    (mousedown)="$event.preventDefault()" (click)="execFormat('bold')" title="Bold">
+                    <b>B</b>
+                  </button>
+                  <button type="button" class="tool-btn italic-btn" [class.active]="isFormatActive('italic')"
+                    (mousedown)="$event.preventDefault()" (click)="execFormat('italic')" title="Italic">
+                    <i>I</i>
+                  </button>
+                  <button type="button" class="tool-btn underline-btn" [class.active]="isFormatActive('underline')"
+                    (mousedown)="$event.preventDefault()" (click)="execFormat('underline')" title="Underline">
+                    <u>U</u>
+                  </button>
+                  <button type="button" class="tool-btn strike-btn" [class.active]="isFormatActive('strikeThrough')"
+                    (mousedown)="$event.preventDefault()" (click)="execFormat('strikeThrough')" title="Strikethrough">
+                    <s>S</s>
+                  </button>
+                </div>
+
+                <span class="toolbar-sep"></span>
+
+                <!-- SEO Headings -->
+                <div class="toolbar-group">
+                  <button type="button" class="tool-btn heading-btn"
+                    [class.active]="activeBlock() === 'h1'"
+                    title="Heading 1 — Page title"
+                    (mousedown)="$event.preventDefault()" (click)="execFormatBlock('h1')">H1</button>
+                  <button type="button" class="tool-btn heading-btn"
+                    [class.active]="activeBlock() === 'h2'"
+                    title="Heading 2 — Section title"
+                    (mousedown)="$event.preventDefault()" (click)="execFormatBlock('h2')">H2</button>
+                  <button type="button" class="tool-btn heading-btn"
+                    [class.active]="activeBlock() === 'h3'"
+                    title="Heading 3 — Sub-section"
+                    (mousedown)="$event.preventDefault()" (click)="execFormatBlock('h3')">H3</button>
+                  <button type="button" class="tool-btn heading-btn"
+                    [class.active]="activeBlock() === 'h4'"
+                    title="Heading 4 — Minor heading"
+                    (mousedown)="$event.preventDefault()" (click)="execFormatBlock('h4')">H4</button>
+                  <button type="button" class="tool-btn heading-btn"
+                    [class.active]="activeBlock() === 'p'"
+                    title="Paragraph"
+                    (mousedown)="$event.preventDefault()" (click)="execFormatBlock('p')">P</button>
+                </div>
+
+                <span class="toolbar-sep"></span>
+
+                <!-- Alignment -->
+                <div class="toolbar-group">
+                  <button type="button" class="tool-btn" [class.active]="isFormatActive('justifyLeft')"
+                    (mousedown)="$event.preventDefault()" (click)="execFormat('justifyLeft')" title="Align Left">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+                      <rect x="0" y="1" width="14" height="2" rx="1"/>
+                      <rect x="0" y="5" width="9"  height="2" rx="1"/>
+                      <rect x="0" y="9" width="12" height="2" rx="1"/>
+                    </svg>
+                  </button>
+                  <button type="button" class="tool-btn" [class.active]="isFormatActive('justifyCenter')"
+                    (mousedown)="$event.preventDefault()" (click)="execFormat('justifyCenter')" title="Align Center">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+                      <rect x="0"   y="1" width="14" height="2" rx="1"/>
+                      <rect x="2.5" y="5" width="9"  height="2" rx="1"/>
+                      <rect x="1"   y="9" width="12" height="2" rx="1"/>
+                    </svg>
+                  </button>
+                  <button type="button" class="tool-btn" [class.active]="isFormatActive('justifyRight')"
+                    (mousedown)="$event.preventDefault()" (click)="execFormat('justifyRight')" title="Align Right">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+                      <rect x="0" y="1" width="14" height="2" rx="1"/>
+                      <rect x="5" y="5" width="9"  height="2" rx="1"/>
+                      <rect x="2" y="9" width="12" height="2" rx="1"/>
+                    </svg>
+                  </button>
+                  <button type="button" class="tool-btn" [class.active]="isFormatActive('justifyFull')"
+                    (mousedown)="$event.preventDefault()" (click)="execFormat('justifyFull')" title="Justify">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+                      <rect x="0" y="1" width="14" height="2" rx="1"/>
+                      <rect x="0" y="5" width="14" height="2" rx="1"/>
+                      <rect x="0" y="9" width="14" height="2" rx="1"/>
+                    </svg>
+                  </button>
+                </div>
+
+                <span class="toolbar-sep"></span>
+
+                <!-- Lists -->
+                <div class="toolbar-group">
+                  <button type="button" class="tool-btn" [class.active]="isFormatActive('insertUnorderedList')"
+                    (mousedown)="$event.preventDefault()" (click)="execFormat('insertUnorderedList')" title="Bullet List">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+                      <circle cx="1.5" cy="2"  r="1.5"/><rect x="4" y="1"  width="10" height="2" rx="1"/>
+                      <circle cx="1.5" cy="7"  r="1.5"/><rect x="4" y="6"  width="10" height="2" rx="1"/>
+                      <circle cx="1.5" cy="12" r="1.5"/><rect x="4" y="11" width="10" height="2" rx="1"/>
+                    </svg>
+                  </button>
+                  <button type="button" class="tool-btn" [class.active]="isFormatActive('insertOrderedList')"
+                    (mousedown)="$event.preventDefault()" (click)="execFormat('insertOrderedList')" title="Numbered List">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+                      <text x="0" y="4"  font-size="4" font-family="sans-serif">1.</text>
+                      <rect x="4" y="1"  width="10" height="2" rx="1"/>
+                      <text x="0" y="9"  font-size="4" font-family="sans-serif">2.</text>
+                      <rect x="4" y="6"  width="10" height="2" rx="1"/>
+                      <text x="0" y="14" font-size="4" font-family="sans-serif">3.</text>
+                      <rect x="4" y="11" width="10" height="2" rx="1"/>
+                    </svg>
+                  </button>
+                </div>
+
+                <span class="toolbar-sep"></span>
+
+                <!-- Indent -->
+                <div class="toolbar-group">
+                  <button type="button" class="tool-btn"
+                    (mousedown)="$event.preventDefault()" (click)="execFormat('indent')" title="Indent">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+                      <rect x="0" y="1" width="14" height="2" rx="1"/>
+                      <rect x="3" y="5" width="11" height="2" rx="1"/>
+                      <rect x="3" y="9" width="11" height="2" rx="1"/>
+                      <polygon points="0,4.5 3,6 0,7.5"/>
+                    </svg>
+                  </button>
+                  <button type="button" class="tool-btn"
+                    (mousedown)="$event.preventDefault()" (click)="execFormat('outdent')" title="Outdent">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+                      <rect x="0" y="1" width="14" height="2" rx="1"/>
+                      <rect x="3" y="5" width="11" height="2" rx="1"/>
+                      <rect x="3" y="9" width="11" height="2" rx="1"/>
+                      <polygon points="3,4.5 0,6 3,7.5"/>
+                    </svg>
+                  </button>
+                </div>
+
+                <span class="toolbar-sep"></span>
+
+                <!-- Clear Formatting -->
+                <div class="toolbar-group">
+                  <button type="button" class="tool-btn"
+                    (mousedown)="$event.preventDefault()" (click)="execFormat('removeFormat')" title="Clear Formatting">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+                      <text x="0" y="11" font-size="11" font-family="serif" font-style="italic">T</text>
+                      <line x1="7"  y1="2"  x2="13" y2="12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                      <line x1="13" y1="2"  x2="7"  y2="12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                  </button>
+                </div>
+
               </div>
+
               <div
                 #contentEditor
-                class="rich-content-editor"
+                class="editor-content"
                 contenteditable="true"
+                data-placeholder="Write your blog content here..."
                 (input)="onContentInput($event)"
+                (keyup)="updateEditorFormats()"
+                (mouseup)="updateEditorFormats()"
                 (blur)="editForm.get('content')?.markAsTouched()">
               </div>
             </div>
@@ -191,6 +329,7 @@
             }
           </div>
 
+          <!-- Categories -->
           <div class="edit-field full">
             <label>Categories</label>
             <div class="pill-selector">
@@ -204,6 +343,7 @@
             </div>
           </div>
 
+          <!-- Tags -->
           <div class="edit-field full">
             <label>Tags</label>
             <div class="pill-selector">
@@ -217,6 +357,7 @@
             </div>
           </div>
 
+          <!-- Featured Image -->
           <div class="edit-field full">
             <label>Featured Image URL</label>
             <input type="text" formControlName="featuredImage" placeholder="Paste image URL" />
@@ -226,7 +367,6 @@
       </form>
     }
 
-    <!-- MESSAGES -->
     @if (message()) {
       <div class="success-message"><span>✓</span> {{ message() }}</div>
     }

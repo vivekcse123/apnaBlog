@@ -16,7 +16,7 @@ export class CreatePost {
   private fb            = inject(FormBuilder);
   private authService   = inject(Auth);
   private postService   = inject(PostService);
-  private uploadService = inject(UploadService); 
+  private uploadService = inject(UploadService);
 
   @ViewChild('editorRef') editorRef!: ElementRef<HTMLDivElement>;
 
@@ -27,6 +27,10 @@ export class CreatePost {
   errorMessage     = signal('');
   successMessage   = signal('');
   activeFormats    = signal<Set<string>>(new Set());
+
+  // ── Tracks which block-level tag is active (h1–h4, p) ──
+  activeBlock = signal<string>('');
+
   imageUploading   = signal(false);
   imageUploadError = signal('');
   imagePreviewUrl  = signal('');
@@ -74,6 +78,7 @@ export class CreatePost {
   }
 
   updateActiveFormats(): void {
+    // ── Inline format states ──
     const commands = [
       'bold', 'italic', 'underline', 'strikeThrough',
       'justifyLeft', 'justifyCenter', 'justifyRight', 'justifyFull',
@@ -84,6 +89,24 @@ export class CreatePost {
       try { if (document.queryCommandState(cmd)) active.add(cmd); } catch { }
     });
     this.activeFormats.set(active);
+
+    // ── Block-level tag detection (h1–h4, p) ──
+    const selection = window.getSelection();
+    if (selection && selection.rangeCount > 0) {
+      let node: Node | null = selection.getRangeAt(0).commonAncestorContainer;
+      // Walk up until we find a block-level element inside the editor
+      while (node && node !== this.editorRef.nativeElement) {
+        if (node.nodeType === Node.ELEMENT_NODE) {
+          const tag = (node as Element).tagName.toLowerCase();
+          if (['h1', 'h2', 'h3', 'h4', 'p'].includes(tag)) {
+            this.activeBlock.set(tag);
+            return;
+          }
+        }
+        node = node.parentNode;
+      }
+    }
+    this.activeBlock.set('');
   }
 
   onEditorKeyUp():   void { this.updateActiveFormats(); }
@@ -104,7 +127,6 @@ export class CreatePost {
   isActive(command: string): boolean {
     return this.activeFormats().has(command);
   }
-
 
   onUrlInput(value: string): void {
     this.uploadMode.set('url');

@@ -57,12 +57,51 @@
           <span class="toolbar-sep"></span>
 
           <div class="toolbar-group">
-            <button type="button" class="tool-btn" title="Heading 1"
-              (mousedown)="$event.preventDefault()" (click)="formatBlock('h1')">H1</button>
-            <button type="button" class="tool-btn" title="Heading 2"
-              (mousedown)="$event.preventDefault()" (click)="formatBlock('h2')">H2</button>
-            <button type="button" class="tool-btn" title="Normal text"
-              (mousedown)="$event.preventDefault()" (click)="formatBlock('p')">¶</button>
+            <button
+              type="button"
+              class="tool-btn heading-btn"
+              [class.active]="activeBlock() === 'h1'"
+              title="Heading 1 — Page title (use once)"
+              (mousedown)="$event.preventDefault()"
+              (click)="formatBlock('h1')">
+              H1
+            </button>
+            <button
+              type="button"
+              class="tool-btn heading-btn"
+              [class.active]="activeBlock() === 'h2'"
+              title="Heading 2 — Section title"
+              (mousedown)="$event.preventDefault()"
+              (click)="formatBlock('h2')">
+              H2
+            </button>
+            <button
+              type="button"
+              class="tool-btn heading-btn"
+              [class.active]="activeBlock() === 'h3'"
+              title="Heading 3 — Sub-section"
+              (mousedown)="$event.preventDefault()"
+              (click)="formatBlock('h3')">
+              H3
+            </button>
+            <button
+              type="button"
+              class="tool-btn heading-btn"
+              [class.active]="activeBlock() === 'h4'"
+              title="Heading 4 — Minor heading"
+              (mousedown)="$event.preventDefault()"
+              (click)="formatBlock('h4')">
+              H4
+            </button>
+            <button
+              type="button"
+              class="tool-btn heading-btn"
+              [class.active]="activeBlock() === 'p'"
+              title="Paragraph — Body text"
+              (mousedown)="$event.preventDefault()"
+              (click)="formatBlock('p')">
+              P
+            </button>
           </div>
 
           <span class="toolbar-sep"></span>
@@ -270,6 +309,7 @@
           </div>
         }
       </div>
+
       <select formControlName="status" style="margin-top: 10px;">
         <option value="" disabled selected>Select Status</option>
         <option value="draft">Draft</option>

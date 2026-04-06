@@ -12,7 +12,7 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { Subject, takeUntil } from 'rxjs';
+import { filter, Subject, takeUntil } from 'rxjs';
 
 import {
   Notification,
@@ -108,8 +108,18 @@ export class NotificationPanel implements OnInit, OnDestroy {
     this.svc.deleteNotification(id).subscribe();
   }
 
-  onRefresh(event: Event): void {
-    event.stopPropagation();
-    this.svc.fetchNotifications();
-  }
+refreshing = signal(false);
+
+onRefresh(event: Event): void {
+  event.stopPropagation();
+  event.preventDefault();
+  this.refreshing.set(true);
+  this.svc.fetchNotifications();
+  this.svc.loading$
+    .pipe(
+      filter(l => !l),
+      takeUntil(this.destroy$)
+    )
+    .subscribe(() => this.refreshing.set(false));
+}
 }

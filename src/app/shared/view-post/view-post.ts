@@ -1,4 +1,7 @@
-import { Component, ElementRef, inject, input, OnDestroy, OnInit, output, signal, ViewChild } from '@angular/core';
+import {
+  Component, ElementRef, inject, input,
+  OnDestroy, OnInit, output, signal, ViewChild
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
@@ -33,11 +36,15 @@ export class ViewPost implements OnInit, OnDestroy {
   pendingDeleteCommentId = signal<string>('');
   isDeletingComment      = signal(false);
 
+  activeFormats = signal<Set<string>>(new Set());
+  activeBlock   = signal<string>('');
+
   @ViewChild('contentEditor') contentEditorRef!: ElementRef<HTMLDivElement>;
 
   categoryOptions = [
-    'Technology', 'Lifestyle', 'Education',
-    'Health', 'Business', 'Entertainment', 'Social', 'Village', 'Cooking', 'Quotes', 'Exercise'
+    'Sports', 'Technology', 'Lifestyle', 'Education',
+    'Health', 'Business', 'Entertainment', 'Social',
+    'Village', 'Cooking', 'Quotes', 'Exercise'
   ];
 
   tagOptions = [
@@ -45,9 +52,7 @@ export class ViewPost implements OnInit, OnDestroy {
     'News', 'Opinion', 'Guide', 'Update'
   ];
 
-  ngOnInit(): void {
-    this.loadPost();
-  }
+  ngOnInit(): void { this.loadPost(); }
 
   ngOnDestroy(): void {
     this.destroy$.next();
@@ -90,16 +95,9 @@ export class ViewPost implements OnInit, OnDestroy {
         next: () => {
           this.post.update(p => {
             if (!p) return p;
-            const updatedComments = (p.comments ?? []).filter(
-              (c: any) => c._id !== commentId
-            );
-            return {
-              ...p,
-              comments:      updatedComments,
-              commentsCount: Math.max(0, (p.commentsCount ?? 1) - 1)
-            };
+            const updatedComments = (p.comments ?? []).filter((c: any) => c._id !== commentId);
+            return { ...p, comments: updatedComments, commentsCount: Math.max(0, (p.commentsCount ?? 1) - 1) };
           });
-
           this.isDeletingComment.set(false);
           this.showDeleteConfirm.set(false);
           this.pendingDeleteCommentId.set('');
@@ -144,12 +142,13 @@ export class ViewPost implements OnInit, OnDestroy {
     this.isEditing.set(false);
     this.successMessage.set('');
     this.errorMessage.set('');
+    this.activeFormats.set(new Set());
+    this.activeBlock.set('');
     this.editForm.reset();
   }
 
   savePost(): void {
     if (this.editForm.invalid) return;
-
     this.successMessage.set('');
     this.errorMessage.set('');
 
@@ -161,7 +160,6 @@ export class ViewPost implements OnInit, OnDestroy {
           this.post.set(updated);
           this.isEditing.set(false);
           this.successMessage.set('Post updated successfully!');
-
           setTimeout(() => {
             this.successMessage.set('');
             this.postUpdated.emit(updated);
@@ -175,24 +173,80 @@ export class ViewPost implements OnInit, OnDestroy {
   }
 
   onContentInput(event: Event): void {
-    const html = (event.target as HTMLElement).innerHTML;
+    const html    = (event.target as HTMLElement).innerHTML;
+    const isEmpty = html === '' || html === '<br>';
+    this.editForm.patchValue({ content: isEmpty ? '' : html }, { emitEvent: false });
+    this.updateEditorFormats();
+  }
+
+  updateEditorFormats(): void {
+    const commands = [
+      'bold', 'italic', 'underline', 'strikeThrough',
+      'justifyLeft', 'justifyCenter', 'justifyRight', 'justifyFull',
+      'insertUnorderedList', 'insertOrderedList',
+    ];
+    const active = new Set<string>();
+    commands.forEach(cmd => {
+      try { if (document.queryCommandState(cmd)) active.add(cmd); } catch { }
+    });
+    this.activeFormats.set(active);
+
+    // Detect current block tag (h1–h4, p)
+    const selection = window.getSelection();
+    if (selection && selection.rangeCount > 0) {
+      let node: Node | null = selection.getRangeAt(0).commonAncestorContainer;
+      while (node && node !== this.contentEditorRef?.nativeElement) {
+        if (node.nodeType === Node.ELEMENT_NODE) {
+          const tag = (node as Element).tagName.toLowerCase();
+          if (['h1', 'h2', 'h3', 'h4', 'p'].includes(tag)) {
+            this.activeBlock.set(tag);
+            return;
+          }
+        }
+        node = node.parentNode;
+      }
+    }
+    this.activeBlock.set('');
+  }
+
+  execFormat(command: string): void {
+    this.contentEditorRef.nativeElement.focus();
+    document.execCommand(command, false, '');
+    this.updateEditorFormats();
+    // sync value after format
+    const html = this.contentEditorRef.nativeElement.innerHTML;
     this.editForm.patchValue({ content: html }, { emitEvent: false });
   }
 
+  execFormatBlock(tag: string): void {
+    this.contentEditorRef.nativeElement.focus();
+    document.execCommand('formatBlock', false, tag);
+    this.updateEditorFormats();
+    const html = this.contentEditorRef.nativeElement.innerHTML;
+    this.editForm.patchValue({ content: html }, { emitEvent: false });
+  }
+
+  isFormatActive(command: string): boolean {
+    return this.activeFormats().has(command);
+  }
+
+  // ── Categories & Tags ──
   toggleCategory(category: string): void {
     const current: string[] = this.editForm.get('categories')?.value ?? [];
-    const updated = current.includes(category)
-      ? current.filter(c => c !== category)
-      : [...current, category];
-    this.editForm.patchValue({ categories: updated });
+    this.editForm.patchValue({
+      categories: current.includes(category)
+        ? current.filter(c => c !== category)
+        : [...current, category]
+    });
   }
 
   toggleTag(tag: string): void {
     const current: string[] = this.editForm.get('tags')?.value ?? [];
-    const updated = current.includes(tag)
-      ? current.filter(t => t !== tag)
-      : [...current, tag];
-    this.editForm.patchValue({ tags: updated });
+    this.editForm.patchValue({
+      tags: current.includes(tag)
+        ? current.filter(t => t !== tag)
+        : [...current, tag]
+    });
   }
 
   isCategorySelected(category: string): boolean {
@@ -203,18 +257,5 @@ export class ViewPost implements OnInit, OnDestroy {
     return (this.editForm.get('tags')?.value ?? []).includes(tag);
   }
 
-  formatDate(date: string | undefined): string {
-    if (!date) return '';
-    return new Date(date).toISOString().split('T')[0];
-  }
-
-  closeModal(): void {
-    this.close.emit();
-  }
-
-  document = document;
-
-execCommand(command: string): void {
-  document.execCommand(command, false);
-}
+  closeModal(): void { this.close.emit(); }
 }

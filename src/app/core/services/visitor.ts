@@ -10,7 +10,7 @@ export class VisitorService {
   private readonly API = `${environment.apiUrl}/visitor`;
 
   private readonly TRACKED_PAGES = [
-    '/welcome/apna-blog',
+    '/welcome',
     '/welcome/about'
   ];
 
