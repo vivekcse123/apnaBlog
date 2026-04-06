@@ -6,7 +6,7 @@
       "destination": "/api/sitemap"
     },
     {
-      "source": "/((?!sitemap\\.xml$).*)",
+      "source": "/(.*)",
       "destination": "/index.csr.html"
     }
   ],

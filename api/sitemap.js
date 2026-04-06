@@ -3,30 +3,30 @@ const { Readable } = require('stream');
 
 module.exports = async function handler(req, res) {
   try {
-    // ✅ Fetch posts from backend
-    const response = await fetch('https://apnablogserver.onrender.com/api/post');
+    let allPosts = [];
+    let page = 1;
+    let totalPages = 1;
 
-    // ✅ Check if fetch was successful
-    if (!response.ok) {
-      throw new Error(`Backend fetch failed: ${response.status}`);
-    }
+    // ✅ Fetch all pages
+    do {
+      const response = await fetch(`https://apnablogserver.onrender.com/api/post?page=${page}&limit=100`);
 
-    const data = await response.json();
+      if (!response.ok) {
+        throw new Error(`Backend fetch failed: ${response.status}`);
+      }
 
-    // ✅ Log to see actual shape of data
-    console.log('API response keys:', Object.keys(data));
+      const data = await response.json();
 
-    // ✅ Handle different response shapes
-    let posts = [];
-    if (Array.isArray(data)) {
-      posts = data;
-    } else if (Array.isArray(data.posts)) {
-      posts = data.posts;
-    } else if (Array.isArray(data.data)) {
-      posts = data.data;
-    }
+      // Your API uses { data: [...], totalPages: N }
+      const posts = Array.isArray(data.data) ? data.data : [];
+      allPosts = [...allPosts, ...posts];
 
-    console.log('Total posts found:', posts.length);
+      totalPages = data.totalPages || 1;
+      page++;
+
+    } while (page <= totalPages);
+
+    console.log('Total posts fetched:', allPosts.length);
 
     // ✅ Static routes
     const staticLinks = [
@@ -35,7 +35,7 @@ module.exports = async function handler(req, res) {
     ];
 
     // ✅ Dynamic blog routes
-    const postLinks = posts.map(post => ({
+    const postLinks = allPosts.map(post => ({
       url:        `/blog/${post._id}`,
       changefreq: 'weekly',
       priority:    0.7,
@@ -52,7 +52,6 @@ module.exports = async function handler(req, res) {
     res.status(200).send(xmlData.toString());
 
   } catch (err) {
-    // ✅ Return error as plain text so we can see it
     console.error('Sitemap error:', err.message);
     res.setHeader('Content-Type', 'text/plain');
     res.status(500).send(`Sitemap error: ${err.message}`);
