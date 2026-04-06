@@ -49,7 +49,6 @@
       <span class="float-icon">{{ isBookmarked() ? '🔖' : '📑' }}</span>
     </button>
     
-    <!-- Print Button -->
     <button 
       class="float-btn print-btn" 
       (click)="printArticle()"
@@ -57,7 +56,6 @@
       <span class="float-icon">🖨️</span>
     </button>
     
-    <!-- Share Button -->
     <button 
       class="float-btn share-btn" 
       (click)="toggleShareMenu()"
@@ -69,7 +67,6 @@
       }
     </button>
     
-    <!-- Share Menu Dropdown -->
     @if (shareMenuOpen()) {
       <div class="share-menu">
         <div class="share-menu-header">
@@ -106,7 +103,6 @@
     
   </div>
 
-  <!-- Table of Contents Sidebar -->
   @if (showToc() && tableOfContents().length > 0) {
     <div class="toc-sidebar" [class.open]="showToc()">
       <div class="toc-header">

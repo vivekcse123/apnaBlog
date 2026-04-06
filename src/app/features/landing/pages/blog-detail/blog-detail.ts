@@ -621,9 +621,9 @@ ngOnInit(): void {
   }
 
 navigateToBlog(postId: string): void {
-  this.router.navigate(['/welcome/blog', postId]);
+  this.router.navigate(['/blog', postId]);
   if (isPlatformBrowser(this.platformId)) {
-    window.scrollTo({ top: 0, behavior: 'instant' }); // 'smooth' feels slow
+    window.scrollTo({ top: 0, behavior: 'instant' });
   }
 }
 
