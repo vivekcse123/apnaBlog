@@ -1,12 +1,32 @@
 const { SitemapStream, streamToPromise } = require('sitemap');
 const { Readable } = require('stream');
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   try {
-
+    // ✅ Fetch posts from backend
     const response = await fetch('https://apnablogserver.onrender.com/api/post');
+
+    // ✅ Check if fetch was successful
+    if (!response.ok) {
+      throw new Error(`Backend fetch failed: ${response.status}`);
+    }
+
     const data = await response.json();
-    const posts = data.posts || data;
+
+    // ✅ Log to see actual shape of data
+    console.log('API response keys:', Object.keys(data));
+
+    // ✅ Handle different response shapes
+    let posts = [];
+    if (Array.isArray(data)) {
+      posts = data;
+    } else if (Array.isArray(data.posts)) {
+      posts = data.posts;
+    } else if (Array.isArray(data.data)) {
+      posts = data.data;
+    }
+
+    console.log('Total posts found:', posts.length);
 
     // ✅ Static routes
     const staticLinks = [
@@ -32,7 +52,9 @@ export default async function handler(req, res) {
     res.status(200).send(xmlData.toString());
 
   } catch (err) {
-    console.error('Sitemap error:', err);
-    res.status(500).end();
+    // ✅ Return error as plain text so we can see it
+    console.error('Sitemap error:', err.message);
+    res.setHeader('Content-Type', 'text/plain');
+    res.status(500).send(`Sitemap error: ${err.message}`);
   }
 }
