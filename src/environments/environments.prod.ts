@@ -1,7 +1,7 @@
 export const environment = {
   production: true,
   apiUrl:       'https://apnablogserver.onrender.com/api',
-  clientApiUrl: 'https://apnablogs.vercel.app',
+  clientApiUrl: 'https://www.apnainsights.com/',
 
   apiAuthEndpoint:   'https://apnablogserver.onrender.com/api/auth/',
   apiUserEndpoint:   'https://apnablogserver.onrender.com/api/user/',

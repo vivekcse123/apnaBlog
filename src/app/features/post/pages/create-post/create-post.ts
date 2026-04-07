@@ -1,8 +1,14 @@
-import { Component, ElementRef, ViewChild, inject, input, output, signal } from '@angular/core';
-import { AbstractControl, FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Post } from '../../../../core/models/post.model';
-import { Auth } from '../../../../core/services/auth';
-import { PostService } from '../../services/post-service';
+import {
+  Component, ElementRef, ViewChild,
+  inject, input, output, signal, computed,
+} from '@angular/core';
+import {
+  AbstractControl, FormArray, FormBuilder,
+  FormGroup, ReactiveFormsModule, Validators,
+} from '@angular/forms';
+import { Post }          from '../../../../core/models/post.model';
+import { Auth }          from '../../../../core/services/auth';
+import { PostService }   from '../../services/post-service';
 import { UploadService } from '../../services/upload-service';
 
 @Component({
@@ -34,6 +40,11 @@ export class CreatePost {
   imagePreviewUrl  = signal('');
   uploadMode       = signal<'url' | 'file'>('url');
 
+  // ── Role-based flag ──────────────────────────────────────
+  isAdmin = computed(() =>
+    this.authService.getCurrentUser()?.role?.toLowerCase() === 'admin'
+  );
+
   categoryOptions = [
     'Sports', 'Technology', 'Lifestyle', 'Education', 'Health', 'Business',
     'Entertainment', 'Social', 'Village', 'Cooking', 'Quotes', 'Exercise',
@@ -51,6 +62,7 @@ export class CreatePost {
     tags:          this.fb.array(this.tagOptions.map(() => this.fb.control(false))),
     comments:      [''],
     featuredImage: [''],
+    // Status is required only for admins; non-admins always submit as 'draft'
     status:        ['', Validators.required],
   });
 
@@ -77,25 +89,18 @@ export class CreatePost {
 
   onEditorPaste(event: ClipboardEvent): void {
     event.preventDefault();
-    
     const clipboardData = event.clipboardData;
     if (!clipboardData) return;
 
-    // Get plain text
     const text = clipboardData.getData('text/plain');
-    
-    // Get HTML if available
-    let html = clipboardData.getData('text/html');
-    
+    let html   = clipboardData.getData('text/html');
+
     if (html) {
-      // Clean the HTML - strip out Word/Google Docs formatting
       html = this.cleanPastedHTML(html);
     } else {
-      // Convert plain text to HTML with line breaks
       html = text.replace(/\n/g, '<br>');
     }
 
-    // Insert cleaned HTML at cursor
     const selection = window.getSelection();
     if (!selection || selection.rangeCount === 0) return;
 
@@ -105,7 +110,6 @@ export class CreatePost {
     const fragment = range.createContextualFragment(html);
     range.insertNode(fragment);
 
-    // Move cursor to end of inserted content
     range.collapse(false);
     selection.removeAllRanges();
     selection.addRange(range);
@@ -114,71 +118,56 @@ export class CreatePost {
   }
 
   private cleanPastedHTML(html: string): string {
-    // Create a temporary div to parse HTML
     const temp = document.createElement('div');
     temp.innerHTML = html;
 
-    // Remove unwanted elements
     const unwantedSelectors = [
       'script', 'style', 'meta', 'link', 'object', 'embed',
-      'iframe', 'applet', 'xml', 'o\\:p', 'w\\:sdt'
+      'iframe', 'applet', 'xml', 'o\\:p', 'w\\:sdt',
     ];
     unwantedSelectors.forEach(selector => {
       temp.querySelectorAll(selector).forEach(el => el.remove());
     });
 
-    // Clean all elements
     this.cleanElement(temp);
-
     return temp.innerHTML;
   }
 
   private cleanElement(element: Element): void {
-    // Allowed attributes per tag
     const allowedAttrs: { [key: string]: string[] } = {
-      'a': ['href', 'title'],
-      'img': ['src', 'alt', 'width', 'height'],
+      'a':     ['href', 'title'],
+      'img':   ['src', 'alt', 'width', 'height'],
       'table': ['border', 'cellpadding', 'cellspacing'],
-      'td': ['colspan', 'rowspan'],
-      'th': ['colspan', 'rowspan'],
+      'td':    ['colspan', 'rowspan'],
+      'th':    ['colspan', 'rowspan'],
     };
 
-    // Process all child nodes
     Array.from(element.childNodes).forEach(node => {
       if (node.nodeType === Node.ELEMENT_NODE) {
-        const el = node as Element;
+        const el      = node as Element;
         const tagName = el.tagName.toLowerCase();
 
-        // Remove all attributes except allowed ones
         const attrs = Array.from(el.attributes);
         attrs.forEach(attr => {
           const attrName = attr.name.toLowerCase();
-          const allowed = allowedAttrs[tagName] || [];
-          
-          // Remove style, class, id, and other formatting attributes
-          if (!allowed.includes(attrName) || 
-              attrName.startsWith('data-') || 
-              attrName === 'style' || 
-              attrName === 'class' || 
+          const allowed  = allowedAttrs[tagName] || [];
+          if (!allowed.includes(attrName) ||
+              attrName.startsWith('data-') ||
+              attrName === 'style' ||
+              attrName === 'class' ||
               attrName === 'id') {
             el.removeAttribute(attr.name);
           }
         });
 
-        // Recursively clean children
         this.cleanElement(el);
 
-        // Convert certain elements to simpler versions
         if (['span', 'font', 'div'].includes(tagName)) {
-          // Replace with paragraph if it has block content
           if (el.querySelector('p, h1, h2, h3, h4, ul, ol, table')) {
             const wrapper = document.createElement('div');
-            while (el.firstChild) {
-              wrapper.appendChild(el.firstChild);
-            }
+            while (el.firstChild) wrapper.appendChild(el.firstChild);
             el.replaceWith(...Array.from(wrapper.childNodes));
           } else {
-            // Just unwrap inline spans/fonts
             el.replaceWith(...Array.from(el.childNodes));
           }
         }
@@ -311,6 +300,12 @@ export class CreatePost {
       return;
     }
 
+    if (!this.isAdmin()) {
+      this.createBlogForm.get('status')?.clearValidators();
+      this.createBlogForm.get('status')?.updateValueAndValidity();
+      this.createBlogForm.patchValue({ status: 'draft' });
+    }
+
     const categorySelected = this.hasAtLeastOneChecked('categories');
     if (this.createBlogForm.invalid || !categorySelected) {
       if (!categorySelected) this.errorMessage.set('Please select at least one category.');
@@ -327,20 +322,26 @@ export class CreatePost {
       categories:    selectedCategories,
       tags:          selectedTags,
       featuredImage: this.createBlogForm.value.featuredImage ?? '',
-      status:        this.createBlogForm.value.status,
+      status:        this.createBlogForm.value.status, 
       comments:      this.createBlogForm.value.comments,
       user:          userId,
     };
 
     this.postService.createBlog(payload).subscribe({
       next: (res) => {
-        this.successMessage.set('Post published successfully!');
+        this.successMessage.set(
+          this.isAdmin()
+            ? 'Post published successfully!'
+            : 'Post submitted for review!'
+        );
         this.isSubmitted.set(false);
         setTimeout(() => {
           this.postCreated.emit(res.data);
           this.successMessage.set('');
           this.imagePreviewUrl.set('');
           this.createBlogForm.reset();
+          this.createBlogForm.get('status')?.setValidators(Validators.required);
+          this.createBlogForm.get('status')?.updateValueAndValidity();
           if (this.editorRef?.nativeElement) this.editorRef.nativeElement.innerHTML = '';
           this.closeModal();
         }, 1000);

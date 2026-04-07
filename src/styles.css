@@ -283,3 +283,26 @@ th {
   color: var(--text-muted);
   background: var(--bg-surface-alt);
 }
+
+app-promo-modal .modal,
+app-promo-modal .modal h1,
+app-promo-modal .modal p,
+app-promo-modal .modal li,
+app-promo-modal .modal .tagline,
+app-promo-modal .modal .badge,
+app-promo-modal .modal .features li {
+  color: #e2e8f0 !important;
+  -webkit-text-fill-color: #e2e8f0 !important;
+}
+
+app-promo-modal .modal .brand {
+  -webkit-text-fill-color: transparent !important;
+  background: linear-gradient(90deg, #38bdf8, #818cf8);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+app-promo-modal .modal .cta-btn {
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+}

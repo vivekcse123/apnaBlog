@@ -1,0 +1,24 @@
+@if (isOpen) {
+  <div class="overlay" (click)="closeModal($event)">
+    <div class="modal" (click)="$event.stopPropagation()">
+
+      <button class="close-btn" (click)="closeModal($event)">×</button>
+
+      <div class="badge">NEW PLATFORM</div>
+
+      <h1>🚀 Welcome to <span class="brand">ApnaInsights</span></h1>
+
+      <p class="tagline">Everything at one place for curious minds ✨</p>
+
+      <ul class="features">
+        <li><span class="icon">🔐</span> Secured with JWT Authentication</li>
+        <li><span class="icon">📚</span> Best place to read &amp; write blogs</li>
+        <li><span class="icon">🧠</span> Acquire knowledge daily</li>
+        <li><span class="icon">⚡</span> Fast, modern &amp; user-friendly platform</li>
+      </ul>
+
+      <button class="cta-btn" (click)="closeModal($event)">Get Started →</button>
+
+    </div>
+  </div>
+}

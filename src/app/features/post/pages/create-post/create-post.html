@@ -5,7 +5,13 @@
 
     <div class="heading">
       <h2>Create New Blog Post ✍️</h2>
-      <p>Fill in the details to publish a new post</p>
+      <p>
+        @if (isAdmin()) {
+          Fill in the details to publish a new post
+        } @else {
+          Fill in the details — your post will be reviewed before going live
+        }
+      </p>
     </div>
 
     <form [formGroup]="createBlogForm" (ngSubmit)="createBlog()">
@@ -57,51 +63,21 @@
           <span class="toolbar-sep"></span>
 
           <div class="toolbar-group">
-            <button
-              type="button"
-              class="tool-btn heading-btn"
-              [class.active]="activeBlock() === 'h1'"
+            <button type="button" class="tool-btn heading-btn" [class.active]="activeBlock() === 'h1'"
               title="Heading 1 — Page title (use once)"
-              (mousedown)="$event.preventDefault()"
-              (click)="formatBlock('h1')">
-              H1
-            </button>
-            <button
-              type="button"
-              class="tool-btn heading-btn"
-              [class.active]="activeBlock() === 'h2'"
+              (mousedown)="$event.preventDefault()" (click)="formatBlock('h1')">H1</button>
+            <button type="button" class="tool-btn heading-btn" [class.active]="activeBlock() === 'h2'"
               title="Heading 2 — Section title"
-              (mousedown)="$event.preventDefault()"
-              (click)="formatBlock('h2')">
-              H2
-            </button>
-            <button
-              type="button"
-              class="tool-btn heading-btn"
-              [class.active]="activeBlock() === 'h3'"
+              (mousedown)="$event.preventDefault()" (click)="formatBlock('h2')">H2</button>
+            <button type="button" class="tool-btn heading-btn" [class.active]="activeBlock() === 'h3'"
               title="Heading 3 — Sub-section"
-              (mousedown)="$event.preventDefault()"
-              (click)="formatBlock('h3')">
-              H3
-            </button>
-            <button
-              type="button"
-              class="tool-btn heading-btn"
-              [class.active]="activeBlock() === 'h4'"
+              (mousedown)="$event.preventDefault()" (click)="formatBlock('h3')">H3</button>
+            <button type="button" class="tool-btn heading-btn" [class.active]="activeBlock() === 'h4'"
               title="Heading 4 — Minor heading"
-              (mousedown)="$event.preventDefault()"
-              (click)="formatBlock('h4')">
-              H4
-            </button>
-            <button
-              type="button"
-              class="tool-btn heading-btn"
-              [class.active]="activeBlock() === 'p'"
+              (mousedown)="$event.preventDefault()" (click)="formatBlock('h4')">H4</button>
+            <button type="button" class="tool-btn heading-btn" [class.active]="activeBlock() === 'p'"
               title="Paragraph — Body text"
-              (mousedown)="$event.preventDefault()"
-              (click)="formatBlock('p')">
-              P
-            </button>
+              (mousedown)="$event.preventDefault()" (click)="formatBlock('p')">P</button>
           </div>
 
           <span class="toolbar-sep"></span>
@@ -299,33 +275,48 @@
                 <span class="upload-spinner large"></span>
               </div>
             } @else {
-              <button
-                type="button"
-                class="remove-image-btn"
-                (click)="removeImage(fileInput)"
-                title="Remove image">
-                ✕
-              </button>
+              <button type="button" class="remove-image-btn"
+                (click)="removeImage(fileInput)" title="Remove image">✕</button>
             }
           </div>
         }
       </div>
 
-      <select formControlName="status" style="margin-top: 10px;">
-        <option value="" disabled selected>Select Status</option>
-        <option value="draft">Draft</option>
-        <option value="published">Published</option>
-      </select>
-      @if (createBlogForm.get('status')?.invalid && (isSubmitted() || createBlogForm.get('status')?.touched)) {
-        @if (createBlogForm.get('status')?.errors?.['required']) {
-          <small class="error">Status is required...!</small>
+      <!-- ── Status: admin only ── -->
+      @if (isAdmin()) {
+        <select formControlName="status" style="margin-top: 10px;">
+          <option value="" disabled selected>Select Status</option>
+          <option value="draft">Draft</option>
+          <option value="published">Published</option>
+        </select>
+        @if (createBlogForm.get('status')?.invalid && (isSubmitted() || createBlogForm.get('status')?.touched)) {
+          @if (createBlogForm.get('status')?.errors?.['required']) {
+            <small class="error">Status is required...!</small>
+          }
         }
+      } @else {
+        <!-- Non-admin: show info banner instead -->
+        <div class="pending-notice">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          <span>Your post will be saved as <strong>Pending Review</strong> and will be published once approved (usually within 24 hours).</span>
+        </div>
       }
 
       <div class="actions">
         <button type="button" class="cancel-btn" (click)="closeModal()">Cancel</button>
         <button type="submit" class="submit-btn" [disabled]="imageUploading()">
-          @if (imageUploading()) { Uploading Image… } @else { Publish Post }
+          @if (imageUploading()) {
+            Uploading Image…
+          } @else if (isAdmin()) {
+            Publish Post
+          } @else {
+            Submit for Review
+          }
         </button>
       </div>
 

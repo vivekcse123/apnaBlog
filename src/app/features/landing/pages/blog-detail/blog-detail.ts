@@ -198,24 +198,55 @@ ngOnInit(): void {
       this.meta.updateTag({ name: 'twitter:image', content: post.featuredImage });
     }
   }
-
   private loadRelatedPosts(currentPost: Post): void {
-    const category = currentPost.categories[0];
-    if (!category) return;
-
-    this.postService.getAllPost(1, 20).pipe(
+    if (!currentPost.categories || currentPost.categories.length === 0) {
+      this.relatedPosts.set([]);
+      return;
+    }
+    this.postService.getAllPost(1, 100).pipe(
       takeUntilDestroyed(this.destroyRef)
     ).subscribe({
       next: (res) => {
-        const published = (res.data ?? []).filter((p: Post) => 
-          p.status === 'published' && 
-          p._id !== currentPost._id &&
+        const allPosts = res.data ?? [];
+        const published = allPosts.filter((p: Post) => {
+
+        if (p._id === currentPost._id) return false;
+        
+        if (p.status !== 'published') return false;
+        
+        if (!p.categories || !Array.isArray(p.categories) || p.categories.length === 0) {
+          return false;
+        }
+        
+        return currentPost.categories.some(category => 
           p.categories.includes(category)
         );
-        this.relatedPosts.set(published.slice(0, 4));
-      },
-    });
-  }
+      });
+      
+      const sorted = published.sort((a, b) => {
+        const aMatches = a.categories.filter(cat => 
+          currentPost.categories.includes(cat)
+        ).length;
+        const bMatches = b.categories.filter(cat => 
+          currentPost.categories.includes(cat)
+        ).length;
+        
+        if (bMatches !== aMatches) {
+          return bMatches - aMatches;
+        }
+        
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      });
+      
+      this.relatedPosts.set(sorted.slice(0, 4));
+      
+    },
+    error: (err) => {
+      console.error('Error loading related posts:', err);
+      this.relatedPosts.set([]);
+    }
+  });
+}
 
   private loadComments(postId: string): void {
     this.commentsLoading.set(true);

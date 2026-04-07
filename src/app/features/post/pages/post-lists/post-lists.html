@@ -93,13 +93,18 @@
               </td>
               <td>
                 <span
-                  class="status-badge"
-                  [class.status-published]="blog.status === 'published'"
-                  [class.status-draft]="blog.status === 'draft'"
+                class="status-badge"
+                [class.status-published]="blog.status === 'published'"
+                [class.status-draft]="blog.status === 'draft' && role() === 'admin'"
+                [class.status-pending]="blog.status === 'draft' && role() !== 'admin'"
                 >
+                @if (blog.status === 'draft' && role() !== 'admin') {
+                  Pending Review
+                } @else {
                   {{ blog.status | titlecase }}
-                </span>
-              </td>
+                }
+              </span>
+            </td>
               <td>
                 <div class="stat-cell">
                   <svg width="13" height="13" viewBox="0 0 22 22" fill="none">

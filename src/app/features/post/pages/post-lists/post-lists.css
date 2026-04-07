@@ -42,7 +42,6 @@
   box-shadow: 0 0 0 3px rgba(67, 206, 162, 0.12);
 }
 
-/* Active state — button is toggled ON */
 .today-btn--active {
   background: linear-gradient(135deg, #43cea2, #185a9d);
   border-color: transparent;
@@ -53,6 +52,11 @@
   font-size: 12px;
   color: var(--text-muted);
   opacity: 0.75;
+}
+
+.status-pending {
+  background: color-mix(in srgb, #a78bfa 12%, transparent);
+  color: #a78bfa;
 }
 
 .today-btn--active:hover {
@@ -75,7 +79,6 @@
   color: var(--text-muted);
 }
 
-/* ── Actions ── */
 .actions {
   display: flex;
   gap: 12px;
@@ -132,7 +135,6 @@
   box-shadow: 0 6px 18px rgba(67, 206, 162, 0.3);
 }
 
-/* ── Table Card ── */
 .table-card {
   background: var(--bg-surface);
   border: 1px solid var(--border);
@@ -141,7 +143,6 @@
   overflow: hidden;
 }
 
-/* ── Horizontal Scroll Wrapper ── */
 .table-scroll {
   width: 100%;
   overflow-x: auto;
@@ -170,7 +171,6 @@ table {
   background: var(--bg-surface);
 }
 
-/* ── Table Head ── */
 .table-card thead,
 .table-card thead tr {
   background: linear-gradient(135deg, #43cea2, #185a9d) !important;
@@ -187,7 +187,6 @@ table {
   white-space: nowrap;
 }
 
-/* ── Table Body ── */
 .table-card td {
   padding: 12px 15px;
   border-bottom: 1px solid var(--border);
@@ -207,7 +206,6 @@ tbody > tr:hover td {
   background: var(--bg-hover);
 }
 
-/* ── Blog Title Cell ── */
 .blog-title {
   font-size: 14px;
   font-weight: 500;
@@ -228,7 +226,6 @@ tbody > tr:hover td {
   text-overflow: ellipsis;
 }
 
-/* ── Category Badges ── */
 .category-list {
   display: flex;
   flex-wrap: wrap;
@@ -261,7 +258,6 @@ tbody > tr:hover td {
   color: #818cf8;
 }
 
-/* ── Status Badges ── */
 .status-badge {
   display: inline-block;
   padding: 5px 12px;
@@ -281,7 +277,6 @@ tbody > tr:hover td {
   color: var(--warn);
 }
 
-/* ── Stat Cell ── */
 .stat-cell {
   display: flex;
   align-items: center;
@@ -290,7 +285,6 @@ tbody > tr:hover td {
   color: var(--text-secondary);
 }
 
-/* ── Action Buttons ── */
 .action-buttons {
   display: flex;
   gap: 6px;
@@ -321,7 +315,6 @@ tbody > tr:hover td {
 .action-buttons .delete       { background-color: var(--danger); }
 .action-buttons .delete:hover { background-color: var(--danger-hover); }
 
-/* ── Empty State ── */
 .empty-row {
   text-align: center;
   padding: 40px 0 !important;
@@ -336,7 +329,6 @@ tbody > tr:hover td {
   font-size: 14px;
 }
 
-/* ── Pagination ── */
 .pagination {
   display: flex;
   justify-content: center;
@@ -377,7 +369,6 @@ tbody > tr:hover td {
   cursor: not-allowed;
 }
 
-/* ── Modal Overlay ── */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -396,7 +387,6 @@ tbody > tr:hover td {
   to   { opacity: 1; }
 }
 
-/* ── Confirm Box ── */
 .confirm-box {
   width: 100%;
   max-width: 360px;
@@ -440,7 +430,6 @@ tbody > tr:hover td {
   line-height: 1.6;
 }
 
-/* ── Confirm Actions ── */
 .confirm-actions {
   display: flex;
   gap: 10px;
@@ -481,7 +470,6 @@ tbody > tr:hover td {
 .btn-confirm.delete   { background: var(--danger); }
 .btn-confirm:hover    { opacity: 0.88; }
 
-/* ── Responsive ── */
 @media (max-width: 1024px) {
   .user-page { padding: 30px 40px; }
 }
