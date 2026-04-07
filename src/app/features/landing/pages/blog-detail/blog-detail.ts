@@ -171,7 +171,7 @@ ngOnInit(): void {
 
   private updateMetaTags(post: Post): void {
     // Set page title
-    this.titleService.setTitle(`${post.title} | ApnaBlogs`);
+    this.titleService.setTitle(`${post.title} | ApnaInsights`);
     
     // Set meta description
     this.meta.updateTag({ 

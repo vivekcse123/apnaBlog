@@ -12,7 +12,7 @@ const routes: Routes = [
   {
     path: 'about',
     component: About,
-    title: 'ApnaBlogs - About'
+    title: 'ApnaInsights - About'
   }
 ];
 
