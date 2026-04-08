@@ -279,3 +279,11 @@
 
   .right-section { gap: 10px; }
 }
+
+/* Logo image sizing — overrides the inherited font-size on .logo-hex */
+.logo-hex img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  display: block;
+}

@@ -27,22 +27,6 @@ body {
 
 .header-left, .header-right { display: flex; align-items: center; gap: 14px; }
 
-.logo { display: flex; align-items: center; gap: 8px; cursor: pointer; text-decoration: none; }
-
-.logo-hex {
-  font-size: 1.5rem;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-}
-
-.logo-text {
-  font-family: 'Playfair Display', serif;
-  font-size: 22px; font-weight: 700;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-  letter-spacing: 0.3px;
-}
-
 .theme-toggle {
   width: 38px; height: 38px; border-radius: 10px;
   border: 1.5px solid var(--border);

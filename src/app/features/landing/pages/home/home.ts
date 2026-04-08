@@ -1,5 +1,5 @@
 import {
-  Component, inject, signal, computed, OnInit, DestroyRef,
+  Component, inject, signal, computed, OnInit, OnDestroy, DestroyRef,
   Input, ChangeDetectionStrategy, WritableSignal, PLATFORM_ID,
   HostListener, ElementRef, ViewChild
 } from '@angular/core';
@@ -18,10 +18,7 @@ import { UserService } from '../../../user/services/user-service';
 import { User } from '../../../user/models/user.mode';
 import { VisitorService } from '../../../../core/services/visitor';
 import { WelcomeModal } from '../welcome.modal';
-
-// ─── Welcome modal is imported lazily via @defer ──────────────────────────────
-// Do NOT add WelcomeModal to the imports array here.
-// It is referenced only in the template inside a @defer block.
+import { FormatCountPipe } from '../../../../shared/pipes/format-count-pipe';
 
 interface DrawerComment {
   _id?: string;
@@ -31,19 +28,22 @@ interface DrawerComment {
   createdAt: string;
 }
 
-const PAGE_SIZE           = 8;
-const COMMENT_PAGE_SIZE   = 5;   // initial + incremental load size
+interface PostWithTs extends Post {
+  _ts: number;
+}
+
+const PAGE_SIZE         = 8;
+const COMMENT_PAGE_SIZE = 5;
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  // WelcomeModal is NOT listed here — Angular's @defer handles the lazy import.
-  imports: [RouterLink, CommonModule, FormsModule, ReadBlog, NgTemplateOutlet, WelcomeModal],
+  imports: [RouterLink, CommonModule, FormsModule, ReadBlog, NgTemplateOutlet, WelcomeModal, FormatCountPipe],
   templateUrl: './home.html',
   styleUrl: './home.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class Home implements OnInit {
+export class Home implements OnInit, OnDestroy {
   private postService    = inject(PostService);
   private destroyRef     = inject(DestroyRef);
   private route          = inject(ActivatedRoute);
@@ -57,8 +57,10 @@ export class Home implements OnInit {
   @Input() standalone = true;
   @ViewChild('searchInput') searchInputEl?: ElementRef<HTMLInputElement>;
 
-  // ── Core data ────────────────────────────────────────────────────────────────
-  allPosts         = signal<Post[]>([]);
+  // ── Core data ─────────────────────────────────────────────────────────────────
+  // Store PostWithTs directly so the timestamp is computed ONCE per post load,
+  // not on every derived computed() call.
+  allPosts         = signal<PostWithTs[]>([]);
   isLoading        = signal(true);
   isViewed         = signal(false);
   selectedId       = signal('');
@@ -69,20 +71,19 @@ export class Home implements OnInit {
   showScrollTop    = signal(false);
 
   // ── Welcome modal ─────────────────────────────────────────────────────────────
-  /** Becomes true after the 2–3 s delay, triggering the @defer block in the template. */
-  showWelcomeModal = signal(false);
+  showWelcomeModal  = signal(false);
   private welcomeTimerId: ReturnType<typeof setTimeout> | null = null;
 
-  // ── Pagination ───────────────────────────────────────────────────────────────
+  // ── Pagination ────────────────────────────────────────────────────────────────
   trendingPage = signal(0);
   hotPage      = signal(0);
   latestPage   = signal(0);
 
-  // ── Likes / bookmarks ────────────────────────────────────────────────────────
+  // ── Likes / bookmarks ─────────────────────────────────────────────────────────
   likedPostIds      = signal<Set<string>>(new Set());
   bookmarkedPostIds = signal<Set<string>>(new Set());
 
-  // ── Comment drawer ───────────────────────────────────────────────────────────
+  // ── Comment drawer ────────────────────────────────────────────────────────────
   commentDrawerPostId   = signal<string | null>(null);
   commentText           = signal('');
   commentSubmitting     = signal(false);
@@ -90,18 +91,15 @@ export class Home implements OnInit {
 
   drawerComments        = signal<DrawerComment[]>([]);
   drawerCommentsLoading = signal(false);
-
   loadingMoreComments   = signal(false);
-
   totalCommentsCount    = signal(0);
-
-  public commentFetchedCount = signal(0);
-
-  deletingCommentId = signal<string | null>(null);
+  commentFetchedCount   = signal(0);
+  deletingCommentId     = signal<string | null>(null);
 
   private currentUserData = signal<User | null>(null);
   private searchInput$    = new Subject<string>();
 
+  // ── Static data (never reassigned, saves GC pressure) ─────────────────────────
   readonly skeletonItems: null[] = new Array(8).fill(null);
 
   readonly categories: string[] = [
@@ -116,24 +114,33 @@ export class Home implements OnInit {
     Social: '🤝', Quotes: '💬', Village: '🌾',
   };
 
-  private postsWithTs = computed(() =>
-    this.allPosts().map(p => ({ ...p, _ts: new Date(p.createdAt).getTime() }))
-  );
+  // ── Reading-time cache (memoize per post id so it's computed at most once) ────
+  private readingTimeCache = new Map<string, number>();
+
+  // ── Sorted pools ─────────────────────────────────────────────────────────────
+  // Each pool depends only on allPosts, so they recompute once after a load/patch.
+  // Using PostWithTs avoids re-running `new Date().getTime()` on every access.
 
   private byLikes = computed(() =>
-    [...this.postsWithTs()].sort((a, b) => b.likesCount - a.likesCount)
-  );
-  private byViews = computed(() =>
-    [...this.postsWithTs()].sort((a, b) => b.views - a.views)
-  );
-  private byDate = computed(() =>
-    [...this.postsWithTs()].sort((a, b) => b._ts - a._ts)
+    [...this.allPosts()].sort((a, b) => b.likesCount - a.likesCount)
   );
 
+  private byViews = computed(() =>
+    [...this.allPosts()].sort((a, b) => b.views - a.views)
+  );
+
+  private byDate = computed(() =>
+    [...this.allPosts()].sort((a, b) => b._ts - a._ts)
+  );
+
+  // ── Section pools (exclude already-shown posts from lower-priority sections) ──
   private trendingPool = computed(() => this.byLikes());
 
   private hotPool = computed(() => {
-    const trendingIds = new Set(this.trendingPool().slice(0, PAGE_SIZE).map(p => p._id));
+    // Use a Set of the first PAGE_SIZE trending ids for O(1) lookup
+    const trendingIds = new Set(
+      this.trendingPool().slice(0, PAGE_SIZE).map(p => p._id)
+    );
     return this.byViews().filter(p => !trendingIds.has(p._id));
   });
 
@@ -145,6 +152,7 @@ export class Home implements OnInit {
     return this.byDate().filter(p => !usedIds.has(p._id));
   });
 
+  // ── Paginated slices ──────────────────────────────────────────────────────────
   trendingPosts = computed(() => {
     const start = this.trendingPage() * PAGE_SIZE;
     return this.trendingPool().slice(start, start + PAGE_SIZE);
@@ -164,17 +172,25 @@ export class Home implements OnInit {
   hotPageCount      = computed(() => Math.max(1, Math.ceil(this.hotPool().length / PAGE_SIZE)));
   latestPageCount   = computed(() => Math.max(1, Math.ceil(this.latestPool().length / PAGE_SIZE)));
 
+  // ── Filtered / searched view ──────────────────────────────────────────────────
   filteredPosts = computed(() => {
     const cat  = this.selectedCategory();
     const q    = this.searchQuery().trim().toLowerCase();
     const sort = this.selectedSort();
 
-    let posts = this.postsWithTs();
-    if (cat) posts = posts.filter(p => p.categories.includes(cat));
-    if (q)   posts = posts.filter(p =>
-      p.title.toLowerCase().includes(q) || p.description.toLowerCase().includes(q)
-    );
+    let posts: PostWithTs[] = this.allPosts();
 
+    // Apply category filter first (cheapest — exact string match)
+    if (cat) posts = posts.filter(p => p.categories.includes(cat));
+
+    // Apply search (more expensive — string scan)
+    if (q) {
+      posts = posts.filter(p =>
+        p.title.toLowerCase().includes(q) || p.description.toLowerCase().includes(q)
+      );
+    }
+
+    // Sort only when necessary (avoids a sort when neither filter changes sort order)
     switch (sort) {
       case 'liked':    return [...posts].sort((a, b) => b.likesCount - a.likesCount);
       case 'viewed':   return [...posts].sort((a, b) => b.views - a.views);
@@ -183,6 +199,7 @@ export class Home implements OnInit {
     }
   });
 
+  // ── Category counts (recomputes once per allPosts change) ─────────────────────
   categoryCounts = computed((): Record<string, number> => {
     const counts: Record<string, number> = {};
     for (const post of this.allPosts()) {
@@ -211,7 +228,6 @@ export class Home implements OnInit {
     return postOwnerId?.toString() === userId.toString();
   });
 
-  /** True when there are more comments to fetch from the server. */
   hasMoreComments = computed(() =>
     this.commentFetchedCount() < this.totalCommentsCount()
   );
@@ -238,7 +254,7 @@ export class Home implements OnInit {
     }
   }
 
-  // ── Lifecycle ────────────────────────────────────────────────────────────────
+  // ── Lifecycle ─────────────────────────────────────────────────────────────────
   ngOnInit(): void {
     this.standalone = this.route.snapshot.data['standalone'] ?? this.standalone;
 
@@ -248,14 +264,10 @@ export class Home implements OnInit {
         this.visitorService.trackVisit('/welcome');
       }
 
-      // ── Welcome modal: 2–3 s delay after page load ──────────────────────────
-      // Only show once per session so returning visitors aren't annoyed.
       const alreadySeen = sessionStorage.getItem('apna_welcome_seen');
       if (!alreadySeen) {
-        const delay = 2000 + Math.random() * 1000; // 2 000 – 3 000 ms
-        this.welcomeTimerId = setTimeout(() => {
-          this.showWelcomeModal.set(true);
-        }, delay);
+        const delay = 2000 + Math.random() * 1000;
+        this.welcomeTimerId = setTimeout(() => this.showWelcomeModal.set(true), delay);
       }
     }
 
@@ -266,11 +278,13 @@ export class Home implements OnInit {
       if (cat) this.selectedCategory.set(cat);
     });
 
+    // Kick off all async work in parallel — don't await sequentially
     this.loadPosts();
     this.restoreLikedIds();
     this.restoreBookmarkedIds();
     this.fetchCurrentUser();
 
+    // Debounced search — prevents computed signals firing on every keystroke
     this.searchInput$.pipe(
       debounceTime(350),
       distinctUntilChanged(),
@@ -279,10 +293,15 @@ export class Home implements OnInit {
   }
 
   ngOnDestroy(): void {
-    if (this.welcomeTimerId !== null) clearTimeout(this.welcomeTimerId);
+    if (this.welcomeTimerId !== null) {
+      clearTimeout(this.welcomeTimerId);
+      this.welcomeTimerId = null;
+    }
+    // Clear reading-time cache to free memory
+    this.readingTimeCache.clear();
   }
 
-  // ── Welcome modal helpers ─────────────────────────────────────────────────────
+  // ── Welcome modal ─────────────────────────────────────────────────────────────
   dismissWelcomeModal(): void {
     this.showWelcomeModal.set(false);
     if (isPlatformBrowser(this.platformId)) {
@@ -290,19 +309,22 @@ export class Home implements OnInit {
     }
   }
 
-  // ── Search ───────────────────────────────────────────────────────────────────
+  // ── Search ────────────────────────────────────────────────────────────────────
   onSearchInput(value: string): void {
     this.searchInput$.next(value);
   }
 
-  // ── Posts ────────────────────────────────────────────────────────────────────
+  // ── Posts ─────────────────────────────────────────────────────────────────────
   loadPosts(): void {
     this.postService.getAllPost(1, 100).pipe(
       takeUntilDestroyed(this.destroyRef),
       finalize(() => this.isLoading.set(false))
     ).subscribe({
       next: (res) => {
-        const published = (res.data ?? []).filter((p: Post) => p.status === 'published');
+        const published = (res.data ?? [])
+          .filter((p: Post) => p.status === 'published')
+          // Pre-compute timestamps HERE — once, not inside computed()
+          .map((p: Post): PostWithTs => ({ ...p, _ts: new Date(p.createdAt).getTime() }));
         this.allPosts.set(published);
       },
       error: (err) => console.error(err?.error?.message),
@@ -324,19 +346,23 @@ export class Home implements OnInit {
     return (Date.now() - new Date(post.createdAt).getTime()) < 48 * 60 * 60 * 1000;
   }
 
+  /**
+   * Memoized reading time — computed once per post id and cached.
+   * Without this, the calculation runs on every change-detection cycle for
+   * every visible card (stripping HTML tags + splitting words each time).
+   */
   getReadingTime(post: Post): number {
+    if (this.readingTimeCache.has(post._id)) {
+      return this.readingTimeCache.get(post._id)!;
+    }
     const text = (post as any).content?.replace(/<[^>]*>/g, '') ?? post.description ?? '';
-    return Math.max(1, Math.ceil(text.trim().split(/\s+/).length / 200));
+    const time = Math.max(1, Math.ceil(text.trim().split(/\s+/).length / 200));
+    this.readingTimeCache.set(post._id, time);
+    return time;
   }
 
   getCatCount(cat: string): number {
     return this.categoryCounts()[cat] ?? 0;
-  }
-
-  formatCount(n: number): string {
-    if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M';
-    if (n >= 1_000)     return (n / 1_000).toFixed(1) + 'K';
-    return n.toString();
   }
 
   prevPage(page: WritableSignal<number>): void {
@@ -361,16 +387,17 @@ export class Home implements OnInit {
     const key = `viewed_${post._id}`;
     if (sessionStorage.getItem(key)) return;
     sessionStorage.setItem(key, '1');
+    // Patch local state optimistically, then fire API
     this.patchPost(post._id, { views: post.views + 1 });
     this.postService.addView(post._id).subscribe();
   }
 
-  // ── Likes ────────────────────────────────────────────────────────────────────
+  // ── Likes ──────────────────────────────────────────────────────────────────────
   private restoreLikedIds(): void {
     try {
       const stored = localStorage.getItem('apna_liked_posts');
       if (stored) this.likedPostIds.set(new Set(JSON.parse(stored)));
-    } catch { }
+    } catch { /* ignore quota / parse errors */ }
   }
 
   private persistLikedIds(ids: Set<string>): void {
@@ -400,6 +427,7 @@ export class Home implements OnInit {
       this.patchPost(post._id, { likesCount: post.likesCount + 1 });
       this.postService.likePost(post._id).subscribe({
         error: () => {
+          // Rollback optimistic update on API failure
           newSet.delete(post._id);
           this.likedPostIds.set(new Set(newSet));
           this.persistLikedIds(newSet);
@@ -409,7 +437,7 @@ export class Home implements OnInit {
     }
   }
 
-  // ── Bookmarks ────────────────────────────────────────────────────────────────
+  // ── Bookmarks ──────────────────────────────────────────────────────────────────
   private restoreBookmarkedIds(): void {
     try {
       const stored = localStorage.getItem('apna_bookmarked_posts');
@@ -436,7 +464,7 @@ export class Home implements OnInit {
     this.persistBookmarkedIds(newSet);
   }
 
-  // ── Comments drawer ───────────────────────────────────────────────────────────
+  // ── Comment drawer ─────────────────────────────────────────────────────────────
   openCommentDrawer(post: Post, event: Event): void {
     event.stopPropagation();
     this.commentText.set('');
@@ -445,7 +473,7 @@ export class Home implements OnInit {
     this.commentFetchedCount.set(0);
     this.totalCommentsCount.set(post.commentsCount ?? 0);
     this.commentDrawerPostId.set(post._id);
-    this.loadComments(post._id, 0); // initial page
+    this.loadComments(post._id, 0);
   }
 
   closeCommentDrawer(): void {
@@ -457,37 +485,26 @@ export class Home implements OnInit {
     this.totalCommentsCount.set(0);
   }
 
-  /**
-   * Load a page of comments.
-   * @param postId  Target post.
-   * @param skip    How many to skip (offset-based pagination).
-   */
   private loadComments(postId: string, skip: number): void {
     const isFirst = skip === 0;
-    if (isFirst) {
-      this.drawerCommentsLoading.set(true);
-    } else {
-      this.loadingMoreComments.set(true);
-    }
+    isFirst
+      ? this.drawerCommentsLoading.set(true)
+      : this.loadingMoreComments.set(true);
 
-    // Pass `skip` and `limit` to your API.
-    // Adjust the method signature of postService.getComments() to accept these params.
     this.postService.getComments(postId, skip, COMMENT_PAGE_SIZE).subscribe({
       next: (res: any) => {
         const incoming: DrawerComment[] = res.comments ?? [];
         const total: number             = res.total ?? res.totalCount ?? incoming.length;
 
-        if (isFirst) {
-          this.drawerComments.set(incoming);
-        } else {
-          this.drawerComments.set([...this.drawerComments(), ...incoming]);
-        }
-
+        this.drawerComments.set(
+          isFirst ? incoming : [...this.drawerComments(), ...incoming]
+        );
         this.commentFetchedCount.set(this.commentFetchedCount() + incoming.length);
         this.totalCommentsCount.set(total);
 
-        if (isFirst) this.drawerCommentsLoading.set(false);
-        else          this.loadingMoreComments.set(false);
+        isFirst
+          ? this.drawerCommentsLoading.set(false)
+          : this.loadingMoreComments.set(false);
       },
       error: () => {
         this.drawerCommentsLoading.set(false);
@@ -502,12 +519,12 @@ export class Home implements OnInit {
     this.loadComments(postId, this.commentFetchedCount());
   }
 
-  // ── Auth helpers ─────────────────────────────────────────────────────────────
-  get currentUser(): User | null { return this.currentUserData(); }
-  get isLoggedIn(): boolean { return this.auth.isAuthorized() && !!this.currentUserData(); }
-  get loggedInUserName(): string { return this.currentUserData()?.name ?? 'Anonymous'; }
+  // ── Auth helpers ───────────────────────────────────────────────────────────────
+  get currentUser(): User | null  { return this.currentUserData(); }
+  get isLoggedIn(): boolean       { return this.auth.isAuthorized() && !!this.currentUserData(); }
+  get loggedInUserName(): string  { return this.currentUserData()?.name ?? 'Anonymous'; }
 
-  // ── Submit comment ────────────────────────────────────────────────────────────
+  // ── Submit comment ─────────────────────────────────────────────────────────────
   submitComment(): void {
     const text = this.commentText().trim();
     if (!text) {
@@ -556,13 +573,11 @@ export class Home implements OnInit {
     });
   }
 
-  // ── Delete comment ────────────────────────────────────────────────────────────
   deleteComment(comment: DrawerComment, event: Event): void {
     event.stopPropagation();
     const postId    = this.commentDrawerPostId();
     const commentId = comment._id;
-    if (!postId || !commentId) return;
-    if (this.deletingCommentId()) return;
+    if (!postId || !commentId || this.deletingCommentId()) return;
 
     this.deletingCommentId.set(commentId);
     this.postService.deleteComment(postId, commentId).subscribe({
@@ -582,10 +597,28 @@ export class Home implements OnInit {
     });
   }
 
-  // ── Utility ───────────────────────────────────────────────────────────────────
+  // ── Utility ────────────────────────────────────────────────────────────────────
+  /**
+   * Immutably patch a single post by id.
+   * The spread creates a new PostWithTs object so Angular's signal equality
+   * check fires correctly, while the rest of the array is left untouched.
+   */
   private patchPost(postId: string, updates: Partial<Post>): void {
     this.allPosts.set(
       this.allPosts().map(p => p._id === postId ? { ...p, ...updates } : p)
     );
+  }
+
+  /**
+   * Stable identity function used as the @for track expression.
+   * Returning the post's _id string means Angular re-uses the existing DOM
+   * node when only the post's data changes — no node teardown/re-creation.
+   */
+  trackByPostId(_index: number, post: Post): string {
+    return post._id;
+  }
+
+  trackByCategory(_index: number, cat: string): string {
+    return cat;
   }
 }

@@ -15,7 +15,6 @@ interface Feature {
   selector: 'app-welcome-modal',
   standalone: true,
   imports: [CommonModule],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="wm-backdrop" (click)="onBackdropClick($event)" role="dialog"
          aria-modal="true" aria-labelledby="wm-title">

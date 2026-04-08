@@ -306,3 +306,60 @@ app-promo-modal .modal .cta-btn {
   color: #fff !important;
   -webkit-text-fill-color: #fff !important;
 }
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+
+/* ═══════════════════════════════════════════════════
+   GLOBAL LOGO
+   ═══════════════════════════════════════════════════ */
+
+.app-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;                /* normal gap now — no tricks needed */
+  text-decoration: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: opacity 0.2s ease;
+}
+.app-logo:hover { opacity: 0.85; }
+
+.app-logo-img {
+  width: 42px;             /* actual icon fills full 42px now */
+  height: 42px;
+  object-fit: contain;
+  display: block;
+  flex-shrink: 0;
+}
+
+.app-logo-text {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #43cea2, #185a9d);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  line-height: 1;
+  margin: 0;
+  padding: 0;
+}
+
+/* ── Size variants ───────────────────────────────── */
+.app-logo--sm .app-logo-img  { width: 32px; height: 32px; }
+.app-logo--sm .app-logo-text { font-size: 18px; }
+
+.app-logo--lg .app-logo-img  { width: 56px; height: 56px; }
+.app-logo--lg .app-logo-text { font-size: 28px; }
+
+.custom-logo {
+  display: flex;
+  justify-content: center;
+  text-align: center;
+  align-items: center;
+  flex-direction: column;
+}

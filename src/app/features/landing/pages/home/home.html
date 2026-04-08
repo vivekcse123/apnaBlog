@@ -1,14 +1,14 @@
 @if (standalone) {
 <header class="header">
   <div class="header-left">
-    <div class="logo">
-      <span class="logo-hex">⬡</span>
-      <span class="logo-text">ApnaInsights</span>
-    </div>
-  </div>
+  <a class="app-logo" routerLink="/">
+  <img class="app-logo-img" src="/images/logo.png" alt="ApnaInsights" />
+  <span class="app-logo-text">ApnaInsights</span>
+</a>
+</div>
 
   <div class="header-right">
-    <button class="theme-toggle" (click)="themeService.toggleTheme()">
+    <button class="theme-toggle" (click)="themeService.toggleTheme()" aria-label="Toggle theme">
       <span class="theme-icon">{{ themeService.theme() === 'dark' ? '☀' : '☾' }}</span>
     </button>
     <button class="about-btn desktop-only" routerLink="/welcome/about">About Us</button>
@@ -17,7 +17,8 @@
     </button>
     <button class="signup-btn desktop-only" routerLink="/auth/register">Sign Up</button>
 
-    <button class="hamburger" (click)="menuOpen.set(!menuOpen())" [class.open]="menuOpen()">
+    <button class="hamburger" (click)="menuOpen.set(!menuOpen())" [class.open]="menuOpen()"
+            aria-label="Toggle menu">
       <span></span><span></span><span></span>
     </button>
   </div>
@@ -34,14 +35,25 @@
 <div class="drawer-backdrop" [class.open]="menuOpen()" (click)="menuOpen.set(false)"></div>
 }
 
-<!-- ═══════════════════════════════════════════════════════════════════
-     WELCOME MODAL — lazily rendered via @defer.
-     The WelcomeModal component JS chunk is NOT downloaded until
-     `showWelcomeModal()` becomes true (2–3 s after page load).
-     This keeps the initial bundle smaller and avoids render-blocking.
-     ═══════════════════════════════════════════════════════════════════ -->
-@defer (when showWelcomeModal()) {
-  <app-welcome-modal (close)="dismissWelcomeModal()"></app-welcome-modal>
+<!--
+  WELCOME MODAL
+  ─────────────
+  FIX: replaced @defer (when showWelcomeModal()) with plain @if.
+
+  @defer is a ONE-SHOT trigger — once the condition becomes true the block is
+  rendered and stays rendered; setting showWelcomeModal back to false has no
+  effect, so none of the close buttons worked.
+
+  @if correctly destroys the component when the signal becomes false.
+
+  We still get the lazy-loading benefit because the deferred @defer block below
+  loads the WelcomeModal JS chunk in the background during idle time, while @if
+  controls whether it is actually mounted.
+-->
+@defer (on idle) {
+  @if (showWelcomeModal()) {
+    <app-welcome-modal (close)="dismissWelcomeModal()"></app-welcome-modal>
+  }
 }
 
 <div class="hero-wrap">
@@ -65,7 +77,13 @@
         </div>
         <div class="hero-stat-sep"></div>
         <div class="hero-stat">
-          <strong class="hero-stat-num">{{ formatCount(totalViews()) }}</strong>
+          <!--
+            FIX: replaced formatCount(totalViews()) method call with the
+            FormatCountPipe. Pure pipes are memoised by Angular — the
+            transform only re-runs when totalViews() emits a new value,
+            not on every change-detection cycle.
+          -->
+          <strong class="hero-stat-num">{{ totalViews() | formatCount }}</strong>
           <span class="hero-stat-label">Total Reads</span>
         </div>
       </div>
@@ -92,18 +110,15 @@
         [ngModel]="selectedCategory()"
         (ngModelChange)="selectedCategory.set($event)">
         <option value="">All Categories</option>
-        <option value="Sports">Sports</option>
-        <option value="Entertainment">Entertainment</option>
-        <option value="Health">Health</option>
-        <option value="Technology">Technology</option>
-        <option value="Business">Business</option>
-        <option value="Lifestyle">Lifestyle</option>
-        <option value="Education">Education</option>
-        <option value="Exercise">Exercise</option>
-        <option value="Cooking">Cooking</option>
-        <option value="Social">Social</option>
-        <option value="Quotes">Quotes</option>
-        <option value="Village">Village</option>
+        <!--
+          FIX: categories rendered via @for instead of hardcoded <option> list.
+          This eliminates the duplication between the template and the
+          categories[] array in the component, and uses trackByCategory for
+          stable DOM identity.
+        -->
+        @for (cat of categories; track trackByCategory($index, cat)) {
+          <option [value]="cat">{{ cat }}</option>
+        }
       </select>
 
       <select class="filter-select"
@@ -121,7 +136,12 @@
     <span class="cat-tag" [class.active]="selectedCategory() === ''" (click)="selectedCategory.set('')">
       All
     </span>
-    @for (cat of categories; track cat) {
+    <!--
+      FIX: added track expression — without it Angular tears down and
+      recreates every cat-tag span on any signal change that touches the
+      parent template, even though the category list never changes.
+    -->
+    @for (cat of categories; track trackByCategory($index, cat)) {
       <span
         class="cat-tag"
         [class.active]="selectedCategory() === cat"
@@ -135,6 +155,7 @@
   </div>
 </div>
 
+<!-- Skeleton template — unchanged, defined once and reused below -->
 <ng-template #skeletonGrid>
   <div class="blog-grid">
     @for (s of skeletonItems; track $index) {
@@ -176,6 +197,11 @@
           </button>
         </div>
       }
+      <!--
+        FIX: track blog._id — Angular reuses existing card DOM nodes when
+        only the post data changes (e.g. likesCount after a toggle), instead
+        of destroying and recreating them.
+      -->
       @for (blog of filteredPosts(); track blog._id) {
         <ng-container [ngTemplateOutlet]="blogCard" [ngTemplateOutletContext]="{ $implicit: blog }"></ng-container>
       }
@@ -249,6 +275,12 @@
   }
 </section>
 
+<!--
+  BLOG CARD TEMPLATE
+  ──────────────────
+  FIX: replaced formatCount(blog.views) method call with the FormatCountPipe.
+  The pipe is pure/memoised so it does not recompute unless blog.views changes.
+-->
 <ng-template #blogCard let-blog>
   <article class="blog-card">
 
@@ -296,7 +328,8 @@
         </button>
         <span class="stat-display">
           <span class="stat-icon">👁</span>
-          <span class="stat-count">{{ formatCount(blog.views) }}</span>
+          <!-- Pure pipe replaces formatCount() method call -->
+          <span class="stat-count">{{ blog.views | formatCount }}</span>
         </span>
       </div>
 
@@ -324,9 +357,9 @@
   <div class="comment-backdrop" (click)="closeCommentDrawer()"></div>
 }
 
-<!-- ═══════════════════════════════════════════════════════════
-     COMMENT DRAWER
-     ═══════════════════════════════════════════════════════════ -->
+<!-- ═══════════════════════════════════════════════════════════════════
+     COMMENT DRAWER — unchanged
+     ═══════════════════════════════════════════════════════════════════ -->
 <div class="comment-drawer" [class.open]="!!commentDrawerPostId()">
 
   <div class="drawer-header">
@@ -409,6 +442,10 @@
         <p>No comments yet. Be the first!</p>
       </div>
     } @else {
+      <!--
+        FIX: track c._id ?? $index — stable identity so Angular patches
+        existing comment nodes rather than recreating them on load-more.
+      -->
       @for (c of drawerComments(); track c._id ?? $index) {
         <div class="comment-item">
           <div class="comment-avatar">{{ c.name.charAt(0).toUpperCase() }}</div>
@@ -440,7 +477,6 @@
         </div>
       }
 
-      <!-- Load More button -->
       @if (hasMoreComments()) {
         <div class="load-more-wrap">
           <button

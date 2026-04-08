@@ -1,18 +1,16 @@
 <header class="header">
 
-  <button class="hamburger" (click)="toggleMenu()" [class.open]="menuOpen">
-    <span></span><span></span><span></span>
-  </button>
-
-  <div class="logo">
-    <span class="logo-hex">⬡</span>
-    <span class="logo-text">{{ logo }}</span>
-  </div>
+  <a class="app-logo" routerLink="/">
+  <img class="app-logo-img" src="/images/logo.png" alt="ApnaInsights" />
+  <span class="app-logo-text">ApnaInsights</span>
+</a>
 
   <nav class="nav">
     @for (nav of navs; track nav.label) {
-      <a [routerLink]="nav.routerLink" routerLinkActive="active"
-         [routerLinkActiveOptions]="{ exact: true }" class="nav-link">
+      <a [routerLink]="nav.routerLink"
+         routerLinkActive="active"
+         [routerLinkActiveOptions]="{ exact: true }"
+         class="nav-link">
         {{ nav.label }}
       </a>
     }
@@ -26,15 +24,23 @@
     </div>
   </div>
 
+  <button class="hamburger" (click)="toggleMenu()" [class.open]="menuOpen"
+          aria-label="Toggle menu">
+    <span></span><span></span><span></span>
+  </button>
+
 </header>
 
 <div class="mobile-drawer" [class.open]="menuOpen">
   @for (nav of navs; track nav.label) {
-    <a [routerLink]="nav.routerLink" routerLinkActive="drawer-active"
-       [routerLinkActiveOptions]="{ exact: true }" class="drawer-link"
+    <a [routerLink]="nav.routerLink"
+       routerLinkActive="drawer-active"
+       [routerLinkActiveOptions]="{ exact: true }"
+       class="drawer-link"
        (click)="menuOpen = false">
       {{ nav.label }}
     </a>
   }
 </div>
+
 <div class="drawer-backdrop" [class.open]="menuOpen" (click)="menuOpen = false"></div>

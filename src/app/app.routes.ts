@@ -15,7 +15,7 @@ export const routes: Routes = [
     {
         path: 'welcome',
         loadChildren: () => import('./features/landing/landing-module').then(m => m.LandingModule),
-        title: 'ApnaInsights - Welcome'
+        title: 'ApnaInsights'
     },
     {
         path: 'blog/:id',

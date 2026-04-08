@@ -10,7 +10,6 @@ import {
 } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
-import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { filter, Subject, takeUntil } from 'rxjs';
 
@@ -20,11 +19,12 @@ import {
   NOTIFICATION_META,
 } from '../../models/notification.model';
 import { NotificationService } from '../../../core/services/notification-service';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-notification-panel',
   standalone: true,
-  imports: [CommonModule, MatIconModule, MatProgressSpinnerModule, DatePipe],
+  imports: [CommonModule,  MatProgressSpinnerModule, MatIconModule],
   templateUrl: './notification-panel.html',
   styleUrls: ['./notification-panel.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,

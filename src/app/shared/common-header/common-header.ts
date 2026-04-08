@@ -1,4 +1,3 @@
-// common-header.ts  (updated)
 import { Component, EventEmitter, Input, OnInit, Output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
@@ -10,9 +9,11 @@ import { NotificationService } from '../../core/services/notification-service';
   selector: 'app-common-header',
   standalone: true,
   imports: [
-    RouterLink, CommonModule, RouterLinkActive,
+    RouterLink,         // covers routerLink on the <a class="logo"> anchor too
+    RouterLinkActive,
+    CommonModule,
     MatIconModule,
-    NotificationPanel,   // ← added
+    NotificationPanel,
   ],
   templateUrl: './common-header.html',
   styleUrls: ['./common-header.css'],
@@ -29,9 +30,9 @@ export class CommonHeader implements OnInit {
   private notifSvc = inject(NotificationService);
 
   ngOnInit(): void {
-    //this.notifSvc.startPolling(); 
+    // this.notifSvc.startPolling();
   }
 
-  toggleMenu():                 void { this.menuOpen = !this.menuOpen; }
-  openProfile(e: Event):        void { e.stopPropagation(); this.open.emit(); }
+  toggleMenu():          void { this.menuOpen = !this.menuOpen; }
+  openProfile(e: Event): void { e.stopPropagation(); this.open.emit(); }
 }
