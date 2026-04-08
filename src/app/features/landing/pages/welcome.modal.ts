@@ -25,7 +25,13 @@ interface Feature {
 
         <div class="wm-body">
           <div class="wm-head">
-            <div class="wm-brand-icon" aria-hidden="true">⬡</div>
+            <!-- <div class="wm-brand-icon" aria-hidden="true">
+              
+            </div> -->
+            <a class="app-logo" routerLink="/">
+      <img class="app-logo-img" src="/images/logo.png" alt="ApnaInsights" />
+      <span class="app-logo-text">ApnaInsights</span>
+    </a>
             <button class="wm-x-btn" (click)="close.emit()" aria-label="Close welcome modal">✕</button>
           </div>
 
