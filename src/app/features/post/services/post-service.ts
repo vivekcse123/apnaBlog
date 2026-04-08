@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { apiResponse } from '../../../core/models/api-response.model';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Post } from '../../../core/models/post.model';
 import { environment } from '../../../../environments/environments.prod';
 
@@ -74,14 +74,24 @@ export class PostService {
     return this.http.post<apiResponse<Post>>(`${this.endPoint}/${postId}/comment`, body);
   }
 
-  getComments(postId: string): Observable<{
-    status: number;
-    message: string;
-    totalComments: number;
-    comments: { name: string; comment: string; createdAt?: string }[];
-  }> {
-    return this.http.get<any>(`${this.endPoint}/${postId}/comments`);
-  }
+ getComments(
+  postId: string, 
+  skip: number = 0, 
+  limit: number = 10
+): Observable<{
+  status: number;
+  message: string;
+  totalComments: number;
+  total?: number;
+  totalCount?: number;
+  comments: { name: string; comment: string; createdAt?: string }[];
+}> {
+  const params = new HttpParams()
+    .set('skip', skip.toString())
+    .set('limit', limit.toString());
+    
+  return this.http.get<any>(`${this.endPoint}/${postId}/comments`, { params });
+}
 
   deleteComment(postId: string, commentId: string): Observable<apiResponse<null>> {
     return this.http.delete<apiResponse<null>>(

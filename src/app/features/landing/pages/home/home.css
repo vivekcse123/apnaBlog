@@ -920,3 +920,44 @@ body {
   .ctrl-enter-hint { display: none; }
   .cat-pill-count { display: none; }
 }
+
+/*
+  Append these rules to the bottom of home.css.
+  All existing rules remain unchanged — only additions below.
+*/
+
+/* ══════════════════════════════════════════════════════════════
+   LOAD MORE COMMENTS
+   ══════════════════════════════════════════════════════════════ */
+.load-more-wrap {
+  display: flex; justify-content: center;
+  padding: 16px 0 8px;
+}
+
+.load-more-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--bg-surface-alt);
+  border: 1.5px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 13px; font-weight: 600; font-family: 'DM Sans', sans-serif;
+  padding: 9px 22px; border-radius: 99px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.2s, box-shadow 0.2s;
+}
+
+.load-more-btn:hover:not(:disabled) {
+  background: var(--accent-subtle);
+  border-color: var(--accent);
+  color: var(--accent-text);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(67, 206, 162, 0.2);
+}
+
+.load-more-btn:disabled {
+  opacity: 0.55; cursor: not-allowed;
+}
+
+.load-more-count {
+  font-size: 11px; font-weight: 500;
+  color: var(--text-muted);
+}

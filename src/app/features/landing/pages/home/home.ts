@@ -17,6 +17,11 @@ import { Auth } from '../../../../core/services/auth';
 import { UserService } from '../../../user/services/user-service';
 import { User } from '../../../user/models/user.mode';
 import { VisitorService } from '../../../../core/services/visitor';
+import { WelcomeModal } from '../welcome.modal';
+
+// ─── Welcome modal is imported lazily via @defer ──────────────────────────────
+// Do NOT add WelcomeModal to the imports array here.
+// It is referenced only in the template inside a @defer block.
 
 interface DrawerComment {
   _id?: string;
@@ -26,12 +31,14 @@ interface DrawerComment {
   createdAt: string;
 }
 
-const PAGE_SIZE = 8;
+const PAGE_SIZE           = 8;
+const COMMENT_PAGE_SIZE   = 5;   // initial + incremental load size
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [RouterLink, CommonModule, FormsModule, ReadBlog, NgTemplateOutlet],
+  // WelcomeModal is NOT listed here — Angular's @defer handles the lazy import.
+  imports: [RouterLink, CommonModule, FormsModule, ReadBlog, NgTemplateOutlet, WelcomeModal],
   templateUrl: './home.html',
   styleUrl: './home.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -50,6 +57,7 @@ export class Home implements OnInit {
   @Input() standalone = true;
   @ViewChild('searchInput') searchInputEl?: ElementRef<HTMLInputElement>;
 
+  // ── Core data ────────────────────────────────────────────────────────────────
   allPosts         = signal<Post[]>([]);
   isLoading        = signal(true);
   isViewed         = signal(false);
@@ -60,20 +68,36 @@ export class Home implements OnInit {
   selectedSort     = signal('newest');
   showScrollTop    = signal(false);
 
+  // ── Welcome modal ─────────────────────────────────────────────────────────────
+  /** Becomes true after the 2–3 s delay, triggering the @defer block in the template. */
+  showWelcomeModal = signal(false);
+  private welcomeTimerId: ReturnType<typeof setTimeout> | null = null;
+
+  // ── Pagination ───────────────────────────────────────────────────────────────
   trendingPage = signal(0);
   hotPage      = signal(0);
   latestPage   = signal(0);
 
+  // ── Likes / bookmarks ────────────────────────────────────────────────────────
   likedPostIds      = signal<Set<string>>(new Set());
   bookmarkedPostIds = signal<Set<string>>(new Set());
 
+  // ── Comment drawer ───────────────────────────────────────────────────────────
   commentDrawerPostId   = signal<string | null>(null);
   commentText           = signal('');
   commentSubmitting     = signal(false);
   commentFeedback       = signal<{ type: 'success' | 'error'; msg: string } | null>(null);
+
   drawerComments        = signal<DrawerComment[]>([]);
   drawerCommentsLoading = signal(false);
-  deletingCommentId     = signal<string | null>(null);
+
+  loadingMoreComments   = signal(false);
+
+  totalCommentsCount    = signal(0);
+
+  public commentFetchedCount = signal(0);
+
+  deletingCommentId = signal<string | null>(null);
 
   private currentUserData = signal<User | null>(null);
   private searchInput$    = new Subject<string>();
@@ -187,6 +211,12 @@ export class Home implements OnInit {
     return postOwnerId?.toString() === userId.toString();
   });
 
+  /** True when there are more comments to fetch from the server. */
+  hasMoreComments = computed(() =>
+    this.commentFetchedCount() < this.totalCommentsCount()
+  );
+
+  // ── Keyboard / scroll ─────────────────────────────────────────────────────────
   @HostListener('document:keydown', ['$event'])
   onKeydown(event: KeyboardEvent): void {
     const tag = (event.target as Element).tagName;
@@ -197,6 +227,7 @@ export class Home implements OnInit {
     if (event.key === 'Escape') {
       if (this.commentDrawerPostId()) this.closeCommentDrawer();
       if (this.menuOpen()) this.menuOpen.set(false);
+      if (this.showWelcomeModal()) this.dismissWelcomeModal();
     }
   }
 
@@ -207,6 +238,7 @@ export class Home implements OnInit {
     }
   }
 
+  // ── Lifecycle ────────────────────────────────────────────────────────────────
   ngOnInit(): void {
     this.standalone = this.route.snapshot.data['standalone'] ?? this.standalone;
 
@@ -214,6 +246,16 @@ export class Home implements OnInit {
       const normalisedPath = window.location.pathname.replace(/\/$/, '') || '/';
       if (normalisedPath === '/welcome') {
         this.visitorService.trackVisit('/welcome');
+      }
+
+      // ── Welcome modal: 2–3 s delay after page load ──────────────────────────
+      // Only show once per session so returning visitors aren't annoyed.
+      const alreadySeen = sessionStorage.getItem('apna_welcome_seen');
+      if (!alreadySeen) {
+        const delay = 2000 + Math.random() * 1000; // 2 000 – 3 000 ms
+        this.welcomeTimerId = setTimeout(() => {
+          this.showWelcomeModal.set(true);
+        }, delay);
       }
     }
 
@@ -236,10 +278,24 @@ export class Home implements OnInit {
     ).subscribe(val => this.searchQuery.set(val));
   }
 
+  ngOnDestroy(): void {
+    if (this.welcomeTimerId !== null) clearTimeout(this.welcomeTimerId);
+  }
+
+  // ── Welcome modal helpers ─────────────────────────────────────────────────────
+  dismissWelcomeModal(): void {
+    this.showWelcomeModal.set(false);
+    if (isPlatformBrowser(this.platformId)) {
+      sessionStorage.setItem('apna_welcome_seen', '1');
+    }
+  }
+
+  // ── Search ───────────────────────────────────────────────────────────────────
   onSearchInput(value: string): void {
     this.searchInput$.next(value);
   }
 
+  // ── Posts ────────────────────────────────────────────────────────────────────
   loadPosts(): void {
     this.postService.getAllPost(1, 100).pipe(
       takeUntilDestroyed(this.destroyRef),
@@ -309,6 +365,7 @@ export class Home implements OnInit {
     this.postService.addView(post._id).subscribe();
   }
 
+  // ── Likes ────────────────────────────────────────────────────────────────────
   private restoreLikedIds(): void {
     try {
       const stored = localStorage.getItem('apna_liked_posts');
@@ -352,6 +409,7 @@ export class Home implements OnInit {
     }
   }
 
+  // ── Bookmarks ────────────────────────────────────────────────────────────────
   private restoreBookmarkedIds(): void {
     try {
       const stored = localStorage.getItem('apna_bookmarked_posts');
@@ -378,12 +436,16 @@ export class Home implements OnInit {
     this.persistBookmarkedIds(newSet);
   }
 
+  // ── Comments drawer ───────────────────────────────────────────────────────────
   openCommentDrawer(post: Post, event: Event): void {
     event.stopPropagation();
     this.commentText.set('');
     this.commentFeedback.set(null);
+    this.drawerComments.set([]);
+    this.commentFetchedCount.set(0);
+    this.totalCommentsCount.set(post.commentsCount ?? 0);
     this.commentDrawerPostId.set(post._id);
-    this.loadComments(post._id);
+    this.loadComments(post._id, 0); // initial page
   }
 
   closeCommentDrawer(): void {
@@ -391,23 +453,61 @@ export class Home implements OnInit {
     this.commentText.set('');
     this.commentFeedback.set(null);
     this.drawerComments.set([]);
+    this.commentFetchedCount.set(0);
+    this.totalCommentsCount.set(0);
   }
 
-  private loadComments(postId: string): void {
-    this.drawerCommentsLoading.set(true);
-    this.postService.getComments(postId).subscribe({
+  /**
+   * Load a page of comments.
+   * @param postId  Target post.
+   * @param skip    How many to skip (offset-based pagination).
+   */
+  private loadComments(postId: string, skip: number): void {
+    const isFirst = skip === 0;
+    if (isFirst) {
+      this.drawerCommentsLoading.set(true);
+    } else {
+      this.loadingMoreComments.set(true);
+    }
+
+    // Pass `skip` and `limit` to your API.
+    // Adjust the method signature of postService.getComments() to accept these params.
+    this.postService.getComments(postId, skip, COMMENT_PAGE_SIZE).subscribe({
       next: (res: any) => {
-        this.drawerComments.set(res.comments ?? []);
-        this.drawerCommentsLoading.set(false);
+        const incoming: DrawerComment[] = res.comments ?? [];
+        const total: number             = res.total ?? res.totalCount ?? incoming.length;
+
+        if (isFirst) {
+          this.drawerComments.set(incoming);
+        } else {
+          this.drawerComments.set([...this.drawerComments(), ...incoming]);
+        }
+
+        this.commentFetchedCount.set(this.commentFetchedCount() + incoming.length);
+        this.totalCommentsCount.set(total);
+
+        if (isFirst) this.drawerCommentsLoading.set(false);
+        else          this.loadingMoreComments.set(false);
       },
-      error: () => this.drawerCommentsLoading.set(false),
+      error: () => {
+        this.drawerCommentsLoading.set(false);
+        this.loadingMoreComments.set(false);
+      },
     });
   }
 
+  loadMoreComments(): void {
+    const postId = this.commentDrawerPostId();
+    if (!postId || this.loadingMoreComments() || !this.hasMoreComments()) return;
+    this.loadComments(postId, this.commentFetchedCount());
+  }
+
+  // ── Auth helpers ─────────────────────────────────────────────────────────────
   get currentUser(): User | null { return this.currentUserData(); }
   get isLoggedIn(): boolean { return this.auth.isAuthorized() && !!this.currentUserData(); }
   get loggedInUserName(): string { return this.currentUserData()?.name ?? 'Anonymous'; }
 
+  // ── Submit comment ────────────────────────────────────────────────────────────
   submitComment(): void {
     const text = this.commentText().trim();
     if (!text) {
@@ -438,6 +538,8 @@ export class Home implements OnInit {
           createdAt: new Date().toISOString(),
         };
         this.drawerComments.set([newComment, ...this.drawerComments()]);
+        this.commentFetchedCount.set(this.commentFetchedCount() + 1);
+        this.totalCommentsCount.set(this.totalCommentsCount() + 1);
 
         const post = this.allPosts().find(p => p._id === postId);
         if (post) this.patchPost(postId, { commentsCount: post.commentsCount + 1 });
@@ -454,6 +556,7 @@ export class Home implements OnInit {
     });
   }
 
+  // ── Delete comment ────────────────────────────────────────────────────────────
   deleteComment(comment: DrawerComment, event: Event): void {
     event.stopPropagation();
     const postId    = this.commentDrawerPostId();
@@ -465,6 +568,9 @@ export class Home implements OnInit {
     this.postService.deleteComment(postId, commentId).subscribe({
       next: () => {
         this.drawerComments.set(this.drawerComments().filter(c => c._id !== commentId));
+        this.commentFetchedCount.set(Math.max(0, this.commentFetchedCount() - 1));
+        this.totalCommentsCount.set(Math.max(0, this.totalCommentsCount() - 1));
+
         const post = this.allPosts().find(p => p._id === postId);
         if (post) this.patchPost(postId, { commentsCount: Math.max(0, post.commentsCount - 1) });
         this.deletingCommentId.set(null);
@@ -476,6 +582,7 @@ export class Home implements OnInit {
     });
   }
 
+  // ── Utility ───────────────────────────────────────────────────────────────────
   private patchPost(postId: string, updates: Partial<Post>): void {
     this.allPosts.set(
       this.allPosts().map(p => p._id === postId ? { ...p, ...updates } : p)
