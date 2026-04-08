@@ -1,7 +1,7 @@
 export const environment = {
   production: true,
   apiUrl:       'https://apnablogserver.onrender.com/api',
-  clientApiUrl: 'https://www.apnainsights.com/',
+  clientApiUrl: 'https://apnainsights.com/',
 
   apiAuthEndpoint:   'https://apnablogserver.onrender.com/api/auth/',
   apiUserEndpoint:   'https://apnablogserver.onrender.com/api/user/',
