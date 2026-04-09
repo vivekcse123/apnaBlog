@@ -1,393 +1,520 @@
 @if (standalone) {
-<header class="header">
+
+<header class="header" role="banner">
   <div class="header-left">
-    <a class="app-logo" routerLink="/">
-      <img class="app-logo-img" src="/images/logo.png" alt="ApnaInsights" />
+    <a class="app-logo" routerLink="/"
+       aria-label="ApnaInsights — Go to homepage">
+      <img class="app-logo-img"
+           src="/images/logo.png"
+           alt="ApnaInsights"
+           width="32"
+           height="32"
+           loading="eager"
+           fetchpriority="high" />
       <span class="app-logo-text">ApnaInsights</span>
     </a>
-</div>
+  </div>
 
   <div class="header-right">
-    <button class="theme-toggle" (click)="themeService.toggleTheme()" aria-label="Toggle theme">
-      <span class="theme-icon">{{ themeService.theme() === 'dark' ? '☀' : '☾' }}</span>
+    <button class="theme-toggle"
+            (click)="themeService.toggleTheme()"
+            [attr.aria-label]="themeService.theme() === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
+            title="Toggle theme">
+      <span class="theme-icon" aria-hidden="true">{{ themeService.theme() === 'dark' ? '☀' : '☾' }}</span>
     </button>
-    <button class="about-btn desktop-only" routerLink="/welcome/about">About Us</button>
-    <button class="create-btn desktop-only" routerLink="/auth/login">
-      <span>✦</span> Write a Story
+    <button class="about-btn desktop-only"
+            routerLink="/about"
+            aria-label="About ApnaInsights">About Us</button>
+    <button class="create-btn desktop-only"
+            routerLink="/auth/login"
+            aria-label="Sign in to write a story on ApnaInsights">
+      <span aria-hidden="true">✦</span> Write a Story
     </button>
-    <button class="signup-btn desktop-only" routerLink="/auth/register">Sign Up</button>
+    <button class="signup-btn desktop-only"
+            routerLink="/auth/register"
+            aria-label="Create a free ApnaInsights account">Sign Up</button>
 
-    <button class="hamburger" (click)="menuOpen.set(!menuOpen())" [class.open]="menuOpen()"
-            aria-label="Toggle menu">
-      <span></span><span></span><span></span>
+    <button class="hamburger"
+            (click)="menuOpen.set(!menuOpen())"
+            [class.open]="menuOpen()"
+            [attr.aria-expanded]="menuOpen()"
+            aria-controls="mobile-drawer"
+            aria-label="Toggle navigation menu">
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
     </button>
   </div>
 </header>
 
-<div class="mobile-drawer" [class.open]="menuOpen()">
-  <a class="drawer-link" routerLink="/welcome/about" (click)="menuOpen.set(false)">About</a>
-  <a class="drawer-link crt-btn" routerLink="/auth/login" (click)="menuOpen.set(false)">
-    <span>✦</span>&nbsp; Write a Story
+<nav id="mobile-drawer"
+     class="mobile-drawer"
+     [class.open]="menuOpen()"
+     role="navigation"
+     aria-label="Mobile navigation">
+  <a class="drawer-link"
+     routerLink="/about"
+     (click)="menuOpen.set(false)"
+     aria-label="About ApnaInsights">About</a>
+  <a class="drawer-link crt-btn"
+     routerLink="/auth/login"
+     (click)="menuOpen.set(false)"
+     aria-label="Sign in to write a story">
+    <span aria-hidden="true">✦</span>&nbsp; Write a Story
   </a>
-  <a class="drawer-link" routerLink="/auth/register" (click)="menuOpen.set(false)">Sign Up</a>
-</div>
+  <a class="drawer-link"
+     routerLink="/auth/register"
+     (click)="menuOpen.set(false)"
+     aria-label="Sign up for a free account">Sign Up</a>
+</nav>
 
-<div class="drawer-backdrop" [class.open]="menuOpen()" (click)="menuOpen.set(false)"></div>
+<div class="drawer-backdrop"
+     [class.open]="menuOpen()"
+     (click)="menuOpen.set(false)"
+     aria-hidden="true"></div>
 }
 
-<!--
-  WELCOME MODAL
-  ─────────────
-  FIX: replaced @defer (when showWelcomeModal()) with plain @if.
-
-  @defer is a ONE-SHOT trigger — once the condition becomes true the block is
-  rendered and stays rendered; setting showWelcomeModal back to false has no
-  effect, so none of the close buttons worked.
-
-  @if correctly destroys the component when the signal becomes false.
-
-  We still get the lazy-loading benefit because the deferred @defer block below
-  loads the WelcomeModal JS chunk in the background during idle time, while @if
-  controls whether it is actually mounted.
--->
 @defer (on idle) {
   @if (showWelcomeModal()) {
     <app-welcome-modal (close)="dismissWelcomeModal()"></app-welcome-modal>
   }
 }
 
-<div class="hero-wrap">
-  <div class="hero-content">
-    <span class="hero-pill">✦ Community Stories</span>
-    <h1 class="hero-title">
-      Stories from <span class="hero-gradient">Every Corner</span>
-    </h1>
-    <p class="hero-sub">Discover blogs written by real people sharing real experience 🌿</p>
+<main id="main-content" role="main">
 
-    @if (!isLoading() && allPosts().length > 0) {
-      <div class="hero-stats">
-        <div class="hero-stat">
-          <strong class="hero-stat-num">{{ allPosts().length }}</strong>
-          <span class="hero-stat-label">Stories</span>
+  <section class="hero-wrap"
+           aria-labelledby="hero-heading"
+           itemscope
+           itemtype="https://schema.org/Blog">
+
+    <meta itemprop="name" content="ApnaInsights — Community Stories" />
+    <meta itemprop="description" content="Discover real stories from real people across India on technology, lifestyle, health, business, education and village life." />
+    <link itemprop="url" href="https://www.apnainsights.com" />
+
+    <div class="hero-content">
+      <span class="hero-pill" aria-hidden="true">✦ Community Stories</span>
+      <h1 class="hero-title" id="hero-heading">
+        Stories from <span class="hero-gradient">Every Corner</span>
+      </h1>
+      <p class="hero-sub">
+        Discover blogs written by real people sharing real experience 🌿
+      </p>
+
+      @if (!isLoading() && allPosts().length > 0) {
+        <div class="hero-stats"
+             role="region"
+             aria-label="Platform statistics">
+          <div class="hero-stat">
+            <strong class="hero-stat-num"
+                    itemprop="numberOfItems"
+                    [attr.content]="allPosts().length">
+              {{ allPosts().length }}
+            </strong>
+            <span class="hero-stat-label">Stories</span>
+          </div>
+          <div class="hero-stat-sep" aria-hidden="true"></div>
+          <div class="hero-stat">
+            <strong class="hero-stat-num">{{ categories.length }}</strong>
+            <span class="hero-stat-label">Topics</span>
+          </div>
+          <div class="hero-stat-sep" aria-hidden="true"></div>
+          <div class="hero-stat">
+
+            <strong class="hero-stat-num">{{ totalViews() | formatCount }}</strong>
+            <span class="hero-stat-label">Total Reads</span>
+          </div>
         </div>
-        <div class="hero-stat-sep"></div>
-        <div class="hero-stat">
-          <strong class="hero-stat-num">{{ categories.length }}</strong>
-          <span class="hero-stat-label">Topics</span>
-        </div>
-        <div class="hero-stat-sep"></div>
-        <div class="hero-stat">
-          <!--
-            FIX: replaced formatCount(totalViews()) method call with the
-            FormatCountPipe. Pure pipes are memoised by Angular — the
-            transform only re-runs when totalViews() emits a new value,
-            not on every change-detection cycle.
-          -->
-          <strong class="hero-stat-num">{{ totalViews() | formatCount }}</strong>
-          <span class="hero-stat-label">Total Reads</span>
-        </div>
-      </div>
-    }
-  </div>
-</div>
-
-<div class="filter-wrap">
-  <div class="filter-inner">
-    <div class="search-wrap">
-      <span class="search-icon">🔍</span>
-      <input
-        #searchInput
-        type="text"
-        class="search-box"
-        placeholder="Search stories…"
-        (input)="onSearchInput($any($event.target).value)"
-      />
-      <kbd class="search-shortcut">/</kbd>
-    </div>
-
-    <div class="filter-selects">
-      <select class="filter-select"
-        [ngModel]="selectedCategory()"
-        (ngModelChange)="selectedCategory.set($event)">
-        <option value="">All Categories</option>
-        <!--
-          FIX: categories rendered via @for instead of hardcoded <option> list.
-          This eliminates the duplication between the template and the
-          categories[] array in the component, and uses trackByCategory for
-          stable DOM identity.
-        -->
-        @for (cat of categories; track trackByCategory($index, cat)) {
-          <option [value]="cat">{{ cat }}</option>
-        }
-      </select>
-
-      <select class="filter-select"
-        [ngModel]="selectedSort()"
-        (ngModelChange)="selectedSort.set($event)">
-        <option value="newest">Newest</option>
-        <option value="liked">Most Liked</option>
-        <option value="viewed">Most Viewed</option>
-        <option value="comments">Most Comments</option>
-      </select>
-    </div>
-  </div>
-
-  <div class="category-bar">
-    <span class="cat-tag" [class.active]="selectedCategory() === ''" (click)="selectedCategory.set('')">
-      All
-    </span>
-    <!--
-      FIX: added track expression — without it Angular tears down and
-      recreates every cat-tag span on any signal change that touches the
-      parent template, even though the category list never changes.
-    -->
-    @for (cat of categories; track trackByCategory($index, cat)) {
-      <span
-        class="cat-tag"
-        [class.active]="selectedCategory() === cat"
-        (click)="selectedCategory.set(selectedCategory() === cat ? '' : cat)">
-        <span class="cat-emoji">{{ categoryEmojis[cat] }}</span> {{ cat }}
-        @if (getCatCount(cat) > 0) {
-          <span class="cat-pill-count">{{ getCatCount(cat) }}</span>
-        }
-      </span>
-    }
-  </div>
-</div>
-
-<!-- Skeleton template — unchanged, defined once and reused below -->
-<ng-template #skeletonGrid>
-  <div class="blog-grid">
-    @for (s of skeletonItems; track $index) {
-      <div class="skeleton-card">
-        <div class="skeleton-img-block"></div>
-        <div class="skeleton-body">
-          <div class="skeleton-line title w-70"></div>
-          <div class="skeleton-line w-full"></div>
-          <div class="skeleton-line w-85"></div>
-          <div class="skeleton-line w-50" style="margin-top:4px;height:10px;"></div>
-        </div>
-        <div class="skeleton-footer">
-          <div class="skeleton-line" style="width:110px;height:28px;border-radius:8px;"></div>
-          <div class="skeleton-line" style="width:66px;height:28px;border-radius:8px;"></div>
-        </div>
-      </div>
-    }
-  </div>
-</ng-template>
-
-@if (isFiltering()) {
-  <section class="section">
-    <div class="section-header">
-      <h2 class="section-title">🔍 Results</h2>
-      <span class="result-count">{{ filteredPosts().length }} found</span>
-      @if (selectedCategory()) {
-        <button class="clear-filter-btn" (click)="selectedCategory.set(''); selectedSort.set('newest')">
-          ✕ Clear filters
-        </button>
-      }
-    </div>
-    <div class="blog-grid">
-      @if (filteredPosts().length === 0) {
-        <div class="no-results">
-          <span class="no-results-icon">🔍</span>
-          <span>No stories match your filters.</span>
-          <button class="clear-filter-btn" (click)="selectedCategory.set(''); selectedSort.set('newest')">
-            Clear filters
-          </button>
-        </div>
-      }
-      <!--
-        FIX: track blog._id — Angular reuses existing card DOM nodes when
-        only the post data changes (e.g. likesCount after a toggle), instead
-        of destroying and recreating them.
-      -->
-      @for (blog of filteredPosts(); track blog._id) {
-        <ng-container [ngTemplateOutlet]="blogCard" [ngTemplateOutletContext]="{ $implicit: blog }"></ng-container>
       }
     </div>
   </section>
-}
 
-<section class="section">
-  <div class="section-header">
-    <span class="section-pill trending">HOT</span>
-    <h2 class="section-title">🔥 Trending Stories</h2>
-    <div class="pagination-btns">
-      <button class="page-btn" [disabled]="trendingPage() === 0" (click)="prevPage(trendingPage)">‹</button>
-      <span class="page-info">{{ trendingPage() + 1 }} / {{ trendingPageCount() }}</span>
-      <button class="page-btn" [disabled]="trendingPage() >= trendingPageCount() - 1" (click)="nextPage(trendingPage, trendingPageCount())">›</button>
-    </div>
-  </div>
-
-  @if (isLoading()) {
-    <ng-container [ngTemplateOutlet]="skeletonGrid"></ng-container>
-  } @else {
-    <div class="blog-grid">
-      @for (blog of trendingPosts(); track blog._id) {
-        <ng-container [ngTemplateOutlet]="blogCard" [ngTemplateOutletContext]="{ $implicit: blog }"></ng-container>
-      }
-    </div>
-  }
-</section>
-
-<section class="section">
-  <div class="section-header">
-    <span class="section-pill hot">VIEWS</span>
-    <h2 class="section-title">👁 Most Viewed</h2>
-    <div class="pagination-btns">
-      <button class="page-btn" [disabled]="hotPage() === 0" (click)="prevPage(hotPage)">‹</button>
-      <span class="page-info">{{ hotPage() + 1 }} / {{ hotPageCount() }}</span>
-      <button class="page-btn" [disabled]="hotPage() >= hotPageCount() - 1" (click)="nextPage(hotPage, hotPageCount())">›</button>
-    </div>
-  </div>
-
-  @if (isLoading()) {
-    <ng-container [ngTemplateOutlet]="skeletonGrid"></ng-container>
-  } @else {
-    <div class="blog-grid">
-      @for (blog of hotPosts(); track blog._id) {
-        <ng-container [ngTemplateOutlet]="blogCard" [ngTemplateOutletContext]="{ $implicit: blog }"></ng-container>
-      }
-    </div>
-  }
-</section>
-
-<section class="section">
-  <div class="section-header">
-    <span class="section-pill new">NEW</span>
-    <h2 class="section-title">✨ Latest Stories</h2>
-    <div class="pagination-btns">
-      <button class="page-btn" [disabled]="latestPage() === 0" (click)="prevPage(latestPage)">‹</button>
-      <span class="page-info">{{ latestPage() + 1 }} / {{ latestPageCount() }}</span>
-      <button class="page-btn" [disabled]="latestPage() >= latestPageCount() - 1" (click)="nextPage(latestPage, latestPageCount())">›</button>
-    </div>
-  </div>
-
-  @if (isLoading()) {
-    <ng-container [ngTemplateOutlet]="skeletonGrid"></ng-container>
-  } @else {
-    <div class="blog-grid">
-      @for (blog of latestPosts(); track blog._id) {
-        <ng-container [ngTemplateOutlet]="blogCard" [ngTemplateOutletContext]="{ $implicit: blog }"></ng-container>
-      }
-    </div>
-  }
-</section>
-
-<!--
-  BLOG CARD TEMPLATE
-  ──────────────────
-  FIX: replaced formatCount(blog.views) method call with the FormatCountPipe.
-  The pipe is pure/memoised so it does not recompute unless blog.views changes.
--->
-<ng-template #blogCard let-blog>
-  <article class="blog-card">
-
-    <div class="card-img-wrap" (click)="readBlog(blog._id)">
-      @if (blog.featuredImage) {
-        <img
-          [src]="blog.featuredImage"
-          [alt]="blog.title"
-          loading="lazy"
-          (error)="blog.featuredImage = null"
+  <div class="filter-wrap" role="search" aria-label="Filter and search stories">
+    <div class="filter-inner">
+      <div class="search-wrap">
+        <span class="search-icon" aria-hidden="true">🔍</span>
+        <input
+          #searchInput
+          type="search"
+          class="search-box"
+          placeholder="Search stories…"
+          aria-label="Search community stories"
+          autocomplete="off"
+          (input)="onSearchInput($any($event.target).value)"
         />
-      } @else {
-        <div class="no-img-block">
-          <span class="no-img-letter">{{ blog.title?.charAt(0)?.toUpperCase() }}</span>
+        <kbd class="search-shortcut" aria-label="Press / to focus search">/</kbd>
+      </div>
+
+      <div class="filter-selects">
+        <select class="filter-select"
+                aria-label="Filter by category"
+                [ngModel]="selectedCategory()"
+                (ngModelChange)="selectedCategory.set($event)">
+          <option value="">All Categories</option>
+          @for (cat of categories; track trackByCategory($index, cat)) {
+            <option [value]="cat">{{ cat }}</option>
+          }
+        </select>
+
+        <select class="filter-select"
+                aria-label="Sort stories by"
+                [ngModel]="selectedSort()"
+                (ngModelChange)="selectedSort.set($event)">
+          <option value="newest">Newest</option>
+          <option value="liked">Most Liked</option>
+          <option value="viewed">Most Viewed</option>
+          <option value="comments">Most Comments</option>
+        </select>
+      </div>
+    </div>
+
+    <nav class="category-bar"
+         role="navigation"
+         aria-label="Browse by topic">
+      <button class="cat-tag"
+              [class.active]="selectedCategory() === ''"
+              (click)="selectedCategory.set('')"
+              [attr.aria-pressed]="selectedCategory() === ''"
+              aria-label="Show all categories">
+        All
+      </button>
+      @for (cat of categories; track trackByCategory($index, cat)) {
+        <button
+          class="cat-tag"
+          [class.active]="selectedCategory() === cat"
+          (click)="selectedCategory.set(selectedCategory() === cat ? '' : cat)"
+          [attr.aria-pressed]="selectedCategory() === cat"
+          [attr.aria-label]="'Browse ' + cat + ' stories' + (getCatCount(cat) > 0 ? ', ' + getCatCount(cat) + ' stories' : '')">
+          <span class="cat-emoji" aria-hidden="true">{{ categoryEmojis[cat] }}</span> {{ cat }}
+          @if (getCatCount(cat) > 0) {
+            <span class="cat-pill-count" aria-hidden="true">{{ getCatCount(cat) }}</span>
+          }
+        </button>
+      }
+    </nav>
+  </div>
+
+  <ng-template #skeletonGrid>
+    <div class="blog-grid" aria-busy="true" aria-label="Loading stories…">
+      @for (s of skeletonItems; track $index) {
+        <div class="skeleton-card" role="status" aria-label="Loading story">
+          <div class="skeleton-img-block"></div>
+          <div class="skeleton-body">
+            <div class="skeleton-line title w-70"></div>
+            <div class="skeleton-line w-full"></div>
+            <div class="skeleton-line w-85"></div>
+            <div class="skeleton-line w-50" style="margin-top:4px;height:10px;"></div>
+          </div>
+          <div class="skeleton-footer">
+            <div class="skeleton-line" style="width:110px;height:28px;border-radius:8px;"></div>
+            <div class="skeleton-line" style="width:66px;height:28px;border-radius:8px;"></div>
+          </div>
         </div>
       }
-      <span class="card-cat">{{ blog.categories[0] }}</span>
-      @if (isNew(blog)) {
-        <span class="new-badge">NEW</span>
-      }
     </div>
+  </ng-template>
 
-    <div class="card-body" (click)="readBlog(blog._id)">
-      <h3>{{ blog.title }}</h3>
-      <p>{{ blog.description }}</p>
-      <div class="card-meta-row">
-        <span class="card-reading-time">⏱ {{ getReadingTime(blog) }} min read</span>
-        <span class="card-date">{{ blog.createdAt | date:'MMM d' }}</span>
-      </div>
-    </div>
-
-    <div class="card-footer">
-      <div class="card-stats">
-        <button
-          class="stat-btn like-btn"
-          [class.liked]="isLiked(blog._id)"
-          (click)="toggleLike(blog, $event)"
-          [attr.aria-label]="isLiked(blog._id) ? 'Unlike' : 'Like'">
-          <span class="stat-icon">{{ isLiked(blog._id) ? '❤️' : '🤍' }}</span>
-          <span class="stat-count">{{ blog.likesCount }}</span>
-        </button>
-        <button class="stat-btn comment-btn" (click)="openCommentDrawer(blog, $event)" aria-label="Open comments">
-          <span class="stat-icon">💬</span>
-          <span class="stat-count">{{ blog.commentsCount }}</span>
-        </button>
-        <span class="stat-display">
-          <span class="stat-icon">👁</span>
-          <!-- Pure pipe replaces formatCount() method call -->
-          <span class="stat-count">{{ blog.views | formatCount }}</span>
+  @if (isFiltering()) {
+    <section class="section" aria-labelledby="results-heading">
+      <div class="section-header">
+        <h2 class="section-title" id="results-heading">🔍 Results</h2>
+        <span class="result-count"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true">
+          {{ filteredPosts().length }} found
         </span>
+        @if (selectedCategory()) {
+          <button class="clear-filter-btn"
+                  (click)="selectedCategory.set(''); selectedSort.set('newest')"
+                  aria-label="Clear all active filters">
+            ✕ Clear filters
+          </button>
+        }
       </div>
+      <div class="blog-grid">
+        @if (filteredPosts().length === 0) {
+          <div class="no-results" role="status">
+            <span class="no-results-icon" aria-hidden="true">🔍</span>
+            <span>No stories match your filters.</span>
+            <button class="clear-filter-btn"
+                    (click)="selectedCategory.set(''); selectedSort.set('newest')"
+                    aria-label="Clear filters to see all stories">
+              Clear filters
+            </button>
+          </div>
+        }
+        @for (blog of filteredPosts(); track blog._id) {
+          <ng-container [ngTemplateOutlet]="blogCard"
+                        [ngTemplateOutletContext]="{ $implicit: blog }"></ng-container>
+        }
+      </div>
+    </section>
+  }
 
-      <div class="card-actions">
-        <button
-          class="card-bookmark-btn"
-          [class.bookmarked]="isBookmarked(blog._id)"
-          (click)="toggleBookmark(blog._id, $event)"
-          [title]="isBookmarked(blog._id) ? 'Remove bookmark' : 'Bookmark this story'"
-          aria-label="Bookmark">
-          {{ isBookmarked(blog._id) ? '🔖' : '📑' }}
-        </button>
-        <button class="read-btn" (click)="readBlog(blog._id)">Read →</button>
-      </div>
+  <section class="section" aria-labelledby="trending-heading">
+    <div class="section-header">
+      <span class="section-pill trending" aria-hidden="true">HOT</span>
+      <h2 class="section-title" id="trending-heading">🔥 Trending Stories</h2>
+      <nav class="pagination-btns" aria-label="Trending stories pagination">
+        <button class="page-btn"
+                [disabled]="trendingPage() === 0"
+                (click)="prevPage(trendingPage)"
+                aria-label="Previous page of trending stories">‹</button>
+        <span class="page-info"
+              aria-live="polite"
+              aria-atomic="true">{{ trendingPage() + 1 }} / {{ trendingPageCount() }}</span>
+        <button class="page-btn"
+                [disabled]="trendingPage() >= trendingPageCount() - 1"
+                (click)="nextPage(trendingPage, trendingPageCount())"
+                aria-label="Next page of trending stories">›</button>
+      </nav>
     </div>
 
-  </article>
-</ng-template>
+    @if (isLoading()) {
+      <ng-container [ngTemplateOutlet]="skeletonGrid"></ng-container>
+    } @else {
+      <div class="blog-grid">
+        @for (blog of trendingPosts(); track blog._id) {
+          <ng-container [ngTemplateOutlet]="blogCard"
+                        [ngTemplateOutletContext]="{ $implicit: blog }"></ng-container>
+        }
+      </div>
+    }
+  </section>
 
-@if (isViewed()) {
-  <app-read-blog [postId]="selectedId()" (close)="isViewed.set(false)"></app-read-blog>
-}
+  <section class="section" aria-labelledby="hot-heading">
+    <div class="section-header">
+      <span class="section-pill hot" aria-hidden="true">VIEWS</span>
+      <h2 class="section-title" id="hot-heading">👁 Most Viewed</h2>
+      <nav class="pagination-btns" aria-label="Most viewed stories pagination">
+        <button class="page-btn"
+                [disabled]="hotPage() === 0"
+                (click)="prevPage(hotPage)"
+                aria-label="Previous page of most viewed stories">‹</button>
+        <span class="page-info"
+              aria-live="polite"
+              aria-atomic="true">{{ hotPage() + 1 }} / {{ hotPageCount() }}</span>
+        <button class="page-btn"
+                [disabled]="hotPage() >= hotPageCount() - 1"
+                (click)="nextPage(hotPage, hotPageCount())"
+                aria-label="Next page of most viewed stories">›</button>
+      </nav>
+    </div>
+
+    @if (isLoading()) {
+      <ng-container [ngTemplateOutlet]="skeletonGrid"></ng-container>
+    } @else {
+      <div class="blog-grid">
+        @for (blog of hotPosts(); track blog._id) {
+          <ng-container [ngTemplateOutlet]="blogCard"
+                        [ngTemplateOutletContext]="{ $implicit: blog }"></ng-container>
+        }
+      </div>
+    }
+  </section>
+
+  <section class="section" aria-labelledby="latest-heading">
+    <div class="section-header">
+      <span class="section-pill new" aria-hidden="true">NEW</span>
+      <h2 class="section-title" id="latest-heading">✨ Latest Stories</h2>
+      <nav class="pagination-btns" aria-label="Latest stories pagination">
+        <button class="page-btn"
+                [disabled]="latestPage() === 0"
+                (click)="prevPage(latestPage)"
+                aria-label="Previous page of latest stories">‹</button>
+        <span class="page-info"
+              aria-live="polite"
+              aria-atomic="true">{{ latestPage() + 1 }} / {{ latestPageCount() }}</span>
+        <button class="page-btn"
+                [disabled]="latestPage() >= latestPageCount() - 1"
+                (click)="nextPage(latestPage, latestPageCount())"
+                aria-label="Next page of latest stories">›</button>
+      </nav>
+    </div>
+
+    @if (isLoading()) {
+      <ng-container [ngTemplateOutlet]="skeletonGrid"></ng-container>
+    } @else {
+      <div class="blog-grid">
+        @for (blog of latestPosts(); track blog._id) {
+          <ng-container [ngTemplateOutlet]="blogCard"
+                        [ngTemplateOutletContext]="{ $implicit: blog }"></ng-container>
+        }
+      </div>
+    }
+  </section>
+
+  <ng-template #blogCard let-blog>
+    <article class="blog-card"
+             itemscope
+             itemtype="https://schema.org/BlogPosting"
+             [attr.aria-label]="blog.title">
+
+      <meta itemprop="headline"       [attr.content]="blog.title" />
+      <meta itemprop="description"    [attr.content]="blog.description" />
+      <meta itemprop="datePublished"  [attr.content]="blog.createdAt" />
+      <meta itemprop="url"            [attr.content]="'https://www.apnainsights.com/blog/' + blog._id" />
+      @if (blog.categories?.[0]) {
+        <meta itemprop="articleSection" [attr.content]="blog.categories[0]" />
+      }
+      <div itemprop="author" itemscope itemtype="https://schema.org/Person" style="display:none">
+        <meta itemprop="name" [attr.content]="blog.authorName || 'ApnaInsights Writer'" />
+      </div>
+      <div itemprop="publisher" itemscope itemtype="https://schema.org/Organization" style="display:none">
+        <meta itemprop="name" content="ApnaInsights" />
+        <div itemprop="logo" itemscope itemtype="https://schema.org/ImageObject">
+          <meta itemprop="url" content="https://www.apnainsights.com/images/logo.png" />
+        </div>
+      </div>
+
+      <div itemprop="interactionStatistic" itemscope itemtype="https://schema.org/InteractionCounter" style="display:none">
+        <meta itemprop="interactionType" content="https://schema.org/LikeAction" />
+        <meta itemprop="userInteractionCount" [attr.content]="blog.likesCount" />
+      </div>
+      <div itemprop="interactionStatistic" itemscope itemtype="https://schema.org/InteractionCounter" style="display:none">
+        <meta itemprop="interactionType" content="https://schema.org/ReadAction" />
+        <meta itemprop="userInteractionCount" [attr.content]="blog.views" />
+      </div>
+
+      <div class="card-img-wrap" (click)="readBlog(blog._id)">
+        @if (blog.featuredImage) {
+          <img
+            itemprop="image"
+            [src]="blog.featuredImage"
+            [alt]="blog.title"
+            loading="lazy"
+            decoding="async"
+            width="400"
+            height="185"
+            (error)="blog.featuredImage = null"
+          />
+        } @else {
+          <div class="no-img-block" role="img" [attr.aria-label]="blog.title + ' — no cover image'">
+            <span class="no-img-letter" aria-hidden="true">{{ blog.title?.charAt(0)?.toUpperCase() }}</span>
+          </div>
+        }
+        <span class="card-cat" aria-hidden="true">{{ blog.categories[0] }}</span>
+        @if (isNew(blog)) {
+          <span class="new-badge" aria-label="New story — published in the last 48 hours">NEW</span>
+        }
+      </div>
+
+      <div class="card-body" (click)="readBlog(blog._id)">
+        <h3 itemprop="name">{{ blog.title }}</h3>
+        <p itemprop="abstract">{{ blog.description }}</p>
+        <div class="card-meta-row">
+          <span class="card-reading-time">
+            <time aria-label="{{ getReadingTime(blog) }} minute read">
+              ⏱ {{ getReadingTime(blog) }} min read
+            </time>
+          </span>
+          <time class="card-date"
+                itemprop="datePublished"
+                [attr.datetime]="blog.createdAt">
+            {{ blog.createdAt | date:'MMM d' }}
+          </time>
+        </div>
+      </div>
+
+      <div class="card-footer">
+        <div class="card-stats">
+          <button
+            class="stat-btn like-btn"
+            [class.liked]="isLiked(blog._id)"
+            (click)="toggleLike(blog, $event)"
+            [attr.aria-label]="(isLiked(blog._id) ? 'Unlike' : 'Like') + ' ' + blog.title + ', ' + blog.likesCount + ' likes'">
+            <span class="stat-icon" aria-hidden="true">{{ isLiked(blog._id) ? '❤️' : '🤍' }}</span>
+            <span class="stat-count" aria-hidden="true">{{ blog.likesCount }}</span>
+          </button>
+          <button class="stat-btn comment-btn"
+                  (click)="openCommentDrawer(blog, $event)"
+                  [attr.aria-label]="'Open comments for ' + blog.title + ', ' + blog.commentsCount + ' comments'">
+            <span class="stat-icon" aria-hidden="true">💬</span>
+            <span class="stat-count" aria-hidden="true">{{ blog.commentsCount }}</span>
+          </button>
+          <span class="stat-display"
+                [attr.aria-label]="(blog.views | formatCount) + ' views'">
+            <span class="stat-icon" aria-hidden="true">👁</span>
+            <span class="stat-count" aria-hidden="true">{{ blog.views | formatCount }}</span>
+          </span>
+        </div>
+
+        <div class="card-actions">
+          <button
+            class="card-bookmark-btn"
+            [class.bookmarked]="isBookmarked(blog._id)"
+            (click)="toggleBookmark(blog._id, $event)"
+            [attr.aria-label]="(isBookmarked(blog._id) ? 'Remove bookmark for ' : 'Bookmark ') + blog.title"
+            [attr.aria-pressed]="isBookmarked(blog._id)">
+            <span aria-hidden="true">{{ isBookmarked(blog._id) ? '🔖' : '📑' }}</span>
+          </button>
+          
+          <a class="read-btn"
+             [attr.href]="'/blog/' + blog._id"
+             (click)="$event.preventDefault(); readBlog(blog._id)"
+             [attr.aria-label]="'Read story: ' + blog.title"
+             itemprop="url">
+            Read →
+          </a>
+        </div>
+      </div>
+
+    </article>
+  </ng-template>
+
+  @if (isViewed()) {
+    <app-read-blog [postId]="selectedId()" (close)="isViewed.set(false)"></app-read-blog>
+  }
+
+</main>
 
 @if (commentDrawerPostId()) {
-  <div class="comment-backdrop" (click)="closeCommentDrawer()"></div>
+  <div class="comment-backdrop"
+       (click)="closeCommentDrawer()"
+       role="presentation"
+       aria-hidden="true"></div>
 }
 
-<!-- ═══════════════════════════════════════════════════════════════════
-     COMMENT DRAWER — unchanged
-     ═══════════════════════════════════════════════════════════════════ -->
-<div class="comment-drawer" [class.open]="!!commentDrawerPostId()">
+<div class="comment-drawer"
+     [class.open]="!!commentDrawerPostId()"
+     role="dialog"
+     aria-modal="true"
+     aria-labelledby="comment-drawer-title"
+     [attr.aria-hidden]="!commentDrawerPostId()">
 
   <div class="drawer-header">
     <div class="drawer-title-group">
-      <span class="drawer-icon">💬</span>
-      <h3 class="drawer-title">Comments</h3>
+      <span class="drawer-icon" aria-hidden="true">💬</span>
+      <h2 class="drawer-title" id="comment-drawer-title">Comments</h2>
       @if (totalCommentsCount() > 0) {
-        <span class="drawer-count-badge">{{ totalCommentsCount() }}</span>
+        <span class="drawer-count-badge"
+              aria-label="{{ totalCommentsCount() }} total comments">
+          {{ totalCommentsCount() }}
+        </span>
       }
     </div>
-    <button class="drawer-close-btn" (click)="closeCommentDrawer()" aria-label="Close">✕</button>
+    <button class="drawer-close-btn"
+            (click)="closeCommentDrawer()"
+            aria-label="Close comments drawer">✕</button>
   </div>
 
   <div class="comment-input-area">
     <div class="user-identity-chip" [class.guest]="!isLoggedIn">
       @if (isLoggedIn) {
-        <span class="identity-avatar logged-in">{{ loggedInUserName.charAt(0).toUpperCase() }}</span>
+        <span class="identity-avatar logged-in" aria-hidden="true">{{ loggedInUserName.charAt(0).toUpperCase() }}</span>
         <span class="identity-label">Commenting as <strong>{{ loggedInUserName }}</strong></span>
         <span class="identity-badge member">Member</span>
       } @else {
-        <span class="identity-avatar guest-avatar">👤</span>
+        <span class="identity-avatar guest-avatar" aria-hidden="true">👤</span>
         <span class="identity-label">Commenting as <strong>Anonymous</strong></span>
         <span class="identity-badge guest-badge">Guest</span>
       }
     </div>
 
     <div class="textarea-wrap">
+      <label class="visually-hidden" for="comment-textarea">Write a comment</label>
       <textarea
+        id="comment-textarea"
         class="comment-textarea"
         placeholder="Share your thoughts…"
         rows="3"
@@ -395,28 +522,37 @@
         (ngModelChange)="commentText.set($event)"
         (keydown.enter)="$any($event).ctrlKey && submitComment()"
         maxlength="500"
+        aria-describedby="char-count-hint"
       ></textarea>
-      <span class="char-count" [class.warn]="commentText().length > 450">
+      <span id="char-count-hint"
+            class="char-count"
+            [class.warn]="commentText().length > 450"
+            aria-live="polite"
+            aria-atomic="true">
         {{ commentText().length }}/500
       </span>
     </div>
 
     @if (commentFeedback()) {
       <div class="comment-feedback"
-        [class.success]="commentFeedback()!.type === 'success'"
-        [class.error]="commentFeedback()!.type === 'error'">
+           role="alert"
+           aria-live="assertive"
+           [class.success]="commentFeedback()!.type === 'success'"
+           [class.error]="commentFeedback()!.type === 'error'">
         {{ commentFeedback()!.type === 'success' ? '✅' : '❌' }} {{ commentFeedback()!.msg }}
       </div>
     }
 
     <div class="comment-actions">
-      <span class="ctrl-enter-hint">Ctrl + Enter to send</span>
+      <span class="ctrl-enter-hint" aria-hidden="true">Ctrl + Enter to send</span>
       <button
         class="submit-comment-btn"
         [disabled]="!commentText().trim() || commentSubmitting()"
-        (click)="submitComment()">
+        (click)="submitComment()"
+        aria-label="Submit comment">
         @if (commentSubmitting()) {
-          <span class="btn-spinner"></span> Posting…
+          <span class="btn-spinner" aria-hidden="true"></span>
+          <span>Posting…</span>
         } @else {
           Post Comment ✦
         }
@@ -424,40 +560,42 @@
     </div>
   </div>
 
-  <div class="drawer-divider">
+  <div class="drawer-divider" aria-hidden="true">
     <span>{{ drawerComments().length }}
       @if (hasMoreComments()) { of {{ totalCommentsCount() }} }
       comment{{ totalCommentsCount() !== 1 ? 's' : '' }}
     </span>
   </div>
 
-  <div class="comments-list">
+  <div class="comments-list" role="list">
     @if (drawerCommentsLoading()) {
-      <div class="comments-loading">
-        <div class="loading-dots"><span></span><span></span><span></span></div>
+      <div class="comments-loading" role="status" aria-label="Loading comments">
+        <div class="loading-dots" aria-hidden="true">
+          <span></span><span></span><span></span>
+        </div>
       </div>
     } @else if (drawerComments().length === 0) {
-      <div class="no-comments">
-        <span class="no-comments-icon">💭</span>
+      <div class="no-comments" role="status">
+        <span class="no-comments-icon" aria-hidden="true">💭</span>
         <p>No comments yet. Be the first!</p>
       </div>
     } @else {
-      <!--
-        FIX: track c._id ?? $index — stable identity so Angular patches
-        existing comment nodes rather than recreating them on load-more.
-      -->
       @for (c of drawerComments(); track c._id ?? $index) {
-        <div class="comment-item">
-          <div class="comment-avatar">{{ c.name.charAt(0).toUpperCase() }}</div>
+        <div class="comment-item" role="listitem" itemprop="comment" itemscope itemtype="https://schema.org/Comment">
+          <div class="comment-avatar" aria-hidden="true">{{ c.name.charAt(0).toUpperCase() }}</div>
 
           <div class="comment-content">
             <div class="comment-meta">
-              <span class="comment-author">{{ c.name }}</span>
+              <span class="comment-author" itemprop="author">{{ c.name }}</span>
               @if (c.createdAt) {
-                <span class="comment-time">{{ c.createdAt | date:'MMM d, y' }}</span>
+                <time class="comment-time"
+                      itemprop="dateCreated"
+                      [attr.datetime]="c.createdAt">
+                  {{ c.createdAt | date:'MMM d, y' }}
+                </time>
               }
             </div>
-            <p class="comment-text">{{ c.comment }}</p>
+            <p class="comment-text" itemprop="text">{{ c.comment }}</p>
           </div>
 
           @if (isDrawerPostOwner() && c._id) {
@@ -466,11 +604,11 @@
               [class.deleting]="deletingCommentId() === c._id"
               [disabled]="deletingCommentId() === c._id"
               (click)="deleteComment(c, $event)"
-              aria-label="Delete comment">
+              [attr.aria-label]="'Delete comment by ' + c.name">
               @if (deletingCommentId() === c._id) {
-                <span class="btn-spinner"></span>
+                <span class="btn-spinner" aria-hidden="true"></span>
               } @else {
-                🗑
+                <span aria-hidden="true">🗑</span>
               }
             </button>
           }
@@ -482,12 +620,13 @@
           <button
             class="load-more-btn"
             [disabled]="loadingMoreComments()"
-            (click)="loadMoreComments()">
+            (click)="loadMoreComments()"
+            aria-label="Load more comments">
             @if (loadingMoreComments()) {
-              <span class="btn-spinner"></span> Loading…
+              <span class="btn-spinner" aria-hidden="true"></span> Loading…
             } @else {
               Load more comments
-              <span class="load-more-count">({{ totalCommentsCount() - commentFetchedCount() }} remaining)</span>
+              <span class="load-more-count" aria-hidden="true">({{ totalCommentsCount() - commentFetchedCount() }} remaining)</span>
             }
           </button>
         </div>
@@ -502,6 +641,50 @@
   [class.visible]="showScrollTop()"
   (click)="scrollToTop()"
   title="Back to top"
-  aria-label="Scroll to top">
-  ↑
+  aria-label="Scroll back to top of page">
+  <span aria-hidden="true">↑</span>
 </button>
+
+<footer class="site-footer" role="contentinfo" aria-label="Site footer">
+  <div class="footer-inner">
+
+    <div class="footer-brand">
+      <a class="app-logo" routerLink="/" aria-label="ApnaInsights — back to homepage">
+        <img class="app-logo-img"
+             src="/images/logo.png"
+             alt="ApnaInsights"
+             width="28"
+             height="28"
+             loading="lazy" />
+        <span class="app-logo-text">ApnaInsights</span>
+      </a>
+      <p class="footer-tagline">Every story matters. Every voice belongs.</p>
+    </div>
+
+    <nav class="footer-links" aria-label="Footer navigation">
+      <a routerLink="/about" class="footer-link">About Us</a>
+      <span class="footer-dot" aria-hidden="true">·</span>
+      <a routerLink="/auth/register" class="footer-link">Start Writing Free</a>
+      <span class="footer-dot" aria-hidden="true">·</span>
+      <a routerLink="/auth/login" class="footer-link">Sign In</a>
+      <span class="footer-dot" aria-hidden="true">·</span>
+      <a (click)="selectedCategory.set('Technology')" class="footer-link" role="button" tabindex="0">Technology Blogs</a>
+      <span class="footer-dot" aria-hidden="true">·</span>
+      <a (click)="selectedCategory.set('Health')" class="footer-link" role="button" tabindex="0">Health Stories</a>
+      <span class="footer-dot" aria-hidden="true">·</span>
+      <a (click)="selectedCategory.set('Village')" class="footer-link" role="button" tabindex="0">Village Life</a>
+    </nav>
+
+    <p class="footer-seo-copy">
+      ApnaInsights is India's free community blogging platform where writers share stories on
+      technology, lifestyle, health, business, education, village life and more.
+      Join thousands of Indian bloggers — read, write and connect for free.
+    </p>
+
+    <p class="footer-copy">
+      © {{ isLoading() ? '' : (allPosts().length > 0 ? allPosts().length + ' stories · ' : '') }}ApnaInsights {{ (isLoading() ? '' : '') | date:'yyyy' }}
+      &nbsp;·&nbsp; Made with ❤️ in India
+    </p>
+
+  </div>
+</footer>

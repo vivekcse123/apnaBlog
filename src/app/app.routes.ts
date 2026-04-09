@@ -17,6 +17,11 @@ export const routes: Routes = [
         loadChildren: () => import('./features/landing/landing-module').then(m => m.LandingModule),
         title: 'ApnaInsights'
     },
+     {
+        path: 'about',
+        loadComponent: () => import('./features/landing/pages/about/about').then(m => m.About),
+        title: 'ApnaInsights - About'
+    },
     {
         path: 'blog/:id',
         loadComponent: () => import('./features/landing/pages/blog-detail/blog-detail').then(m => m.BlogDetail),

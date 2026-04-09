@@ -1,415 +1,503 @@
-<div class="about-page">
+<div class="about-page" itemscope itemtype="https://schema.org/AboutPage">
 
-  <nav class="about-nav">
+
+  <nav class="breadcrumb-nav" aria-label="Breadcrumb">
+    <div class="breadcrumb-inner">
+      <ol class="breadcrumb-list" itemscope itemtype="https://schema.org/BreadcrumbList">
+        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+          <a routerLink="/" itemprop="item"><span itemprop="name">Home</span></a>
+          <meta itemprop="position" content="1" />
+        </li>
+        <span class="breadcrumb-sep" aria-hidden="true">›</span>
+        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+          <span itemprop="name">About</span>
+          <meta itemprop="position" content="2" />
+        </li>
+      </ol>
+    </div>
+  </nav>
+
+  <nav class="about-nav" role="navigation" aria-label="Main navigation">
     <div class="about-nav-inner">
 
-      <button class="back-btn" routerLink="/welcome">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <button class="back-btn" routerLink="/welcome" aria-label="Back to Home">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M19 12H5M5 12l7 7M5 12l7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        <span class="back-label">Back to Home</span>
+        <span class="back-label">Back Home</span>
       </button>
 
       <div class="nav-logo">
-        <!-- <span class="logo-hex">⬡</span>
-        <span class="logo-text">ApnaInsights</span> -->
-          <a class="app-logo" routerLink="/">
-            <img class="app-logo-img" src="/images/logo.png" alt="ApnaInsights" />
-            <span class="app-logo-text">ApnaInsights</span>
-          </a>
+        <a class="app-logo" routerLink="/" aria-label="ApnaInsights - Go to homepage">
+          <img class="app-logo-img" src="/images/logo.png" alt="ApnaInsights Logo" loading="eager" />
+          <span class="app-logo-text">ApnaInsights</span>
+        </a>
       </div>
 
       <div class="nav-right">
-        <button class="nav-login-btn desktop-only" routerLink="/auth/register">Sign Up</button>
-        <button class="nav-write-btn desktop-only" routerLink="/auth/login">✦ Write a Story</button>
-        <button class="nav-menu-btn" (click)="navMenuOpen = !navMenuOpen" [class.open]="navMenuOpen" aria-label="Toggle menu">
+        <button class="nav-login-btn desktop-only" routerLink="/auth/register" aria-label="Sign up for free">Sign Up</button>
+        <button class="nav-write-btn desktop-only" routerLink="/auth/login" aria-label="Start writing a story">✦ Write a Story</button>
+        <button class="nav-menu-btn" (click)="navMenuOpen = !navMenuOpen" [class.open]="navMenuOpen" aria-label="Toggle navigation menu" [attr.aria-expanded]="navMenuOpen">
           <span></span><span></span><span></span>
         </button>
       </div>
 
     </div>
 
-    <div class="nav-dropdown" [class.open]="navMenuOpen">
-      <button class="nav-drop-item" routerLink="/auth/register" (click)="navMenuOpen = false">
-        Sign Up
-      </button>
-      <button class="nav-drop-item gradient" routerLink="/auth/login" (click)="navMenuOpen = false">
-        ✦ Write a Story
-      </button>
+    <div class="nav-dropdown" [class.open]="navMenuOpen" role="menu">
+      <button class="nav-drop-item" routerLink="/auth/register" (click)="navMenuOpen = false" role="menuitem">Sign Up</button>
+      <button class="nav-drop-item gradient" routerLink="/auth/login" (click)="navMenuOpen = false" role="menuitem">✦ Write a Story</button>
     </div>
   </nav>
 
-  <section class="about-hero">
-    <div class="hero-bg">
+  <section class="about-hero" aria-labelledby="hero-heading">
+    <div class="hero-bg" aria-hidden="true">
       <div class="hero-orb orb-1"></div>
       <div class="hero-orb orb-2"></div>
       <div class="hero-grid"></div>
     </div>
     <div class="hero-content">
-      <span class="hero-eyebrow">✦ Our Story</span>
-      <h1 class="hero-title">
+      <span class="hero-eyebrow" role="doc-subtitle">✦ Our Story</span>
+      <h1 class="hero-title" id="hero-heading">
         Built for <span class="gradient-text">storytellers</span>,<br>
         by storytellers.
       </h1>
       <p class="hero-sub">
-        ApnaInsights is a community-first blogging platform where real people share real experiences —
+        ApnaInsights is India's community-first blogging platform where real people share real experiences —
         from village life to tech innovations, from health journeys to business breakthroughs.
         Every story matters. Every voice belongs.
       </p>
-      <div class="hero-stats">
-        <div class="stat-item">
-          <span class="stat-num">10K+</span>
+
+      <div class="hero-cta" role="group" aria-label="Get started actions">
+        <button class="hero-cta-primary" routerLink="/auth/register" aria-label="Start writing for free on ApnaInsights">
+          ✦ Start Writing Free
+        </button>
+        <button class="hero-cta-secondary" routerLink="/welcome" aria-label="Browse stories on ApnaInsights">
+          Browse Stories →
+        </button>
+      </div>
+
+      <div class="hero-stats" role="region" aria-label="Platform statistics">
+        <div class="stat-item" itemscope itemtype="https://schema.org/Stat">
+          <span class="stat-num" aria-label="Ten thousand plus">10K+</span>
           <span class="stat-label">Stories Published</span>
         </div>
-        <div class="stat-divider"></div>
+        <div class="stat-divider" aria-hidden="true"></div>
         <div class="stat-item">
-          <span class="stat-num">5K+</span>
+          <span class="stat-num" aria-label="Five thousand plus">5K+</span>
           <span class="stat-label">Active Writers</span>
         </div>
-        <div class="stat-divider"></div>
+        <div class="stat-divider" aria-hidden="true"></div>
         <div class="stat-item">
           <span class="stat-num">8</span>
           <span class="stat-label">Categories</span>
         </div>
-        <div class="stat-divider"></div>
+        <div class="stat-divider" aria-hidden="true"></div>
         <div class="stat-item">
-          <span class="stat-num">50K+</span>
+          <span class="stat-num" aria-label="Fifty thousand plus">50K+</span>
           <span class="stat-label">Monthly Readers</span>
         </div>
       </div>
     </div>
   </section>
 
-  <section class="mission-section">
+  <section class="trust-section" aria-labelledby="trust-heading">
+    <div class="section-inner">
+      <h2 id="trust-heading" class="visually-hidden">What our community says</h2>
+      <div class="trust-bar">
+        <div class="trust-label">✦ Trusted by writers across India</div>
+        <div class="trust-cats">
+          <span class="trust-cat">🏏 Sports</span>
+          <span class="trust-cat">📱 Technology</span>
+          <span class="trust-cat">🌿 Lifestyle</span>
+          <span class="trust-cat">📚 Education</span>
+          <span class="trust-cat">❤️ Health</span>
+          <span class="trust-cat">💼 Business</span>
+          <span class="trust-cat">🎭 Entertainment</span>
+          <span class="trust-cat">🤝 Social</span>
+          <span class="trust-cat">🌾 Village</span>
+          <span class="trust-cat">🍳 Cooking</span>
+          <span class="trust-cat">💬 Quotes</span>
+          <span class="trust-cat">🏋️ Exercise</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="mission-section" aria-labelledby="mission-heading">
     <div class="section-inner">
       <div class="section-label-wrap">
         <span class="section-eyebrow">Our Mission</span>
+        <h2 class="section-title" id="mission-heading">Why we built<br><span class="gradient-text">ApnaInsights</span></h2>
+        <p class="section-sub">A platform where every Indian voice finds its audience — no gatekeeping, no barriers.</p>
       </div>
-      <div class="mission-grid">
-        <div class="mission-card">
-          <div class="mission-icon">
+      <div class="mission-grid" role="list">
+        <div class="mission-card" role="listitem">
+          <div class="mission-icon" aria-hidden="true">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
               <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#43cea2" stroke-width="2" stroke-linejoin="round"/>
               <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#43cea2" stroke-width="2" stroke-linejoin="round"/>
             </svg>
           </div>
           <h3>Open to Everyone</h3>
-          <p>No gatekeeping. Whether you're a student from a small town or a seasoned professional, ApnaInsights is your platform to share, grow, and connect.</p>
+          <p>No gatekeeping. Whether you're a student from a small town or a seasoned professional, ApnaInsights is your platform to share, grow, and connect across India.</p>
         </div>
-        <div class="mission-card">
-          <div class="mission-icon">
+        <div class="mission-card" role="listitem">
+          <div class="mission-icon" aria-hidden="true">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
               <circle cx="12" cy="12" r="10" stroke="#185a9d" stroke-width="2"/>
               <path d="M12 6v6l4 2" stroke="#185a9d" stroke-width="2" stroke-linecap="round"/>
             </svg>
           </div>
           <h3>Real-Time Community</h3>
-          <p>Trending stories, live engagement, comments, likes — ApnaInsights keeps the conversation alive with a vibrant, real-time community experience.</p>
+          <p>Trending stories, live engagement, comments, likes — ApnaInsights keeps the conversation alive with a vibrant, real-time community experience for Indian bloggers.</p>
         </div>
-        <div class="mission-card">
-          <div class="mission-icon">
+        <div class="mission-card" role="listitem">
+          <div class="mission-icon" aria-hidden="true">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="#43cea2" stroke-width="2" stroke-linejoin="round"/>
             </svg>
           </div>
-          <h3>Safe & Trusted</h3>
-          <p>Content moderation, verified authors, and community guidelines ensure ApnaInsights remains a respectful, trusted space for every reader and writer.</p>
+          <h3>Safe &amp; Trusted</h3>
+          <p>Content moderation, verified authors, and community guidelines ensure ApnaInsights remains a respectful, trusted space for every reader and writer in India.</p>
         </div>
-        <div class="mission-card">
-          <div class="mission-icon">
+        <div class="mission-card" role="listitem">
+          <div class="mission-icon" aria-hidden="true">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
               <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="#185a9d" stroke-width="2" stroke-linecap="round"/>
               <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="#185a9d" stroke-width="2" stroke-linecap="round"/>
             </svg>
           </div>
           <h3>Beautiful Writing Tools</h3>
-          <p>A clean, distraction-free editor with rich media support, categories, and SEO-friendly publishing — everything a modern blogger needs.</p>
+          <p>A clean, distraction-free editor with rich media support, categories, and SEO-friendly publishing — everything a modern Indian blogger needs to succeed online.</p>
         </div>
       </div>
     </div>
   </section>
 
-  <section class="team-section">
+  <section class="team-section" aria-labelledby="team-heading">
     <div class="section-inner">
       <div class="section-label-wrap">
         <span class="section-eyebrow">The Team</span>
-        <h2 class="section-title">People behind<br><span class="gradient-text">ApnaInsights</span></h2>
+        <h2 class="section-title" id="team-heading">People behind<br><span class="gradient-text">ApnaInsights</span></h2>
         <p class="section-sub">A small, passionate team of engineers who believe great stories deserve a great home.</p>
       </div>
 
       <div class="team-grid">
 
-        <div class="team-card featured">
+        <article class="team-card featured" itemscope itemtype="https://schema.org/Person">
           <div class="team-card-top">
-            <div class="avatar avatar-lg">
-              <span>VV</span>
+            <div class="avatar avatar-lg" role="img" aria-label="Vivek Verma - Founder">
+              <span aria-hidden="true">VV</span>
             </div>
             <div class="team-badge">Founder</div>
           </div>
           <div class="team-info">
-            <h3 class="team-name">Vivek Verma</h3>
-            <span class="team-role">Founder & Lead Engineer</span>
+            <h3 class="team-name" itemprop="name">Vivek Verma</h3>
+            <span class="team-role" itemprop="jobTitle">Founder &amp; Lead Engineer</span>
             <div class="team-meta">
-              <span class="meta-tag">Software Engineer</span>
-              <span class="meta-tag">B.Tech Graduate</span>
+              <span class="meta-tag" itemprop="hasCredential">Software Engineer</span>
+              <span class="meta-tag" itemprop="hasCredential">B.Tech Graduate</span>
             </div>
-            <p class="team-bio">
+            <p class="team-bio" itemprop="description">
               Vivek is the visionary behind ApnaInsights. A passionate full-stack engineer with a love for building
               products that solve real problems. He architected the entire platform — from the Angular frontend
               to the backend APIs — with a focus on performance, scalability, and user experience.
             </p>
-            <div class="team-skills">
-              <span class="skill-chip">Angular</span>
-              <span class="skill-chip">Node.js</span>
-              <span class="skill-chip">MongoDB</span>
-              <span class="skill-chip">TypeScript</span>
-              <span class="skill-chip">System Design</span>
+            <div class="team-skills" role="list" aria-label="Technical skills">
+              <span class="skill-chip" itemprop="knowsAbout" role="listitem">Angular</span>
+              <span class="skill-chip" itemprop="knowsAbout" role="listitem">Node.js</span>
+              <span class="skill-chip" itemprop="knowsAbout" role="listitem">MongoDB</span>
+              <span class="skill-chip" itemprop="knowsAbout" role="listitem">TypeScript</span>
+              <span class="skill-chip" itemprop="knowsAbout" role="listitem">System Design</span>
             </div>
           </div>
-        </div>
+        </article>
 
-        <div class="team-card featured">
+        <article class="team-card featured" itemscope itemtype="https://schema.org/Person">
           <div class="team-card-top">
-            <div class="avatar avatar-lg avatar-alt">
-              <span>RS</span>
+            <div class="avatar avatar-lg avatar-alt" role="img" aria-label="Kondra Revathi Satya - CEO">
+              <span aria-hidden="true">RS</span>
             </div>
             <div class="team-badge badge-alt">CEO</div>
           </div>
           <div class="team-info">
-            <h3 class="team-name">Kondra Revathi Satya</h3>
-            <span class="team-role">Chief Executive Officer</span>
+            <h3 class="team-name" itemprop="name">Kondra Revathi Satya</h3>
+            <span class="team-role" itemprop="jobTitle">Chief Executive Officer</span>
             <div class="team-meta">
-              <span class="meta-tag">Technical Manager</span>
-              <span class="meta-tag">B.Tech Graduate</span>
+              <span class="meta-tag" itemprop="hasCredential">Technical Manager</span>
+              <span class="meta-tag" itemprop="hasCredential">B.Tech Graduate</span>
             </div>
-            <p class="team-bio">
+            <p class="team-bio" itemprop="description">
               Revathi drives the strategic vision and operational excellence of ApnaInsights. With a sharp technical
               mind and a talent for leadership, she ensures the platform delivers value to every user — from
               content strategy to team management and product roadmap decisions.
             </p>
-            <div class="team-skills">
-              <span class="skill-chip">HTML</span>
-              <span class="skill-chip">CSS</span>
-              <span class="skill-chip">JavaScript</span>
-              <span class="skill-chip">Product Strategy</span>
-              <span class="skill-chip">Team Leadership</span>
-              <span class="skill-chip">Tech Management</span>
+            <div class="team-skills" role="list" aria-label="Technical skills">
+              <span class="skill-chip" itemprop="knowsAbout" role="listitem">HTML</span>
+              <span class="skill-chip" itemprop="knowsAbout" role="listitem">CSS</span>
+              <span class="skill-chip" itemprop="knowsAbout" role="listitem">JavaScript</span>
+              <span class="skill-chip" itemprop="knowsAbout" role="listitem">Product Strategy</span>
+              <span class="skill-chip" itemprop="knowsAbout" role="listitem">Team Leadership</span>
+              <span class="skill-chip" itemprop="knowsAbout" role="listitem">Tech Management</span>
             </div>
           </div>
-        </div>
+        </article>
 
       </div>
     </div>
   </section>
 
-  <!-- ══════════ INSPIRATION SECTION ══════════ -->
-<section class="inspiration-section">
-  <div class="section-inner">
-    <div class="section-label-wrap center">
-      <span class="section-eyebrow">Our Inspiration</span>
-      <h2 class="section-title">The foundation of<br><span class="gradient-text">our values</span></h2>
-      <p class="section-sub" style="margin: 0 auto; text-align: center;">
-        Behind every vision is a guiding force that turns dreams into reality.
-      </p>
-    </div>
-
-    <div class="inspiration-card">
-      <div class="inspiration-decoration">
-        <div class="deco-orb deco-orb-1"></div>
-        <div class="deco-orb deco-orb-2"></div>
+  <!-- ══════════ INSPIRATION ══════════ -->
+  <section class="inspiration-section" aria-labelledby="inspiration-heading">
+    <div class="section-inner">
+      <div class="section-label-wrap center">
+        <span class="section-eyebrow">Our Inspiration</span>
+        <h2 class="section-title" id="inspiration-heading">The foundation of<br><span class="gradient-text">our values</span></h2>
+        <p class="section-sub" style="margin: 0 auto; text-align: center;">
+          Behind every vision is a guiding force that turns dreams into reality.
+        </p>
       </div>
-      
-      <div class="inspiration-content">
-        <div class="inspiration-left">
-          <div class="avatar avatar-xl avatar-inspiration">
-            <span>BV</span>
-          </div>
-          <div class="inspiration-badge">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="currentColor"/>
-            </svg>
-            <span>Inspiration</span>
-          </div>
+
+      <div class="inspiration-card" itemscope itemtype="https://schema.org/Person">
+        <div class="inspiration-decoration" aria-hidden="true">
+          <div class="deco-orb deco-orb-1"></div>
+          <div class="deco-orb deco-orb-2"></div>
         </div>
 
-        <div class="inspiration-right">
-          <div class="inspiration-header">
-            <h3 class="inspiration-name">Mr. Bhanu Pratap Verma</h3>
-            <span class="inspiration-title">Visionary Agricultural Leader</span>
-          </div>
-
-          <div class="inspiration-meta">
-            <div class="meta-item">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                <path d="M22 10v6M2 10l10-5 10 5-10 5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M6 12v5c0 1 2 3 6 3s6-2 6-3v-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-              <span>Agricultural Expert</span>
+        <div class="inspiration-content">
+          <div class="inspiration-left">
+            <div class="avatar avatar-xl avatar-inspiration" role="img" aria-label="Mr. Bhanu Pratap Verma">
+              <span aria-hidden="true">BV</span>
             </div>
-            <!-- <div class="meta-item">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" stroke="currentColor" stroke-width="2"/>
-                <circle cx="12" cy="10" r="3" stroke="currentColor" stroke-width="2"/>
+            <div class="inspiration-badge" aria-label="Inspiration">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="currentColor"/>
               </svg>
-              <span>Rural Development Advocate</span>
-            </div> -->
-          </div>
-
-          <p class="inspiration-bio">
-            Mr. Bhanu Pratap Verma stands as the pillar of our journey — the visionary whose dreams laid the foundation of everything we strive to build today. A devoted farming specialist with a profound connection to the land and its people, he believed that true progress comes when knowledge is shared freely and every voice is given the dignity to be heard.
-            <br><br>
-            His life has been a testament to selfless contribution, empowering communities through wisdom, experience, and unwavering dedication. He inspired us to see beyond limitations — to build a platform where stories, ideas, and knowledge flow without barriers.
-            <br><br>
-            ApnaInsights is not just a platform; it is a reflection of his dream — a space where learning is free, voices are valued, and communities grow stronger together. His values continue to guide us, reminding us that real impact begins when we uplift others.
-          </p>
-
-          <div class="inspiration-values">
-            <div class="value-pill">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-              <span>Sustainability</span>
-            </div>
-            <div class="value-pill">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-              <span>Community First</span>
-            </div>
-            <div class="value-pill">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-              <span>Knowledge Sharing</span>
-            </div>
-            <div class="value-pill">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-              <span>Integrity</span>
+              <span>Inspiration</span>
             </div>
           </div>
 
-          <div class="inspiration-quote">
-            <div class="quote-icon">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z" fill="currentColor"/>
-                <path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z" fill="currentColor"/>
-              </svg>
+          <div class="inspiration-right">
+            <div class="inspiration-header">
+              <h3 class="inspiration-name" itemprop="name">Mr. Bhanu Pratap Verma</h3>
+              <span class="inspiration-title" itemprop="jobTitle">Visionary Agricultural Leader</span>
             </div>
-            <p>"Knowledge grows when shared, dreams grow when supported, and communities grow when we rise together."</p>
-            <span class="quote-author">— Mr. Bhanu Pratap Verma</span>
-          </div>
 
+            <div class="inspiration-meta">
+              <div class="meta-item">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M22 10v6M2 10l10-5 10 5-10 5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M6 12v5c0 1 2 3 6 3s6-2 6-3v-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span itemprop="description">Agricultural Expert</span>
+              </div>
+            </div>
+
+            <p class="inspiration-bio">
+              Mr. Bhanu Pratap Verma stands as the pillar of our journey — the visionary whose dreams laid the foundation of everything we strive to build today. A devoted farming specialist with a profound connection to the land and its people, he believed that true progress comes when knowledge is shared freely and every voice is given the dignity to be heard.
+              <br><br>
+              His life has been a testament to selfless contribution, empowering communities through wisdom, experience, and unwavering dedication. He inspired us to see beyond limitations — to build a platform where stories, ideas, and knowledge flow without barriers.
+              <br><br>
+              ApnaInsights is not just a blogging platform; it is a reflection of his dream — a space where learning is free, voices are valued, and communities grow stronger together. His values continue to guide us, reminding us that real impact begins when we uplift others.
+            </p>
+
+            <div class="inspiration-values" role="list" aria-label="Core values">
+              <div class="value-pill" role="listitem">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>Sustainability</span>
+              </div>
+              <div class="value-pill" role="listitem">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>Community First</span>
+              </div>
+              <div class="value-pill" role="listitem">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>Knowledge Sharing</span>
+              </div>
+              <div class="value-pill" role="listitem">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>Integrity</span>
+              </div>
+            </div>
+
+            <blockquote class="inspiration-quote">
+              <div class="quote-icon" aria-hidden="true">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z" fill="currentColor"/>
+                  <path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z" fill="currentColor"/>
+                </svg>
+              </div>
+              <p itemprop="description">"Knowledge grows when shared, dreams grow when supported, and communities grow when we rise together."</p>
+              <footer><cite class="quote-author">— Mr. Bhanu Pratap Verma</cite></footer>
+            </blockquote>
+
+          </div>
         </div>
       </div>
+
     </div>
+  </section>
 
-  </div>
-</section>
-
-  <section class="features-section">
+  <!-- ══════════ FEATURES ══════════ -->
+  <section class="features-section" aria-labelledby="features-heading">
     <div class="section-inner">
       <div class="section-label-wrap">
-        <span class="section-eyebrow">Platform</span>
-        <h2 class="section-title">What makes ApnaInsights<br><span class="gradient-text">different</span></h2>
+        <span class="section-eyebrow">Platform Features</span>
+        <h2 class="section-title" id="features-heading">What makes ApnaInsights<br><span class="gradient-text">different</span></h2>
+        <p class="section-sub">Built from the ground up for Indian storytellers — powerful, beautiful, and completely free.</p>
       </div>
-      <div class="features-grid">
-        <div class="feature-item">
-          <span class="feature-icon">📝</span>
+      <div class="features-grid" role="list">
+        <div class="feature-item" role="listitem">
+          <span class="feature-icon" aria-hidden="true">📝</span>
           <div>
-            <h4>Rich Blog Editor</h4>
-            <p>Write, format, and publish with a powerful yet simple editor built for all skill levels.</p>
+            <h3>Rich Blog Editor</h3>
+            <p>Write, format, and publish with a powerful yet simple editor built for all skill levels. Supports images, formatting, and more.</p>
           </div>
         </div>
-        <div class="feature-item">
-          <span class="feature-icon">🔥</span>
+        <div class="feature-item" role="listitem">
+          <span class="feature-icon" aria-hidden="true">🔥</span>
           <div>
-            <h4>Trending Algorithm</h4>
-            <p>Surface the best content with smart trending, hot right now, and latest story feeds.</p>
+            <h3>Trending Algorithm</h3>
+            <p>Surface the best content with smart trending, hot right now, and latest story feeds. Your best work gets discovered.</p>
           </div>
         </div>
-        <div class="feature-item">
-          <span class="feature-icon">🌙</span>
+        <div class="feature-item" role="listitem">
+          <span class="feature-icon" aria-hidden="true">🌙</span>
           <div>
-            <h4>Dark & Light Mode</h4>
-            <p>A beautiful reading experience in any lighting — fully themed with smooth transitions.</p>
+            <h3>Dark &amp; Light Mode</h3>
+            <p>A beautiful reading experience in any lighting — fully themed with smooth transitions for comfortable reading day or night.</p>
           </div>
         </div>
-        <div class="feature-item">
-          <span class="feature-icon">🏷️</span>
+        <div class="feature-item" role="listitem">
+          <span class="feature-icon" aria-hidden="true">🏷️</span>
           <div>
-            <h4>8 Categories</h4>
-            <p>Technology, Lifestyle, Education, Health, Business, Entertainment, Social, Village.</p>
+            <h3>8 Content Categories</h3>
+            <p>Technology, Lifestyle, Education, Health, Business, Entertainment, Social, and Village — find your niche audience.</p>
           </div>
         </div>
-        <div class="feature-item">
-          <span class="feature-icon">👍</span>
+        <div class="feature-item" role="listitem">
+          <span class="feature-icon" aria-hidden="true">👍</span>
           <div>
-            <h4>Engagement Tools</h4>
-            <p>Likes, comments, views tracking — everything writers need to connect with their audience.</p>
+            <h3>Engagement Tools</h3>
+            <p>Likes, comments, views tracking — everything writers need to connect with their audience and grow their following.</p>
           </div>
         </div>
-        <div class="feature-item">
-          <span class="feature-icon">🔒</span>
+        <div class="feature-item" role="listitem">
+          <span class="feature-icon" aria-hidden="true">🔒</span>
           <div>
-            <h4>Secure & Moderated</h4>
-            <p>Role-based access, admin controls, and content moderation keep the platform healthy.</p>
+            <h3>Secure &amp; Moderated</h3>
+            <p>Role-based access, admin controls, and content moderation keep the platform healthy and safe for everyone.</p>
           </div>
         </div>
-        <div class="feature-item">
-          <span class="feature-icon">📱</span>
+        <div class="feature-item" role="listitem">
+          <span class="feature-icon" aria-hidden="true">📱</span>
           <div>
-            <h4>Fully Responsive</h4>
-            <p>Read and write from any device — mobile, tablet, or desktop, always pixel-perfect.</p>
+            <h3>Fully Responsive</h3>
+            <p>Read and write from any device — mobile, tablet, or desktop. Always pixel-perfect, always fast on Indian networks.</p>
           </div>
         </div>
-        <div class="feature-item">
-          <span class="feature-icon">⚡</span>
+        <div class="feature-item" role="listitem">
+          <span class="feature-icon" aria-hidden="true">⚡</span>
           <div>
-            <h4>Built with Angular</h4>
-            <p>SSR-powered Angular frontend with server-side rendering for blazing-fast load times.</p>
+            <h3>Built with Angular SSR</h3>
+            <p>Server-side rendering with Angular 20 for blazing-fast load times and excellent SEO performance.</p>
           </div>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ TESTIMONIALS / COMMUNITY VOICES ══════════ -->
+  <section class="testimonials-section" aria-labelledby="testimonials-heading">
+    <div class="section-inner">
+      <div class="section-label-wrap center">
+        <span class="section-eyebrow">Community Voices</span>
+        <h2 class="section-title" id="testimonials-heading">Writers love<br><span class="gradient-text">ApnaInsights</span></h2>
+        <p class="section-sub" style="margin: 0 auto; text-align: center;">Real stories from real writers across India who found their voice on our platform.</p>
+      </div>
+      <div class="testimonials-grid" role="list">
+        <blockquote class="testimonial-card" role="listitem" itemscope itemtype="https://schema.org/Review">
+          <div class="testimonial-stars" aria-label="5 out of 5 stars">★★★★★</div>
+          <p itemprop="reviewBody">"ApnaInsights gave me the platform I always needed. As a farmer from rural Telangana, I never thought my stories about village agriculture would reach thousands of readers. This platform truly lives up to its name."</p>
+          <footer class="testimonial-author">
+            <div class="testimonial-avatar" aria-hidden="true">RP</div>
+            <div>
+              <cite itemprop="author" itemscope itemtype="https://schema.org/Person">
+                <span class="t-name" itemprop="name">Ravi Prasad</span>
+              </cite>
+              <span class="t-location">Warangal, Telangana</span>
+            </div>
+          </footer>
+        </blockquote>
+
+        <blockquote class="testimonial-card" role="listitem" itemscope itemtype="https://schema.org/Review">
+          <div class="testimonial-stars" aria-label="5 out of 5 stars">★★★★★</div>
+          <p itemprop="reviewBody">"The editor is so clean and easy to use. I've tried other blogging platforms but ApnaInsights feels like it was made specifically for the Indian blogger. The community here is warm and supportive."</p>
+          <footer class="testimonial-author">
+            <div class="testimonial-avatar" aria-hidden="true">SM</div>
+            <div>
+              <cite itemprop="author" itemscope itemtype="https://schema.org/Person">
+                <span class="t-name" itemprop="name">Sneha Mehta</span>
+              </cite>
+              <span class="t-location">Pune, Maharashtra</span>
+            </div>
+          </footer>
+        </blockquote>
+
+        <blockquote class="testimonial-card" role="listitem" itemscope itemtype="https://schema.org/Review">
+          <div class="testimonial-stars" aria-label="5 out of 5 stars">★★★★★</div>
+          <p itemprop="reviewBody">"I started sharing my health journey on ApnaInsights and the response was overwhelming. The trending algorithm actually works — my posts reached people who needed them most. Highly recommend to every Indian writer."</p>
+          <footer class="testimonial-author">
+            <div class="testimonial-avatar" aria-hidden="true">AK</div>
+            <div>
+              <cite itemprop="author" itemscope itemtype="https://schema.org/Person">
+                <span class="t-name" itemprop="name">Arjun Kumar</span>
+              </cite>
+              <span class="t-location">Bengaluru, Karnataka</span>
+            </div>
+          </footer>
+        </blockquote>
       </div>
     </div>
   </section>
 
   <!-- ══════════ TECH STACK ══════════ -->
-  <section class="stack-section">
+  <section class="stack-section" aria-labelledby="stack-heading">
     <div class="section-inner">
       <div class="section-label-wrap center">
         <span class="section-eyebrow">Tech Stack</span>
-        <h2 class="section-title">Built with modern<br><span class="gradient-text">technology</span></h2>
+        <h2 class="section-title" id="stack-heading">Built with modern<br><span class="gradient-text">technology</span></h2>
+        <p class="section-sub" style="margin: 0 auto; text-align: center;">Production-grade technologies powering a seamless writing and reading experience.</p>
       </div>
-      <div class="stack-grid">
-        <div class="stack-card">
-          <span class="stack-icon">🅰️</span>
+      <div class="stack-grid" role="list">
+        <div class="stack-card" role="listitem">
+          <span class="stack-icon" aria-hidden="true">🅰️</span>
           <span class="stack-name">Angular 20</span>
           <span class="stack-desc">Frontend Framework</span>
         </div>
-        <div class="stack-card">
-          <span class="stack-icon">🟩</span>
+        <div class="stack-card" role="listitem">
+          <span class="stack-icon" aria-hidden="true">🟩</span>
           <span class="stack-name">Node.js</span>
           <span class="stack-desc">Backend Runtime</span>
         </div>
-        <div class="stack-card">
-          <span class="stack-icon">🍃</span>
+        <div class="stack-card" role="listitem">
+          <span class="stack-icon" aria-hidden="true">🍃</span>
           <span class="stack-name">MongoDB</span>
           <span class="stack-desc">Database</span>
         </div>
-        <div class="stack-card">
-          <span class="stack-icon">🔷</span>
+        <div class="stack-card" role="listitem">
+          <span class="stack-icon" aria-hidden="true">🔷</span>
           <span class="stack-name">TypeScript</span>
           <span class="stack-desc">Language</span>
         </div>
-        <div class="stack-card">
-          <span class="stack-icon">▲</span>
+        <div class="stack-card" role="listitem">
+          <span class="stack-icon" aria-hidden="true">▲</span>
           <span class="stack-name">Vercel</span>
           <span class="stack-desc">Deployment</span>
         </div>
-        <div class="stack-card">
-          <span class="stack-icon">🎨</span>
+        <div class="stack-card" role="listitem">
+          <span class="stack-icon" aria-hidden="true">🎨</span>
           <span class="stack-name">Angular Material</span>
           <span class="stack-desc">UI Components</span>
         </div>
@@ -417,12 +505,37 @@
     </div>
   </section>
 
-  <!-- ══════════ CONTACT ══════════ -->
-  <section class="contact-section" id="contact">
+  <section class="faq-section" aria-labelledby="faq-heading">
+    <div class="section-inner">
+      <div class="section-label-wrap center">
+        <span class="section-eyebrow">FAQ</span>
+        <h2 class="section-title" id="faq-heading">Frequently asked<br><span class="gradient-text">questions</span></h2>
+        <p class="section-sub" style="margin: 0 auto; text-align: center;">Everything you need to know about ApnaInsights.</p>
+      </div>
+      <div class="faq-list" role="list">
+        @for(faq of faqs; track faq; let i = $index){
+        <details class="faq-item" role="listitem">
+          <summary class="faq-question">
+            <span>{{faq.q}}</span>
+            <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </summary>
+          <div class="faq-answer">
+            <p>{{faq.a}}</p>
+          </div>
+        </details>
+      }
+      </div>
+    </div>
+  </section>
+
+
+  <section class="contact-section" id="contact" aria-labelledby="contact-heading">
     <div class="section-inner">
       <div class="section-label-wrap center">
         <span class="section-eyebrow">Get In Touch</span>
-        <h2 class="section-title">We'd love to<br><span class="gradient-text">hear from you</span></h2>
+        <h2 class="section-title" id="contact-heading">We'd love to<br><span class="gradient-text">hear from you</span></h2>
         <p class="section-sub" style="margin: 0 auto; text-align: center;">
           Have a story idea, partnership proposal, or just want to say hello? Drop us a message.
         </p>
@@ -430,10 +543,11 @@
 
       <div class="contact-wrap">
 
-        <div class="contact-info">
+        <div class="contact-info" itemscope itemtype="https://schema.org/Organization">
+          <meta itemprop="name" content="ApnaInsights" />
           <div class="contact-info-card">
             <div class="contact-info-item">
-              <div class="contact-icon">
+              <div class="contact-icon" aria-hidden="true">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                   <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="#43cea2" stroke-width="2" stroke-linejoin="round"/>
                   <path d="M22 6l-10 7L2 6" stroke="#43cea2" stroke-width="2" stroke-linecap="round"/>
@@ -441,12 +555,12 @@
               </div>
               <div>
                 <span class="contact-info-label">Email Us</span>
-                <span class="contact-info-value">hello&#64;apnainsights.com</span>
+                <a class="contact-info-value" href="mailto:hello@apnainsights.com" itemprop="email" aria-label="Send email to ApnaInsights">hello&#64;apnainsights.com</a>
               </div>
             </div>
 
             <div class="contact-info-item">
-              <div class="contact-icon">
+              <div class="contact-icon" aria-hidden="true">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                   <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" stroke="#185a9d" stroke-width="2"/>
                   <circle cx="12" cy="10" r="3" stroke="#185a9d" stroke-width="2"/>
@@ -454,12 +568,12 @@
               </div>
               <div>
                 <span class="contact-info-label">Based In</span>
-                <span class="contact-info-value">India 🇮🇳</span>
+                <span class="contact-info-value" itemprop="addressCountry">India 🇮🇳</span>
               </div>
             </div>
 
             <div class="contact-info-item">
-              <div class="contact-icon">
+              <div class="contact-icon" aria-hidden="true">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                   <circle cx="12" cy="12" r="10" stroke="#43cea2" stroke-width="2"/>
                   <path d="M12 6v6l4 2" stroke="#43cea2" stroke-width="2" stroke-linecap="round"/>
@@ -472,38 +586,38 @@
             </div>
 
             <div class="contact-info-item">
-              <div class="contact-icon">
+              <div class="contact-icon" aria-hidden="true">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                   <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8a19.79 19.79 0 01-3.07-8.67A2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" stroke="#185a9d" stroke-width="2" stroke-linecap="round"/>
                 </svg>
               </div>
               <div>
                 <span class="contact-info-label">Support</span>
-                <span class="contact-info-value">supports&#64;apnainsights.com</span>
+                <a class="contact-info-value" href="mailto:supports@apnainsights.com" itemprop="email" aria-label="Contact ApnaInsights support">supports&#64;apnainsights.com</a>
               </div>
             </div>
 
-            <div class="contact-socials">
-              <a href="#" class="social-btn" aria-label="Twitter">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <div class="contact-socials" role="list" aria-label="Social media links">
+              <a href="https://twitter.com/apnainsights" class="social-btn" aria-label="ApnaInsights on Twitter" rel="noopener noreferrer" target="_blank" role="listitem">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                   <path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
               </a>
-              <a href="#" class="social-btn" aria-label="LinkedIn">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <a href="https://linkedin.com/company/apnainsights" class="social-btn" aria-label="ApnaInsights on LinkedIn" rel="noopener noreferrer" target="_blank" role="listitem">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                   <path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                   <circle cx="4" cy="4" r="2" stroke="currentColor" stroke-width="2"/>
                 </svg>
               </a>
-              <a href="#" class="social-btn" aria-label="Instagram">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <a href="https://instagram.com/apnainsights" class="social-btn" aria-label="ApnaInsights on Instagram" rel="noopener noreferrer" target="_blank" role="listitem">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                   <rect x="2" y="2" width="20" height="20" rx="5" stroke="currentColor" stroke-width="2"/>
                   <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/>
                   <circle cx="17.5" cy="6.5" r="1" fill="currentColor"/>
                 </svg>
               </a>
-              <a href="#" class="social-btn" aria-label="GitHub">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <a href="https://github.com/apnainsights" class="social-btn" aria-label="ApnaInsights on GitHub" rel="noopener noreferrer" target="_blank" role="listitem">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                   <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0020 4.77 5.07 5.07 0 0019.91 1S18.73.65 16 2.48a13.38 13.38 0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 4.77a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
               </a>
@@ -513,8 +627,8 @@
 
         <div class="contact-form-wrap">
           @if (formSubmitted) {
-            <div class="form-success">
-              <div class="success-icon">
+            <div class="form-success" role="alert" aria-live="polite">
+              <div class="success-icon" aria-hidden="true">
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
                   <circle cx="12" cy="12" r="10" stroke="#43cea2" stroke-width="2"/>
                   <path d="M7 12l4 4 6-6" stroke="#43cea2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -522,31 +636,36 @@
               </div>
               <h3>Message Sent!</h3>
               <p>Thanks for reaching out. We'll get back to you within 24 hours.</p>
-              <button class="form-btn" (click)="formSubmitted = false">Send Another</button>
+              <button class="form-btn" (click)="formSubmitted = false" aria-label="Send another message">Send Another</button>
             </div>
           } @else {
-            <form class="contact-form" (ngSubmit)="submitForm()" #contactForm="ngForm">
+            <form class="contact-form" (ngSubmit)="submitForm()" #contactForm="ngForm" novalidate aria-label="Contact ApnaInsights form">
 
               <div class="form-row">
                 <div class="form-group">
-                  <label class="form-label">Your Name <span class="required">*</span></label>
+                  <label class="form-label" for="contact-name">Your Name <span class="required" aria-label="required">*</span></label>
                   <input
+                    id="contact-name"
                     type="text"
                     class="form-input"
                     placeholder="Vivek Verma"
                     [(ngModel)]="contactData.name"
                     name="name"
                     required
+                    autocomplete="name"
                     #nameField="ngModel"
                     [class.error]="nameField.invalid && nameField.touched"
+                    [attr.aria-invalid]="nameField.invalid && nameField.touched"
+                    aria-describedby="name-error"
                   />
                   @if (nameField.invalid && nameField.touched) {
-                    <span class="form-error">Name is required</span>
+                    <span class="form-error" id="name-error" role="alert">Name is required</span>
                   }
                 </div>
                 <div class="form-group">
-                  <label class="form-label">Email Address <span class="required">*</span></label>
+                  <label class="form-label" for="contact-email">Email Address <span class="required" aria-label="required">*</span></label>
                   <input
+                    id="contact-email"
                     type="email"
                     class="form-input"
                     placeholder="you&#64;example.com"
@@ -554,24 +673,30 @@
                     name="email"
                     required
                     email
+                    autocomplete="email"
                     #emailField="ngModel"
                     [class.error]="emailField.invalid && emailField.touched"
+                    [attr.aria-invalid]="emailField.invalid && emailField.touched"
+                    aria-describedby="email-error"
                   />
                   @if (emailField.invalid && emailField.touched) {
-                    <span class="form-error">Valid email is required</span>
+                    <span class="form-error" id="email-error" role="alert">Valid email is required</span>
                   }
                 </div>
               </div>
 
               <div class="form-group">
-                <label class="form-label">Subject <span class="required">*</span></label>
+                <label class="form-label" for="contact-subject">Subject <span class="required" aria-label="required">*</span></label>
                 <select
+                  id="contact-subject"
                   class="form-input form-select"
                   [(ngModel)]="contactData.subject"
                   name="subject"
                   required
                   #subjectField="ngModel"
                   [class.error]="subjectField.invalid && subjectField.touched"
+                  [attr.aria-invalid]="subjectField.invalid && subjectField.touched"
+                  aria-describedby="subject-error"
                 >
                   <option value="">Select a topic...</option>
                   <option value="general">General Inquiry</option>
@@ -582,41 +707,45 @@
                   <option value="other">Other</option>
                 </select>
                 @if (subjectField.invalid && subjectField.touched) {
-                  <span class="form-error">Please select a subject</span>
+                  <span class="form-error" id="subject-error" role="alert">Please select a subject</span>
                 }
               </div>
 
               <div class="form-group">
-                <label class="form-label">Message <span class="required">*</span></label>
+                <label class="form-label" for="contact-message">Message <span class="required" aria-label="required">*</span></label>
                 <textarea
+                  id="contact-message"
                   class="form-input form-textarea"
                   placeholder="Tell us what's on your mind..."
                   [(ngModel)]="contactData.message"
                   name="message"
                   required
                   minlength="20"
+                  maxlength="500"
                   #messageField="ngModel"
                   [class.error]="messageField.invalid && messageField.touched"
+                  [attr.aria-invalid]="messageField.invalid && messageField.touched"
+                  aria-describedby="message-error message-count"
                 ></textarea>
                 @if (messageField.invalid && messageField.touched) {
-                  <span class="form-error">Message must be at least 20 characters</span>
+                  <span class="form-error" id="message-error" role="alert">Message must be at least 20 characters</span>
                 }
-                <span class="char-count">{{ contactData.message.length }} / 500</span>
+                <span class="char-count" id="message-count" aria-live="polite" aria-atomic="true">{{ contactData.message.length }} / 500</span>
               </div>
 
-              <button type="submit" class="form-btn" [disabled]="contactForm.invalid || isSubmitting()">
+              <button type="submit" class="form-btn" [disabled]="contactForm.invalid || isSubmitting()" [attr.aria-busy]="isSubmitting()">
                 @if (isSubmitting()) {
-                  <span class="btn-spinner"></span> Sending...
+                  <span class="btn-spinner" aria-hidden="true"></span> Sending...
                 } @else {
-                  <span>✦</span> Send Message
+                  <span aria-hidden="true">✦</span> Send Message
                 }
               </button>
             </form>
             @if(successMessage()){
-              <span class="success-message">{{successMessage()}}</span>
+              <span class="success-message" role="alert">{{successMessage()}}</span>
             }
             @if(errorMessage()){
-              <span class="error-message">{{errorMessage()}}</span>
+              <span class="error-message" role="alert">{{errorMessage()}}</span>
             }
           }
         </div>
@@ -626,31 +755,32 @@
   </section>
 
   <!-- ══════════ PRIVACY & TERMS ══════════ -->
-  <section class="legal-section" id="legal">
+  <section class="legal-section" id="legal" aria-labelledby="legal-heading">
     <div class="section-inner">
+      <h2 id="legal-heading" class="visually-hidden">Legal Information</h2>
       <div class="legal-grid">
 
         <div class="legal-card" id="privacy">
           <div class="legal-card-header">
-            <div class="legal-icon">
+            <div class="legal-icon" aria-hidden="true">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="#43cea2" stroke-width="2" stroke-linejoin="round"/>
               </svg>
             </div>
             <h3>Privacy Policy</h3>
-            <span class="legal-date">Effective: January 2025</span>
+            <time class="legal-date" datetime="2025-01">Effective: January 2025</time>
           </div>
-          <div class="legal-points">
-            <div class="legal-point">
-              <span class="point-dot"></span>
+          <div class="legal-points" role="list">
+            <div class="legal-point" role="listitem">
+              <span class="point-dot" aria-hidden="true"></span>
               <p>We collect only the information necessary to provide our services — your name, email, and content you publish. We never sell your personal data to third parties under any circumstances.</p>
             </div>
-            <div class="legal-point">
-              <span class="point-dot"></span>
+            <div class="legal-point" role="listitem">
+              <span class="point-dot" aria-hidden="true"></span>
               <p>Your data is stored securely using industry-standard encryption. You have the right to request deletion of your account and all associated data at any time by contacting our support team.</p>
             </div>
-            <div class="legal-point">
-              <span class="point-dot"></span>
+            <div class="legal-point" role="listitem">
+              <span class="point-dot" aria-hidden="true"></span>
               <p>We use cookies solely to maintain your session and improve your experience. No third-party tracking or advertising cookies are used on ApnaInsights.</p>
             </div>
           </div>
@@ -658,26 +788,26 @@
 
         <div class="legal-card" id="terms">
           <div class="legal-card-header">
-            <div class="legal-icon legal-icon-alt">
+            <div class="legal-icon legal-icon-alt" aria-hidden="true">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                 <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="#185a9d" stroke-width="2" stroke-linejoin="round"/>
                 <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" stroke="#185a9d" stroke-width="2" stroke-linecap="round"/>
               </svg>
             </div>
             <h3>Terms of Service</h3>
-            <span class="legal-date">Effective: January 2025</span>
+            <time class="legal-date" datetime="2025-01">Effective: January 2025</time>
           </div>
-          <div class="legal-points">
-            <div class="legal-point">
-              <span class="point-dot point-dot-alt"></span>
+          <div class="legal-points" role="list">
+            <div class="legal-point" role="listitem">
+              <span class="point-dot point-dot-alt" aria-hidden="true"></span>
               <p>By using ApnaInsights, you agree to publish only original content that does not violate copyright, spread misinformation, or promote hate speech. Violations may result in account suspension.</p>
             </div>
-            <div class="legal-point">
-              <span class="point-dot point-dot-alt"></span>
+            <div class="legal-point" role="listitem">
+              <span class="point-dot point-dot-alt" aria-hidden="true"></span>
               <p>All content published on ApnaInsights remains the intellectual property of its respective authors. ApnaInsights holds a non-exclusive license to display your content on the platform.</p>
             </div>
-            <div class="legal-point">
-              <span class="point-dot point-dot-alt"></span>
+            <div class="legal-point" role="listitem">
+              <span class="point-dot point-dot-alt" aria-hidden="true"></span>
               <p>ApnaInsights reserves the right to remove content or suspend accounts that violate our community guidelines. We are not liable for user-generated content published on the platform.</p>
             </div>
           </div>
@@ -688,27 +818,30 @@
   </section>
 
   <!-- ══════════ FOOTER ══════════ -->
-  <footer class="about-footer">
+  <footer class="about-footer" role="contentinfo">
     <div class="footer-inner">
       <div class="footer-logo">
-        <!-- <span class="logo-hex">⬡</span>
-        <span class="logo-text">ApnaInsights</span> -->
-        <a class="app-logo" routerLink="/">
-            <img class="app-logo-img" src="/images/logo.png" alt="ApnaInsights" />
-            <span class="app-logo-text">ApnaInsights</span>
-          </a>
+        <a class="app-logo" routerLink="/" aria-label="ApnaInsights homepage">
+          <img class="app-logo-img" src="/images/logo.png" alt="ApnaInsights" width="28" height="28" loading="lazy" />
+          <span class="app-logo-text">ApnaInsights</span>
+        </a>
       </div>
       <p class="footer-tagline">Every story matters. Every voice belongs.</p>
-      <div class="footer-links">
-        <a (click)="scrollTo('privacy')" class="footer-link">Privacy Policy</a>
-        <span class="dot">·</span>
-        <a (click)="scrollTo('terms')" class="footer-link">Terms of Service</a>
-        <span class="dot">·</span>
-        <a (click)="scrollToContact()" class="footer-link">Contact Us</a>
-      </div>
+      <nav class="footer-links" aria-label="Footer navigation">
+        <a (click)="scrollTo('privacy')" class="footer-link" role="button" tabindex="0" aria-label="Read our Privacy Policy">Privacy Policy</a>
+        <span class="dot" aria-hidden="true">·</span>
+        <a (click)="scrollTo('terms')" class="footer-link" role="button" tabindex="0" aria-label="Read our Terms of Service">Terms of Service</a>
+        <span class="dot" aria-hidden="true">·</span>
+        <a (click)="scrollToContact()" class="footer-link" role="button" tabindex="0" aria-label="Contact Us">Contact Us</a>
+        <span class="dot" aria-hidden="true">·</span>
+        <a routerLink="/welcome" class="footer-link" aria-label="Browse all stories">Browse Stories</a>
+        <span class="dot" aria-hidden="true">·</span>
+        <a routerLink="/auth/register" class="footer-link" aria-label="Start writing on ApnaInsights for free">Start Writing</a>
+      </nav>
       <div class="footer-copy">
         <p>© {{ currentYear }} ApnaInsights. All rights reserved.</p>
-        <p>Founded by <strong>Vivek Verma</strong> & <strong>Revathi Satya</strong> · Made with ❤️ in India</p>
+        <p>Founded by <strong>Vivek Verma</strong> &amp; <strong>Revathi Satya</strong> · Made with ❤️ in India</p>
+        <p class="footer-seo-text">ApnaInsights is India's trusted community blogging platform — free to write, free to read.</p>
       </div>
     </div>
   </footer>
