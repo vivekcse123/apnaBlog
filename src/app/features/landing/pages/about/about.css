@@ -1514,7 +1514,6 @@ a.contact-info-value:hover { color: var(--accent-text); }
 
 .footer-copy strong { color: var(--text-secondary); font-weight: 600; }
 
-/* ═══ FOOTER SEO TEXT — visible but subtle, for crawlers ═══ */
 .footer-seo-text {
   font-size: 12px !important;
   color: var(--text-muted) !important;
@@ -1522,7 +1521,6 @@ a.contact-info-value:hover { color: var(--accent-text); }
   margin-top: 4px;
 }
 
-/* ═══ APP LOGO ═══ */
 .app-logo {
   display: flex;
   align-items: center;
@@ -1546,10 +1544,6 @@ a.contact-info-value:hover { color: var(--accent-text); }
   background-clip: text;
   letter-spacing: 0.3px;
 }
-
-/* ═══════════════════════════════════════════
-   RESPONSIVE
-   ═══════════════════════════════════════════ */
 
 @media (max-width: 1024px) {
   .mission-grid  { grid-template-columns: repeat(2, 1fr); }
