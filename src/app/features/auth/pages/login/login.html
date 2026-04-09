@@ -1,7 +1,5 @@
-<!-- login.component.html -->
 <div class="login-page">
 
-  <!-- Ambient background -->
   <div class="login-bg">
     <div class="orb orb-1"></div>
     <div class="orb orb-2"></div>
@@ -10,19 +8,51 @@
 
   <div class="login-wrap">
 
-    <!-- ── Left Panel ── -->
+    <!-- Left Panel -->
     <div class="login-panel brand-panel">
       <div class="brand-content">
+
         <div class="brand-logo">
-          <!-- <span class="brand-hex">⬡</span>
-          <span class="brand-name">ApnaInsights</span> -->
-          <a class="app-logo" routerLink="/" class="custom-logo">
+          <div class="brand-logo-icon">
             <img class="app-logo-img" src="/images/logo.png" alt="ApnaInsights" />
-            <span class="app-logo-text" style="color: white !important">ApnaInsights</span>
-          </a>
+          </div>
+          <span class="brand-name">ApnaInsights</span>
         </div>
-        <img src="/images/village.png" alt="Village Illustration" class="brand-img">
-        <p class="brand-tagline">Share your real stories<br>with the world 🌿</p>
+
+        <div class="brand-headline">
+          <h3>Your stories deserve<br>to be heard 🌿</h3>
+          <p>A platform built for real voices from real places — share perspectives that matter.</p>
+        </div>
+
+        <div class="brand-features">
+          <div class="brand-feature">
+            <div class="feature-dot">✓</div>
+            <div class="brand-feature-text">
+              <strong>Write &amp; publish freely</strong>
+              <span>No gatekeepers — your story goes live instantly</span>
+            </div>
+          </div>
+          <div class="brand-feature">
+            <div class="feature-dot">✓</div>
+            <div class="brand-feature-text">
+              <strong>Reach real readers</strong>
+              <span>Growing community of 12k+ active readers</span>
+            </div>
+          </div>
+          <div class="brand-feature">
+            <div class="feature-dot">✓</div>
+            <div class="brand-feature-text">
+              <strong>Own your content</strong>
+              <span>Full control — edit, unpublish, or export anytime</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="brand-quote">
+          <p>"Writing here felt like finally speaking to someone who actually listens."</p>
+          <cite>— Unknown., Author since 2025</cite>
+        </div>
+
         <div class="brand-stats">
           <div class="brand-stat">
             <span class="stat-num">2.4k</span>
@@ -39,10 +69,11 @@
             <span class="stat-lbl">Readers</span>
           </div>
         </div>
+
       </div>
     </div>
 
-    <!-- ── Right Panel ── -->
+    <!-- Right Panel -->
     <div class="login-panel form-panel">
 
       <div class="form-header">
@@ -52,7 +83,6 @@
 
       <form [formGroup]="loginForm" (ngSubmit)="login()" class="login-form">
 
-        <!-- Email -->
         <div class="field-group">
           <label>Email / Username</label>
           <div class="input-wrap">
@@ -72,16 +102,15 @@
           }
         </div>
 
-        <!-- Password -->
         <div class="field-group">
           <label>Password</label>
           <div class="input-wrap">
             <span class="input-icon">◉</span>
-            <input [type]="showPassword ? 'text' : 'password'" 
-            placeholder="Enter your password" 
-            formControlName="password" 
-            [class.field-error]="loginForm.get('password')?.invalid &&
-             (isSubmitted() || loginForm.get('password')?.touched)">
+            <input [type]="showPassword ? 'text' : 'password'"
+              placeholder="Enter your password"
+              formControlName="password"
+              [class.field-error]="loginForm.get('password')?.invalid &&
+                (isSubmitted() || loginForm.get('password')?.touched)">
           </div>
           @if(loginForm.get('password')?.invalid && (isSubmitted() || loginForm.get('password')?.touched)){
             @if(loginForm.get('password')?.errors?.['required']){
@@ -89,18 +118,17 @@
             }
           }
         </div>
+
         <div class="show-password-row">
           <input type="checkbox" id="showPwd" [(ngModel)]="showPassword" [ngModelOptions]="{standalone: true}">
           <label for="showPwd">Show password</label>
         </div>
-        
+
         <div class="forgot-row">
           <a href="/auth/forgot-password" class="forgot-link">Forgot password?</a>
         </div>
 
-        <button type="submit" class="login-btn">
-          Sign In →
-        </button>
+        <button type="submit" class="login-btn">Sign In →</button>
 
         <p class="register-row">
           Don't have an account?
@@ -109,8 +137,8 @@
 
         @if(errorMessage()){
           <div class="form-message error-message">
-            <span>✕</span> {{ errorMessage()}}
-             <a href="welcome/about/">Contact our support team</a>
+            <span>✕</span> {{ errorMessage() }}
+            <a href="welcome/about/">Contact our support team</a>
           </div>
         }
         @if(successMessage()){

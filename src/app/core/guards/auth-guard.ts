@@ -13,7 +13,6 @@ export const authGuard: CanActivateFn = () => {
   return false;
 };
 
-
 export const guestGuard: CanActivateFn = () => {
   const authService = inject(Auth);
   const router = inject(Router);

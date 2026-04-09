@@ -20,7 +20,7 @@ export const routes: Routes = [
     {
         path: 'blog/:id',
         loadComponent: () => import('./features/landing/pages/blog-detail/blog-detail').then(m => m.BlogDetail),
-        data : {
+        data: {
             title: 'Blog Post',
             description: 'Read our latest blog post'
         }
@@ -38,18 +38,18 @@ export const routes: Routes = [
         children: [
             {
                 path: 'admin/:id',
-                canActivate: [adminGuard, roleGuard],
+                canActivate: [adminGuard, roleGuard], 
                 loadChildren: () => import('./features/admin/admin-module').then(m => m.AdminModule),
-                data: {role: 'admin'}
+                data: { role: 'admin' }
             },
             {
                 path: 'user/:id',
+                canActivate: [roleGuard],
                 loadChildren: () => import('./features/user/user-module').then(m => m.UserModule),
-                data: {role: 'user'}
+                data: { role: 'user' } 
             }
         ]
     },
-
     {
         path: '**',
         component: PageNotFound
