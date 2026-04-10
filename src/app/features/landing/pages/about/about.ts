@@ -5,6 +5,7 @@ import { RouterLink } from '@angular/router';
 import { FormsModule, NgForm } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import { ContactService } from '../../../../core/services/contact-service';
 
 interface ContactData {
   name: string;
@@ -30,7 +31,7 @@ export class About implements OnInit, OnDestroy {
   private meta = inject(Meta);
   private title = inject(Title);
   private document = inject(DOCUMENT);
-  private http = inject(HttpClient);
+  private contactService = inject(ContactService);
 
   navMenuOpen = false;
   formSubmitted = false;
@@ -324,7 +325,7 @@ export class About implements OnInit, OnDestroy {
     this.successMessage.set('');
     this.errorMessage.set('');
 
-    this.http.post('/api/contact', this.contactData).subscribe({
+    this.contactService.sendMessage(this.contactData).subscribe({
       next: () => {
         this.isSubmitting.set(false);
         this.formSubmitted = true;
