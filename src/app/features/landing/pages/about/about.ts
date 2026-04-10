@@ -54,11 +54,11 @@ export class About implements OnInit, OnDestroy {
     },
     {
       q: 'Is ApnaInsights free to use?',
-      a: 'Yes, ApnaInsights is completely free to read and write. Any registered user can publish stories, engage with the community, and access all platform features at no cost — no hidden fees, no premium paywalls.'
+      a: 'Yes, ApnaInsights is completely free to read and write. Any registered user can publish stories, engage with the community, and access all platform features at no cost no hidden fees, no premium paywalls.'
     },
     {
       q: 'How do I start writing on ApnaInsights?',
-      a: 'Simply sign up for a free account, then click "Write a Story" to access our rich blog editor. You can publish in 8 categories: Technology, Lifestyle, Education, Health, Business, Entertainment, Social, and Village.'
+      a: 'Simply sign up for a free account, then click "Write a Story" to access our rich blog editor. You can publish in 12 categories: Sports, Technology, Lifestyle, Education, Health, Business, Entertainment, Social, Cooking, Exercise, Quotes and Village.'
     },
     {
       q: 'Who founded ApnaInsights?',
@@ -66,7 +66,7 @@ export class About implements OnInit, OnDestroy {
     },
     {
       q: 'What categories can I write about on ApnaInsights?',
-      a: 'ApnaInsights supports 8 content categories: Technology, Lifestyle, Education, Health, Business, Entertainment, Social Issues, and Village Life. Each category has a dedicated feed and trending algorithm.'
+      a: 'ApnaInsights supports 12 content categories: Sports, Technology, Lifestyle, Education, Health, Business, Entertainment, Social Issues, Cooking Recipes, Motivational Quotes, Exercise Tips and Village Life. Each category has a dedicated feed and trending algorithm.'
     },
     {
       q: 'Is my content safe and private on ApnaInsights?',
@@ -88,7 +88,6 @@ export class About implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-
     const scripts = this.document.querySelectorAll('script[data-apna-schema]');
     scripts.forEach(s => s.remove());
   }
@@ -133,60 +132,73 @@ export class About implements OnInit, OnDestroy {
   }
 
   private injectJsonLd(): void {
-    const schemas = [
 
-      {
-        '@context': 'https://schema.org',
-        '@type': 'Organization',
-        name: 'ApnaInsights',
-        alternateName: 'Apna Insights',
-        url: 'https://www.apnainsights.com',
-        logo: 'https://www.apnainsights.com/images/logo.png',
-        description: 'ApnaInsights is India\'s community-first blogging platform where real people share real experiences — from village life to tech innovations, from health journeys to business breakthroughs.',
-        foundingDate: '2024',
-        foundingLocation: { '@type': 'Place', addressCountry: 'IN' },
-        founders: [
-          { '@type': 'Person', name: 'Vivek Verma', jobTitle: 'Founder & Lead Engineer' },
-          { '@type': 'Person', name: 'Kondra Revathi Satya', jobTitle: 'Chief Executive Officer' }
-        ],
-        contactPoint: [
-          { '@type': 'ContactPoint', contactType: 'customer support', email: 'supports@apnainsights.com', availableLanguage: ['English', 'Hindi'] },
-          { '@type': 'ContactPoint', contactType: 'general inquiry', email: 'hello@apnainsights.com' }
-        ],
-        address: { '@type': 'PostalAddress', addressCountry: 'IN' },
-        sameAs: [
-          'https://twitter.com/apnainsights',
-          'https://linkedin.com/company/apnainsights',
-          'https://instagram.com/apnainsights',
-          'https://github.com/apnainsights'
-        ]
-      },
+    const schemas = [
 
       {
         '@context': 'https://schema.org',
         '@graph': [
           {
+            '@type': 'Organization',
+            '@id': 'https://www.apnainsights.com/#organization',
+            name: 'ApnaInsights',
+            alternateName: 'Apna Insights',
+            url: 'https://www.apnainsights.com',
+            logo: {
+              '@type': 'ImageObject',
+              url: 'https://www.apnainsights.com/images/logo.png'
+            },
+            description: 'ApnaInsights is India\'s community-first blogging platform where real people share real experiences — from village life to tech innovations, from health journeys to business breakthroughs.',
+            foundingDate: '2024',
+            foundingLocation: { '@type': 'Place', addressCountry: 'IN' },
+            founders: [
+              { '@type': 'Person', name: 'Vivek Verma', jobTitle: 'Founder & Lead Engineer' },
+              { '@type': 'Person', name: 'Kondra Revathi Satya', jobTitle: 'Chief Executive Officer' }
+            ],
+            contactPoint: [
+              { '@type': 'ContactPoint', contactType: 'customer support', email: 'supports@apnainsights.com', availableLanguage: ['English', 'Hindi'] },
+              { '@type': 'ContactPoint', contactType: 'general inquiry', email: 'hello@apnainsights.com' }
+            ],
+            address: { '@type': 'PostalAddress', addressCountry: 'IN' },
+            sameAs: [
+              'https://twitter.com/apnainsights',
+              'https://linkedin.com/company/apnainsights',
+              'https://instagram.com/apnainsights',
+              'https://github.com/apnainsights'
+            ]
+          },
+          {
+            '@type': 'WebSite',
+            '@id': 'https://www.apnainsights.com/#website',
+            url: 'https://www.apnainsights.com',
+            name: 'ApnaInsights',
+            publisher: { '@id': 'https://www.apnainsights.com/#organization' }
+          },
+          {
+
             '@type': 'WebPage',
-            '@id': 'https://www.apnainsights.com/about',
+            '@id': 'https://www.apnainsights.com/about#webpage',
             url: 'https://www.apnainsights.com/about',
             name: 'About ApnaInsights | Community Blogging Platform Built for India',
             description: 'Learn about ApnaInsights, India\'s community-first blogging platform. Meet the team, discover our mission, and find out how we empower writers across India.',
             inLanguage: 'en-IN',
-            isPartOf: { '@id': 'https://www.apnainsights.com' },
-            about: { '@type': 'Organization', name: 'ApnaInsights' },
+            isPartOf: { '@id': 'https://www.apnainsights.com/#website' },
+            about: { '@id': 'https://www.apnainsights.com/#organization' },
             datePublished: '2024-01-01',
-            dateModified: '2025-01-01',
-            breadcrumb: {
-              '@type': 'BreadcrumbList',
-              itemListElement: [
-                { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.apnainsights.com' },
-                { '@type': 'ListItem', position: 2, name: 'About', item: 'https://www.apnainsights.com/about' }
-              ]
-            }
+
+            dateModified: '2026-01-01'
+          },
+          {
+            '@type': 'BreadcrumbList',
+            '@id': 'https://www.apnainsights.com/about#breadcrumb',
+            itemListElement: [
+              { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.apnainsights.com' },
+              { '@type': 'ListItem', position: 2, name: 'About', item: 'https://www.apnainsights.com/about' }
+            ]
           }
         ]
       },
-      
+
       {
         '@context': 'https://schema.org',
         '@type': 'FAQPage',

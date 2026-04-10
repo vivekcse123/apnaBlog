@@ -5,9 +5,8 @@ module.exports = async function handler(req, res) {
   try {
     let allPosts = [];
 
-    // ✅ Abort if Render takes too long
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 8000); // 8 sec max
+    const timeout = setTimeout(() => controller.abort(), 8000);
 
     try {
       let page = 1;
@@ -19,46 +18,58 @@ module.exports = async function handler(req, res) {
           { signal: controller.signal }
         );
 
-        if (!response.ok) throw new Error(`Backend fetch failed: ${response.status}`);
+        if (!response.ok) {
+          throw new Error(`Backend fetch failed: ${response.status}`);
+        }
 
         const data = await response.json();
         const posts = Array.isArray(data.data) ? data.data : [];
-        allPosts = [...allPosts, ...posts];
+
+        allPosts = allPosts.concat(posts);
         totalPages = data.totalPages || 1;
         page++;
 
       } while (page <= totalPages);
 
     } catch (fetchErr) {
-      // ✅ If Render is down/slow, continue with just static routes
-      console.warn('Backend unavailable, serving static-only sitemap:', fetchErr.message);
+      console.warn(
+        'Backend unavailable, serving static-only sitemap:',
+        fetchErr.message
+      );
     } finally {
       clearTimeout(timeout);
     }
 
+    // Static routes
     const staticLinks = [
-      { url: '/welcome',       changefreq: 'daily',   priority: 1.0 },
-      { url: '/welcome/about', changefreq: 'monthly', priority: 0.8 },
+      { url: '/welcome', changefreq: 'daily', priority: 1.0 },
+      { url: '/about', changefreq: 'monthly', priority: 0.8 }
     ];
 
+    // Dynamic blog routes
     const postLinks = allPosts.map(post => ({
-      url:        `/blog/${post._id}`,
+      url: `/blog/${post._id}`,
       changefreq: 'weekly',
-      priority:    0.7,
-      lastmod:     post.updatedAt,
+      priority: 0.7,
+      lastmod: post.updatedAt || new Date().toISOString()
     }));
 
-    const stream = new SitemapStream({ hostname: 'https://apnablogs.vercel.app' });
+    const stream = new SitemapStream({
+      hostname: 'https://apnainsights.com'
+    });
+
     const xmlData = await streamToPromise(
       Readable.from([...staticLinks, ...postLinks]).pipe(stream)
     );
 
     res.setHeader('Content-Type', 'application/xml');
     res.setHeader('Cache-Control', 'public, max-age=3600');
+
     res.status(200).send(xmlData.toString());
 
   } catch (err) {
-    console.error('Sitemap error:', err.message);
+    console.error('Sitemap error:', err);
+
     res.setHeader('Content-Type', 'text/plain');
     res.status(500).send(`Sitemap error: ${err.message}`);
   }
