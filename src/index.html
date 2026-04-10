@@ -7,58 +7,109 @@
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <meta name="theme-color" content="#43cea2">
+  <meta name="theme-color" content="#000000">
 
-  <link rel="icon" type="image/x-icon" href="/favicon.ico">
-  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="/images/favicon-192.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/x-icon"  href="/favicon.ico">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/png"     sizes="96x96" href="/favicon-96x96.png">
+  <link rel="apple-touch-icon"          sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="manifest"                  href="/site.webmanifest">
 
-  <link rel="manifest" href="/manifest.json">
 
   <link rel="canonical" href="https://www.apnainsights.com/">
 
   <meta name="description" content="ApnaInsights — Share your real stories with the world. A platform built for real voices from real places.">
-  <meta name="author" content="ApnaInsights">
-  <meta name="robots" content="index, follow">
+  <meta name="author"      content="ApnaInsights">
+  <meta name="robots"      content="index, follow">
 
-  <meta property="og:title" content="ApnaInsights | Real Stories, Real Voices">
-  <meta property="og:description" content="Share your real stories with the world. A platform built for real voices from real places.">
-  <meta property="og:image" content="https://www.apnainsights.com/images/og-home.jpg">
-  <meta property="og:image:width" content="1200">
+  <meta property="og:type"         content="website">
+  <meta property="og:url"          content="https://www.apnainsights.com/">
+  <meta property="og:site_name"    content="ApnaInsights">
+  <meta property="og:locale"       content="en_IN">
+  <meta property="og:title"        content="ApnaInsights | Real Stories, Real Voices">
+  <meta property="og:description"  content="Share your real stories with the world. A platform built for real voices from real places.">
+  <meta property="og:image"        content="https://www.apnainsights.com/images/og-home.jpg">
+  <meta property="og:image:width"  content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="ApnaInsights — Real Stories, Real Voices">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://www.apnainsights.com">
-  <meta property="og:site_name" content="ApnaInsights">
+  <meta property="og:image:alt"    content="ApnaInsights — Real Stories, Real Voices">
 
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="ApnaInsights | Real Stories, Real Voices">
+  <meta name="twitter:card"        content="summary_large_image">
+  <meta name="twitter:site"        content="@apnainsights">
+  <meta name="twitter:title"       content="ApnaInsights | Real Stories, Real Voices">
   <meta name="twitter:description" content="Share your real stories with the world.">
-  <meta name="twitter:image" content="https://www.apnainsights.com/images/og-home.jpg">
-  <meta name="twitter:image:alt" content="ApnaInsights — Real Stories, Real Voices">
-  <meta name="twitter:site" content="@apnainsights">
+  <meta name="twitter:image"       content="https://www.apnainsights.com/images/og-home.jpg">
+  <meta name="twitter:image:alt"   content="ApnaInsights — Real Stories, Real Voices">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://www.apnainsights.com/#organization",
+        "name": "ApnaInsights",
+        "alternateName": "Apna Insights",
+        "url": "https://www.apnainsights.com",
+        "logo": {
+          "@type": "ImageObject",
+          "@id": "https://www.apnainsights.com/#logo",
+          "url": "https://www.apnainsights.com/web-app-manifest-512x512.png",
+          "contentUrl": "https://www.apnainsights.com/web-app-manifest-512x512.png",
+          "width": 512,
+          "height": 512,
+          "caption": "ApnaInsights"
+        },
+        "image": {
+          "@id": "https://www.apnainsights.com/#logo"
+        },
+        "description": "ApnaInsights is India's community-first blogging platform where real people share real experiences.",
+        "foundingDate": "2024",
+        "address": {
+          "@type": "PostalAddress",
+          "addressCountry": "IN"
+        },
+        "contactPoint": [
+          {
+            "@type": "ContactPoint",
+            "contactType": "customer support",
+            "email": "supports@apnainsights.com",
+            "availableLanguage": ["English", "Hindi"]
+          }
+        ],
+        "sameAs": [
+          "https://twitter.com/apnainsights",
+          "https://linkedin.com/company/apnainsights",
+          "https://instagram.com/apnainsights",
+          "https://github.com/apnainsights"
+        ]
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://www.apnainsights.com/#website",
+        "url": "https://www.apnainsights.com/",
+        "name": "ApnaInsights",
+        "description": "Real Stories, Real Voices — India's community blogging platform",
+        "publisher": {
+          "@id": "https://www.apnainsights.com/#organization"
+        },
+        "inLanguage": "en-IN",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": {
+            "@type": "EntryPoint",
+            "urlTemplate": "https://www.apnainsights.com/welcome?q={search_term_string}"
+          },
+          "query-input": "required name=search_term_string"
+        }
+      }
+    ]
+  }
+  </script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Organization",
-    "@id": "https://www.apnainsights.com/#organization",
-    "name": "ApnaInsights",
-    "url": "https://www.apnainsights.com",
-    "logo": {
-      "@type": "ImageObject",
-      "url": "https://www.apnainsights.com/images/logo.png",
-      "width": 497,
-      "height": 497
-    }
-  }
-  </script>
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6477809641944524" crossorigin="anonymous"></script>
 </head>

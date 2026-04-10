@@ -175,7 +175,6 @@ export class About implements OnInit, OnDestroy {
             publisher: { '@id': 'https://www.apnainsights.com/#organization' }
           },
           {
-
             '@type': 'WebPage',
             '@id': 'https://www.apnainsights.com/about#webpage',
             url: 'https://www.apnainsights.com/about',
@@ -185,7 +184,6 @@ export class About implements OnInit, OnDestroy {
             isPartOf: { '@id': 'https://www.apnainsights.com/#website' },
             about: { '@id': 'https://www.apnainsights.com/#organization' },
             datePublished: '2024-01-01',
-
             dateModified: '2026-01-01'
           },
           {
@@ -207,6 +205,98 @@ export class About implements OnInit, OnDestroy {
           name: f.q,
           acceptedAnswer: { '@type': 'Answer', text: f.a }
         }))
+      },
+
+      {
+        '@context': 'https://schema.org',
+        '@type': 'ItemList',
+        name: 'ApnaInsights Community Reviews',
+        itemListElement: [
+          {
+            '@type': 'ListItem',
+            position: 1,
+            item: {
+              '@type': 'Review',
+              '@id': 'https://www.apnainsights.com/about#review-1',
+              itemReviewed: {
+                '@type': 'Organization',
+                '@id': 'https://www.apnainsights.com/#organization',
+                name: 'ApnaInsights',
+                url: 'https://www.apnainsights.com'
+              },
+              reviewRating: {
+                '@type': 'Rating',
+                ratingValue: '5',
+                bestRating: '5',
+                worstRating: '1'
+              },
+              reviewBody: 'ApnaInsights gave me the platform I always needed. As a farmer from rural Telangana, I never thought my stories about village agriculture would reach thousands of readers. This platform truly lives up to its name.',
+              author: {
+                '@type': 'Person',
+                name: 'Ravi Prasad'
+              },
+              publisher: {
+                '@id': 'https://www.apnainsights.com/#organization'
+              }
+            }
+          },
+          {
+            '@type': 'ListItem',
+            position: 2,
+            item: {
+              '@type': 'Review',
+              '@id': 'https://www.apnainsights.com/about#review-2',
+              itemReviewed: {
+                '@type': 'Organization',
+                '@id': 'https://www.apnainsights.com/#organization',
+                name: 'ApnaInsights',
+                url: 'https://www.apnainsights.com'
+              },
+              reviewRating: {
+                '@type': 'Rating',
+                ratingValue: '5',
+                bestRating: '5',
+                worstRating: '1'
+              },
+              reviewBody: 'The editor is so clean and easy to use. I\'ve tried other blogging platforms but ApnaInsights feels like it was made specifically for the Indian blogger. The community here is warm and supportive.',
+              author: {
+                '@type': 'Person',
+                name: 'Sneha Mehta'
+              },
+              publisher: {
+                '@id': 'https://www.apnainsights.com/#organization'
+              }
+            }
+          },
+          {
+            '@type': 'ListItem',
+            position: 3,
+            item: {
+              '@type': 'Review',
+              '@id': 'https://www.apnainsights.com/about#review-3',
+              itemReviewed: {
+                '@type': 'Organization',
+                '@id': 'https://www.apnainsights.com/#organization',
+                name: 'ApnaInsights',
+                url: 'https://www.apnainsights.com'
+              },
+              reviewRating: {
+                '@type': 'Rating',
+                ratingValue: '5',
+                bestRating: '5',
+                worstRating: '1'
+              },
+              reviewBody: 'I started sharing my health journey on ApnaInsights and the response was overwhelming. The trending algorithm actually works — my posts reached people who needed them most. Highly recommend to every Indian writer.',
+              author: {
+                '@type': 'Person',
+                name: 'Virat Verma'
+              },
+              publisher: {
+                '@id': 'https://www.apnainsights.com/#organization'
+              }
+            }
+          }
+        ]
       }
     ];
 
