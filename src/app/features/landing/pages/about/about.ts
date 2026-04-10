@@ -146,7 +146,7 @@ export class About implements OnInit, OnDestroy {
             url: 'https://www.apnainsights.com',
             logo: {
               '@type': 'ImageObject',
-              url: 'https://www.apnainsights.com/images/logo.png'
+              url: 'https://www.apnainsights.com/logo.png'
             },
             description: 'ApnaInsights is India\'s community-first blogging platform where real people share real experiences — from village life to tech innovations, from health journeys to business breakthroughs.',
             foundingDate: '2024',

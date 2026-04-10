@@ -350,7 +350,7 @@ export class Home implements OnInit, OnDestroy {
           name: 'ApnaInsights',
           logo: {
             '@type': 'ImageObject',
-            url: 'https://www.apnainsights.com/images/logo.png',
+            url: 'https://www.apnainsights.com/logo.png',
             width: 200,
             height: 200
           }
