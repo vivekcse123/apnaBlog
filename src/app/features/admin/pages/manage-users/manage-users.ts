@@ -10,7 +10,6 @@ import { DisabledDirective } from '../../../../shared/directives/highlight';
 import { CreateUser } from '../create-user/create-user';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NotificationNavigationService } from '../../../../core/services/open-notification/notification-navigation';
-// import { NotificationNavigationService } from '../../../../core/services/notification-navigation.service';
 
 @Component({
   selector: 'app-manage-users',
@@ -23,7 +22,7 @@ export class ManageUsers implements OnInit {
   private adminService = inject(AdminService);
   private route        = inject(ActivatedRoute);
   private destroyRef   = inject(DestroyRef);
-  private navSvc       = inject(NotificationNavigationService); // ✅
+  private navSvc       = inject(NotificationNavigationService);
 
   allUsers = signal<User[]>([]);
 

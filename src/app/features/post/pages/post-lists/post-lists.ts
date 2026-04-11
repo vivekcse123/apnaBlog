@@ -13,7 +13,6 @@ import { BlogFilterPipe } from '../../../../shared/pipes/blog-filter-pipe';
 import { Auth } from '../../../../core/services/auth';
 import { LoaderService } from '../../../../core/services/loader-service';
 import { NotificationNavigationService } from '../../../../core/services/open-notification/notification-navigation';
-// import { NotificationNavigationService } from '../../../../core/services/notification-navigation.service';
 
 @Component({
   selector: 'app-post-lists',

@@ -12,10 +12,6 @@ import {
 } from '../../models/notification.model';
 import { NotificationService } from '../../../core/services/notification-service';
 import { NotificationNavigationService, NON_NAVIGABLE_TYPES} from '../../../core/services/open-notification/notification-navigation';
-// import {
-//   NotificationNavigationService,
-//   NON_NAVIGABLE_TYPES,
-// } from '../../../core/services/notification-navigation.service';
 
 @Component({
   selector: 'app-notification-panel',

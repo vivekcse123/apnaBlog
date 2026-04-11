@@ -29,14 +29,8 @@ export class NotificationNavigationService {
   private router      = inject(Router);
   private authService = inject(Auth);
 
-  // Pending event consumed by target component after navigation
   private _pendingEvent: NotificationNavEvent | null = null;
 
-  /**
-   * Called from notification panel on click.
-   * Stores the event and navigates to the correct admin route.
-   * Target component reads the event on ngOnInit via consumePendingEvent().
-   */
   navigateTo(event: NotificationNavEvent): void {
     if (NON_NAVIGABLE_TYPES.includes(event.type) || !event.resourceId) return;
 
@@ -54,10 +48,6 @@ export class NotificationNavigationService {
     }
   }
 
-  /**
-   * Called by PostLists / ManageUsers on ngOnInit.
-   * Returns the pending event and clears it so it fires only once.
-   */
   consumePendingEvent(): NotificationNavEvent | null {
     const event = this._pendingEvent;
     this._pendingEvent = null;
