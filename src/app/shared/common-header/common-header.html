@@ -1,9 +1,9 @@
 <header class="header">
 
   <a class="app-logo" routerLink="/">
-  <img class="app-logo-img" src="/logo.png" alt="ApnaInsights" />
-  <span class="app-logo-text">ApnaInsights</span>
-</a>
+    <img class="app-logo-img" src="/logo.png" alt="ApnaInsights" />
+    <span class="app-logo-text">ApnaInsights</span>
+  </a>
 
   <nav class="nav">
     @for (nav of navs; track nav.label) {
@@ -20,7 +20,11 @@
     <app-notification-panel />
 
     <div class="profile" (click)="openProfile($event)">
-      {{ profile }}
+      @if (avatarUrl) {
+        <img [src]="avatarUrl" class="profile-avatar-img" alt="Profile" />
+      } @else {
+        {{ profile }}
+      }
     </div>
   </div>
 

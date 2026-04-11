@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonHeader } from '../../../../shared/common-header/common-header';
 import { ActivatedRoute, RouterLink, RouterOutlet } from '@angular/router';
 import { UserService } from '../../services/user-service';
@@ -14,45 +14,47 @@ import { Auth } from '../../../../core/services/auth';
   templateUrl: './user-dashboard.html',
   styleUrl: './user-dashboard.css',
 })
-export class UserDashboard implements OnInit{
-  private route = inject(ActivatedRoute);
+export class UserDashboard implements OnInit {
+  private route       = inject(ActivatedRoute);
   private userService = inject(UserService);
-  private destroyRef = inject(DestroyRef);
+  private destroyRef  = inject(DestroyRef);
   private authService = inject(Auth);
 
-  userId = signal<string>('');
+  userId  = signal<string>('');
   initial = signal<string>('');
-  user = signal<any>([]);
+  avatar  = signal<string | null>(null);
+  user    = signal<any>(null);
   isOpened = signal<boolean>(false);
+
+  // passes avatar URL if exists, otherwise passes initials string
+  // CommonHeader will need to handle both cases
+  profileDisplay = computed(() => this.avatar() ?? this.initial());
 
   ngOnInit(): void {
     const id = this.route.snapshot.params['id'];
     this.userId.set(id);
 
-    this.userService.getUserById(id).
-    pipe(takeUntilDestroyed(this.destroyRef))
-    .subscribe({
-      next: (user) =>{
-        this.user.set(user.data);
-        const name = user.data.name;
-        const chars = name.charAt(0) + name.split(" ")[1].charAt(0);
-        this.initial.set(chars.toUpperCase());
-      },
-      error(err){
-      }
-    })
+    this.userService.getUserById(id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          const u = res.data;
+          this.user.set(u);
 
+          // ── initials ──
+          const parts   = u.name?.split(' ') ?? [];
+          const first   = parts[0]?.charAt(0) ?? '';
+          const second  = parts[1]?.charAt(0) ?? '';
+          this.initial.set((first + second).toUpperCase());
+
+          // ── avatar ──
+          this.avatar.set(u.avatar ?? null);
+        },
+        error: (err) => console.error('Failed to load user:', err),
+      });
   }
 
-  openProfile(){
-    this.isOpened.set(true);
-  }
-
-  closeProfile(){
-    this.isOpened.set(false);
-  }
-
-  logout(){
-    this.authService.logout();
-  }
+  openProfile():  void { this.isOpened.set(true);  }
+  closeProfile(): void { this.isOpened.set(false); }
+  logout():       void { this.authService.logout(); }
 }

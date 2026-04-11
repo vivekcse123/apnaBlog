@@ -3,15 +3,22 @@
 
   <!-- Header -->
   <div class="profile-header">
-    <div class="avatar" id="avatar">{{name.charAt(0)}}</div>
+
+    <div class="avatar" id="avatar">
+      @if (avatar) {
+        <img [src]="avatar" class="avatar-img" alt="Profile" />
+      } @else {
+        {{ name.charAt(0) }}
+      }
+    </div>
 
     <div class="user-info">
       <div class="user-name">
-        <span id="userName">{{name}}</span>
+        <span id="userName">{{ name }}</span>
         <span class="divider-name">|</span>
-        <span class="user-role" id="userRole">{{role}}</span>
+        <span class="user-role" id="userRole">{{ role }}</span>
       </div>
-      <div class="user-email" id="userEmail">{{email}}</div>
+      <div class="user-email" id="userEmail">{{ email }}</div>
     </div>
 
     <button class="close-btn" (click)="closeProfile($event)">
@@ -26,13 +33,12 @@
 
   <div class="profile-content">
     <div class="profile-actions">
-  <div class="action-btn primary">
-    <ng-content select="[primary-action]"></ng-content>
-  </div>
-
-  <div class="action-btn secondary logout">
-    <ng-content select="[secondary-action]"></ng-content>
-  </div>
-</div>
+      <div class="action-btn primary">
+        <ng-content select="[primary-action]"></ng-content>
+      </div>
+      <div class="action-btn secondary logout">
+        <ng-content select="[secondary-action]"></ng-content>
+      </div>
+    </div>
   </div>
 </div>

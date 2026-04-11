@@ -1,24 +1,29 @@
 <app-common-header
   [navs]="[
-    { label: 'Home', routerLink: `/user/${userId()}` },
-    { label: 'Blogs', routerLink: `/user/${userId()}/manage-blogs` },
-    { label: 'Settings', routerLink: `/user/${userId()}/settings` },
-    { label: 'Explore Blogs →', routerLink: `/user/${userId()}/explore-blogs`}
+    { label: 'Home',           routerLink: '/user/' + userId() },
+    { label: 'Blogs',          routerLink: '/user/' + userId() + '/manage-blogs' },
+    { label: 'Settings',       routerLink: '/user/' + userId() + '/settings' },
+    { label: 'Explore Blogs →',routerLink: '/user/' + userId() + '/explore-blogs' }
   ]"
   [profile]="initial()"
-  (open)="openProfile()"
-  >
+  [avatarUrl]="avatar()"
+  (open)="openProfile()">
 </app-common-header>
-@if(isOpened()){
-<app-user-profile
-[email]="user()?.email"
-[name]="user()?.name"
-[role]="user()?.role"
-(close)="closeProfile()"
->
-<a [routerLink]="['/user', userId(), 'settings']" primary-action class="edit_setting">Edit Setting</a>
-<a routerLink="/" secondary-action (click)="logout()" class="logout_btn">Logout</a>
-</app-user-profile>
+
+@if (isOpened()) {
+  <app-user-profile
+    [email]="user()?.email"
+    [name]="user()?.name"
+    [role]="user()?.role"
+    [avatar]="avatar()"
+    (close)="closeProfile()">
+    <a [routerLink]="['/user', userId(), 'settings']" primary-action class="edit_setting">
+      Edit Setting
+    </a>
+    <a routerLink="/" secondary-action (click)="logout()" class="logout_btn">
+      Logout
+    </a>
+  </app-user-profile>
 }
 
 <router-outlet></router-outlet>

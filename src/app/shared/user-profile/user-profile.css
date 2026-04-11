@@ -208,3 +208,21 @@
     transform: translateY(0) scale(1);
   }
 }
+
+/* user-profile.css */
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
+}
+
+/* common-header.css */
+.profile-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
+}
