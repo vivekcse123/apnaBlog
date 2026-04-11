@@ -12,11 +12,8 @@ import { MessageModal } from '../../../../shared/message-modal/message-modal';
 import { BlogFilterPipe } from '../../../../shared/pipes/blog-filter-pipe';
 import { Auth } from '../../../../core/services/auth';
 import { LoaderService } from '../../../../core/services/loader-service';
-import { NotificationNavigationService, POST_NOTIFICATION_TYPES } from '../../../../core/services/open-notification/notification-navigation';
-// import {
-//   NotificationNavigationService,
-//   POST_NOTIFICATION_TYPES,
-// } from '../../../../core/services/notification-navigation.service';
+import { NotificationNavigationService } from '../../../../core/services/open-notification/notification-navigation';
+// import { NotificationNavigationService } from '../../../../core/services/notification-navigation.service';
 
 @Component({
   selector: 'app-post-lists',
@@ -62,20 +59,16 @@ export class PostLists implements OnInit {
                d.getDate()     === today.getDate();
       });
     }
-
     if (this.debounceValue()) {
-      const search = this.debounceValue().toLowerCase();
-      data = data.filter(post => post.title.toLowerCase().includes(search));
+      const s = this.debounceValue().toLowerCase();
+      data = data.filter(p => p.title.toLowerCase().includes(s));
     }
-
     if (this.selectedCategory()) {
-      data = data.filter(post => post.categories?.includes(this.selectedCategory()));
+      data = data.filter(p => p.categories?.includes(this.selectedCategory()));
     }
-
     if (this.selectedStatus()) {
-      data = data.filter(post => post.status === this.selectedStatus());
+      data = data.filter(p => p.status === this.selectedStatus());
     }
-
     return data;
   });
 
@@ -94,22 +87,19 @@ export class PostLists implements OnInit {
         const id = params['id'];
         if (!id) return;
         this.userId.set(id);
-        this.loadPosts(id);
-      });
 
-    // ✅ Listen for notification click → open correct post modal
-    this.navSvc.navigate$
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(event => {
-        if (POST_NOTIFICATION_TYPES.includes(event.type)) {
-          // resourceId is the post _id saved in notification-trigger.js
-          const postId = event.resourceId ?? event.metadata?.['postId'];
-          if (postId) this.viewPost(postId);
-        }
+        // ✅ Load posts first, then check for pending notification event
+        this.loadPosts(id, () => {
+          const event = this.navSvc.consumePendingEvent();
+          if (event?.resourceId) {
+            // Small delay ensures the posts are rendered before modal opens
+            setTimeout(() => this.viewPost(event.resourceId), 150);
+          }
+        });
       });
   }
 
-  loadPosts(userId?: string): void {
+  loadPosts(userId?: string, onComplete?: () => void): void {
     const id = userId ?? this.userId();
     if (!id) return;
 
@@ -126,15 +116,20 @@ export class PostLists implements OnInit {
     posts$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next:  res  => { this.allBlogs.set(res.data || []); this.loader.hide(); },
-        error: err  => { console.error(err?.error?.message); this.loader.hide(); },
+        next: res => {
+          this.allBlogs.set(res.data || []);
+          this.loader.hide();
+          onComplete?.(); // ✅ fires after posts loaded
+        },
+        error: err => {
+          console.error(err?.error?.message);
+          this.loader.hide();
+          onComplete?.();
+        },
       });
   }
 
-  toggleTodayFilter(): void {
-    this.showTodayOnly.update(val => !val);
-    this.currentPage.set(1);
-  }
+  toggleTodayFilter(): void { this.showTodayOnly.update(v => !v); this.currentPage.set(1); }
 
   debounceSearch(value: string): void {
     clearTimeout(this.debounceTimer);
@@ -146,7 +141,7 @@ export class PostLists implements OnInit {
 
   previousPage(): void { if (this.currentPage() > 1) this.currentPage.set(this.currentPage() - 1); }
   nextPage():     void { if (this.currentPage() < this.totalPages()) this.currentPage.set(this.currentPage() + 1); }
-  goToPage(page: number): void { if (page >= 1 && page <= this.totalPages()) this.currentPage.set(page); }
+  goToPage(p: number): void { if (p >= 1 && p <= this.totalPages()) this.currentPage.set(p); }
 
   onPostCreated(): void { this.loadPosts(); this.currentPage.set(1); }
 

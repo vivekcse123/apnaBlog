@@ -11,12 +11,11 @@ import {
   Notification, NotificationType, NOTIFICATION_META,
 } from '../../models/notification.model';
 import { NotificationService } from '../../../core/services/notification-service';
-import { NotificationNavigationService, NON_NAVIGABLE_TYPES } from '../../../core/services/open-notification/notification-navigation';
+import { NotificationNavigationService, NON_NAVIGABLE_TYPES} from '../../../core/services/open-notification/notification-navigation';
 // import {
 //   NotificationNavigationService,
 //   NON_NAVIGABLE_TYPES,
 // } from '../../../core/services/notification-navigation.service';
-
 
 @Component({
   selector: 'app-notification-panel',
@@ -28,9 +27,9 @@ import { NotificationNavigationService, NON_NAVIGABLE_TYPES } from '../../../cor
 })
 export class NotificationPanel implements OnInit, OnDestroy {
 
-  private svc    = inject(NotificationService);
-  private navSvc = inject(NotificationNavigationService); // ✅ modal bridge
-  private elRef  = inject(ElementRef);
+  private svc     = inject(NotificationService);
+  private navSvc  = inject(NotificationNavigationService);
+  private elRef   = inject(ElementRef);
   private destroy$ = new Subject<void>();
 
   notifications = signal<Notification[]>([]);
@@ -87,9 +86,9 @@ export class NotificationPanel implements OnInit, OnDestroy {
       this.svc.markAsRead(notification.id).subscribe();
     }
 
-    // ✅ Open modal via nav service — no router.navigateByUrl
     if (this.isNavigable(notification.type) && notification.resourceId) {
-      this.navSvc.open({
+      // ✅ Navigate to correct route and store pending event for modal
+      this.navSvc.navigateTo({
         type:       notification.type,
         resourceId: notification.resourceId,
         metadata:   notification.metadata ?? {},
@@ -112,7 +111,6 @@ export class NotificationPanel implements OnInit, OnDestroy {
   onRefresh(event: Event): void {
     event.stopPropagation();
     event.preventDefault();
-
     if (this.refreshing()) return;
 
     this.refreshing.set(true);

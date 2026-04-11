@@ -9,12 +9,8 @@ import { MessageModal } from '../../../../shared/message-modal/message-modal';
 import { DisabledDirective } from '../../../../shared/directives/highlight';
 import { CreateUser } from '../create-user/create-user';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Auth } from '../../../../core/services/auth';
-import { NotificationNavigationService, USER_NOTIFICATION_TYPES } from '../../../../core/services/open-notification/notification-navigation';
-// import {
-//   NotificationNavigationService,
-//   USER_NOTIFICATION_TYPES,
-// } from '../../../../core/services/notification-navigation.service';
+import { NotificationNavigationService } from '../../../../core/services/open-notification/notification-navigation';
+// import { NotificationNavigationService } from '../../../../core/services/notification-navigation.service';
 
 @Component({
   selector: 'app-manage-users',
@@ -34,24 +30,20 @@ export class ManageUsers implements OnInit {
   currentPage = signal(1);
   limit       = signal(6);
 
-  searchName    = '';
-  debounceValue = signal('');
+  searchName     = '';
+  debounceValue  = signal('');
   selectedRole   = signal('');
   selectedStatus = signal('');
-
   private timer: any;
 
   filteredUsers = computed(() => {
     let data = this.allUsers();
-
     if (this.debounceValue()) {
-      const search = this.debounceValue().toLowerCase();
-      data = data.filter(u => u.name.toLowerCase().includes(search));
+      const s = this.debounceValue().toLowerCase();
+      data = data.filter(u => u.name.toLowerCase().includes(s));
     }
-
     if (this.selectedRole())   data = data.filter(u => u.role   === this.selectedRole());
     if (this.selectedStatus()) data = data.filter(u => u.status === this.selectedStatus());
-
     return data;
   });
 
@@ -63,14 +55,14 @@ export class ManageUsers implements OnInit {
   totalPages = computed(() => Math.ceil(this.filteredUsers().length / this.limit()));
   pages      = computed(() => Array.from({ length: this.totalPages() }, (_, i) => i + 1));
 
-  isProfileOpened = signal(false);
-  selectedUserId  = signal<string>('');
-  successMessage  = signal<string>('');
-  showCreateModal = signal(false);
-  showConfirm     = signal(false);
-  pendingUser     = signal<any>(null);
-  showDeleteConfirm   = signal(false);
-  pendingDeleteUser   = signal<any>(null);
+  isProfileOpened  = signal(false);
+  selectedUserId   = signal<string>('');
+  successMessage   = signal<string>('');
+  showCreateModal  = signal(false);
+  showConfirm      = signal(false);
+  pendingUser      = signal<any>(null);
+  showDeleteConfirm  = signal(false);
+  pendingDeleteUser  = signal<any>(null);
   showMessage  = signal(false);
   modalType    = signal<'success' | 'error'>('success');
   modalTitle   = signal('');
@@ -83,26 +75,29 @@ export class ManageUsers implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(params => {
         this.userId.set(params.get('id') ?? '');
-        this.loadUsers();
-      });
 
-    // ✅ Listen for notification click → open correct user modal
-    this.navSvc.navigate$
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(event => {
-        if (USER_NOTIFICATION_TYPES.includes(event.type)) {
-          const userId = event.resourceId;
-          if (userId) this.getUserDetails(userId);
-        }
+        // ✅ Load users first, then check for pending notification event
+        this.loadUsers(() => {
+          const event = this.navSvc.consumePendingEvent();
+          if (event?.resourceId) {
+            setTimeout(() => this.getUserDetails(event.resourceId), 150);
+          }
+        });
       });
   }
 
-  loadUsers(): void {
-    this.adminService.getAllUsers(1, 10)
+  loadUsers(onComplete?: () => void): void {
+    this.adminService.getAllUsers(1, 100)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next:  res => this.allUsers.set(res.data || []),
-        error: err => console.error(err?.error?.message),
+        next: res => {
+          this.allUsers.set(res.data || []);
+          onComplete?.(); // ✅ fires after users loaded
+        },
+        error: err => {
+          console.error(err?.error?.message);
+          onComplete?.();
+        },
       });
   }
 
@@ -111,9 +106,9 @@ export class ManageUsers implements OnInit {
     this.timer = setTimeout(() => { this.debounceValue.set(value); this.currentPage.set(1); }, 300);
   }
 
-  goToPage(page: number):  void { if (page >= 1 && page <= this.totalPages()) this.currentPage.set(page); }
-  previousPage():          void { if (this.currentPage() > 1) this.currentPage.set(this.currentPage() - 1); }
-  nextPage():              void { if (this.currentPage() < this.totalPages()) this.currentPage.set(this.currentPage() + 1); }
+  goToPage(p: number): void { if (p >= 1 && p <= this.totalPages()) this.currentPage.set(p); }
+  previousPage():      void { if (this.currentPage() > 1) this.currentPage.set(this.currentPage() - 1); }
+  nextPage():          void { if (this.currentPage() < this.totalPages()) this.currentPage.set(this.currentPage() + 1); }
 
   getUserDetails(userId: string): void {
     this.successMessage.set('');
@@ -140,11 +135,11 @@ export class ManageUsers implements OnInit {
     this.showConfirm.set(false);
 
     const isActive = user.status === 'active';
-    const request  = isActive
+    const req = isActive
       ? this.adminService.freezeUser(user._id)
       : this.adminService.unFreezeUser(user._id);
 
-    request.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+    req.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         user.status = isActive ? 'inactive' : 'active';
         this.modalType.set('success');
