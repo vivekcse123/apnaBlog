@@ -1,51 +1,3 @@
-
-<div class="settings-root">
-
-  <!-- Global Modal -->
-  @if (showModal()) {
-    <app-message-modal
-      [show]="showModal()"
-      [type]="modalType()"
-      [title]="modalTitle()"
-      [message]="modalMessage()"
-      (closed)="onModalClosed()">
-    </app-message-modal>
-  }
-
-  <!-- ══ SIDEBAR ══ -->
-  <aside class="sidebar">
-    <div class="sidebar-brand">
-      <span class="brand-icon">⬡</span>
-      <span class="brand-text">Settings</span>
-    </div>
-
-    <nav class="sidebar-nav">
-      @for (s of sections; track s.id) {
-        <button
-          class="nav-item"
-          [class.active]="activeSection() === s.id"
-          [class.danger-item]="s.id === 'danger'"
-          (click)="activeSection.set(s.id)">
-          <span class="nav-icon">{{ s.icon }}</span>
-          <span class="nav-label">{{ s.label }}</span>
-          @if (activeSection() === s.id) {
-            <span class="nav-indicator"></span>
-          }
-        </button>
-      }
-    </nav>
-
-    <div class="sidebar-theme-toggle">
-      <span class="toggle-label">{{ themeService.theme() === 'dark' ? '☾ Dark' : '☀ Light' }}</span>
-      <button class="theme-pill" (click)="themeService.toggleTheme()"
-        [class.dark]="themeService.theme() === 'dark'">
-        <span class="pill-thumb"></span>
-      </button>
-    </div>
-  </aside>
-
-
-  <!-- ══ MAIN ══ -->
 <div class="settings-root">
 
   @if (showModal()) {
@@ -499,5 +451,4 @@
     }
 
   </main>
-</div>
 </div>
