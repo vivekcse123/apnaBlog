@@ -9,7 +9,7 @@ import { MessageModal } from '../../../../shared/message-modal/message-modal';
 import { DisabledDirective } from '../../../../shared/directives/highlight';
 import { CreateUser } from '../create-user/create-user';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { NotificationNavigationService, USER_NOTIFICATION_TYPES } from '../../../../core/services/open-notification/notification-navigation';
+import { NotificationNavEvent, NotificationNavigationService, USER_NOTIFICATION_TYPES } from '../../../../core/services/open-notification/notification-navigation';
 
 @Component({
   selector: 'app-manage-users',
@@ -80,7 +80,7 @@ ngOnInit(): void {
   // ✅ Replaces consumePendingEvent
   this.navSvc.openModal$
     .pipe(takeUntilDestroyed(this.destroyRef))
-    .subscribe(event => {
+    .subscribe((event: NotificationNavEvent) => {
       if (USER_NOTIFICATION_TYPES.includes(event.type) && event.resourceId) {
         this.getUserDetails(event.resourceId);
       }
