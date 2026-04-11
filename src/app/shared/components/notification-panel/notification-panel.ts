@@ -3,15 +3,20 @@ import {
   ElementRef, inject, ChangeDetectionStrategy, signal
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
-import { filter, Subject, take, takeUntil } from 'rxjs';  // ✅ added take
+import { filter, Subject, take, takeUntil } from 'rxjs';
 
 import {
   Notification, NotificationType, NOTIFICATION_META,
 } from '../../models/notification.model';
 import { NotificationService } from '../../../core/services/notification-service';
+import { NotificationNavigationService, NON_NAVIGABLE_TYPES } from '../../../core/services/open-notification/notification-navigation';
+// import {
+//   NotificationNavigationService,
+//   NON_NAVIGABLE_TYPES,
+// } from '../../../core/services/notification-navigation.service';
+
 
 @Component({
   selector: 'app-notification-panel',
@@ -23,9 +28,9 @@ import { NotificationService } from '../../../core/services/notification-service
 })
 export class NotificationPanel implements OnInit, OnDestroy {
 
-  private svc     = inject(NotificationService);
-  private router  = inject(Router);
-  private elRef   = inject(ElementRef);
+  private svc    = inject(NotificationService);
+  private navSvc = inject(NotificationNavigationService); // ✅ modal bridge
+  private elRef  = inject(ElementRef);
   private destroy$ = new Subject<void>();
 
   notifications = signal<Notification[]>([]);
@@ -59,6 +64,10 @@ export class NotificationPanel implements OnInit, OnDestroy {
     return this.meta[type] ?? { icon: 'notifications', color: '#999', label: 'Unknown' };
   }
 
+  isNavigable(type: NotificationType): boolean {
+    return !NON_NAVIGABLE_TYPES.includes(type);
+  }
+
   togglePanel(event: Event): void {
     event.stopPropagation();
     this.panelOpen.update(v => !v);
@@ -78,9 +87,13 @@ export class NotificationPanel implements OnInit, OnDestroy {
       this.svc.markAsRead(notification.id).subscribe();
     }
 
-    // ✅ Navigate using resourceUrl — populated correctly from backend
-    if (notification.resourceUrl) {
-      this.router.navigateByUrl(notification.resourceUrl);
+    // ✅ Open modal via nav service — no router.navigateByUrl
+    if (this.isNavigable(notification.type) && notification.resourceId) {
+      this.navSvc.open({
+        type:       notification.type,
+        resourceId: notification.resourceId,
+        metadata:   notification.metadata ?? {},
+      });
       this.panelOpen.set(false);
     }
   }
@@ -100,17 +113,13 @@ export class NotificationPanel implements OnInit, OnDestroy {
     event.stopPropagation();
     event.preventDefault();
 
-    if (this.refreshing()) return;  // ✅ prevent double-click spamming
+    if (this.refreshing()) return;
 
     this.refreshing.set(true);
     this.svc.fetchNotifications();
 
     this.svc.loading$
-      .pipe(
-        filter(l => !l),
-        take(1),              // ✅ auto-completes after loading stops — no leak
-        takeUntil(this.destroy$)
-      )
+      .pipe(filter(l => !l), take(1), takeUntil(this.destroy$))
       .subscribe(() => this.refreshing.set(false));
   }
 }

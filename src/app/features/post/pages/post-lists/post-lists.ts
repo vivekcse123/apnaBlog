@@ -2,15 +2,21 @@ import { Component, inject, signal, computed, OnInit, DestroyRef } from '@angula
 import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+
 import { Post } from '../../../../core/models/post.model';
 import { CreatePost } from '../create-post/create-post';
 import { PostService } from '../../services/post-service';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ViewPost } from '../../../../shared/view-post/view-post';
 import { MessageModal } from '../../../../shared/message-modal/message-modal';
 import { BlogFilterPipe } from '../../../../shared/pipes/blog-filter-pipe';
 import { Auth } from '../../../../core/services/auth';
 import { LoaderService } from '../../../../core/services/loader-service';
+import { NotificationNavigationService, POST_NOTIFICATION_TYPES } from '../../../../core/services/open-notification/notification-navigation';
+// import {
+//   NotificationNavigationService,
+//   POST_NOTIFICATION_TYPES,
+// } from '../../../../core/services/notification-navigation.service';
 
 @Component({
   selector: 'app-post-lists',
@@ -26,6 +32,7 @@ export class PostLists implements OnInit {
   private destroyRef   = inject(DestroyRef);
   private authService  = inject(Auth);
   private loader       = inject(LoaderService);
+  private navSvc       = inject(NotificationNavigationService); // ✅
 
   allBlogs       = signal<Post[]>([]);
   userId         = signal<string | null>(null);
@@ -36,9 +43,7 @@ export class PostLists implements OnInit {
   debounceValue    = signal<string>('');
   selectedCategory = signal<string>('');
   selectedStatus   = signal<string>('');
-
-  // ── Today filter ──
-  showTodayOnly = signal<boolean>(false);
+  showTodayOnly    = signal<boolean>(false);
 
   private debounceTimer: any;
 
@@ -48,16 +53,13 @@ export class PostLists implements OnInit {
   filteredBlogs = computed(() => {
     let data = this.allBlogs();
 
-    // Today filter: match blogs whose createdAt is today's date
     if (this.showTodayOnly()) {
       const today = new Date();
       data = data.filter(post => {
-        const postDate = new Date(post.createdAt);
-        return (
-          postDate.getFullYear() === today.getFullYear() &&
-          postDate.getMonth()    === today.getMonth()    &&
-          postDate.getDate()     === today.getDate()
-        );
+        const d = new Date(post.createdAt);
+        return d.getFullYear() === today.getFullYear() &&
+               d.getMonth()    === today.getMonth()    &&
+               d.getDate()     === today.getDate();
       });
     }
 
@@ -82,22 +84,28 @@ export class PostLists implements OnInit {
     return this.filteredBlogs().slice(start, start + this.itemsPerPage());
   });
 
-  totalPages = computed(() =>
-    Math.ceil(this.filteredBlogs().length / this.itemsPerPage())
-  );
-
-  pages = computed(() =>
-    Array.from({ length: this.totalPages() }, (_, i) => i + 1)
-  );
+  totalPages = computed(() => Math.ceil(this.filteredBlogs().length / this.itemsPerPage()));
+  pages      = computed(() => Array.from({ length: this.totalPages() }, (_, i) => i + 1));
 
   ngOnInit(): void {
     this.route?.parent?.params
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((params) => {
+      .subscribe(params => {
         const id = params['id'];
         if (!id) return;
         this.userId.set(id);
         this.loadPosts(id);
+      });
+
+    // ✅ Listen for notification click → open correct post modal
+    this.navSvc.navigate$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(event => {
+        if (POST_NOTIFICATION_TYPES.includes(event.type)) {
+          // resourceId is the post _id saved in notification-trigger.js
+          const postId = event.resourceId ?? event.metadata?.['postId'];
+          if (postId) this.viewPost(postId);
+        }
       });
   }
 
@@ -118,18 +126,11 @@ export class PostLists implements OnInit {
     posts$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (res) => {
-          this.allBlogs.set(res.data || []);
-          this.loader.hide();
-        },
-        error: (err) => {
-          console.error(err?.error?.message);
-          this.loader.hide();
-        },
+        next:  res  => { this.allBlogs.set(res.data || []); this.loader.hide(); },
+        error: err  => { console.error(err?.error?.message); this.loader.hide(); },
       });
   }
 
-  // ── Toggle today filter & reset to page 1 ──
   toggleTodayFilter(): void {
     this.showTodayOnly.update(val => !val);
     this.currentPage.set(1);
@@ -143,22 +144,11 @@ export class PostLists implements OnInit {
     }, 400);
   }
 
-  previousPage(): void {
-    if (this.currentPage() > 1) this.currentPage.set(this.currentPage() - 1);
-  }
+  previousPage(): void { if (this.currentPage() > 1) this.currentPage.set(this.currentPage() - 1); }
+  nextPage():     void { if (this.currentPage() < this.totalPages()) this.currentPage.set(this.currentPage() + 1); }
+  goToPage(page: number): void { if (page >= 1 && page <= this.totalPages()) this.currentPage.set(page); }
 
-  nextPage(): void {
-    if (this.currentPage() < this.totalPages()) this.currentPage.set(this.currentPage() + 1);
-  }
-
-  goToPage(page: number): void {
-    if (page >= 1 && page <= this.totalPages()) this.currentPage.set(page);
-  }
-
-  onPostCreated(): void {
-    this.loadPosts();
-    this.currentPage.set(1);
-  }
+  onPostCreated(): void { this.loadPosts(); this.currentPage.set(1); }
 
   showConfirm        = signal(false);
   pendingDeleteId    = signal<string>('');
@@ -192,7 +182,7 @@ export class PostLists implements OnInit {
         this.showMessage.set(true);
         this.loadPosts();
       },
-      error: (err) => {
+      error: err => {
         this.loader.hide();
         this.modalType.set('error');
         this.modalTitle.set('Delete Failed');
@@ -221,9 +211,7 @@ export class PostLists implements OnInit {
   }
 
   onPostUpdated(updatedPost: Post): void {
-    this.allBlogs.update(blogs =>
-      blogs.map(b => b._id === updatedPost._id ? updatedPost : b)
-    );
+    this.allBlogs.update(blogs => blogs.map(b => b._id === updatedPost._id ? updatedPost : b));
     this.closeModal();
   }
 }
