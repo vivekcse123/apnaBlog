@@ -12,7 +12,7 @@ import { MessageModal } from '../../../../shared/message-modal/message-modal';
 import { BlogFilterPipe } from '../../../../shared/pipes/blog-filter-pipe';
 import { Auth } from '../../../../core/services/auth';
 import { LoaderService } from '../../../../core/services/loader-service';
-import { NotificationNavigationService } from '../../../../core/services/open-notification/notification-navigation';
+import { NotificationNavigationService, POST_NOTIFICATION_TYPES } from '../../../../core/services/open-notification/notification-navigation';
 
 @Component({
   selector: 'app-post-lists',
@@ -79,54 +79,54 @@ export class PostLists implements OnInit {
   totalPages = computed(() => Math.ceil(this.filteredBlogs().length / this.itemsPerPage()));
   pages      = computed(() => Array.from({ length: this.totalPages() }, (_, i) => i + 1));
 
-  ngOnInit(): void {
-    this.route?.parent?.params
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(params => {
-        const id = params['id'];
-        if (!id) return;
-        this.userId.set(id);
+ ngOnInit(): void {
+  this.route?.parent?.params
+    .pipe(takeUntilDestroyed(this.destroyRef))
+    .subscribe(params => {
+      const id = params['id'];
+      if (!id) return;
+      this.userId.set(id);
+      this.loadPosts(id);
+    });
 
-        // ✅ Load posts first, then check for pending notification event
-        this.loadPosts(id, () => {
-          const event = this.navSvc.consumePendingEvent();
-          if (event?.resourceId) {
-            // Small delay ensures the posts are rendered before modal opens
-            setTimeout(() => this.viewPost(event.resourceId), 150);
-          }
-        });
-      });
-  }
+  // ✅ Replaces consumePendingEvent — works whether component is new or already mounted
+  this.navSvc.openModal$
+    .pipe(takeUntilDestroyed(this.destroyRef))
+    .subscribe(event => {
+      if (POST_NOTIFICATION_TYPES.includes(event.type) && event.resourceId) {
+        this.viewPost(event.resourceId);
+      }
+    });
+}
 
-  loadPosts(userId?: string, onComplete?: () => void): void {
-    const id = userId ?? this.userId();
-    if (!id) return;
+// ✅ Remove onComplete callback — no longer needed
+loadPosts(userId?: string): void {
+  const id = userId ?? this.userId();
+  if (!id) return;
 
-    const currentUser = this.authService.getCurrentUser();
-    const role = currentUser?.role?.toLowerCase() ?? '';
-    this.role.set(role);
+  const currentUser = this.authService.getCurrentUser();
+  const role = currentUser?.role?.toLowerCase() ?? '';
+  this.role.set(role);
 
-    const posts$ = role === 'admin'
-      ? this.postService.getAllPost(1, 100)
-      : this.postService.getPostByUserId(id, 1, 10);
+  const posts$ = role === 'admin'
+    ? this.postService.getAllPost(1, 100)
+    : this.postService.getPostByUserId(id, 1, 10);
 
-    this.loader.show('skeleton', 'md', this.itemsPerPage());
+  this.loader.show('skeleton', 'md', this.itemsPerPage());
 
-    posts$
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: res => {
-          this.allBlogs.set(res.data || []);
-          this.loader.hide();
-          onComplete?.(); // ✅ fires after posts loaded
-        },
-        error: err => {
-          console.error(err?.error?.message);
-          this.loader.hide();
-          onComplete?.();
-        },
-      });
-  }
+  posts$
+    .pipe(takeUntilDestroyed(this.destroyRef))
+    .subscribe({
+      next: res => {
+        this.allBlogs.set(res.data || []);
+        this.loader.hide();
+      },
+      error: err => {
+        console.error(err?.error?.message);
+        this.loader.hide();
+      },
+    });
+}
 
   toggleTodayFilter(): void { this.showTodayOnly.update(v => !v); this.currentPage.set(1); }
 

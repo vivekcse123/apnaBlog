@@ -744,7 +744,7 @@ body {
 
 @media (max-width: 768px) {
   .header { padding: 0 20px; height: 60px; }
-  .reading-progress-bar { top: 60px; }
+  .reading-progress-bar { top: 0px; }
   .toc-sidebar { top: 60px; height: calc(100vh - 60px); }
   .blog-detail-container { padding: 24px 16px; }
   .blog-title       { font-size: 26px; }
