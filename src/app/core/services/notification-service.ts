@@ -14,9 +14,8 @@ import { environment } from '../../../environments/environments.prod';
 @Injectable({ providedIn: 'root' })
 export class NotificationService implements OnDestroy {
 
-  // ✅ After
-private readonly ADMIN_API = `${environment.apiUrl}/notifications/admin`;
-private readonly USER_API  = `${environment.apiUrl}/notifications/user`;
+  private readonly ADMIN_API = `${environment.apiUrl}/admin/notifications`;
+private readonly USER_API  = `${environment.apiUrl}/notifications`;
   private readonly POLL_MS   = 30_000;
 
   private _notifications$ = new BehaviorSubject<Notification[]>([]);
@@ -49,12 +48,10 @@ private readonly USER_API  = `${environment.apiUrl}/notifications/user`;
     });
   }
 
-
-  startPolling(): void { }
+  startPolling(): void {}
 
   fetchNotifications(page = 1, limit = 20): void {
     this._loading$.next(true);
-
     const params = new HttpParams()
       .set('page',  page)
       .set('limit', limit);
@@ -106,7 +103,6 @@ private readonly USER_API  = `${environment.apiUrl}/notifications/user`;
       );
   }
 
-
   deleteNotification(id: string): Observable<void> {
     return this.http
       .delete<void>(`${this.api}/${id}`)
@@ -141,7 +137,6 @@ private readonly USER_API  = `${environment.apiUrl}/notifications/user`;
 
   private _startPolling(): void {
     this.fetchNotifications();
-
     this.pollSub = interval(this.POLL_MS)
       .pipe(
         switchMap(() => this._fetch()),
