@@ -44,6 +44,58 @@
     </div>
   </aside>
 
+
+  <!-- ══ MAIN ══ -->
+<div class="settings-root">
+
+  @if (showModal()) {
+    <app-message-modal
+      [show]="showModal()"
+      [type]="modalType()"
+      [title]="modalTitle()"
+      [message]="modalMessage()"
+      (closed)="onModalClosed()">
+    </app-message-modal>
+  }
+
+  <!-- Hidden file input -->
+  <input
+    #avatarInput
+    type="file"
+    accept="image/*"
+    style="display:none"
+    (change)="onAvatarSelected($event)" />
+
+  <!-- ══ SIDEBAR ══ -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <span class="brand-icon">⬡</span>
+      <span class="brand-text">Settings</span>
+    </div>
+    <nav class="sidebar-nav">
+      @for (s of sections; track s.id) {
+        <button
+          class="nav-item"
+          [class.active]="activeSection() === s.id"
+          [class.danger-item]="s.id === 'danger'"
+          (click)="activeSection.set(s.id)">
+          <span class="nav-icon">{{ s.icon }}</span>
+          <span class="nav-label">{{ s.label }}</span>
+          @if (activeSection() === s.id) {
+            <span class="nav-indicator"></span>
+          }
+        </button>
+      }
+    </nav>
+    <div class="sidebar-theme-toggle">
+      <span class="toggle-label">{{ themeService.theme() === 'dark' ? '☾ Dark' : '☀ Light' }}</span>
+      <button class="theme-pill" (click)="themeService.toggleTheme()"
+        [class.dark]="themeService.theme() === 'dark'">
+        <span class="pill-thumb"></span>
+      </button>
+    </div>
+  </aside>
+
   <!-- ══ MAIN ══ -->
   <main class="settings-main">
 
@@ -79,13 +131,35 @@
 
         @if (!isLoading() && user(); as u) {
           <div class="profile-card">
+
+            <!-- ── Avatar Area ── -->
             <div class="avatar-area">
               <div class="avatar-ring">
-                <div class="avatar-circle">{{ avatarInitial() }}</div>
+                <div class="avatar-circle" (click)="triggerAvatarUpload()"
+                  [class.uploading]="isUploadingAvatar()">
+                  @if (isUploadingAvatar()) {
+                    <span class="avatar-spinner"></span>
+                  } @else if (avatarUrl()) {
+                    <img [src]="avatarUrl()!" alt="Profile" class="avatar-img" />
+                    <div class="avatar-overlay">
+                      <span class="avatar-overlay-icon">📷</span>
+                    </div>
+                  } @else {
+                    {{ avatarInitial() }}
+                    <div class="avatar-overlay">
+                      <span class="avatar-overlay-icon">📷</span>
+                    </div>
+                  }
+                </div>
               </div>
               <div class="avatar-info">
-                <span class="role-badge">{{u.role}}</span>
+                <span class="role-badge">{{ u.role }}</span>
                 <p class="joined-text">{{ u.email }}</p>
+                <button class="avatar-upload-btn" (click)="triggerAvatarUpload()"
+                  [disabled]="isUploadingAvatar()">
+                  {{ isUploadingAvatar() ? 'Uploading…' : 'Change Photo' }}
+                </button>
+                <p class="avatar-hint">JPG, PNG or WebP · Max 2MB</p>
               </div>
             </div>
 
@@ -109,7 +183,9 @@
                 </div>
               </div>
               <div class="form-actions">
-                <button class="btn-primary" (click)="startEdit()"><i class="bi bi-pencil-fill"></i></button>
+                <button class="btn-primary" (click)="startEdit()">
+                  <i class="bi bi-pencil-fill"></i>
+                </button>
               </div>
             }
 
@@ -139,6 +215,7 @@
                 </button>
               </div>
             }
+
           </div>
         }
 
@@ -148,7 +225,7 @@
       </div>
     }
 
-    <!-- ── APPEARANCE ── -->
+    <!-- all other sections remain exactly the same as before -->
     @if (activeSection() === 'appearance') {
       <div class="section-wrap">
         <div class="section-heading">
@@ -170,9 +247,7 @@
               </div>
               <div class="theme-option-label">
                 <span>☀ Light</span>
-                @if (themeService.theme() === 'light') {
-                  <span class="selected-check">✓</span>
-                }
+                @if (themeService.theme() === 'light') { <span class="selected-check">✓</span> }
               </div>
             </div>
             <div class="theme-option" [class.selected]="themeService.theme() === 'dark'"
@@ -186,9 +261,7 @@
               </div>
               <div class="theme-option-label">
                 <span>☾ Dark</span>
-                @if (themeService.theme() === 'dark') {
-                  <span class="selected-check">✓</span>
-                }
+                @if (themeService.theme() === 'dark') { <span class="selected-check">✓</span> }
               </div>
             </div>
           </div>
@@ -222,15 +295,11 @@
                 <span class="lang-label">{{ lang.label }}</span>
                 <span class="lang-native">{{ lang.native }}</span>
               </div>
-              @if (themeService.language() === lang.code) {
-                <span class="lang-check">✓</span>
-              }
+              @if (themeService.language() === lang.code) { <span class="lang-check">✓</span> }
             </button>
           }
         </div>
-        <div class="info-note">
-          ◈ Language affects UI labels only. Blog content stays in its original language.
-        </div>
+        <div class="info-note">◈ Language affects UI labels only.</div>
       </div>
     }
 
@@ -238,7 +307,7 @@
       <div class="section-wrap">
         <div class="section-heading">
           <h1>Notifications</h1>
-          <p>Choose what alerts you receive as admin</p>
+          <p>Choose what alerts you receive</p>
         </div>
         <div class="notif-list">
           @for (item of visibleNotifItems; track item.key) {
@@ -247,9 +316,7 @@
                 <span class="notif-label">{{ item.label }}</span>
                 <span class="notif-desc">{{ item.desc }}</span>
               </div>
-              <button class="toggle-switch"
-                [class.on]="isNotifOn(item.key)"
-                (click)="toggleNotif(item.key)">
+              <button class="toggle-switch" [class.on]="isNotifOn(item.key)" (click)="toggleNotif(item.key)">
                 <span class="switch-thumb"></span>
               </button>
             </div>
@@ -258,16 +325,12 @@
       </div>
     }
 
-
-
-    <!-- ── SECURITY ── -->
     @if (activeSection() === 'security') {
       <div class="section-wrap">
         <div class="section-heading">
           <h1>Security</h1>
           <p>Protect your account and manage access</p>
         </div>
-
         <div class="security-card">
           <div class="card-title">Change Password</div>
           <div class="form-grid">
@@ -296,15 +359,13 @@
             <button class="btn-primary" (click)="updatePassword()">Update Password</button>
           </div>
         </div>
-
         <div class="security-card">
           <div class="twofa-row">
             <div>
               <div class="card-title">Two-Factor Authentication</div>
               <p class="card-sub">Add an extra layer of security</p>
             </div>
-            <button class="toggle-switch" [class.on]="twoFactor()"
-              (click)="twoFactor.set(!twoFactor())">
+            <button class="toggle-switch" [class.on]="twoFactor()" (click)="twoFactor.set(!twoFactor())">
               <span class="switch-thumb"></span>
             </button>
           </div>
@@ -312,7 +373,6 @@
             <div class="twofa-active">✓ 2FA is enabled. Your account is more secure.</div>
           }
         </div>
-
         <div class="security-card">
           <div class="sessions-header" (click)="showSessions.set(!showSessions())">
             <div>
@@ -343,14 +403,13 @@
       </div>
     }
 
-@if (activeSection() === 'danger') {
-  <div class="section-wrap">
-    <div class="section-heading danger-heading">
-      <h1>Danger Zone</h1>
-      <p>These actions are permanent and cannot be undone</p>
-    </div>
-
-    <div class="danger-card">
+    @if (activeSection() === 'danger') {
+      <div class="section-wrap">
+        <div class="section-heading danger-heading">
+          <h1>Danger Zone</h1>
+          <p>These actions are permanent and cannot be undone</p>
+        </div>
+        <div class="danger-card">
           <div class="danger-row">
             <div>
               <div class="danger-action-title">Export All Data</div>
@@ -359,134 +418,86 @@
             <button class="btn-outline" (click)="exportAllData()">Export JSON</button>
           </div>
         </div>
-
-    <!-- Freeze Account -->
-    <div class="danger-card">
-      <div class="danger-row">
-        <div>
-          <div class="danger-action-title">Deactivate Account</div>
-          <div class="danger-action-sub">
-            Temporarily disable your account. You can reactivate it anytime by logging in.
-          </div>
-        </div>
-        @if (!showFreezeConfirm()) {
-          <button class="btn-warning" (click)="confirmFreeze()">
-            Deactivate
-          </button>
-        }
-      </div>
-      
-      @if (showFreezeConfirm()) {
-        <div class="confirm-box">
-          <p class="confirm-text">Are you sure you want to deactivate your account?</p>
-          <div class="form-actions">
-            <button class="btn-ghost" (click)="cancelFreeze()">Cancel</button>
-            <button class="btn-warning" (click)="freeze()">Yes, Deactivate</button>
-          </div>
-        </div>
-      }
-    </div>
-
-    @if (isDeletionScheduled()) {
-      <div class="deletion-warning-banner">
-        <div class="warning-icon">⚠️</div>
-        <div class="warning-content">
-          <h3>Account Deletion Scheduled</h3>
-          <p>
-            Your account is scheduled for permanent deletion on 
-            <strong>{{ deletionDate() | date:'MMM d, yyyy \'at\' h:mm a' }}</strong>
-            ({{ daysRemaining() }} {{ daysRemaining() === 1 ? 'day' : 'days' }} remaining)
-          </p>
-          <p class="warning-sub">You can cancel this request at any time before the deletion date.</p>
-        </div>
-      </div>
-    }
-
-    @if (isDeletionScheduled()) {
-      <div class="danger-card cancel-delete-card">
-        <div class="danger-row">
-          <div>
-            <div class="danger-action-title" style="color: var(--success);">
-              Cancel Account Deletion
+        <div class="danger-card">
+          <div class="danger-row">
+            <div>
+              <div class="danger-action-title">Deactivate Account</div>
+              <div class="danger-action-sub">Temporarily disable your account.</div>
             </div>
-            <div class="danger-action-sub">
-              Cancel the scheduled deletion and restore your account to active status.
-            </div>
-          </div>
-          <button 
-            class="btn-success" 
-            (click)="cancelDeletion()"
-            [disabled]="isCancelling()"
-          >
-            @if (isCancelling()) {
-              <span>Cancelling...</span>
-            } @else {
-              <span>Cancel Deletion</span>
+            @if (!showFreezeConfirm()) {
+              <button class="btn-warning" (click)="confirmFreeze()">Deactivate</button>
             }
-          </button>
+          </div>
+          @if (showFreezeConfirm()) {
+            <div class="confirm-box">
+              <p class="confirm-text">Are you sure you want to deactivate your account?</p>
+              <div class="form-actions">
+                <button class="btn-ghost" (click)="cancelFreeze()">Cancel</button>
+                <button class="btn-warning" (click)="freeze()">Yes, Deactivate</button>
+              </div>
+            </div>
+          }
+        </div>
+        @if (isDeletionScheduled()) {
+          <div class="deletion-warning-banner">
+            <div class="warning-icon">⚠️</div>
+            <div class="warning-content">
+              <h3>Account Deletion Scheduled</h3>
+              <p>Deletion on <strong>{{ deletionDate() | date:'MMM d, yyyy \'at\' h:mm a' }}</strong>
+                ({{ daysRemaining() }} {{ daysRemaining() === 1 ? 'day' : 'days' }} remaining)</p>
+              <p class="warning-sub">You can cancel this request at any time before the deletion date.</p>
+            </div>
+          </div>
+          <div class="danger-card cancel-delete-card">
+            <div class="danger-row">
+              <div>
+                <div class="danger-action-title" style="color: var(--success);">Cancel Account Deletion</div>
+                <div class="danger-action-sub">Cancel the scheduled deletion and restore your account.</div>
+              </div>
+              <button class="btn-success" (click)="cancelDeletion()" [disabled]="isCancelling()">
+                {{ isCancelling() ? 'Cancelling...' : 'Cancel Deletion' }}
+              </button>
+            </div>
+          </div>
+        }
+        <div class="danger-card red-border">
+          <div class="danger-row">
+            <div>
+              <div class="danger-action-title red-text">Delete Account</div>
+              <div class="danger-action-sub">
+                Permanently delete your account. Cannot be reversed.<br>
+                <strong>Your account will be deleted automatically in 3 days after confirmation.</strong>
+              </div>
+            </div>
+            @if (!showDeleteConfirm() && !isDeletionScheduled()) {
+              <button class="btn-danger" (click)="showDeleteConfirm.set(true)">Delete Account</button>
+            }
+            @if (isDeletionScheduled()) {
+              <button class="btn-danger" disabled style="opacity:0.5">Deletion Pending</button>
+            }
+          </div>
+          @if (showDeleteConfirm() && !isDeletionScheduled()) {
+            <div class="delete-confirm-box">
+              <p>Type <strong>DELETE</strong> to confirm permanent deletion:</p>
+              <input type="text" [(ngModel)]="deleteInput" placeholder="Type DELETE"
+                class="confirm-input" [disabled]="isDeleting()" />
+              <div class="form-actions">
+                <button class="btn-ghost"
+                  (click)="showDeleteConfirm.set(false); deleteInput = ''"
+                  [disabled]="isDeleting()">Cancel</button>
+                <button class="btn-danger"
+                  [disabled]="deleteInput !== 'DELETE' || isDeleting()"
+                  (click)="DeleteUser()">
+                  {{ isDeleting() ? 'Processing...' : 'Confirm Delete' }}
+                </button>
+              </div>
+              <p class="warning-text">⚠️ Your account will be permanently deleted in 3 days.</p>
+            </div>
+          }
         </div>
       </div>
     }
-
-    <div class="danger-card red-border">
-      <div class="danger-row">
-        <div>
-          <div class="danger-action-title red-text">Delete Account</div>
-          <div class="danger-action-sub">
-            Permanently delete your account and all associated data. This action cannot be reversed.
-            <br><strong>Your account will be deleted automatically in 3 days after confirmation.</strong>
-          </div>
-        </div>
-        @if (!showDeleteConfirm() && !isDeletionScheduled()) {
-          <button class="btn-danger" (click)="showDeleteConfirm.set(true)">
-            Delete Account
-          </button>
-        }
-        @if (isDeletionScheduled()) {
-          <button class="btn-danger" disabled style="opacity: 0.5;">
-            Deletion Pending
-          </button>
-        }
-      </div>
-
-      @if (showDeleteConfirm() && !isDeletionScheduled()) {
-        <div class="delete-confirm-box">
-          <p>Type <strong>DELETE</strong> to confirm permanent deletion:</p>
-          <input 
-            type="text" 
-            [(ngModel)]="deleteInput" 
-            placeholder="Type DELETE" 
-            class="confirm-input"
-            [disabled]="isDeleting()"
-          />
-          <div class="form-actions">
-            <button 
-              class="btn-ghost" 
-              (click)="showDeleteConfirm.set(false); deleteInput = ''"
-              [disabled]="isDeleting()"
-            >
-              Cancel
-            </button>
-            <button 
-              class="btn-danger" 
-              [disabled]="deleteInput !== 'DELETE' || isDeleting()" 
-              (click)="DeleteUser()"
-            >
-              @if (isDeleting()) {
-                <span>Processing...</span>
-              } @else {
-                <span>Confirm Delete</span>
-              }
-            </button>
-          </div>
-          <p class="warning-text">
-            ⚠️ Your account will be permanently deleted in 3 days after confirmation.
-          </p>
-        </div>
-      }
-    </div>
-  </div>
-}
 
   </main>
+</div>
 </div>
