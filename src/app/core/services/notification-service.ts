@@ -14,8 +14,9 @@ import { environment } from '../../../environments/environments.prod';
 @Injectable({ providedIn: 'root' })
 export class NotificationService implements OnDestroy {
 
-  private readonly ADMIN_API = `${environment.apiUrl}/admin/notifications`;
-  private readonly USER_API  = `${environment.apiUrl}/notifications`;
+  // ✅ After
+private readonly ADMIN_API = `${environment.apiUrl}/notifications/admin`;
+private readonly USER_API  = `${environment.apiUrl}/notifications/user`;
   private readonly POLL_MS   = 30_000;
 
   private _notifications$ = new BehaviorSubject<Notification[]>([]);
