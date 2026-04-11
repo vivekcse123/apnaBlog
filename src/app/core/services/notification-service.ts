@@ -15,12 +15,7 @@ import { environment } from '../../../environments/environments.prod';
 export class NotificationService implements OnDestroy {
 
   private readonly ADMIN_API = `${environment.apiUrl}/admin/notifications`;
-<<<<<<< HEAD
   private readonly USER_API  = `${environment.apiUrl}/notifications`;
-=======
-private readonly USER_API  = `${environment.apiUrl}/notifications`;
-  private readonly POLL_MS   = 30_000;
->>>>>>> dev
 
   private _notifications$ = new BehaviorSubject<Notification[]>([]);
   private _unreadCount$   = new BehaviorSubject<number>(0);
@@ -54,12 +49,7 @@ private readonly USER_API  = `${environment.apiUrl}/notifications`;
     });
   }
 
-<<<<<<< HEAD
   // ✅ Manual refresh (called by refresh button only)
-=======
-  startPolling(): void {}
-
->>>>>>> dev
   fetchNotifications(page = 1, limit = 20): void {
     this._loading$.next(true);
     const params = new HttpParams()
@@ -109,10 +99,7 @@ private readonly USER_API  = `${environment.apiUrl}/notifications`;
       );
   }
 
-<<<<<<< HEAD
   // ✅ Local state mutation — no HTTP call
-=======
->>>>>>> dev
   deleteNotification(id: string): Observable<void> {
     return this.http
       .delete<void>(`${this.api}/${id}`)
@@ -144,28 +131,9 @@ private readonly USER_API  = `${environment.apiUrl}/notifications`;
     this._loading$.next(false);
   }
 
-<<<<<<< HEAD
   private _markReadLocally(id: string): void {
     const updated = this._notifications$.value.map(n =>
       n.id === id ? { ...n, isRead: true } : n,
-=======
-  private _startPolling(): void {
-    this.fetchNotifications();
-    this.pollSub = interval(this.POLL_MS)
-      .pipe(
-        switchMap(() => this._fetch()),
-        filter((res): res is NotificationResponse => !!res),
-      )
-      .subscribe(res => this._apply(res));
-  }
-
-  private _fetch(): Observable<NotificationResponse | null> {
-    return this.http.get<NotificationResponse>(this.api).pipe(
-      catchError(err => {
-        console.error('Poll failed:', err);
-        return of(null);
-      }),
->>>>>>> dev
     );
     this._notifications$.next(updated);
     this._unreadCount$.next(Math.max(0, this._unreadCount$.value - 1));
