@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, OnInit, DestroyRef } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, DestroyRef, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -9,9 +9,9 @@ import { ThemeService, Language } from '../../../../core/services/theme-service'
 import { User } from '../../../user/models/user.mode';
 import { AdminService } from '../../services/admin-service';
 import { MessageModal } from '../../../../shared/message-modal/message-modal';
+import { switchMap } from 'rxjs';
 
 type NotifKey = 'newPosts' | 'comments' | 'likes' | 'newUsers' | 'weeklyDigest' | 'security';
-
 type Role = 'user' | 'admin';
 const USER_ALLOWED_KEYS = ['comments', 'likes', 'security'] as const;
 
@@ -32,6 +32,8 @@ interface NotifState {
   styleUrl:    './settings.css',
 })
 export class Settings implements OnInit {
+  @ViewChild('avatarInput') avatarInput!: ElementRef<HTMLInputElement>;
+
   private authService  = inject(Auth);
   private userService  = inject(UserService);
   private adminService = inject(AdminService);
@@ -56,11 +58,15 @@ export class Settings implements OnInit {
   isSaving       = signal(false);
   saveSuccess    = signal(false);
   saveError      = signal('');
-  
-  showModal      = signal(false);
-  modalType      = signal<'success' | 'error'>('success');
-  modalTitle     = signal('');
-  modalMessage   = signal('');
+
+  // ── Avatar ──
+  isUploadingAvatar = signal(false);
+  avatarPreview     = signal<string | null>(null);
+
+  showModal    = signal(false);
+  modalType    = signal<'success' | 'error'>('success');
+  modalTitle   = signal('');
+  modalMessage = signal('');
 
   user   = signal<User | null>(null);
   userId = signal<string | null>(null);
@@ -69,6 +75,10 @@ export class Settings implements OnInit {
 
   avatarInitial = computed(() =>
     this.user()?.name?.charAt(0).toUpperCase() ?? 'A'
+  );
+
+  avatarUrl = computed(() =>
+    this.avatarPreview() ?? this.user()?.avatar ?? null
   );
 
   notifications = signal<NotifState>({
@@ -116,50 +126,39 @@ export class Settings implements OnInit {
     { device: 'Firefox · MacBook Pro', location: 'Bangalore, IN', time: 'Yesterday',   current: false },
   ];
 
-  showFreezeConfirm = signal(false);
-  showDeleteConfirm = signal(false);
-  deleteInput = '';
-  isDeleting = signal(false);
-  isCancelling = signal(false);
+  showFreezeConfirm  = signal(false);
+  showDeleteConfirm  = signal(false);
+  deleteInput        = '';
+  isDeleting         = signal(false);
+  isCancelling       = signal(false);
 
-  // Computed signal to check if deletion is scheduled
   isDeletionScheduled = computed(() => {
     const u = this.user();
     return u?.status === 'pending_deletion' && u?.deletionScheduledAt != null;
   });
 
-  // Computed signal for deletion date
   deletionDate = computed(() => {
     const u = this.user();
-    if (u?.deletionScheduledAt) {
-      return new Date(u.deletionScheduledAt);
-    }
-    return null;
+    return u?.deletionScheduledAt ? new Date(u.deletionScheduledAt) : null;
   });
 
-  // Computed signal for days remaining
   daysRemaining = computed(() => {
     const delDate = this.deletionDate();
     if (!delDate) return 0;
-    
-    const now = new Date();
-    const diff = delDate.getTime() - now.getTime();
+    const diff = delDate.getTime() - new Date().getTime();
     const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
     return days > 0 ? days : 0;
   });
 
   role: Role = 'user';
-  
+
   ngOnInit(): void {
     const paramId = this.route.parent?.snapshot.paramMap.get('id');
     const authId  = this.authService.userId();
     const id      = paramId ?? authId;
     this.userId.set(id);
 
-    if (!id) {
-      this.isLoading.set(false);
-      return;
-    }
+    if (!id) { this.isLoading.set(false); return; }
 
     this.themeService.init(id);
     this.loadUser(id);
@@ -188,10 +187,57 @@ export class Settings implements OnInit {
     this.showModal.set(true);
   }
 
-  onModalClosed(): void {
-    this.showModal.set(false);
+  onModalClosed(): void { this.showModal.set(false); }
+
+  // ── Avatar ──────────────────────────────────────────
+  triggerAvatarUpload(): void {
+    this.avatarInput.nativeElement.click();
   }
 
+  onAvatarSelected(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      this.openModal('error', 'File Too Large', 'Image must be under 2MB.');
+      return;
+    }
+
+    // Show preview immediately
+    const reader = new FileReader();
+    reader.onload = (e) => this.avatarPreview.set(e.target?.result as string);
+    reader.readAsDataURL(file);
+
+    this.uploadAvatar(file);
+  }
+
+  private uploadAvatar(file: File): void {
+    const id = this.userId();
+    if (!id) return;
+
+    this.isUploadingAvatar.set(true);
+
+    this.userService.uploadAvatar(file)
+      .pipe(
+        switchMap(res => this.userService.updateAvatar(id, res.url)),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: (res) => {
+          this.user.set(res.data);
+          this.avatarPreview.set(null); // use actual URL from server now
+          this.isUploadingAvatar.set(false);
+          this.openModal('success', 'Avatar Updated', 'Your profile picture has been updated.');
+        },
+        error: (err) => {
+          this.avatarPreview.set(null);
+          this.isUploadingAvatar.set(false);
+          this.openModal('error', 'Upload Failed', err?.error?.message ?? 'Could not upload image.');
+        },
+      });
+  }
+
+  // ── Profile ──────────────────────────────────────────
   startEdit(): void {
     this.editForm = { ...this.user() };
     this.isEditing.set(true);
@@ -246,22 +292,15 @@ export class Settings implements OnInit {
 
   updatePassword(): void {
     const { currentPassword, newPassword, confirm } = this.passwordForm;
-
     if (!currentPassword || !newPassword || !confirm) {
-      this.openModal('error', 'Validation Error', 'Please fill in all password fields.');
-      return;
+      this.openModal('error', 'Validation Error', 'Please fill in all password fields.'); return;
     }
-
     if (newPassword !== confirm) {
-      this.openModal('error', 'Validation Error', 'New password and confirm password do not match.');
-      return;
+      this.openModal('error', 'Validation Error', 'New password and confirm password do not match.'); return;
     }
-
     if (newPassword.length < 8) {
-      this.openModal('error', 'Validation Error', 'New password must be at least 8 characters.');
-      return;
+      this.openModal('error', 'Validation Error', 'New password must be at least 8 characters.'); return;
     }
-
     const id = this.userId();
     if (!id) return;
 
@@ -271,7 +310,6 @@ export class Settings implements OnInit {
         next: (res) => {
           this.passwordForm = { currentPassword: '', newPassword: '', confirm: '' };
           this.openModal('success', 'Password Changed', res.message);
-
           const t = setTimeout(() => {
             this.showModal.set(false);
             this.authService.logout();
@@ -285,57 +323,35 @@ export class Settings implements OnInit {
       });
   }
 
-  confirmFreeze(): void {
-    this.showFreezeConfirm.set(true);
-  }
-
-  cancelFreeze(): void {
-    this.showFreezeConfirm.set(false);
-  }
+  confirmFreeze(): void  { this.showFreezeConfirm.set(true); }
+  cancelFreeze(): void   { this.showFreezeConfirm.set(false); }
 
   freeze(): void {
     this.showFreezeConfirm.set(false);
     const id = this.userId();
     if (!id) return;
-
     this.adminService.freezeUser(id)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (res) => {
-          this.authService.logout();
-          this.router.navigate(['/auth/login']);
-        },
-        error: (err) => {
-          this.openModal('error', 'Error', err?.error?.message ?? 'Failed to deactivate account.');
-        },
+        next: () => { this.authService.logout(); this.router.navigate(['/auth/login']); },
+        error: (err) => { this.openModal('error', 'Error', err?.error?.message ?? 'Failed to deactivate account.'); },
       });
   }
 
   DeleteUser(): void {
     const id = this.userId();
     if (!id) return;
-
     this.isDeleting.set(true);
-
     this.adminService.requestDeleteUser(id)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (res) => {
+        next: () => {
           this.isDeleting.set(false);
           this.showDeleteConfirm.set(false);
           this.deleteInput = '';
-          
-          this.openModal(
-            'success', 
-            'Account Deletion Scheduled', 
-            'Your account will be permanently deleted in 3 days. You can cancel this request by clicking the "Cancel Deletion" button.'
-          );
-
-          // Reload user to update status
-          const t = setTimeout(() => {
-            this.showModal.set(false);
-            this.loadUser(id);
-          }, 2000);
+          this.openModal('success', 'Account Deletion Scheduled',
+            'Your account will be permanently deleted in 3 days.');
+          const t = setTimeout(() => { this.showModal.set(false); this.loadUser(id); }, 2000);
           this.destroyRef.onDestroy(() => clearTimeout(t));
         },
         error: (err) => {
@@ -348,26 +364,14 @@ export class Settings implements OnInit {
   cancelDeletion(): void {
     const id = this.userId();
     if (!id) return;
-
     this.isCancelling.set(true);
-
     this.adminService.cancelDeleteUser(id)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (res) => {
+        next: () => {
           this.isCancelling.set(false);
-          
-          this.openModal(
-            'success', 
-            'Deletion Cancelled', 
-            'Your account deletion has been cancelled successfully. Your account is now active.'
-          );
-
-          // Reload user to update status
-          const t = setTimeout(() => {
-            this.showModal.set(false);
-            this.loadUser(id);
-          }, 2000);
+          this.openModal('success', 'Deletion Cancelled', 'Your account is now active.');
+          const t = setTimeout(() => { this.showModal.set(false); this.loadUser(id); }, 2000);
           this.destroyRef.onDestroy(() => clearTimeout(t));
         },
         error: (err) => {
@@ -378,33 +382,24 @@ export class Settings implements OnInit {
   }
 
   exportAllData(): void {
-  const id = this.userId();
-  if (!id) return;
-
-  this.adminService.exportAllData(id)
-    .pipe(takeUntilDestroyed(this.destroyRef))
-    .subscribe({
-      next: (res: any) => {
-        try {
-          const dataStr = JSON.stringify(res.data ?? res, null, 2);
-          const blob = new Blob([dataStr], { type: 'application/json' });
-
-          const url = window.URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `backup-${new Date().toISOString()}.json`;
-          a.click();
-
-          window.URL.revokeObjectURL(url);
-
-          this.openModal('success', 'Export Successful', 'Your data has been downloaded.');
-        } catch (e) {
-          this.openModal('error', 'Export Failed', 'Could not process export file.');
-        }
-      },
-      error: (err) => {
-        this.openModal('error', 'Export Failed', err?.error?.message ?? 'Something went wrong.');
-      }
-    });
-}
+    const id = this.userId();
+    if (!id) return;
+    this.adminService.exportAllData(id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res: any) => {
+          try {
+            const blob = new Blob([JSON.stringify(res.data ?? res, null, 2)], { type: 'application/json' });
+            const url  = window.URL.createObjectURL(blob);
+            const a    = document.createElement('a');
+            a.href = url; a.download = `backup-${new Date().toISOString()}.json`; a.click();
+            window.URL.revokeObjectURL(url);
+            this.openModal('success', 'Export Successful', 'Your data has been downloaded.');
+          } catch {
+            this.openModal('error', 'Export Failed', 'Could not process export file.');
+          }
+        },
+        error: (err) => { this.openModal('error', 'Export Failed', err?.error?.message ?? 'Something went wrong.'); },
+      });
+  }
 }
