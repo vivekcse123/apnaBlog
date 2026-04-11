@@ -9,7 +9,7 @@ import { MessageModal } from '../../../../shared/message-modal/message-modal';
 import { DisabledDirective } from '../../../../shared/directives/highlight';
 import { CreateUser } from '../create-user/create-user';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { NotificationNavigationService } from '../../../../core/services/open-notification/notification-navigation';
+import { NotificationNavigationService, USER_NOTIFICATION_TYPES } from '../../../../core/services/open-notification/notification-navigation';
 
 @Component({
   selector: 'app-manage-users',
@@ -69,36 +69,33 @@ export class ManageUsers implements OnInit {
   userId       = signal<string>('');
   errorMessage = signal('');
 
-  ngOnInit(): void {
-    this.route.parent?.paramMap
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(params => {
-        this.userId.set(params.get('id') ?? '');
+ngOnInit(): void {
+  this.route.parent?.paramMap
+    .pipe(takeUntilDestroyed(this.destroyRef))
+    .subscribe(params => {
+      this.userId.set(params.get('id') ?? '');
+      this.loadUsers();
+    });
 
-        // ✅ Load users first, then check for pending notification event
-        this.loadUsers(() => {
-          const event = this.navSvc.consumePendingEvent();
-          if (event?.resourceId) {
-            setTimeout(() => this.getUserDetails(event.resourceId), 150);
-          }
-        });
-      });
-  }
+  // ✅ Replaces consumePendingEvent
+  this.navSvc.openModal$
+    .pipe(takeUntilDestroyed(this.destroyRef))
+    .subscribe(event => {
+      if (USER_NOTIFICATION_TYPES.includes(event.type) && event.resourceId) {
+        this.getUserDetails(event.resourceId);
+      }
+    });
+}
 
-  loadUsers(onComplete?: () => void): void {
-    this.adminService.getAllUsers(1, 100)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: res => {
-          this.allUsers.set(res.data || []);
-          onComplete?.(); // ✅ fires after users loaded
-        },
-        error: err => {
-          console.error(err?.error?.message);
-          onComplete?.();
-        },
-      });
-  }
+// ✅ Remove onComplete callback
+loadUsers(): void {
+  this.adminService.getAllUsers(1, 100)
+    .pipe(takeUntilDestroyed(this.destroyRef))
+    .subscribe({
+      next:  res => this.allUsers.set(res.data || []),
+      error: err => console.error(err?.error?.message),
+    });
+}
 
   debounceSearch(value: string): void {
     clearTimeout(this.timer);

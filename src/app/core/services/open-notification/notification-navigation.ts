@@ -1,7 +1,8 @@
 import { Injectable, inject } from '@angular/core';
-import { Router } from '@angular/router';
-import { Auth } from '../auth';
+import { Router, NavigationEnd } from '@angular/router';
+import { Subject, filter, take } from 'rxjs';
 import { NotificationType } from '../../../shared/models/notification.model';
+import { Auth } from '../auth';
 
 export interface NotificationNavEvent {
   type:       NotificationType;
@@ -29,28 +30,64 @@ export class NotificationNavigationService {
   private router      = inject(Router);
   private authService = inject(Auth);
 
-  private _pendingEvent: NotificationNavEvent | null = null;
+  // ✅ Subject instead of stored value — fires to already-mounted components too
+  private _openModal$ = new Subject<NotificationNavEvent>();
+  openModal$ = this._openModal$.asObservable();
 
-  navigateTo(event: NotificationNavEvent): void {
-    if (NON_NAVIGABLE_TYPES.includes(event.type) || !event.resourceId) return;
+  navigateTo(event: NotificationNavEvent, resourceUrl?: string | null): void {
+    if (NON_NAVIGABLE_TYPES.includes(event.type)) return;
 
-    const adminId = this.authService.getCurrentUser()?.id
-                 ?? this.authService.getCurrentUser()?.id;
+    const hasValidResource = event.resourceId &&
+                             event.resourceId !== 'null' &&
+                             event.resourceId !== 'undefined';
+    if (!hasValidResource) return;
 
-    if (!adminId) return;
+    const isAdmin = this.authService.isAdmin();
 
-    this._pendingEvent = event;
+    if (isAdmin) {
+      const adminId = this.authService.getCurrentUser()?.id
+                   ?? this.authService.getCurrentUser()?.id;
+      if (!adminId) return;
 
-    if (POST_NOTIFICATION_TYPES.includes(event.type)) {
-      this.router.navigate(['admin', adminId, 'manage-blogs']);
-    } else if (USER_NOTIFICATION_TYPES.includes(event.type)) {
-      this.router.navigate(['admin', adminId, 'manage-users']);
+      const targetPath = POST_NOTIFICATION_TYPES.includes(event.type)
+        ? ['admin', adminId, 'manage-blogs']
+        : USER_NOTIFICATION_TYPES.includes(event.type)
+          ? ['admin', adminId, 'manage-users']
+          : null;
+
+      if (!targetPath) return;
+
+      const currentUrl = this.router.url;
+      const targetUrl  = '/' + targetPath.join('/');
+
+      if (currentUrl === targetUrl) {
+        // ✅ Already on the correct page — fire directly, no navigation needed
+        this._openModal$.next(event);
+      } else {
+        // ✅ Different page — navigate first, then fire after navigation completes
+        this.router.navigate(targetPath);
+        this.router.events
+          .pipe(
+            filter(e => e instanceof NavigationEnd),
+            take(1)
+          )
+          .subscribe(() => {
+            // Small delay ensures component is fully initialized
+            setTimeout(() => this._openModal$.next(event), 100);
+          });
+      }
+
+    } else {
+      // User: navigate directly to blog
+      const validUrl = resourceUrl &&
+                       !resourceUrl.includes('null') &&
+                       !resourceUrl.includes('undefined');
+
+      if (validUrl) {
+        this.router.navigateByUrl(resourceUrl!);
+      } else if (POST_NOTIFICATION_TYPES.includes(event.type)) {
+        this.router.navigate(['/blog', event.resourceId]);
+      }
     }
-  }
-
-  consumePendingEvent(): NotificationNavEvent | null {
-    const event = this._pendingEvent;
-    this._pendingEvent = null;
-    return event;
   }
 }
