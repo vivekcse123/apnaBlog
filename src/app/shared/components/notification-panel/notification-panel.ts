@@ -8,10 +8,10 @@ import {
   ChangeDetectionStrategy,
   signal
 } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { filter, Subject, takeUntil } from 'rxjs';
+import { filter, Subject, take, takeUntil } from 'rxjs';
 
 import {
   Notification,
@@ -36,7 +36,6 @@ export class NotificationPanel implements OnInit, OnDestroy {
   private elRef = inject(ElementRef);
   private destroy$ = new Subject<void>();
 
-  // ✅ SIGNALS
   notifications = signal<Notification[]>([]);
   unreadCount = signal(0);
   loading = signal(false);
@@ -115,9 +114,11 @@ onRefresh(event: Event): void {
   event.preventDefault();
   this.refreshing.set(true);
   this.svc.fetchNotifications();
+
   this.svc.loading$
     .pipe(
       filter(l => !l),
+      take(1),         
       takeUntil(this.destroy$)
     )
     .subscribe(() => this.refreshing.set(false));
