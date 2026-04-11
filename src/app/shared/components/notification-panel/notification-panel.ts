@@ -1,46 +1,38 @@
 import {
-  Component,
-  OnInit,
-  OnDestroy,
-  HostListener,
-  ElementRef,
-  inject,
-  ChangeDetectionStrategy,
-  signal
+  Component, OnInit, OnDestroy, HostListener,
+  ElementRef, inject, ChangeDetectionStrategy, signal
 } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { filter, Subject, takeUntil } from 'rxjs';
+import { MatIconModule } from '@angular/material/icon';
+import { filter, Subject, take, takeUntil } from 'rxjs';  // ✅ added take
 
 import {
-  Notification,
-  NotificationType,
-  NOTIFICATION_META,
+  Notification, NotificationType, NOTIFICATION_META,
 } from '../../models/notification.model';
 import { NotificationService } from '../../../core/services/notification-service';
-import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-notification-panel',
   standalone: true,
-  imports: [CommonModule,  MatProgressSpinnerModule, MatIconModule],
+  imports: [CommonModule, MatProgressSpinnerModule, MatIconModule],
   templateUrl: './notification-panel.html',
   styleUrls: ['./notification-panel.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NotificationPanel implements OnInit, OnDestroy {
 
-  private svc = inject(NotificationService);
-  private router = inject(Router);
-  private elRef = inject(ElementRef);
+  private svc     = inject(NotificationService);
+  private router  = inject(Router);
+  private elRef   = inject(ElementRef);
   private destroy$ = new Subject<void>();
 
-  // ✅ SIGNALS
   notifications = signal<Notification[]>([]);
-  unreadCount = signal(0);
-  loading = signal(false);
-  panelOpen = signal(false);
+  unreadCount   = signal(0);
+  loading       = signal(false);
+  panelOpen     = signal(false);
+  refreshing    = signal(false);
 
   readonly meta = NOTIFICATION_META;
 
@@ -64,11 +56,7 @@ export class NotificationPanel implements OnInit, OnDestroy {
   }
 
   getMeta(type: NotificationType) {
-    return this.meta[type] ?? {
-      icon: 'notifications',
-      color: '#999',
-      label: 'Unknown',
-    };
+    return this.meta[type] ?? { icon: 'notifications', color: '#999', label: 'Unknown' };
   }
 
   togglePanel(event: Event): void {
@@ -90,11 +78,11 @@ export class NotificationPanel implements OnInit, OnDestroy {
       this.svc.markAsRead(notification.id).subscribe();
     }
 
+    // ✅ Navigate using resourceUrl — populated correctly from backend
     if (notification.resourceUrl) {
       this.router.navigateByUrl(notification.resourceUrl);
+      this.panelOpen.set(false);
     }
-
-    this.panelOpen.set(false);
   }
 
   onMarkAllRead(event: Event): void {
@@ -108,18 +96,21 @@ export class NotificationPanel implements OnInit, OnDestroy {
     this.svc.deleteNotification(id).subscribe();
   }
 
-refreshing = signal(false);
+  onRefresh(event: Event): void {
+    event.stopPropagation();
+    event.preventDefault();
 
-onRefresh(event: Event): void {
-  event.stopPropagation();
-  event.preventDefault();
-  this.refreshing.set(true);
-  this.svc.fetchNotifications();
-  this.svc.loading$
-    .pipe(
-      filter(l => !l),
-      takeUntil(this.destroy$)
-    )
-    .subscribe(() => this.refreshing.set(false));
-}
+    if (this.refreshing()) return;  // ✅ prevent double-click spamming
+
+    this.refreshing.set(true);
+    this.svc.fetchNotifications();
+
+    this.svc.loading$
+      .pipe(
+        filter(l => !l),
+        take(1),              // ✅ auto-completes after loading stops — no leak
+        takeUntil(this.destroy$)
+      )
+      .subscribe(() => this.refreshing.set(false));
+  }
 }
