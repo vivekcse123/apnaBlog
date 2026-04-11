@@ -29,22 +29,37 @@ export class NotificationNavigationService {
   private router      = inject(Router);
   private authService = inject(Auth);
 
+  // Pending event consumed by PostLists / ManageUsers after admin navigation
   private _pendingEvent: NotificationNavEvent | null = null;
 
-  navigateTo(event: NotificationNavEvent): void {
+  navigateTo(event: NotificationNavEvent, resourceUrl?: string | null): void {
     if (NON_NAVIGABLE_TYPES.includes(event.type) || !event.resourceId) return;
 
-    const adminId = this.authService.getCurrentUser()?.id
-                 ?? this.authService.getCurrentUser()?.id;
+    const isAdmin = this.authService.isAdmin();
 
-    if (!adminId) return;
+    if (isAdmin) {
+      // ── Admin: store pending event → navigate to component → modal opens ──
+      const adminId = this.authService.getCurrentUser()?.id
+                   ?? this.authService.getCurrentUser()?.id;
+      if (!adminId) return;
 
-    this._pendingEvent = event;
+      this._pendingEvent = event;
 
-    if (POST_NOTIFICATION_TYPES.includes(event.type)) {
-      this.router.navigate(['admin', adminId, 'manage-blogs']);
-    } else if (USER_NOTIFICATION_TYPES.includes(event.type)) {
-      this.router.navigate(['admin', adminId, 'manage-users']);
+      if (POST_NOTIFICATION_TYPES.includes(event.type)) {
+        this.router.navigate(['admin', adminId, 'manage-blogs']);
+      } else if (USER_NOTIFICATION_TYPES.includes(event.type)) {
+        this.router.navigate(['admin', adminId, 'manage-users']);
+      }
+
+    } else {
+      // ── User: navigate directly to blog using resourceUrl ──────────────
+      // POST_LIKED and COMMENT_ADDED both have resourceUrl: /blog/:id
+      if (resourceUrl) {
+        this.router.navigateByUrl(resourceUrl);
+      } else if (POST_NOTIFICATION_TYPES.includes(event.type) && event.resourceId) {
+        // Fallback: build the URL from resourceId
+        this.router.navigate(['/blog', event.resourceId]);
+      }
     }
   }
 

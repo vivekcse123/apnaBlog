@@ -77,22 +77,25 @@ export class NotificationPanel implements OnInit, OnDestroy {
   }
 
   onNotificationClick(notification: Notification): void {
-    if (!notification?.id) return;
+  if (!notification?.id) return;
 
-    if (!notification.isRead) {
-      this.svc.markAsRead(notification.id).subscribe();
-    }
+  if (!notification.isRead) {
+    this.svc.markAsRead(notification.id).subscribe();
+  }
 
-    if (this.isNavigable(notification.type) && notification.resourceId) {
-      // ✅ Navigate to correct route and store pending event for modal
-      this.navSvc.navigateTo({
+  if (this.isNavigable(notification.type) && notification.resourceId) {
+    // ✅ Pass resourceUrl so user notifications navigate to /blog/:id directly
+    this.navSvc.navigateTo(
+      {
         type:       notification.type,
         resourceId: notification.resourceId,
         metadata:   notification.metadata ?? {},
-      });
-      this.panelOpen.set(false);
-    }
+      },
+      notification.resourceUrl   // ← new second argument
+    );
+    this.panelOpen.set(false);
   }
+}
 
   onMarkAllRead(event: Event): void {
     event.stopPropagation();
