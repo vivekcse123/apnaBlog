@@ -8,7 +8,8 @@ import { CommonModule, isPlatformBrowser, NgTemplateOutlet } from '@angular/comm
 import { FormsModule } from '@angular/forms';
 import { Meta, Title } from '@angular/platform-browser';
 import { DOCUMENT } from '@angular/common';
-import { finalize, debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { finalize, debounceTime, distinctUntilChanged, forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { PostService } from '../../../post/services/post-service';
@@ -21,6 +22,8 @@ import { User } from '../../../user/models/user.mode';
 import { VisitorService } from '../../../../core/services/visitor';
 import { WelcomeModal } from '../welcome.modal';
 import { FormatCountPipe } from '../../../../shared/pipes/format-count-pipe';
+import { PostCache } from '../../../post/services/post-cache';
+import { MatIconModule } from '@angular/material/icon';
 
 interface DrawerComment {
   _id?: string;
@@ -30,9 +33,7 @@ interface DrawerComment {
   createdAt: string;
 }
 
-interface PostWithTs extends Post {
-  _ts: number;
-}
+interface PostWithTs extends Post { _ts: number; }
 
 const PAGE_SIZE         = 8;
 const COMMENT_PAGE_SIZE = 5;
@@ -47,6 +48,7 @@ const COMMENT_PAGE_SIZE = 5;
 })
 export class Home implements OnInit, OnDestroy {
   private postService    = inject(PostService);
+  private postCache      = inject(PostCache);        // ✅ cache
   private destroyRef     = inject(DestroyRef);
   private route          = inject(ActivatedRoute);
   private router         = inject(Router);
@@ -116,24 +118,18 @@ export class Home implements OnInit, OnDestroy {
   private byLikes = computed(() =>
     [...this.allPosts()].sort((a, b) => b.likesCount - a.likesCount)
   );
-
   private byViews = computed(() =>
     [...this.allPosts()].sort((a, b) => b.views - a.views)
   );
-
   private byDate = computed(() =>
     [...this.allPosts()].sort((a, b) => b._ts - a._ts)
   );
 
   private trendingPool = computed(() => this.byLikes());
-
   private hotPool = computed(() => {
-    const trendingIds = new Set(
-      this.trendingPool().slice(0, PAGE_SIZE).map(p => p._id)
-    );
+    const trendingIds = new Set(this.trendingPool().slice(0, PAGE_SIZE).map(p => p._id));
     return this.byViews().filter(p => !trendingIds.has(p._id));
   });
-
   private latestPool = computed(() => {
     const usedIds = new Set([
       ...this.trendingPool().slice(0, PAGE_SIZE).map(p => p._id),
@@ -146,12 +142,10 @@ export class Home implements OnInit, OnDestroy {
     const start = this.trendingPage() * PAGE_SIZE;
     return this.trendingPool().slice(start, start + PAGE_SIZE);
   });
-
   hotPosts = computed(() => {
     const start = this.hotPage() * PAGE_SIZE;
     return this.hotPool().slice(start, start + PAGE_SIZE);
   });
-
   latestPosts = computed(() => {
     const start = this.latestPage() * PAGE_SIZE;
     return this.latestPool().slice(start, start + PAGE_SIZE);
@@ -165,14 +159,12 @@ export class Home implements OnInit, OnDestroy {
     const cat  = this.selectedCategory();
     const q    = this.searchQuery().trim().toLowerCase();
     const sort = this.selectedSort();
-
     let posts: PostWithTs[] = this.allPosts();
+
     if (cat) posts = posts.filter(p => p.categories.includes(cat));
-    if (q) {
-      posts = posts.filter(p =>
-        p.title.toLowerCase().includes(q) || p.description.toLowerCase().includes(q)
-      );
-    }
+    if (q)   posts = posts.filter(p =>
+      p.title.toLowerCase().includes(q) || p.description.toLowerCase().includes(q)
+    );
 
     switch (sort) {
       case 'liked':    return [...posts].sort((a, b) => b.likesCount - a.likesCount);
@@ -237,16 +229,18 @@ export class Home implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.standalone = this.route.snapshot.data['standalone'] ?? this.standalone;
-
     this.setMetaTags();
     this.injectJsonLd();
+
+    // ✅ Restore from localStorage synchronously — no delay
+    this.restoreLikedIds();
+    this.restoreBookmarkedIds();
 
     if (isPlatformBrowser(this.platformId)) {
       const normalisedPath = window.location.pathname.replace(/\/$/, '') || '/';
       if (normalisedPath === '/welcome') {
         this.visitorService.trackVisit('/welcome');
       }
-
       const alreadySeen = sessionStorage.getItem('apna_welcome_seen');
       if (!alreadySeen) {
         const delay = 2000 + Math.random() * 1000;
@@ -254,23 +248,21 @@ export class Home implements OnInit, OnDestroy {
       }
     }
 
-    this.route.queryParamMap.pipe(
-      takeUntilDestroyed(this.destroyRef)
-    ).subscribe(params => {
-      const cat = params.get('category');
-      if (cat) this.selectedCategory.set(cat);
-    });
-
-    this.loadPosts();
-    this.restoreLikedIds();
-    this.restoreBookmarkedIds();
-    this.fetchCurrentUser();
+    this.route.queryParamMap
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(params => {
+        const cat = params.get('category');
+        if (cat) this.selectedCategory.set(cat);
+      });
 
     this.searchInput$.pipe(
       debounceTime(350),
       distinctUntilChanged(),
       takeUntilDestroyed(this.destroyRef)
     ).subscribe(val => this.searchQuery.set(val));
+
+    // ✅ Show cached posts immediately, then load fresh data in parallel
+    this.loadInitialData();
   }
 
   ngOnDestroy(): void {
@@ -279,19 +271,70 @@ export class Home implements OnInit, OnDestroy {
       this.welcomeTimerId = null;
     }
     this.readingTimeCache.clear();
-
     const scripts = this.document.querySelectorAll('script[data-apna-home-schema]');
     scripts.forEach(s => s.remove());
   }
 
+  // ── Core loading ──────────────────────────────────────────────────────────
+
+  private loadInitialData(): void {
+    const cached = this.postCache.get();
+
+    if (cached?.length) {
+      // ✅ Instant render from cache — no skeleton shown at all
+      this.allPosts.set(cached);
+      this.isLoading.set(false);
+      // Silently refresh in background
+      this.loadFresh(false);
+    } else {
+      // First visit — show skeleton and load everything in parallel
+      this.loadFresh(true);
+    }
+
+    // ✅ Fetch user in parallel — never blocks post display
+    this.fetchCurrentUser();
+  }
+
+  private loadFresh(showLoader: boolean): void {
+    if (showLoader) this.isLoading.set(true);
+
+    this.postService.getAllPost(1, 100)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.isLoading.set(false)),
+        catchError(() => of({ data: [] }))
+      )
+      .subscribe(res => {
+        const published = (res.data ?? [])
+          .filter((p: Post) => p.status === 'published')
+          .map((p: Post): PostWithTs => ({ ...p, _ts: new Date(p.createdAt).getTime() }));
+
+        this.allPosts.set(published);
+        this.postCache.set(published);           // ✅ cache for next visit
+        this.updateJsonLdPostCount(published.length);
+      });
+  }
+
+  private fetchCurrentUser(): void {
+    const userId = this.auth.userId();
+    if (!userId) return;
+
+    this.userService.getUserById(userId)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        catchError(() => of({ data: null }))
+      )
+      .subscribe(res => this.currentUserData.set(res.data ?? null));
+  }
+
+  // ── Meta / SEO ────────────────────────────────────────────────────────────
+
   private setMetaTags(): void {
     this.titleService.setTitle('ApnaInsights — Community Stories from Every Corner of India');
-
     this.meta.updateTag({ name: 'description', content: 'Discover real stories from real people across India. Read and write blogs on Technology, Lifestyle, Health, Business, Education, Village Life and more. Free community blogging platform — join thousands of Indian writers.' });
     this.meta.updateTag({ name: 'keywords', content: 'Indian blog platform, community stories India, read blogs India, write blogs free, trending stories, technology blog India, village life stories, health stories India, ApnaInsights' });
     this.meta.updateTag({ name: 'robots', content: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' });
     this.meta.updateTag({ name: 'author', content: 'ApnaInsights Community' });
-
     this.meta.updateTag({ property: 'og:type',        content: 'website' });
     this.meta.updateTag({ property: 'og:title',       content: 'ApnaInsights — Community Stories from Every Corner of India' });
     this.meta.updateTag({ property: 'og:description', content: 'Discover real stories from real people across India. 10K+ blogs on Technology, Lifestyle, Health, Business, Village Life and more. Free to read, free to write.' });
@@ -302,7 +345,6 @@ export class Home implements OnInit, OnDestroy {
     this.meta.updateTag({ property: 'og:image:height',content: '630' });
     this.meta.updateTag({ property: 'og:image:alt',   content: 'ApnaInsights — Community Stories from Every Corner of India' });
     this.meta.updateTag({ property: 'og:locale',      content: 'en_IN' });
-
     this.meta.updateTag({ name: 'twitter:card',        content: 'summary_large_image' });
     this.meta.updateTag({ name: 'twitter:title',       content: 'ApnaInsights — Community Stories from India' });
     this.meta.updateTag({ name: 'twitter:description', content: 'Real stories from real people. 10K+ blogs on technology, lifestyle, health, village life. Free community platform.' });
@@ -318,45 +360,29 @@ export class Home implements OnInit, OnDestroy {
     canonical.setAttribute('href', 'https://www.apnainsights.com');
   }
 
-  /**
-   * Injects JSON-LD structured data for the home feed.
-   * Uses WebSite schema (enables Google Sitelinks Searchbox),
-   * plus a BreadcrumbList for the root page.
-   */
   private injectJsonLd(): void {
-    // Guard: only inject once (SSR may run this twice)
     if (this.document.querySelector('script[data-apna-home-schema]')) return;
 
     const schemas = [
-      // 1. WebSite — enables Sitelinks Searchbox in Google
       {
         '@context': 'https://schema.org',
         '@type': 'WebSite',
         name: 'ApnaInsights',
         alternateName: 'Apna Insights',
         url: 'https://www.apnainsights.com',
-        description: 'India\'s community-first blogging platform. Discover and share real stories from every corner of India.',
+        description: 'India\'s community-first blogging platform.',
         inLanguage: 'en-IN',
         potentialAction: {
           '@type': 'SearchAction',
-          target: {
-            '@type': 'EntryPoint',
-            urlTemplate: 'https://www.apnainsights.com/welcome?category={search_term_string}'
-          },
+          target: { '@type': 'EntryPoint', urlTemplate: 'https://www.apnainsights.com/welcome?category={search_term_string}' },
           'query-input': 'required name=search_term_string'
         },
         publisher: {
           '@type': 'Organization',
           name: 'ApnaInsights',
-          logo: {
-            '@type': 'ImageObject',
-            url: 'https://www.apnainsights.com/logo.png',
-            width: 200,
-            height: 200
-          }
+          logo: { '@type': 'ImageObject', url: 'https://www.apnainsights.com/logo.png', width: 200, height: 200 }
         }
       },
-      // 2. CollectionPage — describes the feed
       {
         '@context': 'https://schema.org',
         '@type': 'CollectionPage',
@@ -366,15 +392,10 @@ export class Home implements OnInit, OnDestroy {
         description: 'Browse trending, most-viewed, and latest community blogs from writers across India.',
         inLanguage: 'en-IN',
         isPartOf: { '@type': 'WebSite', url: 'https://www.apnainsights.com' },
-        about: {
-          '@type': 'Thing',
-          name: 'Community Blogging India'
-        },
+        about: { '@type': 'Thing', name: 'Community Blogging India' },
         breadcrumb: {
           '@type': 'BreadcrumbList',
-          itemListElement: [
-            { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.apnainsights.com' }
-          ]
+          itemListElement: [{ '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.apnainsights.com' }]
         }
       }
     ];
@@ -388,41 +409,6 @@ export class Home implements OnInit, OnDestroy {
     });
   }
 
-  // ── Welcome modal ──────────────────────────────────────────────────────────
-  dismissWelcomeModal(): void {
-    this.showWelcomeModal.set(false);
-    if (isPlatformBrowser(this.platformId)) {
-      sessionStorage.setItem('apna_welcome_seen', '1');
-    }
-  }
-
-  // ── Search ─────────────────────────────────────────────────────────────────
-  onSearchInput(value: string): void {
-    this.searchInput$.next(value);
-  }
-
-  // ── Posts ──────────────────────────────────────────────────────────────────
-  loadPosts(): void {
-    this.postService.getAllPost(1, 100).pipe(
-      takeUntilDestroyed(this.destroyRef),
-      finalize(() => this.isLoading.set(false))
-    ).subscribe({
-      next: (res) => {
-        const published = (res.data ?? [])
-          .filter((p: Post) => p.status === 'published')
-          .map((p: Post): PostWithTs => ({ ...p, _ts: new Date(p.createdAt).getTime() }));
-        this.allPosts.set(published);
-        // Update JSON-LD with real post count after load
-        this.updateJsonLdPostCount(published.length);
-      },
-      error: (err) => console.error(err?.error?.message),
-    });
-  }
-
-  /**
-   * After posts load, patch the CollectionPage schema with the real
-   * numberOfItems so crawlers see an accurate count.
-   */
   private updateJsonLdPostCount(count: number): void {
     const script = this.document.querySelector('script[data-apna-home-schema="1"]');
     if (!script) return;
@@ -430,54 +416,48 @@ export class Home implements OnInit, OnDestroy {
       const data = JSON.parse(script.textContent ?? '{}');
       data.numberOfItems = count;
       script.textContent = JSON.stringify(data);
-    } catch { /* non-critical */ }
+    } catch { }
   }
 
-  private fetchCurrentUser(): void {
-    const userId = this.auth.userId();
-    if (!userId) return;
-    this.userService.getUserById(userId).pipe(
-      takeUntilDestroyed(this.destroyRef)
-    ).subscribe({
-      next: (res) => this.currentUserData.set(res.data ?? null),
-      error: ()    => this.currentUserData.set(null),
-    });
+  // ── Welcome modal ─────────────────────────────────────────────────────────
+  dismissWelcomeModal(): void {
+    this.showWelcomeModal.set(false);
+    if (isPlatformBrowser(this.platformId)) {
+      sessionStorage.setItem('apna_welcome_seen', '1');
+    }
   }
 
+  // ── Search ────────────────────────────────────────────────────────────────
+  onSearchInput(value: string): void {
+    this.searchInput$.next(value);
+  }
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
   isNew(post: Post): boolean {
     return (Date.now() - new Date(post.createdAt).getTime()) < 48 * 60 * 60 * 1000;
   }
 
   getReadingTime(post: Post): number {
-    if (this.readingTimeCache.has(post._id)) {
-      return this.readingTimeCache.get(post._id)!;
-    }
+    if (this.readingTimeCache.has(post._id)) return this.readingTimeCache.get(post._id)!;
     const text = (post as any).content?.replace(/<[^>]*>/g, '') ?? post.description ?? '';
     const time = Math.max(1, Math.ceil(text.trim().split(/\s+/).length / 200));
     this.readingTimeCache.set(post._id, time);
     return time;
   }
 
-  getCatCount(cat: string): number {
-    return this.categoryCounts()[cat] ?? 0;
-  }
+  getCatCount(cat: string): number { return this.categoryCounts()[cat] ?? 0; }
 
   prevPage(page: WritableSignal<number>): void {
     if (page() > 0) page.set(page() - 1);
   }
-
   nextPage(page: WritableSignal<number>, total: number): void {
     if (page() < total - 1) page.set(page() + 1);
   }
 
-  readBlog(id: string): void {
-    this.router.navigate(['/blog', id]);
-  }
+  readBlog(id: string): void { this.router.navigate(['/blog', id]); }
 
   scrollToTop(): void {
-    if (isPlatformBrowser(this.platformId)) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    if (isPlatformBrowser(this.platformId)) window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   addView(post: Post): void {
@@ -488,23 +468,18 @@ export class Home implements OnInit, OnDestroy {
     this.postService.addView(post._id).subscribe();
   }
 
-  // ── Likes ──────────────────────────────────────────────────────────────────
+  // ── Likes ─────────────────────────────────────────────────────────────────
   private restoreLikedIds(): void {
     try {
       const stored = localStorage.getItem('apna_liked_posts');
       if (stored) this.likedPostIds.set(new Set(JSON.parse(stored)));
     } catch { }
   }
-
   private persistLikedIds(ids: Set<string>): void {
-    try {
-      localStorage.setItem('apna_liked_posts', JSON.stringify([...ids]));
-    } catch { }
+    try { localStorage.setItem('apna_liked_posts', JSON.stringify([...ids])); } catch { }
   }
 
-  isLiked(postId: string): boolean {
-    return this.likedPostIds().has(postId);
-  }
+  isLiked(postId: string): boolean { return this.likedPostIds().has(postId); }
 
   toggleLike(post: Post, event: Event): void {
     event.stopPropagation();
@@ -532,23 +507,18 @@ export class Home implements OnInit, OnDestroy {
     }
   }
 
-  // ── Bookmarks ──────────────────────────────────────────────────────────────
+  // ── Bookmarks ─────────────────────────────────────────────────────────────
   private restoreBookmarkedIds(): void {
     try {
       const stored = localStorage.getItem('apna_bookmarked_posts');
       if (stored) this.bookmarkedPostIds.set(new Set(JSON.parse(stored)));
     } catch { }
   }
-
   private persistBookmarkedIds(ids: Set<string>): void {
-    try {
-      localStorage.setItem('apna_bookmarked_posts', JSON.stringify([...ids]));
-    } catch { }
+    try { localStorage.setItem('apna_bookmarked_posts', JSON.stringify([...ids])); } catch { }
   }
 
-  isBookmarked(postId: string): boolean {
-    return this.bookmarkedPostIds().has(postId);
-  }
+  isBookmarked(postId: string): boolean { return this.bookmarkedPostIds().has(postId); }
 
   toggleBookmark(postId: string, event: Event): void {
     event.stopPropagation();
@@ -559,7 +529,7 @@ export class Home implements OnInit, OnDestroy {
     this.persistBookmarkedIds(newSet);
   }
 
-  // ── Comment drawer ─────────────────────────────────────────────────────────
+  // ── Comment drawer ────────────────────────────────────────────────────────
   openCommentDrawer(post: Post, event: Event): void {
     event.stopPropagation();
     this.commentText.set('');
@@ -582,22 +552,16 @@ export class Home implements OnInit, OnDestroy {
 
   private loadComments(postId: string, skip: number): void {
     const isFirst = skip === 0;
-    isFirst
-      ? this.drawerCommentsLoading.set(true)
-      : this.loadingMoreComments.set(true);
+    isFirst ? this.drawerCommentsLoading.set(true) : this.loadingMoreComments.set(true);
 
     this.postService.getComments(postId, skip, COMMENT_PAGE_SIZE).subscribe({
       next: (res: any) => {
         const incoming: DrawerComment[] = res.comments ?? [];
-        const total: number             = res.total ?? res.totalCount ?? incoming.length;
-        this.drawerComments.set(
-          isFirst ? incoming : [...this.drawerComments(), ...incoming]
-        );
+        const total: number = res.total ?? res.totalCount ?? incoming.length;
+        this.drawerComments.set(isFirst ? incoming : [...this.drawerComments(), ...incoming]);
         this.commentFetchedCount.set(this.commentFetchedCount() + incoming.length);
         this.totalCommentsCount.set(total);
-        isFirst
-          ? this.drawerCommentsLoading.set(false)
-          : this.loadingMoreComments.set(false);
+        isFirst ? this.drawerCommentsLoading.set(false) : this.loadingMoreComments.set(false);
       },
       error: () => {
         this.drawerCommentsLoading.set(false);
@@ -612,12 +576,12 @@ export class Home implements OnInit, OnDestroy {
     this.loadComments(postId, this.commentFetchedCount());
   }
 
-  // ── Auth helpers ───────────────────────────────────────────────────────────
-  get currentUser(): User | null  { return this.currentUserData(); }
-  get isLoggedIn(): boolean       { return this.auth.isAuthorized() && !!this.currentUserData(); }
-  get loggedInUserName(): string  { return this.currentUserData()?.name ?? 'Anonymous'; }
+  // ── Auth helpers ──────────────────────────────────────────────────────────
+  get currentUser(): User | null { return this.currentUserData(); }
+  get isLoggedIn(): boolean      { return this.auth.isAuthorized() && !!this.currentUserData(); }
+  get loggedInUserName(): string { return this.currentUserData()?.name ?? 'Anonymous'; }
 
-  // ── Submit comment ─────────────────────────────────────────────────────────
+  // ── Submit comment ────────────────────────────────────────────────────────
   submitComment(): void {
     const text = this.commentText().trim();
     if (!text) {
@@ -657,10 +621,7 @@ export class Home implements OnInit, OnDestroy {
       },
       error: (err: any) => {
         this.commentSubmitting.set(false);
-        this.commentFeedback.set({
-          type: 'error',
-          msg: err?.error?.message ?? 'Failed to post comment.',
-        });
+        this.commentFeedback.set({ type: 'error', msg: err?.error?.message ?? 'Failed to post comment.' });
       },
     });
   }
@@ -688,18 +649,11 @@ export class Home implements OnInit, OnDestroy {
     });
   }
 
-  // ── Utility ────────────────────────────────────────────────────────────────
+  // ── Utility ───────────────────────────────────────────────────────────────
   private patchPost(postId: string, updates: Partial<Post>): void {
-    this.allPosts.set(
-      this.allPosts().map(p => p._id === postId ? { ...p, ...updates } : p)
-    );
+    this.allPosts.set(this.allPosts().map(p => p._id === postId ? { ...p, ...updates } : p));
   }
 
-  trackByPostId(_index: number, post: Post): string {
-    return post._id;
-  }
-
-  trackByCategory(_index: number, cat: string): string {
-    return cat;
-  }
+  trackByPostId(_index: number, post: Post): string { return post._id; }
+  trackByCategory(_index: number, cat: string): string { return cat; }
 }

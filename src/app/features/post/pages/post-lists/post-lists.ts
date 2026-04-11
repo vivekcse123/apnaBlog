@@ -2,15 +2,17 @@ import { Component, inject, signal, computed, OnInit, DestroyRef } from '@angula
 import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+
 import { Post } from '../../../../core/models/post.model';
 import { CreatePost } from '../create-post/create-post';
 import { PostService } from '../../services/post-service';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ViewPost } from '../../../../shared/view-post/view-post';
 import { MessageModal } from '../../../../shared/message-modal/message-modal';
 import { BlogFilterPipe } from '../../../../shared/pipes/blog-filter-pipe';
 import { Auth } from '../../../../core/services/auth';
 import { LoaderService } from '../../../../core/services/loader-service';
+import { NotificationNavigationService } from '../../../../core/services/open-notification/notification-navigation';
 
 @Component({
   selector: 'app-post-lists',
@@ -26,6 +28,7 @@ export class PostLists implements OnInit {
   private destroyRef   = inject(DestroyRef);
   private authService  = inject(Auth);
   private loader       = inject(LoaderService);
+  private navSvc       = inject(NotificationNavigationService); // ✅
 
   allBlogs       = signal<Post[]>([]);
   userId         = signal<string | null>(null);
@@ -36,9 +39,7 @@ export class PostLists implements OnInit {
   debounceValue    = signal<string>('');
   selectedCategory = signal<string>('');
   selectedStatus   = signal<string>('');
-
-  // ── Today filter ──
-  showTodayOnly = signal<boolean>(false);
+  showTodayOnly    = signal<boolean>(false);
 
   private debounceTimer: any;
 
@@ -48,32 +49,25 @@ export class PostLists implements OnInit {
   filteredBlogs = computed(() => {
     let data = this.allBlogs();
 
-    // Today filter: match blogs whose createdAt is today's date
     if (this.showTodayOnly()) {
       const today = new Date();
       data = data.filter(post => {
-        const postDate = new Date(post.createdAt);
-        return (
-          postDate.getFullYear() === today.getFullYear() &&
-          postDate.getMonth()    === today.getMonth()    &&
-          postDate.getDate()     === today.getDate()
-        );
+        const d = new Date(post.createdAt);
+        return d.getFullYear() === today.getFullYear() &&
+               d.getMonth()    === today.getMonth()    &&
+               d.getDate()     === today.getDate();
       });
     }
-
     if (this.debounceValue()) {
-      const search = this.debounceValue().toLowerCase();
-      data = data.filter(post => post.title.toLowerCase().includes(search));
+      const s = this.debounceValue().toLowerCase();
+      data = data.filter(p => p.title.toLowerCase().includes(s));
     }
-
     if (this.selectedCategory()) {
-      data = data.filter(post => post.categories?.includes(this.selectedCategory()));
+      data = data.filter(p => p.categories?.includes(this.selectedCategory()));
     }
-
     if (this.selectedStatus()) {
-      data = data.filter(post => post.status === this.selectedStatus());
+      data = data.filter(p => p.status === this.selectedStatus());
     }
-
     return data;
   });
 
@@ -82,26 +76,29 @@ export class PostLists implements OnInit {
     return this.filteredBlogs().slice(start, start + this.itemsPerPage());
   });
 
-  totalPages = computed(() =>
-    Math.ceil(this.filteredBlogs().length / this.itemsPerPage())
-  );
-
-  pages = computed(() =>
-    Array.from({ length: this.totalPages() }, (_, i) => i + 1)
-  );
+  totalPages = computed(() => Math.ceil(this.filteredBlogs().length / this.itemsPerPage()));
+  pages      = computed(() => Array.from({ length: this.totalPages() }, (_, i) => i + 1));
 
   ngOnInit(): void {
     this.route?.parent?.params
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((params) => {
+      .subscribe(params => {
         const id = params['id'];
         if (!id) return;
         this.userId.set(id);
-        this.loadPosts(id);
+
+        // ✅ Load posts first, then check for pending notification event
+        this.loadPosts(id, () => {
+          const event = this.navSvc.consumePendingEvent();
+          if (event?.resourceId) {
+            // Small delay ensures the posts are rendered before modal opens
+            setTimeout(() => this.viewPost(event.resourceId), 150);
+          }
+        });
       });
   }
 
-  loadPosts(userId?: string): void {
+  loadPosts(userId?: string, onComplete?: () => void): void {
     const id = userId ?? this.userId();
     if (!id) return;
 
@@ -118,22 +115,20 @@ export class PostLists implements OnInit {
     posts$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (res) => {
+        next: res => {
           this.allBlogs.set(res.data || []);
           this.loader.hide();
+          onComplete?.(); // ✅ fires after posts loaded
         },
-        error: (err) => {
+        error: err => {
           console.error(err?.error?.message);
           this.loader.hide();
+          onComplete?.();
         },
       });
   }
 
-  // ── Toggle today filter & reset to page 1 ──
-  toggleTodayFilter(): void {
-    this.showTodayOnly.update(val => !val);
-    this.currentPage.set(1);
-  }
+  toggleTodayFilter(): void { this.showTodayOnly.update(v => !v); this.currentPage.set(1); }
 
   debounceSearch(value: string): void {
     clearTimeout(this.debounceTimer);
@@ -143,22 +138,11 @@ export class PostLists implements OnInit {
     }, 400);
   }
 
-  previousPage(): void {
-    if (this.currentPage() > 1) this.currentPage.set(this.currentPage() - 1);
-  }
+  previousPage(): void { if (this.currentPage() > 1) this.currentPage.set(this.currentPage() - 1); }
+  nextPage():     void { if (this.currentPage() < this.totalPages()) this.currentPage.set(this.currentPage() + 1); }
+  goToPage(p: number): void { if (p >= 1 && p <= this.totalPages()) this.currentPage.set(p); }
 
-  nextPage(): void {
-    if (this.currentPage() < this.totalPages()) this.currentPage.set(this.currentPage() + 1);
-  }
-
-  goToPage(page: number): void {
-    if (page >= 1 && page <= this.totalPages()) this.currentPage.set(page);
-  }
-
-  onPostCreated(): void {
-    this.loadPosts();
-    this.currentPage.set(1);
-  }
+  onPostCreated(): void { this.loadPosts(); this.currentPage.set(1); }
 
   showConfirm        = signal(false);
   pendingDeleteId    = signal<string>('');
@@ -192,7 +176,7 @@ export class PostLists implements OnInit {
         this.showMessage.set(true);
         this.loadPosts();
       },
-      error: (err) => {
+      error: err => {
         this.loader.hide();
         this.modalType.set('error');
         this.modalTitle.set('Delete Failed');
@@ -221,9 +205,7 @@ export class PostLists implements OnInit {
   }
 
   onPostUpdated(updatedPost: Post): void {
-    this.allBlogs.update(blogs =>
-      blogs.map(b => b._id === updatedPost._id ? updatedPost : b)
-    );
+    this.allBlogs.update(blogs => blogs.map(b => b._id === updatedPost._id ? updatedPost : b));
     this.closeModal();
   }
 }
