@@ -8,7 +8,7 @@ import { CommonModule, isPlatformBrowser, NgTemplateOutlet } from '@angular/comm
 import { FormsModule } from '@angular/forms';
 import { Meta, Title } from '@angular/platform-browser';
 import { DOCUMENT } from '@angular/common';
-import { finalize, debounceTime, distinctUntilChanged, forkJoin, of } from 'rxjs';
+import { finalize, debounceTime, distinctUntilChanged, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -48,7 +48,7 @@ const COMMENT_PAGE_SIZE = 5;
 })
 export class Home implements OnInit, OnDestroy {
   private postService    = inject(PostService);
-  private postCache      = inject(PostCache);        // ✅ cache
+  private postCache      = inject(PostCache);
   private destroyRef     = inject(DestroyRef);
   private route          = inject(ActivatedRoute);
   private router         = inject(Router);
@@ -115,6 +115,7 @@ export class Home implements OnInit, OnDestroy {
 
   private readingTimeCache = new Map<string, number>();
 
+  // ── Sorted pools ──────────────────────────────────────────────────────────
   private byLikes = computed(() =>
     [...this.allPosts()].sort((a, b) => b.likesCount - a.likesCount)
   );
@@ -206,6 +207,7 @@ export class Home implements OnInit, OnDestroy {
     this.commentFetchedCount() < this.totalCommentsCount()
   );
 
+  // ── Keyboard shortcuts ────────────────────────────────────────────────────
   @HostListener('document:keydown', ['$event'])
   onKeydown(event: KeyboardEvent): void {
     const tag = (event.target as Element).tagName;
@@ -227,12 +229,12 @@ export class Home implements OnInit, OnDestroy {
     }
   }
 
+  // ── Lifecycle ─────────────────────────────────────────────────────────────
   ngOnInit(): void {
     this.standalone = this.route.snapshot.data['standalone'] ?? this.standalone;
     this.setMetaTags();
     this.injectJsonLd();
 
-    // ✅ Restore from localStorage synchronously — no delay
     this.restoreLikedIds();
     this.restoreBookmarkedIds();
 
@@ -261,7 +263,6 @@ export class Home implements OnInit, OnDestroy {
       takeUntilDestroyed(this.destroyRef)
     ).subscribe(val => this.searchQuery.set(val));
 
-    // ✅ Show cached posts immediately, then load fresh data in parallel
     this.loadInitialData();
   }
 
@@ -277,48 +278,59 @@ export class Home implements OnInit, OnDestroy {
 
   // ── Core loading ──────────────────────────────────────────────────────────
 
-  /** Background refresh only if the cache is older than 60 seconds — avoids
-   *  a redundant API call when the user navigates Home → Detail → Back quickly. */
+  /** Only refresh if cache is older than 60 s — avoids redundant calls on
+   *  quick Home → Detail → Back navigation. */
   private readonly STALE_THRESHOLD_MS = 60_000;
 
   private loadInitialData(): void {
     const cached = this.postCache.get();
 
     if (cached?.length) {
-      // ✅ Instant render from cache — no skeleton shown at all
+      // Instant render from cache — no skeleton shown at all
       this.allPosts.set(cached);
       this.isLoading.set(false);
 
-      // Only refresh if cache is stale (older than 60 s)
       const age = this.postCache.getAge();
       if (age === null || age > this.STALE_THRESHOLD_MS) {
-        this.loadFresh(false);
+        this.loadFresh(false);   // silent background refresh
       }
     } else {
-      // First visit — show skeleton and load everything in parallel
-      this.loadFresh(true);
+      this.loadFresh(true);      // first visit — show skeleton
     }
 
-    // ✅ Fetch user in parallel — never blocks post display
-    this.fetchCurrentUser();
+    this.fetchCurrentUser();     // never blocks post display
   }
 
   private loadFresh(showLoader: boolean): void {
     if (showLoader) this.isLoading.set(true);
 
-    this.postService.getAllPost(1, 100)
+    // ✅ FIX 1 — use getAllPost() (no status=all param).
+    // The backend returns published + draft posts for non-admin users.
+    // We then keep ONLY status === 'published' so the home page shows
+    // only admin-approved content.
+    // If your DB still has legacy posts with status 'draft' that should be
+    // publicly visible, run a one-time migration:
+    //   db.posts.updateMany({ status: 'draft' }, { $set: { status: 'published' } })
+    this.postService.getAllPost(1, 200)
       .pipe(
         takeUntilDestroyed(this.destroyRef),
         finalize(() => this.isLoading.set(false)),
-        catchError(() => of({ data: [] }))
+        catchError(err => {
+          console.error('[Home] Failed to load posts:', err);
+          return of({ data: [] as Post[] });
+        })
       )
       .subscribe(res => {
+        // ✅ Show ONLY published posts on the public landing page
         const published = (res.data ?? [])
           .filter((p: Post) => p.status === 'published')
-          .map((p: Post): PostWithTs => ({ ...p, _ts: new Date(p.createdAt).getTime() }));
+          .map((p: Post): PostWithTs => ({
+            ...p,
+            _ts: new Date(p.createdAt).getTime(),
+          }));
 
         this.allPosts.set(published);
-        this.postCache.set(published);           // ✅ cache for next visit
+        this.postCache.set(published);
         this.updateJsonLdPostCount(published.length);
       });
   }
@@ -343,16 +355,16 @@ export class Home implements OnInit, OnDestroy {
     this.meta.updateTag({ name: 'keywords', content: 'Indian blog platform, community stories India, read blogs India, write blogs free, trending stories, technology blog India, village life stories, health stories India, ApnaInsights' });
     this.meta.updateTag({ name: 'robots', content: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' });
     this.meta.updateTag({ name: 'author', content: 'ApnaInsights Community' });
-    this.meta.updateTag({ property: 'og:type',        content: 'website' });
-    this.meta.updateTag({ property: 'og:title',       content: 'ApnaInsights — Community Stories from Every Corner of India' });
-    this.meta.updateTag({ property: 'og:description', content: 'Discover real stories from real people across India. 10K+ blogs on Technology, Lifestyle, Health, Business, Village Life and more. Free to read, free to write.' });
-    this.meta.updateTag({ property: 'og:url',         content: 'https://www.apnainsights.com' });
-    this.meta.updateTag({ property: 'og:site_name',   content: 'ApnaInsights' });
-    this.meta.updateTag({ property: 'og:image',       content: 'https://www.apnainsights.com/images/og-home.jpg' });
-    this.meta.updateTag({ property: 'og:image:width', content: '1200' });
-    this.meta.updateTag({ property: 'og:image:height',content: '630' });
-    this.meta.updateTag({ property: 'og:image:alt',   content: 'ApnaInsights — Community Stories from Every Corner of India' });
-    this.meta.updateTag({ property: 'og:locale',      content: 'en_IN' });
+    this.meta.updateTag({ property: 'og:type',         content: 'website' });
+    this.meta.updateTag({ property: 'og:title',        content: 'ApnaInsights — Community Stories from Every Corner of India' });
+    this.meta.updateTag({ property: 'og:description',  content: 'Discover real stories from real people across India. 10K+ blogs on Technology, Lifestyle, Health, Business, Village Life and more. Free to read, free to write.' });
+    this.meta.updateTag({ property: 'og:url',          content: 'https://www.apnainsights.com' });
+    this.meta.updateTag({ property: 'og:site_name',    content: 'ApnaInsights' });
+    this.meta.updateTag({ property: 'og:image',        content: 'https://www.apnainsights.com/images/og-home.jpg' });
+    this.meta.updateTag({ property: 'og:image:width',  content: '1200' });
+    this.meta.updateTag({ property: 'og:image:height', content: '630' });
+    this.meta.updateTag({ property: 'og:image:alt',    content: 'ApnaInsights — Community Stories from Every Corner of India' });
+    this.meta.updateTag({ property: 'og:locale',       content: 'en_IN' });
     this.meta.updateTag({ name: 'twitter:card',        content: 'summary_large_image' });
     this.meta.updateTag({ name: 'twitter:title',       content: 'ApnaInsights — Community Stories from India' });
     this.meta.updateTag({ name: 'twitter:description', content: 'Real stories from real people. 10K+ blogs on technology, lifestyle, health, village life. Free community platform.' });
@@ -424,10 +436,11 @@ export class Home implements OnInit, OnDestroy {
       const data = JSON.parse(script.textContent ?? '{}');
       data.numberOfItems = count;
       script.textContent = JSON.stringify(data);
-    } catch { }
+    } catch { /* non-critical */ }
   }
 
   // ── Welcome modal ─────────────────────────────────────────────────────────
+
   dismissWelcomeModal(): void {
     this.showWelcomeModal.set(false);
     if (isPlatformBrowser(this.platformId)) {
@@ -436,11 +449,13 @@ export class Home implements OnInit, OnDestroy {
   }
 
   // ── Search ────────────────────────────────────────────────────────────────
+
   onSearchInput(value: string): void {
     this.searchInput$.next(value);
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────────
+
   isNew(post: Post): boolean {
     return (Date.now() - new Date(post.createdAt).getTime()) < 48 * 60 * 60 * 1000;
   }
@@ -477,12 +492,14 @@ export class Home implements OnInit, OnDestroy {
   }
 
   // ── Likes ─────────────────────────────────────────────────────────────────
+
   private restoreLikedIds(): void {
     try {
       const stored = localStorage.getItem('apna_liked_posts');
       if (stored) this.likedPostIds.set(new Set(JSON.parse(stored)));
-    } catch { }
+    } catch { /* storage unavailable */ }
   }
+
   private persistLikedIds(ids: Set<string>): void {
     try { localStorage.setItem('apna_liked_posts', JSON.stringify([...ids])); } catch { }
   }
@@ -506,6 +523,7 @@ export class Home implements OnInit, OnDestroy {
       this.patchPost(post._id, { likesCount: post.likesCount + 1 });
       this.postService.likePost(post._id).subscribe({
         error: () => {
+          // Rollback optimistic update on failure
           newSet.delete(post._id);
           this.likedPostIds.set(new Set(newSet));
           this.persistLikedIds(newSet);
@@ -516,12 +534,14 @@ export class Home implements OnInit, OnDestroy {
   }
 
   // ── Bookmarks ─────────────────────────────────────────────────────────────
+
   private restoreBookmarkedIds(): void {
     try {
       const stored = localStorage.getItem('apna_bookmarked_posts');
       if (stored) this.bookmarkedPostIds.set(new Set(JSON.parse(stored)));
     } catch { }
   }
+
   private persistBookmarkedIds(ids: Set<string>): void {
     try { localStorage.setItem('apna_bookmarked_posts', JSON.stringify([...ids])); } catch { }
   }
@@ -538,6 +558,7 @@ export class Home implements OnInit, OnDestroy {
   }
 
   // ── Comment drawer ────────────────────────────────────────────────────────
+
   openCommentDrawer(post: Post, event: Event): void {
     event.stopPropagation();
     this.commentText.set('');
@@ -560,16 +581,26 @@ export class Home implements OnInit, OnDestroy {
 
   private loadComments(postId: string, skip: number): void {
     const isFirst = skip === 0;
-    isFirst ? this.drawerCommentsLoading.set(true) : this.loadingMoreComments.set(true);
+    isFirst
+      ? this.drawerCommentsLoading.set(true)
+      : this.loadingMoreComments.set(true);
 
     this.postService.getComments(postId, skip, COMMENT_PAGE_SIZE).subscribe({
-      next: (res: any) => {
-        const incoming: DrawerComment[] = res.comments ?? [];
-        const total: number = res.total ?? res.totalCount ?? incoming.length;
-        this.drawerComments.set(isFirst ? incoming : [...this.drawerComments(), ...incoming]);
+      next: (res) => {
+        const incoming: DrawerComment[] = (res.comments ?? []) as DrawerComment[];
+
+        // ✅ FIX 2 — backend sends `totalComments`, not `total` / `totalCount`
+        const total: number = res.totalComments ?? incoming.length;
+
+        this.drawerComments.set(
+          isFirst ? incoming : [...this.drawerComments(), ...incoming]
+        );
         this.commentFetchedCount.set(this.commentFetchedCount() + incoming.length);
         this.totalCommentsCount.set(total);
-        isFirst ? this.drawerCommentsLoading.set(false) : this.loadingMoreComments.set(false);
+
+        isFirst
+          ? this.drawerCommentsLoading.set(false)
+          : this.loadingMoreComments.set(false);
       },
       error: () => {
         this.drawerCommentsLoading.set(false);
@@ -585,11 +616,13 @@ export class Home implements OnInit, OnDestroy {
   }
 
   // ── Auth helpers ──────────────────────────────────────────────────────────
+
   get currentUser(): User | null { return this.currentUserData(); }
   get isLoggedIn(): boolean      { return this.auth.isAuthorized() && !!this.currentUserData(); }
   get loggedInUserName(): string { return this.currentUserData()?.name ?? 'Anonymous'; }
 
   // ── Submit comment ────────────────────────────────────────────────────────
+
   submitComment(): void {
     const text = this.commentText().trim();
     if (!text) {
@@ -619,17 +652,22 @@ export class Home implements OnInit, OnDestroy {
           user:      this.currentUserData()?._id ?? null,
           createdAt: new Date().toISOString(),
         };
+
         this.drawerComments.set([newComment, ...this.drawerComments()]);
         this.commentFetchedCount.set(this.commentFetchedCount() + 1);
         this.totalCommentsCount.set(this.totalCommentsCount() + 1);
 
         const post = this.allPosts().find(p => p._id === postId);
         if (post) this.patchPost(postId, { commentsCount: post.commentsCount + 1 });
+
         setTimeout(() => this.commentFeedback.set(null), 3000);
       },
       error: (err: any) => {
         this.commentSubmitting.set(false);
-        this.commentFeedback.set({ type: 'error', msg: err?.error?.message ?? 'Failed to post comment.' });
+        this.commentFeedback.set({
+          type: 'error',
+          msg:  err?.error?.message ?? 'Failed to post comment.',
+        });
       },
     });
   }
@@ -641,13 +679,16 @@ export class Home implements OnInit, OnDestroy {
     if (!postId || !commentId || this.deletingCommentId()) return;
 
     this.deletingCommentId.set(commentId);
+
     this.postService.deleteComment(postId, commentId).subscribe({
       next: () => {
         this.drawerComments.set(this.drawerComments().filter(c => c._id !== commentId));
         this.commentFetchedCount.set(Math.max(0, this.commentFetchedCount() - 1));
         this.totalCommentsCount.set(Math.max(0, this.totalCommentsCount() - 1));
+
         const post = this.allPosts().find(p => p._id === postId);
         if (post) this.patchPost(postId, { commentsCount: Math.max(0, post.commentsCount - 1) });
+
         this.deletingCommentId.set(null);
       },
       error: (err: any) => {
@@ -658,8 +699,11 @@ export class Home implements OnInit, OnDestroy {
   }
 
   // ── Utility ───────────────────────────────────────────────────────────────
+
   private patchPost(postId: string, updates: Partial<Post>): void {
-    this.allPosts.set(this.allPosts().map(p => p._id === postId ? { ...p, ...updates } : p));
+    this.allPosts.set(
+      this.allPosts().map(p => p._id === postId ? { ...p, ...updates } : p)
+    );
   }
 
   trackByPostId(_index: number, post: Post): string { return post._id; }
