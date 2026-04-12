@@ -2,16 +2,15 @@ import {
   Component, OnInit, OnDestroy, HostListener,
   ElementRef, inject, ChangeDetectionStrategy, signal
 } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
-import { Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { filter, Subject, takeUntil } from 'rxjs';
+import { filter, Subject, take, takeUntil } from 'rxjs';
 
 import {
   Notification, NotificationType, NOTIFICATION_META,
 } from '../../models/notification.model';
 import { NotificationService } from '../../../core/services/notification-service';
-import { NotificationNavigationService, NON_NAVIGABLE_TYPES} from '../../../core/services/open-notification/notification-navigation';
+import { NotificationNavigationService, NON_NAVIGABLE_TYPES } from '../../../core/services/open-notification/notification-navigation';
 import { MatIconModule } from '@angular/material/icon';
 
 @Component({
@@ -78,30 +77,24 @@ export class NotificationPanel implements OnInit, OnDestroy {
   }
 
   onNotificationClick(notification: Notification): void {
-  if (!notification?.id) return;
+    if (!notification?.id) return;
 
-  if (!notification.isRead) {
-    this.svc.markAsRead(notification.id).subscribe();
-  }
+    if (!notification.isRead) {
+      this.svc.markAsRead(notification.id).subscribe();
+    }
 
-<<<<<<< HEAD
-  if (this.isNavigable(notification.type) && notification.resourceId) {
-    // ✅ Pass resourceUrl so user notifications navigate to /blog/:id directly
-    this.navSvc.navigateTo(
-      {
-=======
     if (this.isNavigable(notification.type) && notification.resourceId) {
-      this.navSvc.navigateTo({
->>>>>>> dev
-        type:       notification.type,
-        resourceId: notification.resourceId,
-        metadata:   notification.metadata ?? {},
-      },
-      notification.resourceUrl   // ← new second argument
-    );
-    this.panelOpen.set(false);
+      this.navSvc.navigateTo(
+        {
+          type:       notification.type,
+          resourceId: notification.resourceId,
+          metadata:   notification.metadata ?? {},
+        },
+        notification.resourceUrl   // pass resourceUrl so user notifications navigate to /blog/:id directly
+      );
+      this.panelOpen.set(false);
+    }
   }
-}
 
   onMarkAllRead(event: Event): void {
     event.stopPropagation();
@@ -114,23 +107,6 @@ export class NotificationPanel implements OnInit, OnDestroy {
     this.svc.deleteNotification(id).subscribe();
   }
 
-<<<<<<< HEAD
-// refreshing = signal(false);
-
-onRefresh(event: Event): void {
-  event.stopPropagation();
-  event.preventDefault();
-  this.refreshing.set(true);
-  this.svc.fetchNotifications();
-  this.svc.loading$
-    .pipe(
-      filter(l => !l),
-      takeUntil(this.destroy$)
-    )
-    .subscribe(() => this.refreshing.set(false));
-}
-}
-=======
   onClearAll(event: Event): void {
     event.stopPropagation();
     if (this.clearingAll() || this.notifications().length === 0) return;
@@ -169,4 +145,3 @@ onRefresh(event: Event): void {
     return new Date(date).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' });
   }
 }
->>>>>>> dev

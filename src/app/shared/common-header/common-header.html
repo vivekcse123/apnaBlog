@@ -1,16 +1,8 @@
 <header class="header">
 
-<<<<<<< HEAD
   <a class="app-logo" routerLink="/">
     <img class="app-logo-img" src="/logo.png" alt="ApnaInsights" />
     <span class="app-logo-text">ApnaInsights</span>
-=======
-  <a class="logo" routerLink="/" aria-label="ApnaInsights home">
-    <div class="logo-hex">
-      <img src="/logo.png" alt="" width="36" height="36" />
-    </div>
-    <span class="logo-text">ApnaInsights</span>
->>>>>>> dev
   </a>
 
   <nav class="nav" role="navigation" aria-label="Main navigation">
@@ -29,7 +21,6 @@
   <div class="right-section">
     <app-notification-panel />
 
-<<<<<<< HEAD
     <div class="profile" (click)="openProfile($event)">
       @if (avatarUrl) {
         <img [src]="avatarUrl" class="profile-avatar-img" alt="Profile" />
@@ -37,16 +28,6 @@
         {{ profile }}
       }
     </div>
-=======
-    <button
-      class="profile"
-      (click)="openProfile($event)"
-      aria-label="Open profile menu"
-      type="button"
-    >
-      {{ profile }}
-    </button>
->>>>>>> dev
   </div>
 
   <button
