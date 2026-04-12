@@ -7,12 +7,12 @@ export interface User {
   location:     string;   
   role:         string;
   status:       string;
+  bio: string;
   totalBlogs:   number;
   totalViews:   number;
   createdAt:    Date;
   updatedAt:    Date;
   lastLoggedInAt: Date;
-  deletionScheduledAt: any
-  avatar: string,
-  bio: string
+  deletionScheduledAt: any;
+  avatar: string
 }
