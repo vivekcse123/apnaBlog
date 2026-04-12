@@ -23,48 +23,37 @@
 
 } @else if (post()) {
 
+  <!-- Floating actions -->
   <div class="floating-actions">
     @if (tableOfContents().length > 0) {
       <button class="float-btn" (click)="toggleToc()" [class.active]="showToc()" title="Table of Contents">
         <span class="float-icon">📋</span>
       </button>
     }
-
     <button class="float-btn" (click)="toggleBookmark()"
       [class.bookmarked]="isBookmarked()"
       [title]="isBookmarked() ? 'Remove bookmark' : 'Bookmark'">
       <span class="float-icon">{{ isBookmarked() ? '🔖' : '📑' }}</span>
     </button>
-
     <button class="float-btn" (click)="printArticle()" title="Print">
       <span class="float-icon">🖨️</span>
     </button>
-
     <button class="float-btn" (click)="toggleShareMenu()" [class.active]="shareMenuOpen()" title="Share">
       <span class="float-icon">↗</span>
       @if (shareCount() > 0) {
         <span class="share-count-badge">{{ shareCount() }}</span>
       }
     </button>
-
     @if (shareMenuOpen()) {
       <div class="share-menu">
         <div class="share-menu-header">
           <span>Share this article</span>
           <button class="share-menu-close" (click)="shareMenuOpen.set(false)">✕</button>
         </div>
-        <button class="share-option" (click)="shareOnTwitter()">
-          <span class="share-option-icon">🐦</span><span>Twitter / X</span>
-        </button>
-        <button class="share-option" (click)="shareOnFacebook()">
-          <span class="share-option-icon">📘</span><span>Facebook</span>
-        </button>
-        <button class="share-option" (click)="shareOnLinkedIn()">
-          <span class="share-option-icon">💼</span><span>LinkedIn</span>
-        </button>
-        <button class="share-option" (click)="shareOnWhatsApp()">
-          <span class="share-option-icon">💬</span><span>WhatsApp</span>
-        </button>
+        <button class="share-option" (click)="shareOnTwitter()"><span class="share-option-icon">🐦</span><span>Twitter / X</span></button>
+        <button class="share-option" (click)="shareOnFacebook()"><span class="share-option-icon">📘</span><span>Facebook</span></button>
+        <button class="share-option" (click)="shareOnLinkedIn()"><span class="share-option-icon">💼</span><span>LinkedIn</span></button>
+        <button class="share-option" (click)="shareOnWhatsApp()"><span class="share-option-icon">💬</span><span>WhatsApp</span></button>
         <button class="share-option" (click)="copyLink()">
           <span class="share-option-icon">{{ copyLinkSuccess() ? '✅' : '🔗' }}</span>
           <span>{{ copyLinkSuccess() ? 'Copied!' : 'Copy Link' }}</span>
@@ -73,6 +62,7 @@
     }
   </div>
 
+  <!-- TOC sidebar -->
   @if (showToc() && tableOfContents().length > 0) {
     <div class="toc-sidebar open">
       <div class="toc-header">
@@ -85,9 +75,7 @@
             [class.level-2]="item.level === 2"
             [class.level-3]="item.level === 3"
             [class.active]="activeHeadingId() === item.id"
-            (click)="scrollToHeading(item.id)">
-            {{ item.text }}
-          </a>
+            (click)="scrollToHeading(item.id)">{{ item.text }}</a>
         }
       </nav>
     </div>
@@ -98,13 +86,8 @@
 
     @if (post()!.featuredImage) {
       <div class="featured-image-wrap">
-        <img
-          [src]="post()!.featuredImage"
-          [alt]="post()!.title"
-          class="featured-image"
-          width="800" height="450"
-          fetchpriority="high"
-        />
+        <img [src]="post()!.featuredImage" [alt]="post()!.title"
+          class="featured-image" width="800" height="450" fetchpriority="high"/>
       </div>
     }
 
@@ -118,32 +101,27 @@
       <h1 class="blog-title">{{ post()!.title }}</h1>
       <p class="blog-description">{{ post()!.description }}</p>
 
+      <!-- Author chip -->
+      <button class="author-chip" (click)="openAuthorModal()" type="button"
+        [attr.aria-label]="'View author: ' + authorName">
+        <div class="author-avatar-sm">{{ authorInitial }}</div>
+        <div class="author-chip-text">
+          <span class="author-chip-label">Written by</span>
+          <span class="author-chip-name">{{ authorName }}</span>
+        </div>
+        <span class="author-chip-arrow">›</span>
+      </button>
+
       <div class="blog-meta">
         <div class="meta-stats">
-          <span class="meta-item">
-            <span class="meta-icon">📅</span>
-            {{ post()!.createdAt | date:'MMM d, y' }}
-          </span>
-          <span class="meta-item">
-            <span class="meta-icon">⏱️</span>
-            {{ readingTime() }} min read
-          </span>
-          <span class="meta-item">
-            <span class="meta-icon">👁</span>
-            {{ post()!.views }} views
-          </span>
-          <span class="meta-item">
-            <span class="meta-icon">💬</span>
-            {{ post()!.commentsCount }} comments
-          </span>
+          <span class="meta-item"><span class="meta-icon">📅</span>{{ post()!.createdAt | date:'MMM d, y' }}</span>
+          <span class="meta-item"><span class="meta-icon">⏱️</span>{{ readingTime() }} min read</span>
+          <span class="meta-item"><span class="meta-icon">👁</span>{{ post()!.views }} views</span>
+          <span class="meta-item"><span class="meta-icon">💬</span>{{ post()!.commentsCount }} comments</span>
           @if (shareCount() > 0) {
-            <span class="meta-item">
-              <span class="meta-icon">↗</span>
-              {{ shareCount() }} shares
-            </span>
+            <span class="meta-item"><span class="meta-icon">↗</span>{{ shareCount() }} shares</span>
           }
         </div>
-
         <button class="like-btn-main" [class.liked]="isLiked(post()!._id)" (click)="toggleLike(post()!, $event)">
           <span class="like-icon">{{ isLiked(post()!._id) ? '❤️' : '🤍' }}</span>
           <span class="like-count">{{ post()!.likesCount }}</span>
@@ -164,11 +142,28 @@
       </div>
     }
 
+    <!-- Author card -->
+    <div class="author-card">
+      <button class="author-card-avatar" type="button" (click)="openAuthorModal()"
+        [attr.aria-label]="'View profile of ' + authorName">{{ authorInitial }}</button>
+      <div class="author-card-body">
+        <span class="author-card-label">About the author</span>
+        <button class="author-card-name" type="button" (click)="openAuthorModal()">{{ authorName }}</button>
+        <p class="author-card-bio">
+          {{ authorBio || 'A passionate writer sharing insights on ApnaInsights.' }}
+        </p>
+      </div>
+      <div class="author-card-stat">
+        <span class="author-stat-value">{{ authorTotalPosts() }}</span>
+        <span class="author-stat-label">Articles</span>
+      </div>
+    </div>
+
+    <!-- Comments -->
     <section class="comments-section">
       <div class="comments-header">
         <h2 class="comments-title">
-          <span class="comments-icon">💬</span>
-          Comments
+          <span class="comments-icon">💬</span> Comments
           @if (allComments().length > 0) {
             <span class="comments-count-badge">{{ allComments().length }}</span>
           }
@@ -187,22 +182,15 @@
             <span class="identity-badge guest-badge">Guest</span>
           }
         </div>
-
         <div class="textarea-wrap">
-          <textarea
-            class="comment-textarea"
-            placeholder="Share your thoughts…"
-            rows="4"
-            [ngModel]="commentText()"
-            (ngModelChange)="commentText.set($event)"
-            (keydown.enter)="$any($event).ctrlKey && submitComment()"
-            maxlength="500">
+          <textarea class="comment-textarea" placeholder="Share your thoughts…" rows="4"
+            [ngModel]="commentText()" (ngModelChange)="commentText.set($event)"
+            (keydown.enter)="$any($event).ctrlKey && submitComment()" maxlength="500">
           </textarea>
           <span class="char-count" [class.warn]="commentText().length > 450">
             {{ commentText().length }}/500
           </span>
         </div>
-
         @if (commentFeedback()) {
           <div class="comment-feedback"
             [class.success]="commentFeedback()!.type === 'success'"
@@ -210,17 +198,12 @@
             {{ commentFeedback()!.type === 'success' ? '✅' : '❌' }} {{ commentFeedback()!.msg }}
           </div>
         }
-
         <div class="comment-actions">
           <span class="ctrl-enter-hint">Ctrl + Enter to send</span>
           <button class="submit-comment-btn"
             [disabled]="!commentText().trim() || commentSubmitting()"
             (click)="submitComment()">
-            @if (commentSubmitting()) {
-              <span class="btn-spinner"></span> Posting…
-            } @else {
-              Post Comment ✦
-            }
+            @if (commentSubmitting()) { <span class="btn-spinner"></span> Posting… } @else { Post Comment ✦ }
           </button>
         </div>
       </div>
@@ -230,13 +213,11 @@
           <div class="comments-loading">
             <div class="loading-dots"><span></span><span></span><span></span></div>
           </div>
-
         } @else if (comments().length === 0) {
           <div class="no-comments">
             <span class="no-comments-icon">💭</span>
             <p>No comments yet. Be the first!</p>
           </div>
-
         } @else {
           @for (c of comments(); track c._id) {
             <div class="comment-item">
@@ -254,24 +235,17 @@
                 <button class="comment-delete-btn"
                   [class.deleting]="deletingCommentId() === c._id"
                   [disabled]="deletingCommentId() === c._id"
-                  (click)="deleteComment(c, $event)"
-                  aria-label="Delete comment">
-                  @if (deletingCommentId() === c._id) {
-                    <span class="btn-spinner"></span>
-                  } @else { 🗑 }
+                  (click)="deleteComment(c, $event)" aria-label="Delete comment">
+                  @if (deletingCommentId() === c._id) { <span class="btn-spinner"></span> } @else { 🗑 }
                 </button>
               }
             </div>
           }
-
           @if (hasMoreComments()) {
             <div class="load-more-wrap">
               <button class="load-more-btn" (click)="loadMoreComments()" [disabled]="loadingMore()">
-                @if (loadingMore()) {
-                  <span class="btn-spinner"></span> Loading…
-                } @else {
-                  Load {{ remainingCount() }} more comment{{ remainingCount() === 1 ? '' : 's' }}
-                }
+                @if (loadingMore()) { <span class="btn-spinner"></span> Loading… }
+                @else { Load {{ remainingCount() }} more comment{{ remainingCount() === 1 ? '' : 's' }} }
               </button>
             </div>
           }
@@ -281,9 +255,7 @@
 
     @if (relatedPosts().length > 0) {
       <section class="related-section">
-        <h2 class="related-title">
-          <span class="related-icon">✨</span> Related Stories
-        </h2>
+        <h2 class="related-title"><span class="related-icon">✨</span> Related Stories</h2>
         <div class="related-grid">
           @for (rp of relatedPosts(); track rp._id) {
             <article class="related-card" (click)="navigateToBlog(rp._id)">
@@ -307,4 +279,143 @@
     }
 
   </article>
+
+  <!-- ════════════════════════════════════
+       Author Profile Modal
+  ════════════════════════════════════ -->
+  @if (showAuthorModal()) {
+    <div class="modal-backdrop" (click)="closeAuthorModal()" role="dialog" aria-modal="true">
+      <div class="author-modal" (click)="$event.stopPropagation()">
+        <div class="apm-hero">
+          <div class="apm-avatar">{{ authorInitial }}</div>
+          <div class="apm-identity">
+            <h2 class="apm-name">{{ authorName }}</h2>
+            <span class="apm-role">Author · ApnaInsights</span>
+          </div>
+          <button class="modal-close-btn" (click)="closeAuthorModal()" aria-label="Close" id="custom-close">✕</button>
+        </div>
+
+        <div class="apm-stats">
+          <div class="apm-stat">
+            <span class="apm-stat-val">{{ authorTotalPosts() }}</span>
+            <span class="apm-stat-lbl">Articles</span>
+          </div>
+          <div class="apm-stat-div"></div>
+          <div class="apm-stat">
+            <span class="apm-stat-val">{{ post()!.views }}</span>
+            <span class="apm-stat-lbl">Views this post</span>
+          </div>
+          <div class="apm-stat-div"></div>
+          <div class="apm-stat">
+            <span class="apm-stat-val">{{ post()!.likesCount }}</span>
+            <span class="apm-stat-lbl">Likes this post</span>
+          </div>
+        </div>
+
+        <div class="apm-info">
+          @if (authorBio) {
+            <div class="apm-row">
+              <span class="apm-row-icon">📝</span>
+              <div><span class="apm-row-lbl">Bio</span><p class="apm-row-val bio">{{ authorBio }}</p></div>
+            </div>
+          }
+          @if (authorEmail) {
+            <div class="apm-row">
+              <span class="apm-row-icon">✉️</span>
+              <div><span class="apm-row-lbl">Email</span><span class="apm-row-val">{{ authorEmail }}</span></div>
+            </div>
+          }
+          @if (authorJoinedDate) {
+            <div class="apm-row">
+              <span class="apm-row-icon">🗓️</span>
+              <div><span class="apm-row-lbl">Member since</span><span class="apm-row-val">{{ authorJoinedDate | date:'MMMM yyyy' }}</span></div>
+            </div>
+          }
+          <div class="apm-row">
+            <span class="apm-row-icon">📌</span>
+            <div><span class="apm-row-lbl">Latest post</span><span class="apm-row-val">{{ post()!.title }}</span></div>
+          </div>
+        </div>
+
+        <div class="apm-actions">
+          <button class="apm-view-btn" (click)="openAuthorPostsModal()" type="button">
+            View all articles by {{ authorName }} →
+          </button>
+          <button class="apm-cancel-btn" (click)="closeAuthorModal()" type="button">Close</button>
+        </div>
+
+      </div>
+    </div>
+  }
+
+  <!-- ════════════════════════════════════
+       Author Posts Modal
+  ════════════════════════════════════ -->
+  @if (showAuthorPostsModal()) {
+    <div class="modal-backdrop" (click)="closeAuthorPostsModal()" role="dialog" aria-modal="true"
+      [attr.aria-label]="'All articles by ' + authorName">
+      <div class="author-posts-modal" (click)="$event.stopPropagation()">
+
+        <!-- Header -->
+        <div class="apos-header">
+          <div class="apos-header-left">
+            <div class="apos-header-avatar">{{ authorInitial }}</div>
+            <div>
+              <h2 class="apos-title">{{ authorName }}</h2>
+              <span class="apos-subtitle">{{ authorTotalPosts() }} article{{ authorTotalPosts() === 1 ? '' : 's' }} published</span>
+            </div>
+          </div>
+          <button class="modal-close-btn" (click)="closeAuthorPostsModal()" aria-label="Close">✕</button>
+        </div>
+
+        <!-- Scrollable list -->
+        <div class="apos-body">
+          @if (displayedAuthorPosts().length === 0) {
+            <div class="apos-empty">
+              <span class="apos-empty-icon">📭</span>
+              <p>No other articles found for this author.</p>
+            </div>
+          } @else {
+            <div class="apos-list">
+              @for (ap of displayedAuthorPosts(); track ap._id) {
+                <button class="apos-item" type="button" (click)="navigateFromAuthorModal(ap._id)">
+                  <div class="apos-thumb">
+                    @if (ap.featuredImage) {
+                      <img [src]="ap.featuredImage" [alt]="ap.title" loading="lazy"/>
+                    } @else {
+                      <div class="apos-thumb-fallback">{{ ap.title.charAt(0).toUpperCase() }}</div>
+                    }
+                  </div>
+                  <div class="apos-item-body">
+                    @if (ap.categories.length) {
+                      <span class="apos-item-cat">{{ ap.categories[0] }}</span>
+                    }
+                    <p class="apos-item-title">{{ ap.title }}</p>
+                    <p class="apos-item-desc">{{ ap.description }}</p>
+                    <div class="apos-item-meta">
+                      <span>📅 {{ ap.createdAt | date:'MMM d, y' }}</span>
+                      <span>👁 {{ ap.views }}</span>
+                    </div>
+                  </div>
+                  <span class="apos-item-arrow">›</span>
+                </button>
+              }
+            </div>
+
+            @if (hasMoreAuthorPosts()) {
+              <div class="apos-load-more">
+                <button class="load-more-btn" type="button" (click)="loadMoreAuthorPosts()">
+                  Load {{ remainingAuthorCount() }} more article{{ remainingAuthorCount() === 1 ? '' : 's' }}
+                </button>
+              </div>
+            } @else if (authorTotalPosts() > 1) {
+              <p class="apos-end-note">All articles loaded ✓</p>
+            }
+          }
+        </div>
+
+      </div>
+    </div>
+  }
+
 }
