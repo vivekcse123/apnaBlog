@@ -68,20 +68,24 @@
                 <span class="status-badge"
                   [class.status-active]="user.status === 'active'"
                   [class.status-inactive]="user.status === 'inactive'"
-                  [class.status-inactive]="user.status === 'pending_deletion'"
-                  >
-                  
-                  {{ user.status | titlecase }}
+                  [class.status-pending]="user.status === 'pending_deletion'"
+                >
+                  {{ user.status === 'pending_deletion' ? 'Pending Deletion' : (user.status | titlecase) }}
                 </span>
               </td>
 
               <td>{{ user.createdAt | date: 'mediumDate' }}</td>
-              <td>{{user.updatedAt | date: 'mediumDate'}}</td>
+              <td>{{ user.updatedAt | date: 'mediumDate' }}</td>
               <td>
                 <div class="action-buttons">
-                  <button class="view" (click)="getUserDetails(user._id)"><i class="bi bi-eye"></i></button>
-                  <button class="delete" (click)="deleteUser(user)"><i class="bi bi-trash3"></i></button>
-                  <button class="delete" (click)="toggleUserStatus(user)">
+                  <button class="view"   (click)="getUserDetails(user._id)"   title="View details"><i class="bi bi-eye"></i></button>
+                  <button class="delete" (click)="deleteUser(user)"           title="Delete user"><i class="bi bi-trash3"></i></button>
+                  <button
+                    [class.freeze]="user.status === 'active'"
+                    [class.unfreeze]="user.status !== 'active'"
+                    (click)="toggleUserStatus(user)"
+                    [title]="user.status === 'active' ? 'Freeze user' : 'Unfreeze user'"
+                  >
                     <i class="bi" [ngClass]="user.status === 'active' ? 'bi-lock-fill' : 'bi-unlock-fill'"></i>
                   </button>
                 </div>
@@ -92,7 +96,7 @@
 
           @if (paginatedUsers().length === 0) {
             <tr>
-              <td colspan="6" class="empty-row">
+              <td colspan="7" class="empty-row">
                 <div class="empty-state">
                   <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
                     <circle cx="12" cy="8" r="4" stroke="#ddd" stroke-width="2" fill="none"/>

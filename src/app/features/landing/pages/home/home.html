@@ -358,7 +358,7 @@
         <meta itemprop="articleSection" [attr.content]="blog.categories[0]" />
       }
       <div itemprop="author" itemscope itemtype="https://schema.org/Person" style="display:none">
-        <meta itemprop="name" [attr.content]="blog.authorName || 'ApnaInsights Writer'" />
+        <meta itemprop="name" [attr.content]="(blog.user?.name) || 'Anonymous Writer'" />
       </div>
       <div itemprop="publisher" itemscope itemtype="https://schema.org/Organization" style="display:none">
         <meta itemprop="name" content="ApnaInsights" />

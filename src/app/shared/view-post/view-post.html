@@ -13,8 +13,10 @@
         @if (!isEditing()) {
           <span class="status-badge"
             [class.status-published]="post()?.status === 'published'"
-            [class.status-draft]="post()?.status === 'draft'">
-            {{ post()?.status | titlecase }}
+            [class.status-draft]="post()?.status === 'draft'"
+            [class.status-pending]="post()?.status === 'pending'">
+            @if (post()?.status === 'pending') { Pending Review }
+            @else { {{ post()?.status | titlecase }} }
           </span>
         }
         <button class="close-btn" (click)="closeModal()">&times;</button>
@@ -87,6 +89,21 @@
           </div>
         }
 
+        @if (post()?.lastEditedBy) {
+          <div class="audit-block">
+            <svg class="audit-icon" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+            <span class="audit-text">
+              Last edited by
+              <strong>{{ $any(post()?.lastEditedBy)?.name ?? 'Admin' }}</strong>
+              on {{ post()?.lastEditedAt | date:'mediumDate' }}
+            </span>
+          </div>
+        }
+
         <div class="detail-block">
           <span class="detail-label">Description</span>
           <p class="detail-text">{{ post()?.description }}</p>
@@ -141,13 +158,23 @@
             }
           </div>
 
-          <div class="edit-field">
-            <label>Status</label>
-            <select formControlName="status">
-              <option value="draft">Draft</option>
-              <option value="published">Published</option>
-            </select>
-          </div>
+          @if (!isPendingForUser()) {
+            <div class="edit-field">
+              <label>Status</label>
+              <select formControlName="status">
+                <option value="draft">Draft</option>
+                <option value="published">Published</option>
+              </select>
+            </div>
+          } @else {
+            <div class="edit-field">
+              <label>Status</label>
+              <div class="pending-status-badge">
+                <span class="pending-dot"></span>
+                Pending Admin Review
+              </div>
+            </div>
+          }
 
           <div class="edit-field full">
             <label>Description</label>

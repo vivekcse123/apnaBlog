@@ -128,7 +128,9 @@
           <a href="/auth/forgot-password" class="forgot-link">Forgot password?</a>
         </div>
 
-        <button type="submit" class="login-btn">Sign In →</button>
+        <button type="submit" class="login-btn" [disabled]="isLoading()">
+          @if (isLoading()) { Signing in… } @else { Sign In → }
+        </button>
 
         <p class="register-row">
           Don't have an account?

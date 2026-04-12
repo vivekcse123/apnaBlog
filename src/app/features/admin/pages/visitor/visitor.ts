@@ -1,12 +1,12 @@
 import {
   Component, OnInit, OnDestroy, AfterViewInit,
-  ViewChild, ElementRef
+  ViewChild, ElementRef, inject, PLATFORM_ID
 } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Chart, registerables } from 'chart.js';
-import { interval, Subscription, forkJoin, of } from 'rxjs';
-import { switchMap, catchError } from 'rxjs/operators';
-import { CommonModule } from '@angular/common';
+import { interval, Subscription, forkJoin, of, fromEvent } from 'rxjs';
+import { switchMap, catchError, filter } from 'rxjs/operators';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { environment } from '../../../../../environments/environments.prod';
 
@@ -20,10 +20,8 @@ export interface VisitorStats {
 export interface DailyData   { date: string; count: number; }
 export interface TopPage     { _id: string; count: number; }
 export interface DeviceStat  { device: string; count: number; percent: number; }
-export interface RecentVisit { ip: string; page: string; city: string; visitedAt: string; }
-export interface SourceStat  { source: string; count: number; percent: number; }
-export interface RecentVisit { ip: string; page: string; city: string; visitedAt: string; }
 export interface RecentVisit { ip: string; page: string; city: string; visitedAt: string; device: string; source: string; }
+export interface SourceStat  { source: string; count: number; percent: number; }
 
 export interface GroupedVisit {
   page:       string;
@@ -76,12 +74,14 @@ export class Visitor implements OnInit, AfterViewInit, OnDestroy {
   lastUpdated  = '';
   selectedRange: '7d' | '14d' | '30d' = '14d';
 
+  private platformId = inject(PLATFORM_ID);
   constructor(private http: HttpClient) {}
 
   ngOnInit(): void {
     this.loadAllData();
 
     this.autoRefreshSub = interval(30_000).pipe(
+      filter(() => !isPlatformBrowser(this.platformId) || document.visibilityState === 'visible'),
       switchMap(() =>
         this.http.get<VisitorStats>(`${this.API}/stats`).pipe(
           catchError(() => of(this.stats))

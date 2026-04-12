@@ -1,16 +1,20 @@
 <header class="header">
 
-  <a class="app-logo" routerLink="/">
-  <img class="app-logo-img" src="/logo.png" alt="ApnaInsights" />
-  <span class="app-logo-text">ApnaInsights</span>
-</a>
+  <a class="logo" routerLink="/" aria-label="ApnaInsights home">
+    <div class="logo-hex">
+      <img src="/logo.png" alt="" width="36" height="36" />
+    </div>
+    <span class="logo-text">ApnaInsights</span>
+  </a>
 
-  <nav class="nav">
+  <nav class="nav" role="navigation" aria-label="Main navigation">
     @for (nav of navs; track nav.label) {
-      <a [routerLink]="nav.routerLink"
-         routerLinkActive="active"
-         [routerLinkActiveOptions]="{ exact: true }"
-         class="nav-link">
+      <a
+        [routerLink]="nav.routerLink"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+        class="nav-link"
+      >
         {{ nav.label }}
       </a>
     }
@@ -19,28 +23,48 @@
   <div class="right-section">
     <app-notification-panel />
 
-    <div class="profile" (click)="openProfile($event)">
+    <button
+      class="profile"
+      (click)="openProfile($event)"
+      aria-label="Open profile menu"
+      type="button"
+    >
       {{ profile }}
-    </div>
+    </button>
   </div>
 
-  <button class="hamburger" (click)="toggleMenu()" [class.open]="menuOpen"
-          aria-label="Toggle menu">
-    <span></span><span></span><span></span>
+  <button
+    class="hamburger"
+    type="button"
+    (click)="toggleMenu()"
+    [class.open]="menuOpen"
+    aria-label="Toggle navigation menu"
+    [attr.aria-expanded]="menuOpen"
+  >
+    <span></span>
+    <span></span>
+    <span></span>
   </button>
 
 </header>
 
-<div class="mobile-drawer" [class.open]="menuOpen">
+<div class="mobile-drawer" [class.open]="menuOpen" role="navigation" aria-label="Mobile navigation">
   @for (nav of navs; track nav.label) {
-    <a [routerLink]="nav.routerLink"
-       routerLinkActive="drawer-active"
-       [routerLinkActiveOptions]="{ exact: true }"
-       class="drawer-link"
-       (click)="menuOpen = false">
+    <a
+      [routerLink]="nav.routerLink"
+      routerLinkActive="drawer-active"
+      [routerLinkActiveOptions]="{ exact: true }"
+      class="drawer-link"
+      (click)="menuOpen = false"
+    >
       {{ nav.label }}
     </a>
   }
 </div>
 
-<div class="drawer-backdrop" [class.open]="menuOpen" (click)="menuOpen = false"></div>
+<div
+  class="drawer-backdrop"
+  [class.open]="menuOpen"
+  (click)="menuOpen = false"
+  aria-hidden="true"
+></div>

@@ -1,5 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap');
 
 * {
   padding: 0;
@@ -12,7 +11,6 @@
   --warn-hover: #b76910; 
   --success-hover: green;
 }
-
 
 :root,
 [data-theme="light"] {
@@ -42,17 +40,12 @@
   --danger-bg:      #fff1f2;
   --danger-border:  #fecaca;
 
-:root,
-[data-theme="light"] {
-
   --sidebar-bg:     #ffffff;
   --sidebar-text:   #4b5563;
   --sidebar-active: #111827;
   --sidebar-hover:  rgba(0, 0, 0, 0.04);
   --sidebar-border: #e2e4e9;
   --sidebar-brand:  #6366f1;
-
-}
 
   --input-bg:       #ffffff;
   --input-border:   #d1d5db;
@@ -125,16 +118,20 @@
 
 html {
   font-size: 16px;
+  scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
-  font-family: 'Roboto', 'Inter', system-ui, sans-serif;
+  font-family: 'DM Sans', system-ui, sans-serif;
   background-color: var(--bg-base);
   color: var(--text-primary);
   transition: background-color 0.25s ease, color 0.25s ease;
   min-height: 100vh;
+  line-height: 1.6;
 }
 
 input,
@@ -171,9 +168,17 @@ input[type="checkbox"] {
 }
 
 ::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: var(--bg-base); }
+::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 99px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* Global focus-visible: keyboard navigation only, never on mouse click */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+:focus:not(:focus-visible) { outline: none; }
 
 a {
   color: var(--accent);
@@ -189,16 +194,31 @@ code {
   font-size: 0.85em;
 }
 
-*,
-*::before,
-*::after {
-  transition-property: background-color, color, border-color, box-shadow, fill, stroke;
-  transition-duration: 0.25s;
+/* Scope theme transitions to elements that actually change with the theme */
+body,
+input, textarea, select, button,
+.card, article, section, nav, aside, header, footer,
+th, td, table {
+  transition-property: background-color, color, border-color;
+  transition-duration: 0.22s;
   transition-timing-function: ease;
 }
 
-button, a, input, [role="button"] {
+/* Interactive elements should respond faster */
+button, a, [role="button"], label[for] {
+  transition-property: background-color, color, border-color, box-shadow, opacity, transform;
   transition-duration: 0.15s;
+  transition-timing-function: ease;
+}
+
+/* Respect user preference for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -308,7 +328,6 @@ app-promo-modal .modal .cta-btn {
 }
 
 html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
 
 /* ═══════════════════════════════════════════════════

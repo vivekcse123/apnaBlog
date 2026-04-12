@@ -276,6 +276,10 @@ export class Home implements OnInit, OnDestroy {
 
   // ── Core loading ──────────────────────────────────────────────────────────
 
+  /** Background refresh only if the cache is older than 60 seconds — avoids
+   *  a redundant API call when the user navigates Home → Detail → Back quickly. */
+  private readonly STALE_THRESHOLD_MS = 60_000;
+
   private loadInitialData(): void {
     const cached = this.postCache.get();
 
@@ -283,8 +287,12 @@ export class Home implements OnInit, OnDestroy {
       // ✅ Instant render from cache — no skeleton shown at all
       this.allPosts.set(cached);
       this.isLoading.set(false);
-      // Silently refresh in background
-      this.loadFresh(false);
+
+      // Only refresh if cache is stale (older than 60 s)
+      const age = this.postCache.getAge();
+      if (age === null || age > this.STALE_THRESHOLD_MS) {
+        this.loadFresh(false);
+      }
     } else {
       // First visit — show skeleton and load everything in parallel
       this.loadFresh(true);

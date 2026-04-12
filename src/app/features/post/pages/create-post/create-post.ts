@@ -303,7 +303,7 @@ export class CreatePost {
     if (!this.isAdmin()) {
       this.createBlogForm.get('status')?.clearValidators();
       this.createBlogForm.get('status')?.updateValueAndValidity();
-      this.createBlogForm.patchValue({ status: 'draft' });
+      this.createBlogForm.patchValue({ status: 'pending' });
     }
 
     const categorySelected = this.hasAtLeastOneChecked('categories');

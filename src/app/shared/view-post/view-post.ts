@@ -1,5 +1,5 @@
 import {
-  Component, ElementRef, inject, input,
+  Component, computed, ElementRef, inject, input,
   OnDestroy, OnInit, output, signal, ViewChild
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -7,6 +7,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { Subject, takeUntil } from 'rxjs';
 import { PostService } from '../../features/post/services/post-service';
 import { UploadService } from '../../features/post/services/upload-service';
+import { Auth } from '../../core/services/auth';
 import { Post } from '../../core/models/post.model';
 
 interface ImageItem {
@@ -23,10 +24,16 @@ interface ImageItem {
   styleUrl: './view-post.css'
 })
 export class ViewPost implements OnInit, OnDestroy {
-  private fb           = inject(FormBuilder);
-  private postService  = inject(PostService);
+  private fb            = inject(FormBuilder);
+  private postService   = inject(PostService);
   private uploadService = inject(UploadService);
-  private destroy$     = new Subject<void>();
+  private authService   = inject(Auth);
+  private destroy$      = new Subject<void>();
+
+  isAdmin = computed(() => this.authService.getCurrentUser()?.role?.toLowerCase() === 'admin');
+
+  /** True when the post is pending AND the viewer is not admin — hides status controls */
+  isPendingForUser = computed(() => this.post()?.status === 'pending' && !this.isAdmin());
 
   postId      = input<string>('');
   message     = input<string>('');
@@ -138,7 +145,8 @@ export class ViewPost implements OnInit, OnDestroy {
       categories:    [p?.categories    || []],
       tags:          [p?.tags          || []],
       featuredImage: [p?.featuredImage || ''],
-      status:        [p?.status        || 'draft', Validators.required],
+      // Non-admins cannot change status while the post is pending
+      status:        [p?.status || 'draft', this.isPendingForUser() ? [] : Validators.required],
     });
 
     // Initialize image gallery with featured image if exists

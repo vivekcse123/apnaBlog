@@ -121,7 +121,7 @@
   padding: 0 4px;
 }
 
-/* ── Profile ── */
+/* ── Profile avatar (button element) ── */
 .profile {
   width: 42px; height: 42px;
   display: flex;
@@ -129,17 +129,25 @@
   justify-content: center;
   background: linear-gradient(135deg, #43cea2, #185a9d);
   color: #ffffff;
-  font-weight: 600;
-  font-size: 14px;
+  font-weight: 700;
+  font-size: 15px;
   border-radius: 50%;
+  border: none;
   cursor: pointer;
   flex-shrink: 0;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  font-family: inherit;
+  user-select: none;
 }
 
 .profile:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(24, 90, 157, 0.4);
+  box-shadow: 0 6px 20px rgba(24, 90, 157, 0.4);
+}
+
+.profile:focus-visible {
+  outline: 2px solid #43cea2;
+  outline-offset: 3px;
 }
 
 .gradient-icon {

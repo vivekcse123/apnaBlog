@@ -236,6 +236,18 @@ tbody > tr:hover td {
   white-space: nowrap;
 }
 
+.status-pending {
+  display: inline-block;
+  color: var(--warn);
+  background: var(--warn-bg);
+  border: 1px solid color-mix(in srgb, var(--warn) 30%, transparent);
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
 /* ── Empty State ── */
 .empty-row {
   text-align: center;
@@ -276,14 +288,21 @@ tbody > tr:hover td {
   transform: translateY(-1px);
 }
 
-.action-buttons .view       { background-color: #5bc0de; }
-.action-buttons .view:hover { background-color: #31b0d5; }
+.action-buttons .view         { background-color: #5bc0de; }
+.action-buttons .view:hover   { background-color: #31b0d5; }
 
-.action-buttons .edit       { background-color: #5cb85c; }
-.action-buttons .edit:hover { background-color: #449d44; }
+.action-buttons .edit         { background-color: #5cb85c; }
+.action-buttons .edit:hover   { background-color: #449d44; }
 
 .action-buttons .delete       { background-color: var(--danger); }
 .action-buttons .delete:hover { background-color: var(--danger-hover); }
+
+/* Freeze = warn amber, Unfreeze = green */
+.action-buttons .freeze       { background-color: var(--warn); }
+.action-buttons .freeze:hover { background-color: var(--warn-hover); }
+
+.action-buttons .unfreeze       { background-color: var(--success); }
+.action-buttons .unfreeze:hover { background-color: var(--success-hover); }
 
 /* ── Pagination ── */
 .pagination {

@@ -1,83 +1,129 @@
 <div class="notification-wrapper">
 
-  <button class="bell-btn" (click)="togglePanel($event)">
+  <!-- Bell trigger -->
+  <button class="bell-btn" (click)="togglePanel($event)" aria-label="Notifications">
     <mat-icon>notifications</mat-icon>
-
     @if (unreadCount() > 0) {
-      <span class="badge">
-        {{ unreadCount() }}
-      </span>
+      <span class="badge">{{ unreadCount() > 99 ? '99+' : unreadCount() }}</span>
     }
   </button>
 
   @if (panelOpen()) {
-    <div class="panel">
+    <div class="panel" role="dialog" aria-label="Notifications panel">
 
+      <!-- Header -->
       <div class="panel-header">
-        <span>Notifications</span>
+        <div class="header-left">
+          <span class="panel-title">Notifications</span>
+          @if (unreadCount() > 0) {
+            <span class="unread-badge">{{ unreadCount() }} new</span>
+          }
+        </div>
 
         <div class="actions">
-          <button type="button" [class.spinning]="refreshing()" (click)="onRefresh($event)" title="Refresh"> 
+          <!-- Refresh -->
+          <button
+            type="button"
+            class="icon-btn"
+            [class.spinning]="refreshing()"
+            (click)="onRefresh($event)"
+            title="Refresh"
+            aria-label="Refresh notifications"
+          >
             <mat-icon>refresh</mat-icon>
           </button>
-          <button type="button" (click)="onMarkAllRead($event)" title="Mark all read">
-            <mat-icon>done_all</mat-icon>
-          </button>
+
+          <!-- Mark all read — only when there are unread -->
+          @if (unreadCount() > 0) {
+            <button
+              type="button"
+              class="icon-btn"
+              (click)="onMarkAllRead($event)"
+              title="Mark all read"
+              aria-label="Mark all notifications as read"
+            >
+              <mat-icon>done_all</mat-icon>
+            </button>
+          }
+
+          <!-- Clear All — only when there are notifications -->
+          @if (notifications().length > 0) {
+            <button
+              type="button"
+              class="icon-btn danger"
+              [class.busy]="clearingAll()"
+              (click)="onClearAll($event)"
+              title="Clear all notifications"
+              aria-label="Clear all notifications"
+            >
+              @if (clearingAll()) {
+                <mat-icon class="spin-once">hourglass_empty</mat-icon>
+              } @else {
+                <mat-icon>delete_sweep</mat-icon>
+              }
+            </button>
+          }
         </div>
       </div>
 
+      <!-- List -->
       <div class="notification-list">
 
         @if (loading()) {
-          <div class="loader">
-            <mat-spinner diameter="30"></mat-spinner>
+          <div class="loader-wrap">
+            <mat-spinner diameter="28"></mat-spinner>
           </div>
         }
 
         @if (!loading() && notifications().length === 0) {
-          <div class="empty">
-            <mat-icon>notifications_off</mat-icon>
-            <p>No notifications</p>
+          <div class="empty-state">
+            <div class="empty-icon-wrap">
+              <mat-icon>notifications_none</mat-icon>
+            </div>
+            <p class="empty-title">You're all caught up!</p>
+            <p class="empty-sub">New notifications will appear here.</p>
           </div>
         }
 
         @if (!loading() && notifications().length > 0) {
-
           @for (n of notifications(); track n.id ?? $index) {
             <div
               class="notification-item"
               [class.unread]="!n.isRead"
+              [class.navigable]="isNavigable(n.type)"
               (click)="onNotificationClick(n)"
+              [attr.role]="isNavigable(n.type) ? 'button' : 'listitem'"
             >
-
-              <mat-icon [style.color]="getMeta(n.type).color">
-                {{ getMeta(n.type).icon }}
-              </mat-icon>
-
-              <div class="content">
-                <div class="title">
-                  {{ n.title || getMeta(n.type).label }}
-                </div>
-
-                <div class="message">
-                  {{ n.message }}
-                </div>
-
-                <div class="time">
-                  {{ n.createdAt | date:'short' }}
-                </div>
+              <!-- Type icon -->
+              <div class="notif-icon" [style.background]="getMeta(n.type).color + '22'">
+                <mat-icon [style.color]="getMeta(n.type).color">
+                  {{ getMeta(n.type).icon }}
+                </mat-icon>
               </div>
 
+              <!-- Content -->
+              <div class="content">
+                <div class="title">{{ n.title || getMeta(n.type).label }}</div>
+                <div class="message">{{ n.message }}</div>
+                <div class="time">{{ timeAgo(n.createdAt) }}</div>
+              </div>
+
+              <!-- Unread indicator dot -->
+              @if (!n.isRead) {
+                <span class="unread-dot" aria-label="Unread"></span>
+              }
+
+              <!-- Delete button -->
               <button
                 class="delete-btn"
                 (click)="onDelete($event, n.id)"
+                title="Dismiss"
+                aria-label="Dismiss notification"
               >
                 <mat-icon>close</mat-icon>
               </button>
-
             </div>
           }
-
         }
 
       </div>
