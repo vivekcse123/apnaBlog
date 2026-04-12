@@ -189,7 +189,6 @@ export class Settings implements OnInit {
 
   onModalClosed(): void { this.showModal.set(false); }
 
-  // ── Avatar ──────────────────────────────────────────
   triggerAvatarUpload(): void {
     this.avatarInput.nativeElement.click();
   }
@@ -203,7 +202,6 @@ export class Settings implements OnInit {
       return;
     }
 
-    // Show preview immediately
     const reader = new FileReader();
     reader.onload = (e) => this.avatarPreview.set(e.target?.result as string);
     reader.readAsDataURL(file);
@@ -225,7 +223,7 @@ export class Settings implements OnInit {
       .subscribe({
         next: (res) => {
           this.user.set(res.data);
-          this.avatarPreview.set(null); // use actual URL from server now
+          this.avatarPreview.set(null);
           this.isUploadingAvatar.set(false);
           this.openModal('success', 'Avatar Updated', 'Your profile picture has been updated.');
         },
@@ -237,7 +235,6 @@ export class Settings implements OnInit {
       });
   }
 
-  // ── Profile ──────────────────────────────────────────
   startEdit(): void {
     this.editForm = { ...this.user() };
     this.isEditing.set(true);
@@ -262,7 +259,10 @@ export class Settings implements OnInit {
       dob:      this.editForm.dob,
       location: this.editForm.location,
       role:     this.editForm.role?.toLowerCase(),
+      bio:      this.editForm.bio
     };
+
+    console.log(payload);
 
     this.userService.updateUser(id, payload)
       .pipe(takeUntilDestroyed(this.destroyRef))

@@ -10,7 +10,6 @@
     </app-message-modal>
   }
 
-  <!-- Hidden file input -->
   <input
     #avatarInput
     type="file"
@@ -18,7 +17,6 @@
     style="display:none"
     (change)="onAvatarSelected($event)" />
 
-  <!-- ══ SIDEBAR ══ -->
   <aside class="sidebar">
     <div class="sidebar-brand">
       <span class="brand-icon">⬡</span>
@@ -48,10 +46,8 @@
     </div>
   </aside>
 
-  <!-- ══ MAIN ══ -->
   <main class="settings-main">
 
-    <!-- ── PROFILE ── -->
     @if (activeSection() === 'profile') {
       <div class="section-wrap">
         <div class="section-heading">
@@ -84,7 +80,7 @@
         @if (!isLoading() && user(); as u) {
           <div class="profile-card">
 
-            <!-- ── Avatar Area ── -->
+
             <div class="avatar-area">
               <div class="avatar-ring">
                 <div class="avatar-circle" (click)="triggerAvatarUpload()"
@@ -111,7 +107,7 @@
                   [disabled]="isUploadingAvatar()">
                   {{ isUploadingAvatar() ? 'Uploading…' : 'Change Photo' }}
                 </button>
-                <p class="avatar-hint">JPG, PNG or WebP · Max 2MB</p>
+                <p class="avatar-hint">JPG, JPEG, PNG or WebP · Max 2MB</p>
               </div>
             </div>
 
@@ -132,6 +128,10 @@
                 <div class="info-item">
                   <label>Location</label>
                   <span>{{ u.location || '—' }}</span>
+                </div>
+                <div class="info-item">
+                  <label>Bio</label>
+                  <span>{{ u.bio || '-' }}</span>
                 </div>
               </div>
               <div class="form-actions">
@@ -158,6 +158,10 @@
                 <div class="form-group">
                   <label>Location</label>
                   <input type="text" [(ngModel)]="editForm.location" placeholder="City, State" />
+                </div>
+                <div class="form-group">
+                  <label>Bio</label>
+                  <input type="text" [(ngModel)]="editForm.bio" placeholder="Your bio" />
                 </div>
               </div>
               <div class="form-actions">

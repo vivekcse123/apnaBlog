@@ -13,5 +13,6 @@ export interface User {
   updatedAt:    Date;
   lastLoggedInAt: Date;
   deletionScheduledAt: any
-  avatar: string
+  avatar: string,
+  bio: string
 }

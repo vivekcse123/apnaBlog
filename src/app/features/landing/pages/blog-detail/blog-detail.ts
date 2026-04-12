@@ -29,7 +29,8 @@ interface TableOfContentsItem {
   level: number;
 }
 
-const COMMENTS_PAGE_SIZE = 5;
+const COMMENTS_PAGE_SIZE    = 5;
+const AUTHOR_POSTS_PER_PAGE = 10;
 
 @Component({
   selector: 'app-blog-detail',
@@ -39,23 +40,23 @@ const COMMENTS_PAGE_SIZE = 5;
   styleUrl: './blog-detail.css',
 })
 export class BlogDetail implements OnInit, AfterViewInit {
-  private postService   = inject(PostService);
-  private destroyRef    = inject(DestroyRef);
-  private route         = inject(ActivatedRoute);
-  private router        = inject(Router);
-  private auth          = inject(Auth);
-  private userService   = inject(UserService);
+  private postService    = inject(PostService);
+  private destroyRef     = inject(DestroyRef);
+  private route          = inject(ActivatedRoute);
+  private router         = inject(Router);
+  private auth           = inject(Auth);
+  private userService    = inject(UserService);
   private visitorService = inject(VisitorService);
-  private platformId    = inject(PLATFORM_ID);
-  private meta          = inject(Meta);
-  private titleService  = inject(Title);
-  private elementRef    = inject(ElementRef);
-  private document      = inject(DOCUMENT);
-  private sanitizer     = inject(DomSanitizer);
-  themeService          = inject(ThemeService);
+  private platformId     = inject(PLATFORM_ID);
+  private meta           = inject(Meta);
+  private titleService   = inject(Title);
+  private elementRef     = inject(ElementRef);
+  private document       = inject(DOCUMENT);
+  private sanitizer      = inject(DomSanitizer);
+  themeService           = inject(ThemeService);
 
-  post        = signal<Post | null>(null);
-  isLoading   = signal(true);
+  post         = signal<Post | null>(null);
+  isLoading    = signal(true);
   relatedPosts = signal<Post[]>([]);
 
   safeContent = computed<SafeHtml>(() =>
@@ -69,12 +70,12 @@ export class BlogDetail implements OnInit, AfterViewInit {
   commentSubmitting = signal(false);
   commentFeedback   = signal<{ type: 'success' | 'error'; msg: string } | null>(null);
 
-  public allComments   = signal<DrawerComment[]>([]); 
-  comments              = signal<DrawerComment[]>([]);   
-  commentsLoading       = signal(false);
-  loadingMore           = signal(false);
-  deletingCommentId     = signal<string | null>(null);
-  private commentsPage  = signal(1);
+  public allComments   = signal<DrawerComment[]>([]);
+  comments             = signal<DrawerComment[]>([]);
+  commentsLoading      = signal(false);
+  loadingMore          = signal(false);
+  deletingCommentId    = signal<string | null>(null);
+  private commentsPage = signal(1);
 
   hasMoreComments = computed(() =>
     this.comments().length < this.allComments().length
@@ -89,15 +90,39 @@ export class BlogDetail implements OnInit, AfterViewInit {
 
   private currentUserData = signal<User | null>(null);
 
-  tableOfContents  = signal<TableOfContentsItem[]>([]);
-  activeHeadingId  = signal<string>('');
-  readingProgress  = signal(0);
-  readingTime      = signal(0);
-  showToc          = signal(false);
+  tableOfContents = signal<TableOfContentsItem[]>([]);
+  activeHeadingId = signal<string>('');
+  readingProgress = signal(0);
+  readingTime     = signal(0);
+  showToc         = signal(false);
 
-  shareCount     = signal(0);
-  shareMenuOpen  = signal(false);
+  shareCount      = signal(0);
+  shareMenuOpen   = signal(false);
   copyLinkSuccess = signal(false);
+
+  /* ── Author profile modal ── */
+  showAuthorModal  = signal(false);
+  authorTotalPosts = signal(0);
+
+  /* ── Author posts modal — no extra API call, reuses getAllPost data ── */
+  private allAuthorPostsData = signal<Post[]>([]);
+  showAuthorPostsModal       = signal(false);
+  private authorPostsPage    = signal(1);
+
+  displayedAuthorPosts = computed(() =>
+    this.allAuthorPostsData().slice(0, this.authorPostsPage() * AUTHOR_POSTS_PER_PAGE)
+  );
+
+  hasMoreAuthorPosts = computed(() =>
+    this.displayedAuthorPosts().length < this.allAuthorPostsData().length
+  );
+
+  remainingAuthorCount = computed(() =>
+    Math.min(
+      this.allAuthorPostsData().length - this.displayedAuthorPosts().length,
+      AUTHOR_POSTS_PER_PAGE
+    )
+  );
 
   private contentEl: HTMLElement | null = null;
 
@@ -114,6 +139,42 @@ export class BlogDetail implements OnInit, AfterViewInit {
     return p ? this.bookmarkedPostIds().has(p._id) : false;
   });
 
+  /* ── Author helpers ── */
+  get authorName(): string       { return (this.post()?.user as any)?.name ?? 'ApnaInsights'; }
+  get authorInitial(): string    { return this.authorName.charAt(0).toUpperCase(); }
+  get authorJoinedDate(): string { return (this.post()?.user as any)?.createdAt ?? ''; }
+  get authorEmail(): string      { return (this.post()?.user as any)?.email ?? ''; }
+  get authorBio(): string        { return (this.post()?.user as any)?.bio ?? ''; }
+
+  /* ── Modal controls ── */
+  openAuthorModal(): void { this.showAuthorModal.set(true); this.lockScroll(true); }
+  closeAuthorModal(): void { this.showAuthorModal.set(false); this.lockScroll(false); }
+
+  openAuthorPostsModal(): void {
+    this.showAuthorModal.set(false);
+    this.authorPostsPage.set(1);
+    this.showAuthorPostsModal.set(true);
+    this.lockScroll(true);
+  }
+
+  closeAuthorPostsModal(): void {
+    this.showAuthorPostsModal.set(false);
+    this.lockScroll(false);
+  }
+
+  loadMoreAuthorPosts(): void { this.authorPostsPage.update(p => p + 1); }
+
+  navigateFromAuthorModal(postId: string): void {
+    this.closeAuthorPostsModal();
+    this.router.navigate(['/blog', postId]);
+    if (isPlatformBrowser(this.platformId)) window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+
+  private lockScroll(lock: boolean): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    this.document.body.style.overflow = lock ? 'hidden' : '';
+  }
+
   ngOnInit(): void {
     this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
       const postId = params.get('id');
@@ -125,11 +186,16 @@ export class BlogDetail implements OnInit, AfterViewInit {
       this.comments.set([]);
       this.commentsPage.set(1);
       this.relatedPosts.set([]);
+      this.allAuthorPostsData.set([]);
       this.tableOfContents.set([]);
       this.readingProgress.set(0);
       this.shareMenuOpen.set(false);
       this.showToc.set(false);
+      this.showAuthorModal.set(false);
+      this.showAuthorPostsModal.set(false);
+      this.authorTotalPosts.set(0);
       this.contentEl = null;
+      this.lockScroll(false);
 
       this.loadPost(postId);
       this.loadShareCount(postId);
@@ -146,12 +212,20 @@ export class BlogDetail implements OnInit, AfterViewInit {
           this.updateReadingProgress();
           this.updateActiveHeading();
         });
+
+      fromEvent<KeyboardEvent>(this.document, 'keydown')
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe(e => {
+          if (e.key !== 'Escape') return;
+          if (this.showAuthorPostsModal()) { this.closeAuthorPostsModal(); return; }
+          if (this.showAuthorModal())      { this.closeAuthorModal();      return; }
+          this.shareMenuOpen.set(false);
+          this.showToc.set(false);
+        });
     }
   }
 
-  ngAfterViewInit(): void {
-
-  }
+  ngAfterViewInit(): void {}
 
   private loadPost(postId: string): void {
     this.postService.getPostById(postId).pipe(
@@ -161,13 +235,12 @@ export class BlogDetail implements OnInit, AfterViewInit {
       next: (res) => {
         const postData = res.data;
         if (!postData || postData.status !== 'published') {
-          this.router.navigate(['/welcome']);
-          return;
+          this.router.navigate(['/welcome']); return;
         }
         this.post.set(postData);
         this.addView(postData);
         this.loadComments(postId);
-        this.loadRelatedPosts(postData);
+        this.loadRelatedAndAuthorPosts(postData);
         this.updateMetaTags(postData);
         this.calculateReadingTime(postData);
 
@@ -183,12 +256,29 @@ export class BlogDetail implements OnInit, AfterViewInit {
     });
   }
 
-  private loadRelatedPosts(currentPost: Post): void {
-    if (!currentPost.categories?.length) { this.relatedPosts.set([]); return; }
-
+  /* One API call — populates related posts AND all author posts with zero duplication */
+  private loadRelatedAndAuthorPosts(currentPost: Post): void {
     this.postService.getAllPost(1, 100).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (res) => {
         const allPosts: Post[] = res.data ?? [];
+        const authorId = (currentPost.user as any)?._id ?? currentPost.user;
+
+        /* Author posts (newest first, current article excluded) */
+        const authorPosts = allPosts
+          .filter(p => {
+            const pid = (p.user as any)?._id ?? p.user;
+            return pid?.toString() === authorId?.toString()
+              && p.status === 'published'
+              && p._id !== currentPost._id;
+          })
+          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+        this.allAuthorPostsData.set(authorPosts);
+        this.authorTotalPosts.set(authorPosts.length + 1); /* +1 for the current post */
+
+        /* Related posts */
+        if (!currentPost.categories?.length) { this.relatedPosts.set([]); return; }
+
         const related = allPosts
           .filter(p =>
             p._id !== currentPost._id &&
@@ -199,16 +289,13 @@ export class BlogDetail implements OnInit, AfterViewInit {
           .sort((a, b) => {
             const aM = a.categories.filter(c => currentPost.categories.includes(c)).length;
             const bM = b.categories.filter(c => currentPost.categories.includes(c)).length;
-            return bM !== aM
-              ? bM - aM
-              : new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+            return bM !== aM ? bM - aM : new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
           });
         this.relatedPosts.set(related.slice(0, 4));
       },
       error: () => this.relatedPosts.set([])
     });
   }
-
 
   private loadComments(postId: string): void {
     this.commentsLoading.set(true);
@@ -235,10 +322,8 @@ export class BlogDetail implements OnInit, AfterViewInit {
     }, 300);
   }
 
-
   private updateMetaTags(post: Post): void {
     const canonicalUrl = `https://www.apnainsights.com/blog/${post._id}`;
-
     this.titleService.setTitle(`${post.title} | ApnaInsights`);
     this.meta.updateTag({ name: 'description',        content: post.description || post.title });
     this.meta.updateTag({ property: 'og:title',       content: post.title });
@@ -248,14 +333,11 @@ export class BlogDetail implements OnInit, AfterViewInit {
     this.meta.updateTag({ name: 'twitter:card',        content: 'summary_large_image' });
     this.meta.updateTag({ name: 'twitter:title',       content: post.title });
     this.meta.updateTag({ name: 'twitter:description', content: post.description || post.title });
-
     if (post.featuredImage) {
-      this.meta.updateTag({ property: 'og:image',    content: post.featuredImage });
-      this.meta.updateTag({ name: 'twitter:image',   content: post.featuredImage });
+      this.meta.updateTag({ property: 'og:image',  content: post.featuredImage });
+      this.meta.updateTag({ name: 'twitter:image', content: post.featuredImage });
     }
-
     if (isPlatformBrowser(this.platformId)) {
-
       let canonical = this.document.querySelector("link[rel='canonical']") as HTMLLinkElement;
       if (!canonical) {
         canonical = this.document.createElement('link') as HTMLLinkElement;
@@ -263,49 +345,31 @@ export class BlogDetail implements OnInit, AfterViewInit {
         this.document.head.appendChild(canonical);
       }
       canonical.href = canonicalUrl;
-
       if (post.featuredImage) {
-        const alreadyPreloaded = this.document.querySelector(`link[rel='preload'][href='${post.featuredImage}']`);
-        if (!alreadyPreloaded) {
+        const already = this.document.querySelector(`link[rel='preload'][href='${post.featuredImage}']`);
+        if (!already) {
           const preload = this.document.createElement('link') as HTMLLinkElement;
-          preload.rel  = 'preload';
-          preload.as   = 'image';
-          preload.href = post.featuredImage;
+          preload.rel = 'preload'; preload.as = 'image'; preload.href = post.featuredImage;
           this.document.head.appendChild(preload);
         }
       }
     }
-
     this.injectArticleSchema(post);
   }
 
   private injectArticleSchema(post: Post): void {
     if (!isPlatformBrowser(this.platformId)) return;
-
     const schema = {
-      '@context': 'https://schema.org',
-      '@type': 'Article',
-      'headline':      post.title,
-      'description':   post.description,
-      'image':         post.featuredImage,
-      'datePublished': post.createdAt,
-      'author': {
-        '@type': 'Person',
-        'name': (post.user as any)?.name ?? 'ApnaInsights'
-      },
+      '@context': 'https://schema.org', '@type': 'Article',
+      'headline': post.title, 'description': post.description,
+      'image': post.featuredImage, 'datePublished': post.createdAt,
+      'author': { '@type': 'Person', 'name': (post.user as any)?.name ?? 'ApnaInsights' },
       'publisher': {
-        '@type': 'Organization',
-        'name': 'ApnaInsights',
-        'logo': {
-          '@type':  'ImageObject',
-          'url':    'https://www.apnainsights.com/logo.png',
-          'width':  497,
-          'height': 497
-        }
+        '@type': 'Organization', 'name': 'ApnaInsights',
+        'logo': { '@type': 'ImageObject', 'url': 'https://www.apnainsights.com/logo.png', 'width': 497, 'height': 497 }
       },
       'mainEntityOfPage': `https://www.apnainsights.com/blog/${post._id}`
     };
-
     let el = this.document.getElementById('article-schema');
     if (!el) {
       el = this.document.createElement('script');
@@ -334,8 +398,7 @@ export class BlogDetail implements OnInit, AfterViewInit {
     const headings = this.contentEl.querySelectorAll('h2, h3');
     const toc: TableOfContentsItem[] = [];
     headings.forEach((h: Element, i: number) => {
-      const id = `heading-${i}`;
-      h.id = id;
+      const id = `heading-${i}`; h.id = id;
       toc.push({ id, text: h.textContent || '', level: parseInt(h.tagName[1]) });
     });
     this.tableOfContents.set(toc);
@@ -356,14 +419,11 @@ export class BlogDetail implements OnInit, AfterViewInit {
 
   private updateReadingProgress(): void {
     if (!this.contentEl || !isPlatformBrowser(this.platformId)) return;
-    const el        = this.contentEl as HTMLElement;
-    const scrollTop = window.scrollY;
-    const winH      = window.innerHeight;
-    const top       = el.offsetTop;
-    const bottom    = top + el.offsetHeight;
-
-    if (scrollTop < top)              { this.readingProgress.set(0);   return; }
-    if (scrollTop + winH >= bottom)   { this.readingProgress.set(100); return; }
+    const el = this.contentEl as HTMLElement;
+    const scrollTop = window.scrollY, winH = window.innerHeight;
+    const top = el.offsetTop, bottom = top + el.offsetHeight;
+    if (scrollTop < top)            { this.readingProgress.set(0);   return; }
+    if (scrollTop + winH >= bottom) { this.readingProgress.set(100); return; }
     const pct = ((scrollTop - top) / (el.offsetHeight - winH)) * 100;
     this.readingProgress.set(Math.min(Math.max(pct, 0), 100));
   }
@@ -390,8 +450,7 @@ export class BlogDetail implements OnInit, AfterViewInit {
   }
 
   toggleBookmark(): void {
-    const p = this.post();
-    if (!p) return;
+    const p = this.post(); if (!p) return;
     const s = new Set(this.bookmarkedPostIds());
     s.has(p._id) ? s.delete(p._id) : s.add(p._id);
     this.bookmarkedPostIds.set(s);
@@ -411,8 +470,7 @@ export class BlogDetail implements OnInit, AfterViewInit {
   }
 
   private incrementShareCount(): void {
-    const p = this.post();
-    if (!p) return;
+    const p = this.post(); if (!p) return;
     const n = this.shareCount() + 1;
     this.shareCount.set(n);
     try { localStorage.setItem(`share_count_${p._id}`, String(n)); } catch { }
@@ -471,9 +529,8 @@ export class BlogDetail implements OnInit, AfterViewInit {
 
   toggleLike(post: Post, event: Event): void {
     event.stopPropagation();
-    const liked  = this.isLiked(post._id);
+    const liked = this.isLiked(post._id);
     const newSet = new Set(this.likedPostIds());
-
     if (liked) {
       newSet.delete(post._id);
       this.likedPostIds.set(newSet);
@@ -495,10 +552,9 @@ export class BlogDetail implements OnInit, AfterViewInit {
     }
   }
 
-
-  get currentUser(): User | null  { return this.currentUserData(); }
-  get isLoggedIn(): boolean       { return this.auth.isAuthorized() && !!this.currentUserData(); }
-  get loggedInUserName(): string  { return this.currentUserData()?.name ?? 'Anonymous'; }
+  get currentUser(): User | null { return this.currentUserData(); }
+  get isLoggedIn(): boolean      { return this.auth.isAuthorized() && !!this.currentUserData(); }
+  get loggedInUserName(): string { return this.currentUserData()?.name ?? 'Anonymous'; }
 
   private fetchCurrentUser(): void {
     const userId = this.auth.userId();
@@ -514,24 +570,20 @@ export class BlogDetail implements OnInit, AfterViewInit {
     const p    = this.post();
     if (!text) { this.commentFeedback.set({ type: 'error', msg: 'Please write something before posting.' }); return; }
     if (!p || this.commentSubmitting()) return;
-
     this.commentSubmitting.set(true);
     this.commentFeedback.set(null);
-
     this.postService.commentPost(p._id, text, this.currentUserData()?._id).subscribe({
       next: (res: any) => {
         this.commentSubmitting.set(false);
         this.commentText.set('');
         this.commentFeedback.set({ type: 'success', msg: 'Comment posted!' });
-
         const newComment: DrawerComment = {
-          _id:       res.data?.comment?._id,
-          name:      this.currentUserData()?.name ?? 'Anonymous',
-          comment:   text,
-          user:      this.currentUserData()?._id ?? null,
+          _id: res.data?.comment?._id,
+          name: this.currentUserData()?.name ?? 'Anonymous',
+          comment: text,
+          user: this.currentUserData()?._id ?? null,
           createdAt: new Date().toISOString(),
         };
-
         this.allComments.set([newComment, ...this.allComments()]);
         this.comments.set([newComment, ...this.comments()]);
         this.post.set({ ...p, commentsCount: p.commentsCount + 1 });
@@ -546,10 +598,8 @@ export class BlogDetail implements OnInit, AfterViewInit {
 
   deleteComment(comment: DrawerComment, event: Event): void {
     event.stopPropagation();
-    const p  = this.post();
-    const id = comment._id;
+    const p = this.post(); const id = comment._id;
     if (!p || !id || this.deletingCommentId()) return;
-
     this.deletingCommentId.set(id);
     this.postService.deleteComment(p._id, id).subscribe({
       next: () => {
