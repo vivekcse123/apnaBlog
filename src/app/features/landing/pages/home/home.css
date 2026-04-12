@@ -209,6 +209,7 @@ body {
 }
 
 .filter-wrap {
+  /* top: 70px = desktop header height — prevents the filter bar from sliding under the sticky header */
   position: sticky; top: 0px; z-index: 800;
   background: var(--bg-surface);
   border-bottom: 1px solid var(--border);
@@ -217,6 +218,7 @@ body {
 
 .filter-inner {
   display: flex; gap: 12px;
+  top: 0px;
   padding: 14px 6%;
   align-items: center; flex-wrap: wrap;
   border-bottom: 1px solid var(--border);
@@ -373,7 +375,13 @@ body {
   to { transform: translateX(200%); }
 }
 
-.section { width: 92%; max-width: 1300px; margin: 48px auto; animation: sectionIn 0.4s ease both; }
+.section {
+  width: 92%; max-width: 1300px; margin: 48px auto;
+  animation: sectionIn 0.4s ease both;
+  /* Defers off-screen layout and rendering — browser only paints when near viewport */
+  content-visibility: auto;
+  contain-intrinsic-size: 0 600px;
+}
 
 @keyframes sectionIn {
   from { opacity: 0; transform: translateY(12px); }
@@ -825,7 +833,7 @@ body {
   .hamburger { display: flex; }
   .mobile-drawer { display: flex; top: 60px; }
   .drawer-backdrop { display: block; }
-  .filter-wrap { top: 0px; }
+  .filter-wrap { top: 60px; }
 
   .hero-wrap { padding: 40px 5% 36px; }
   .hero-title { font-size: 32px; }
@@ -835,7 +843,7 @@ body {
 
   .section { margin: 32px auto; }
 
-  .filter-inner { flex-direction: column; align-items: stretch; padding: 12px 4%; gap: 10px; }
+  .filter-inner { flex-direction: column; align-items: stretch; padding: 12px 4%; gap: 0px; }
   .search-wrap { min-width: unset; width: 100%; }
   .filter-selects { width: 100%; flex-wrap: nowrap; }
   .filter-select { width: 100%; flex: 1; }
@@ -945,11 +953,7 @@ input[type="search"]::-webkit-search-decoration {
   -webkit-appearance: none;
 }
 
-.section {
-  content-visibility: auto;
-  contain-intrinsic-size: auto 600px;
-}
-
+/* Hero and filter must always be rendered — never defer them */
 .hero-wrap,
 .filter-wrap {
   content-visibility: visible;

@@ -286,15 +286,16 @@
   @if (showAuthorModal()) {
     <div class="modal-backdrop" (click)="closeAuthorModal()" role="dialog" aria-modal="true">
       <div class="author-modal" (click)="$event.stopPropagation()">
-        <div class="apm-hero">
-          <div class="apm-avatar">{{ authorInitial }}</div>
+        <div class="apos-header">
+          <div class="apos-header-left">
+          <div class="apos-header-avatar">{{ authorInitial }}</div>
           <div class="apm-identity">
             <h2 class="apm-name">{{ authorName }}</h2>
             <span class="apm-role">Author · ApnaInsights</span>
           </div>
-          <button class="modal-close-btn" (click)="closeAuthorModal()" aria-label="Close" id="custom-close">✕</button>
         </div>
-
+        <button class="modal-close-btn" (click)="closeAuthorModal()" aria-label="Close" id="custom-close">✕</button>
+        </div>
         <div class="apm-stats">
           <div class="apm-stat">
             <span class="apm-stat-val">{{ authorTotalPosts() }}</span>

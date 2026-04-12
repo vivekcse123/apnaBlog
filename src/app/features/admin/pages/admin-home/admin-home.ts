@@ -9,6 +9,7 @@ import { PostService } from '../../../post/services/post-service';
 import { AdminService } from '../../services/admin-service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Auth } from '../../../../core/services/auth';
+import { DashboardCache } from '../../../../core/services/dashboard-cache';
 
 Chart.register(...registerables);
 
@@ -33,10 +34,11 @@ export class AdminHome implements OnInit, AfterViewInit, OnDestroy {
   private userActivityBar!: Chart;
 
   // ── Services ───────────────────────────────────────────────
-  private postService  = inject(PostService);
-  private adminService = inject(AdminService);
-  private destroyRef   = inject(DestroyRef);
-  private authService  = inject(Auth);
+  private postService     = inject(PostService);
+  private adminService    = inject(AdminService);
+  private destroyRef      = inject(DestroyRef);
+  private authService     = inject(Auth);
+  private dashboardCache  = inject(DashboardCache);
 
   readonly currentUser = this.authService.getCurrentUser();
   readonly userId      = this.currentUser?.id ?? '';
@@ -68,9 +70,10 @@ export class AdminHome implements OnInit, AfterViewInit, OnDestroy {
   recentUsers  = signal<any[]>([]);
   inactiveList = signal<any[]>([]);
 
-  isLoading = signal<boolean>(true);
+  isLoading      = signal<boolean>(true);
+  isRefreshing   = signal<boolean>(false);
 
-  // ── Raw data cache for chart rebuilds ─────────────────────
+  // ── Raw data store for chart rebuilds ─────────────────────
   private allPosts: any[] = [];
   private allUsers: any[] = [];
 
@@ -80,8 +83,9 @@ export class AdminHome implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
-    // Charts will be built after data loads; but init empty shells if needed
-    setTimeout(() => this.buildAllCharts(), 400);
+    // Safety-net: build charts after view is ready.
+    // When data is already loaded from cache, this fires ~100ms after mount.
+    setTimeout(() => this.buildAllCharts(), 100);
   }
 
   ngOnDestroy(): void {
@@ -92,7 +96,35 @@ export class AdminHome implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // ── Data Loading ──────────────────────────────────────────
+
   loadDashboardData(): void {
+    const cached = this.dashboardCache.get();
+
+    if (cached) {
+      // Serve instantly from cache
+      this.allPosts = cached.posts;
+      this.allUsers = cached.users;
+      this.computeStats();
+      this.isLoading.set(false);
+
+      // Silently refresh in the background if the cache is stale (>60s old)
+      if (this.dashboardCache.isStale()) {
+        this.fetchFresh(false);
+      }
+      return;
+    }
+
+    // No cache — show loader and fetch fresh
+    this.fetchFresh(true);
+  }
+
+  private fetchFresh(showLoader: boolean): void {
+    if (showLoader) {
+      this.isLoading.set(true);
+    } else {
+      this.isRefreshing.set(true);
+    }
+
     forkJoin({
       posts: this.postService.getAllPost(1, 1000),
       users: this.adminService.getAllUsers(1, 1000),
@@ -102,16 +134,19 @@ export class AdminHome implements OnInit, AfterViewInit, OnDestroy {
       next: ({ posts, users }) => {
         this.allPosts = posts.data ?? [];
         this.allUsers = users.data ?? [];
+        this.dashboardCache.set(this.allPosts, this.allUsers);
 
         this.computeStats();
         this.isLoading.set(false);
+        this.isRefreshing.set(false);
 
-        // Build or update charts after data is ready
+        // Rebuild charts with fresh data
         setTimeout(() => this.buildAllCharts(), 100);
       },
       error: (err) => {
         console.error('Dashboard load error:', err);
         this.isLoading.set(false);
+        this.isRefreshing.set(false);
       },
     });
   }
@@ -122,7 +157,6 @@ export class AdminHome implements OnInit, AfterViewInit, OnDestroy {
 
     const now           = new Date();
     const weekAgo       = new Date(now.getTime() - 7  * 24 * 60 * 60 * 1000);
-    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
     const published            = allPosts.filter((p: any) => p.status === 'published');
     const drafts               = allPosts.filter((p: any) => p.status === 'draft');
@@ -436,7 +470,6 @@ export class AdminHome implements OnInit, AfterViewInit, OnDestroy {
     const published: number[] = [];
     const drafts: number[]    = [];
 
-    // Decide granularity
     const granularity = days <= 14 ? 'day' : 'week';
     const buckets     = granularity === 'day' ? days : Math.ceil(days / 7);
 

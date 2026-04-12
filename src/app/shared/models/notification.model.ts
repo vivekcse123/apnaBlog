@@ -2,6 +2,7 @@ export type NotificationType =
   | 'USER_LOGIN' | 'USER_REGISTERED'
   | 'PASSWORD_CHANGED' | 'PASSWORD_RESET_REQUESTED' | 'PASSWORD_RESET_COMPLETED'
   | 'POST_PUBLISHED' | 'POST_UPDATED' | 'POST_DELETED' | 'POST_MILESTONE' | 'POST_LIKED'
+  | 'POST_PENDING_REVIEW' | 'POST_APPROVED'
   | 'COMMENT_ADDED' | 'COMMENT_DELETED'
   | 'USER_FROZEN' | 'USER_UNFROZEN' | 'USER_UPDATED' | 'USER_DELETED'
   | 'USER_DELETION_REQUESTED' | 'USER_DELETION_CANCELLED'
@@ -46,6 +47,8 @@ export const NOTIFICATION_META: Record<NotificationType, { icon: string; color: 
   POST_DELETED:                { icon: 'delete_outline',   color: '#ef4444', label: 'Post Deleted'            },
   POST_MILESTONE:              { icon: 'emoji_events',     color: '#f59e0b', label: 'Milestone'               },
   POST_LIKED:                  { icon: 'favorite',         color: '#ec4899', label: 'New Like'                },
+  POST_PENDING_REVIEW:         { icon: 'pending_actions',  color: '#f59e0b', label: 'Pending Review'          },
+  POST_APPROVED:               { icon: 'verified',         color: '#10b981', label: 'Post Approved'           },
   COMMENT_ADDED:               { icon: 'comment',          color: '#06b6d4', label: 'New Comment'             },
   COMMENT_DELETED:             { icon: 'comments_disabled',color: '#94a3b8', label: 'Comment Deleted'         },
   USER_FROZEN:                 { icon: 'block',            color: '#ef4444', label: 'Account Frozen'          },

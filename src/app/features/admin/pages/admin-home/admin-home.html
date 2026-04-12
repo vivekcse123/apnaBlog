@@ -2,7 +2,12 @@
 
   <header class="header">
     <h1 class="heading">Admin Dashboard</h1>
-    <span class="date-badge">{{ currentDate | date: 'EEE, MMM d, y' }}</span>
+    <div class="header-right">
+      @if (isRefreshing()) {
+        <span class="refresh-indicator">Refreshing data…</span>
+      }
+      <span class="date-badge">{{ currentDate | date: 'EEE, MMM d, y' }}</span>
+    </div>
   </header>
 
   @if (isLoading()) {

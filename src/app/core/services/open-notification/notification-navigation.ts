@@ -13,6 +13,7 @@ export interface NotificationNavEvent {
 export const POST_NOTIFICATION_TYPES: NotificationType[] = [
   'POST_LIKED', 'POST_MILESTONE', 'COMMENT_ADDED',
   'COMMENT_DELETED', 'POST_PUBLISHED', 'POST_UPDATED',
+  'POST_PENDING_REVIEW', 'POST_APPROVED',
 ];
 
 export const USER_NOTIFICATION_TYPES: NotificationType[] = [

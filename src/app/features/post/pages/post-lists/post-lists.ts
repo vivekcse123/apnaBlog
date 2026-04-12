@@ -9,7 +9,6 @@ import { CreatePost } from '../create-post/create-post';
 import { PostService } from '../../services/post-service';
 import { ViewPost } from '../../../../shared/view-post/view-post';
 import { MessageModal } from '../../../../shared/message-modal/message-modal';
-import { BlogFilterPipe } from '../../../../shared/pipes/blog-filter-pipe';
 import { Auth } from '../../../../core/services/auth';
 import { LoaderService } from '../../../../core/services/loader-service';
 import { NotificationNavigationService, POST_NOTIFICATION_TYPES } from '../../../../core/services/open-notification/notification-navigation';
@@ -17,7 +16,7 @@ import { NotificationNavigationService, POST_NOTIFICATION_TYPES } from '../../..
 @Component({
   selector: 'app-post-lists',
   standalone: true,
-  imports: [CommonModule, FormsModule, CreatePost, ViewPost, MessageModal, BlogFilterPipe],
+  imports: [CommonModule, FormsModule, CreatePost, ViewPost, MessageModal],
   templateUrl: './post-lists.html',
   styleUrl: './post-lists.css',
 })
@@ -45,6 +44,9 @@ export class PostLists implements OnInit {
 
   currentPage  = signal<number>(1);
   itemsPerPage = signal<number>(6);
+
+  pendingCount  = computed(() => this.allBlogs().filter(p => p.status === 'pending').length);
+  publishedCount = computed(() => this.allBlogs().filter(p => p.status === 'published').length);
 
   filteredBlogs = computed(() => {
     let data = this.allBlogs();
@@ -109,8 +111,8 @@ loadPosts(userId?: string): void {
   this.role.set(role);
 
   const posts$ = role === 'admin'
-    ? this.postService.getAllPost(1, 100)
-    : this.postService.getPostByUserId(id, 1, 10);
+    ? this.postService.getAllPost(1, 1000)
+    : this.postService.getPostByUserId(id, 1, 1000);
 
   this.loader.show('skeleton', 'md', this.itemsPerPage());
 
@@ -129,6 +131,8 @@ loadPosts(userId?: string): void {
 }
 
   toggleTodayFilter(): void { this.showTodayOnly.update(v => !v); this.currentPage.set(1); }
+  onCategoryChange(v: string): void { this.selectedCategory.set(v); this.currentPage.set(1); }
+  onStatusChange(v: string):   void { this.selectedStatus.set(v);   this.currentPage.set(1); }
 
   debounceSearch(value: string): void {
     clearTimeout(this.debounceTimer);

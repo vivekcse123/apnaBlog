@@ -8,6 +8,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Chart, registerables } from 'chart.js';
 import { PostService } from '../../../post/services/post-service';
 import { UserService } from '../../../user/services/user-service';
+import { DashboardCache } from '../../../../core/services/dashboard-cache';
 
 Chart.register(...registerables);
 
@@ -30,17 +31,19 @@ export class UserHome implements OnInit, AfterViewInit, OnDestroy {
   private engagementChart!:   Chart;
   private topPostsChart!:     Chart;
 
-  private postService = inject(PostService);
-  private userService = inject(UserService);
-  private destroyRef  = inject(DestroyRef);
-  private route       = inject(ActivatedRoute);
+  private postService    = inject(PostService);
+  private userService    = inject(UserService);
+  private destroyRef     = inject(DestroyRef);
+  private route          = inject(ActivatedRoute);
+  private dashboardCache = inject(DashboardCache);
 
   currentDate = new Date();
   selectedRange: '7d' | '14d' | '30d' = '14d';
 
-  user       = signal<any>(null);
-  userId     = signal<string>('');
-  isLoading  = signal<boolean>(true);
+  user         = signal<any>(null);
+  userId       = signal<string>('');
+  isLoading    = signal<boolean>(true);
+  isRefreshing = signal<boolean>(false);
 
   totalBlogs     = signal<number>(0);
   totalPublished = signal<number>(0);
@@ -74,35 +77,37 @@ export class UserHome implements OnInit, AfterViewInit, OnDestroy {
   private allPosts: any[] = [];
 
   ngOnInit(): void {
-    const userId = this.route.snapshot.params['id'];
-    this.userId.set(userId);
-    if (!userId) return;
+    const uid = this.route.snapshot.params['id'];
+    this.userId.set(uid);
+    if (!uid) return;
 
-    this.userService.getUserById(userId)
+    // User profile is lightweight — always fetch fresh
+    this.userService.getUserById(uid)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (res) => this.user.set(res.data),
         error: (err) => console.error('Failed to load user:', err),
       });
 
-    this.postService.getPostByUserId(userId, 1, 1000)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (res) => {
-          this.allPosts = res.data ?? [];
-          this.computeStats();
-          this.isLoading.set(false);
-          setTimeout(() => this.buildAllCharts(), 100);
-        },
-        error: (err) => {
-          console.error('Failed to load posts:', err);
-          this.isLoading.set(false);
-        },
-      });
+    // Posts: cache-first
+    const cachedPosts = this.dashboardCache.getUserPosts(uid);
+    if (cachedPosts) {
+      this.allPosts = cachedPosts;
+      this.computeStats();
+      this.isLoading.set(false);
+
+      // Silently refresh if stale
+      if (this.dashboardCache.isUserDataStale(uid)) {
+        this.fetchUserPosts(uid, false);
+      }
+      return;
+    }
+
+    this.fetchUserPosts(uid, true);
   }
 
   ngAfterViewInit(): void {
-    setTimeout(() => this.buildAllCharts(), 400);
+    setTimeout(() => this.buildAllCharts(), 100);
   }
 
   ngOnDestroy(): void {
@@ -110,6 +115,32 @@ export class UserHome implements OnInit, AfterViewInit, OnDestroy {
     this.contentDonutChart?.destroy();
     this.engagementChart?.destroy();
     this.topPostsChart?.destroy();
+  }
+
+  private fetchUserPosts(uid: string, showLoader: boolean): void {
+    if (showLoader) {
+      this.isLoading.set(true);
+    } else {
+      this.isRefreshing.set(true);
+    }
+
+    this.postService.getPostByUserId(uid, 1, 1000)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          this.allPosts = res.data ?? [];
+          this.dashboardCache.setUserPosts(uid, this.allPosts);
+          this.computeStats();
+          this.isLoading.set(false);
+          this.isRefreshing.set(false);
+          setTimeout(() => this.buildAllCharts(), 100);
+        },
+        error: (err) => {
+          console.error('Failed to load posts:', err);
+          this.isLoading.set(false);
+          this.isRefreshing.set(false);
+        },
+      });
   }
 
   private computeStats(): void {

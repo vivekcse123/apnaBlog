@@ -10,6 +10,12 @@ export interface Comment {
   updatedAt: Date;
 }
 
+export interface EditHistoryEntry {
+  editedBy:      User | string | null;
+  editedAt:      Date;
+  changedFields: string[];
+}
+
 export interface Post {
   _id: string;
   user: User;
@@ -23,7 +29,12 @@ export interface Post {
   commentsCount: number;
   comments: Comment[];   // ← fixed from string[]
   views: number;
-  status: 'draft' | 'published';
+  status: 'pending' | 'draft' | 'published';
   createdAt: Date;
   updatedAt: Date;
+
+  // Audit trail
+  lastEditedBy?:  User | string | null;
+  lastEditedAt?:  Date | null;
+  editHistory?:   EditHistoryEntry[];
 }

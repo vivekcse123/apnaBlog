@@ -5,7 +5,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import {
   BehaviorSubject, Observable, Subscription,
-  interval, switchMap, tap, catchError, of, filter,
+  interval, switchMap, tap, catchError, of, filter, fromEvent,
 } from 'rxjs';
 import { NotificationResponse, Notification } from '../../shared/models/notification.model';
 import { Auth } from './auth';
@@ -26,6 +26,12 @@ export class NotificationService implements OnDestroy {
   unreadCount$   = this._unreadCount$.asObservable();
   loading$       = this._loading$.asObservable();
 
+<<<<<<< HEAD
+=======
+  private pollSub?: Subscription;
+  private visibilitySub?: Subscription;
+
+>>>>>>> dev
   private http        = inject(HttpClient);
   private authService = inject(Auth);
   private platformId  = inject(PLATFORM_ID);
@@ -116,9 +122,31 @@ export class NotificationService implements OnDestroy {
       );
   }
 
+<<<<<<< HEAD
   ngOnDestroy(): void { this._reset(); }
 
   // ─── Private ──────────────────────────────────────────────
+=======
+  deleteAllNotifications(): Observable<void> {
+    return this.http
+      .delete<void>(this.api)
+      .pipe(
+        tap(() => {
+          this._notifications$.next([]);
+          this._unreadCount$.next(0);
+        }),
+        catchError(err => {
+          console.error('Delete all notifications error:', err);
+          return of(void 0);
+        }),
+      );
+  }
+
+  ngOnDestroy(): void {
+    this._reset();
+    this.visibilitySub?.unsubscribe();
+  }
+>>>>>>> dev
 
   private get api(): string {
     return this.authService.isAdmin() ? this.ADMIN_API : this.USER_API;
@@ -131,9 +159,41 @@ export class NotificationService implements OnDestroy {
     this._loading$.next(false);
   }
 
+<<<<<<< HEAD
   private _markReadLocally(id: string): void {
     const updated = this._notifications$.value.map(n =>
       n.id === id ? { ...n, isRead: true } : n,
+=======
+  private _startPolling(): void {
+    this.fetchNotifications();
+
+    this.pollSub = interval(this.POLL_MS)
+      .pipe(
+        // Skip the network call when the tab is hidden — saves bandwidth and
+        // reduces server load for background tabs.
+        filter(() => !isPlatformBrowser(this.platformId) || document.visibilityState === 'visible'),
+        switchMap(() => this._fetch()),
+        filter((res): res is NotificationResponse => !!res),
+      )
+      .subscribe(res => this._apply(res));
+
+    // When the user returns to the tab after it was hidden, fetch immediately
+    // instead of waiting for the next poll interval.
+    if (isPlatformBrowser(this.platformId)) {
+      this.visibilitySub?.unsubscribe();
+      this.visibilitySub = fromEvent(document, 'visibilitychange')
+        .pipe(filter(() => document.visibilityState === 'visible'))
+        .subscribe(() => this.fetchNotifications());
+    }
+  }
+
+  private _fetch(): Observable<NotificationResponse | null> {
+    return this.http.get<NotificationResponse>(this.api).pipe(
+      catchError(err => {
+        console.error('Poll failed:', err);
+        return of(null);
+      }),
+>>>>>>> dev
     );
     this._notifications$.next(updated);
     this._unreadCount$.next(Math.max(0, this._unreadCount$.value - 1));

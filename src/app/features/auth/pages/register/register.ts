@@ -31,7 +31,8 @@ export class Register implements OnInit{
 
   }
 
-  isSubmitted = signal(false);
+  isSubmitted  = signal(false);
+  isLoading    = signal(false);
   errorMessage = signal('');
   successMessage = signal('');
 
@@ -43,12 +44,15 @@ export class Register implements OnInit{
       return;
     }
 
+    this.isLoading.set(true);
+
     this.authService.register(this.registerForm.value)
     .pipe(
       takeUntilDestroyed(this.destroyRef)
     )
     .subscribe({
       next: (res) =>{
+        this.isLoading.set(false);
         this.successMessage.set("User registered successfully...!");
         this.errorMessage.set('');
         setTimeout(() =>{
@@ -56,6 +60,7 @@ export class Register implements OnInit{
         }, 300);
       },
       error: (err) =>{
+        this.isLoading.set(false);
         this.successMessage.set('');
         this.errorMessage.set(err?.error?.message);
       }

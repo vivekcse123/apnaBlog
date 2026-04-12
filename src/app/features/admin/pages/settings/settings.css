@@ -369,6 +369,21 @@
 
 /* inputs inherit global styles */
 
+/* ── Inline Field Hints ── */
+.field-hint {
+  font-size: 11.5px;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.field-hint--warn {
+  color: var(--warn);
+}
+
+.field-hint--ok {
+  color: var(--success);
+}
+
 /* ── Form Actions ── */
 .form-actions {
   display: flex;

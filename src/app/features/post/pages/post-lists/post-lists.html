@@ -3,7 +3,13 @@
   <div class="page-header">
     <div>
       <h2>Manage Blogs</h2>
-      <p>View, edit and manage all blog posts | Total Blogs: {{allBlogs().length}}</p>
+      <div class="blog-stats">
+        <span class="stat-pill total">{{ allBlogs().length }} Total</span>
+        <span class="stat-pill published">{{ publishedCount() }} Published</span>
+        @if (pendingCount() > 0) {
+          <span class="stat-pill pending">{{ pendingCount() }} Pending</span>
+        }
+      </div>
     </div>
     <div class="actions">
       <input
@@ -12,7 +18,7 @@
         [(ngModel)]="searchTitle"
         (ngModelChange)="debounceSearch($event)"
       />
-      <select [ngModel]="selectedCategory()" (ngModelChange)="selectedCategory.set($event)">
+      <select [ngModel]="selectedCategory()" (ngModelChange)="onCategoryChange($event)">
         <option value="">Filter by Category</option>
         <option value="Sports">Sports</option>
         <option value="Cooking">Cooking</option>
@@ -28,10 +34,11 @@
         <option value="Social">Social</option>
         <option value="Village">Village</option>
       </select>
-      <select [ngModel]="selectedStatus()" (ngModelChange)="selectedStatus.set($event)">
+      <select [ngModel]="selectedStatus()" (ngModelChange)="onStatusChange($event)">
         <option value="">Filter by Status</option>
         <option value="published">Published</option>
         <option value="draft">Draft</option>
+        <option value="pending">Pending Review</option>
       </select>
       <button
         class="today-btn"
@@ -76,7 +83,7 @@
         </thead>
         <tbody>
 
-          @for (blog of paginatedBlogs() | blogFilter: debounceValue() : selectedCategory() : selectedStatus(); track blog._id) {
+          @for (blog of paginatedBlogs(); track blog._id) {
             <tr>
               <td>
                 <div class="blog-title">{{ blog.title }}</div>
@@ -92,19 +99,15 @@
                 </div>
               </td>
               <td>
-                <span
-                class="status-badge"
-                [class.status-published]="blog.status === 'published'"
-                [class.status-draft]="blog.status === 'draft' && role() === 'admin'"
-                [class.status-pending]="blog.status === 'draft' && role() !== 'admin'"
+                <span class="status-badge"
+                  [class.status-published]="blog.status === 'published'"
+                  [class.status-draft]="blog.status === 'draft'"
+                  [class.status-pending]="blog.status === 'pending'"
                 >
-                @if (blog.status === 'draft' && role() !== 'admin') {
-                  Pending Review
-                } @else {
-                  {{ blog.status | titlecase }}
-                }
-              </span>
-            </td>
+                  @if (blog.status === 'pending') { Pending Review }
+                  @else { {{ blog.status | titlecase }} }
+                </span>
+              </td>
               <td>
                 <div class="stat-cell">
                   <svg width="13" height="13" viewBox="0 0 22 22" fill="none">

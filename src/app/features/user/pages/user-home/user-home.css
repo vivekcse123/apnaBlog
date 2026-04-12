@@ -42,6 +42,24 @@
   margin: 0;
 }
 
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.refresh-indicator {
+  font-size: 12px;
+  color: var(--text-muted);
+  animation: refreshPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes refreshPulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
 .date-badge {
   font-size: 13px;
   color: #fff;

@@ -30,8 +30,11 @@ export class PostService {
     return this.http.post<apiResponse<Post>>(`${this.endPoint}`, postData);
   }
 
+  /** Admin-aware list — passes status=all so the backend returns every post (pending/draft/published). */
   getAllPost(page: number = 1, limit: number = 10): Observable<apiResponse<Post[]>> {
-    return this.http.get<apiResponse<Post[]>>(`${this.endPoint}?page=${page}&limit=${limit}`);
+    return this.http.get<apiResponse<Post[]>>(
+      `${this.endPoint}?page=${page}&limit=${limit}&status=all`
+    );
   }
 
   getPostById(id: string): Observable<apiResponse<Post>> {

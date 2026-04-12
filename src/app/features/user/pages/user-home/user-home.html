@@ -6,7 +6,12 @@
       <h1 class="heading">Welcome back, {{ user()?.name?.split(' ')[0] || 'Writer' }} ✦</h1>
       <p class="heading-sub">Here's what's happening with your blogs</p>
     </div>
-    <span class="date-badge">{{ currentDate | date: 'EEE, MMM d, y' }}</span>
+    <div class="header-right">
+      @if (isRefreshing()) {
+        <span class="refresh-indicator">Refreshing…</span>
+      }
+      <span class="date-badge">{{ currentDate | date: 'EEE, MMM d, y' }}</span>
+    </div>
   </header>
 
   @if (isLoading()) {

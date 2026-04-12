@@ -13,7 +13,6 @@ import { ThemeService } from '../../../../core/services/theme-service';
 import { Auth } from '../../../../core/services/auth';
 import { UserService } from '../../../user/services/user-service';
 import { User } from '../../../user/models/user.mode';
-import { VisitorService } from '../../../../core/services/visitor';
 
 interface DrawerComment {
   _id?: string;
@@ -46,7 +45,6 @@ export class BlogDetail implements OnInit, AfterViewInit {
   private router         = inject(Router);
   private auth           = inject(Auth);
   private userService    = inject(UserService);
-  private visitorService = inject(VisitorService);
   private platformId     = inject(PLATFORM_ID);
   private meta           = inject(Meta);
   private titleService   = inject(Title);
@@ -140,7 +138,7 @@ export class BlogDetail implements OnInit, AfterViewInit {
   });
 
   /* ── Author helpers ── */
-  get authorName(): string       { return (this.post()?.user as any)?.name ?? 'ApnaInsights'; }
+  get authorName(): string       { return (this.post()?.user as any)?.name ?? 'Anonymous Author'; }
   get authorInitial(): string    { return this.authorName.charAt(0).toUpperCase(); }
   get authorJoinedDate(): string { return (this.post()?.user as any)?.createdAt ?? ''; }
   get authorEmail(): string      { return (this.post()?.user as any)?.email ?? ''; }
@@ -363,7 +361,7 @@ export class BlogDetail implements OnInit, AfterViewInit {
       '@context': 'https://schema.org', '@type': 'Article',
       'headline': post.title, 'description': post.description,
       'image': post.featuredImage, 'datePublished': post.createdAt,
-      'author': { '@type': 'Person', 'name': (post.user as any)?.name ?? 'ApnaInsights' },
+      'author': { '@type': 'Person', 'name': (post.user as any)?.name ?? 'Anonymous Author' },
       'publisher': {
         '@type': 'Organization', 'name': 'ApnaInsights',
         'logo': { '@type': 'ImageObject', 'url': 'https://www.apnainsights.com/logo.png', 'width': 497, 'height': 497 }
