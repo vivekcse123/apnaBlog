@@ -210,7 +210,7 @@ body {
 
 .filter-wrap {
   /* top: 70px = desktop header height — prevents the filter bar from sliding under the sticky header */
-  position: sticky; top: 70px; z-index: 800;
+  position: sticky; top: 0px; z-index: 800;
   background: var(--bg-surface);
   border-bottom: 1px solid var(--border);
   box-shadow: var(--card-shadow);

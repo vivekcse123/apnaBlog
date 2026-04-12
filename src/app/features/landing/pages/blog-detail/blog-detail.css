@@ -71,7 +71,7 @@ body {
 
 /* ── Progress Bar ── */
 .reading-progress-bar {
-  position: fixed; top: 66px; left: 0; height: 4px;
+  position: fixed; top: 0px; left: 0; height: 4px;
   background: linear-gradient(135deg, #43cea2, #185a9d);
   z-index: 999; transition: width 0.1s linear;
   box-shadow: 0 2px 8px rgba(67,206,162,0.3);
