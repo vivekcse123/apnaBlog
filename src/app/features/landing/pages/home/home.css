@@ -998,7 +998,6 @@ input[type="search"]::-webkit-search-decoration {
   -webkit-appearance: none;
 }
 
-/* Hero and filter must always be rendered — never defer them */
 .hero-wrap,
 .filter-wrap {
   content-visibility: visible;

@@ -1,8 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { Subject, filter, take } from 'rxjs';
+import { Auth } from '../../services/auth';
 import { NotificationType } from '../../../shared/models/notification.model';
-import { Auth } from '../auth';
 
 export interface NotificationNavEvent {
   type:       NotificationType;
@@ -31,7 +31,6 @@ export class NotificationNavigationService {
   private router      = inject(Router);
   private authService = inject(Auth);
 
-  // ✅ Subject instead of stored value — fires to already-mounted components too
   private _openModal$ = new Subject<NotificationNavEvent>();
   openModal$ = this._openModal$.asObservable();
 
@@ -62,28 +61,20 @@ export class NotificationNavigationService {
       const targetUrl  = '/' + targetPath.join('/');
 
       if (currentUrl === targetUrl) {
-        // ✅ Already on the correct page — fire directly, no navigation needed
         this._openModal$.next(event);
       } else {
-        // ✅ Different page — navigate first, then fire after navigation completes
         this.router.navigate(targetPath);
         this.router.events
-          .pipe(
-            filter(e => e instanceof NavigationEnd),
-            take(1)
-          )
+          .pipe(filter(e => e instanceof NavigationEnd), take(1))
           .subscribe(() => {
-            // Small delay ensures component is fully initialized
             setTimeout(() => this._openModal$.next(event), 100);
           });
       }
 
     } else {
-      // User: navigate directly to blog
       const validUrl = resourceUrl &&
                        !resourceUrl.includes('null') &&
                        !resourceUrl.includes('undefined');
-
       if (validUrl) {
         this.router.navigateByUrl(resourceUrl!);
       } else if (POST_NOTIFICATION_TYPES.includes(event.type)) {

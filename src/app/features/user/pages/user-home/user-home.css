@@ -163,6 +163,7 @@
 .comments-icon  { background: rgba(55,  138, 221, 0.12); }
 .top-icon       { background: rgba(245, 158, 11,  0.12); }
 .avg-icon       { background: rgba(92,  184, 92,  0.12); }
+.followers-icon { background: rgba(24,  90,  157, 0.12); }
 
 .info-content {
   display: flex;
@@ -209,6 +210,7 @@
 .comments-badge  { background: rgba(55,  138, 221, 0.12); color: #185a9d; }
 .top-badge       { background: rgba(245, 158, 11,  0.12); color: #b45309; }
 .avg-badge       { background: rgba(92,  184, 92,  0.12); color: #3a7a3a; }
+.followers-badge { background: rgba(24,  90,  157, 0.12); color: #185a9d; }
 
 [data-theme="dark"] .blog-badge      { color: #43cea2; }
 [data-theme="dark"] .published-badge { color: #34d399; }
@@ -218,6 +220,7 @@
 [data-theme="dark"] .comments-badge  { color: #60a5fa; }
 [data-theme="dark"] .top-badge       { color: #fbbf24; }
 [data-theme="dark"] .avg-badge       { color: #4ade80; }
+[data-theme="dark"] .followers-badge { color: #60a5fa; }
 
 /* ══════════════════════════════════════════
    CHARTS SECTION

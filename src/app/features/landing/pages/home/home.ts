@@ -8,9 +8,8 @@ import { CommonModule, isPlatformBrowser, NgTemplateOutlet } from '@angular/comm
 import { FormsModule } from '@angular/forms';
 import { Meta, Title } from '@angular/platform-browser';
 import { DOCUMENT } from '@angular/common';
-import { finalize, debounceTime, distinctUntilChanged, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
-import { Subject } from 'rxjs';
+import { forkJoin, of, Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, catchError } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { PostService } from '../../../post/services/post-service';
 import { Post } from '../../../../core/models/post.model';
@@ -36,6 +35,13 @@ interface PostWithTs extends Post { _ts: number; }
 
 const PAGE_SIZE         = 8;
 const COMMENT_PAGE_SIZE = 5;
+
+/**
+ * How many posts to fetch per HTTP request.
+ * Must be ≤ the backend's limit cap (raise cap to 100 in post.router.js —
+ * see comment in loadFresh below).
+ */
+const FETCH_LIMIT = 100;
 
 @Component({
   selector: 'app-home',
@@ -277,64 +283,119 @@ export class Home implements OnInit, OnDestroy {
 
   // ── Core loading ──────────────────────────────────────────────────────────
 
-  /** Only refresh if cache is older than 60 s — avoids redundant calls on
-   *  quick Home → Detail → Back navigation. */
   private readonly STALE_THRESHOLD_MS = 60_000;
 
   private loadInitialData(): void {
     const cached = this.postCache.get();
 
     if (cached?.length) {
-      // Instant render from cache — no skeleton shown at all
       this.allPosts.set(cached);
       this.isLoading.set(false);
 
       const age = this.postCache.getAge();
       if (age === null || age > this.STALE_THRESHOLD_MS) {
-        this.loadFresh(false);   // silent background refresh
+        this.loadFresh(false);
       }
     } else {
-      this.loadFresh(true);      // first visit — show skeleton
+      this.loadFresh(true);
     }
 
-    this.fetchCurrentUser();     // never blocks post display
+    this.fetchCurrentUser();
   }
 
+  /**
+   * ── Fetch ALL published posts, no matter how many exist ──────────────────
+   *
+   * IMPORTANT — also make this one-line change in post.router.js:
+   *   const limit = Math.max(1, Math.min(parseInt(req.query.limit) || 10, 100));
+   *                                                                        ^^^
+   *   Change 50 → 100  so FETCH_LIMIT=100 actually works server-side.
+   *
+   * How it works:
+   *   Step 1 — Fetch page 1. The response includes `totalPages`.
+   *   Step 2 — If totalPages > 1, fire all remaining pages in parallel (forkJoin).
+   *   Step 3 — Merge all batches, filter to published, commit to signal.
+   *
+   * With 64 posts and FETCH_LIMIT=100 → only 1 HTTP request is needed (fits
+   * in a single page). If posts grow to 250 → 3 parallel requests. Automatic.
+   */
   private loadFresh(showLoader: boolean): void {
     if (showLoader) this.isLoading.set(true);
 
-    // ✅ FIX 1 — use getAllPost() (no status=all param).
-    // The backend returns published + draft posts for non-admin users.
-    // We then keep ONLY status === 'published' so the home page shows
-    // only admin-approved content.
-    // If your DB still has legacy posts with status 'draft' that should be
-    // publicly visible, run a one-time migration:
-    //   db.posts.updateMany({ status: 'draft' }, { $set: { status: 'published' } })
-    this.postService.getAllPost(1, 200)
+    this.postService.getAllPost(1, FETCH_LIMIT)
       .pipe(
         takeUntilDestroyed(this.destroyRef),
-        finalize(() => this.isLoading.set(false)),
         catchError(err => {
-          console.error('[Home] Failed to load posts:', err);
-          return of({ data: [] as Post[] });
+          console.error('[Home] page 1 failed:', err);
+          this.isLoading.set(false);
+          return of(null);
         })
       )
-      .subscribe(res => {
-        // Show published + legacy-draft posts on the landing page.
-        // The backend already excludes 'pending' posts for non-admin callers,
-        // so 'draft' here means legacy posts created before the pending-review
-        // workflow — they must remain publicly visible.
-        const visible = (res.data ?? [])
-          .filter((p: Post) => p.status === 'published' || p.status === 'draft')
-          .map((p: Post): PostWithTs => ({
-            ...p,
-            _ts: new Date(p.createdAt).getTime(),
-          }));
+      .subscribe(firstRes => {
+        if (!firstRes) return;
 
-        this.allPosts.set(visible);
-        this.postCache.set(visible);
-        this.updateJsonLdPostCount(visible.length);
+        const firstBatch: Post[] = firstRes.data       ?? [];
+        const totalPages: number = firstRes.totalPages ?? 1;
+
+        // ── All posts fit in one page — done ────────────────────────────────
+        if (totalPages <= 1) {
+          this.commitPosts(firstBatch);
+          this.isLoading.set(false);
+          return;
+        }
+
+        // ── More pages exist — fetch them all in parallel ───────────────────
+        const pageNums = Array.from({ length: totalPages - 1 }, (_, i) => i + 2);
+
+        forkJoin(
+          pageNums.map(page =>
+            this.postService.getAllPost(page, FETCH_LIMIT).pipe(
+              catchError(err => {
+                console.error(`[Home] page ${page} failed:`, err);
+                // Return empty shell — forkJoin won't abort on one failed page
+                return of({
+                  data: [] as Post[],
+                  totalPages,
+                  total: 0,
+                  page,
+                  limit: FETCH_LIMIT,
+                  status: 200,
+                  message: '',
+                });
+              })
+            )
+          )
+        )
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe(restResponses => {
+          const allRaw: Post[] = [
+            ...firstBatch,
+            ...restResponses.flatMap(r => r.data ?? []),
+          ];
+          this.commitPosts(allRaw);
+          this.isLoading.set(false);
+        });
       });
+  }
+
+  /**
+   * Dedup by _id, filter to published + legacy-draft, stamp _ts, write to signal + cache.
+   * 'draft' = posts created before the pending-review workflow; they must remain visible.
+   */
+  private commitPosts(raw: Post[]): void {
+    const seen    = new Set<string>();
+    const visible: PostWithTs[] = [];
+
+    for (const p of raw) {
+      if (p.status !== 'published' && p.status !== 'draft') continue;
+      if (seen.has(p._id)) continue;   // guard against duplicate pages
+      seen.add(p._id);
+      visible.push({ ...p, _ts: new Date(p.createdAt).getTime() });
+    }
+
+    this.allPosts.set(visible);
+    this.postCache.set(visible);
+    this.updateJsonLdPostCount(visible.length);
   }
 
   private fetchCurrentUser(): void {
@@ -353,10 +414,10 @@ export class Home implements OnInit, OnDestroy {
 
   private setMetaTags(): void {
     this.titleService.setTitle('ApnaInsights — Community Stories from Every Corner of India');
-    this.meta.updateTag({ name: 'description', content: 'Discover real stories from real people across India. Read and write blogs on Technology, Lifestyle, Health, Business, Education, Village Life and more. Free community blogging platform — join thousands of Indian writers.' });
-    this.meta.updateTag({ name: 'keywords', content: 'Indian blog platform, community stories India, read blogs India, write blogs free, trending stories, technology blog India, village life stories, health stories India, ApnaInsights' });
-    this.meta.updateTag({ name: 'robots', content: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' });
-    this.meta.updateTag({ name: 'author', content: 'ApnaInsights Community' });
+    this.meta.updateTag({ name: 'description',    content: 'Discover real stories from real people across India. Read and write blogs on Technology, Lifestyle, Health, Business, Education, Village Life and more. Free community blogging platform — join thousands of Indian writers.' });
+    this.meta.updateTag({ name: 'keywords',       content: 'Indian blog platform, community stories India, read blogs India, write blogs free, trending stories, technology blog India, village life stories, health stories India, ApnaInsights' });
+    this.meta.updateTag({ name: 'robots',         content: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' });
+    this.meta.updateTag({ name: 'author',         content: 'ApnaInsights Community' });
     this.meta.updateTag({ property: 'og:type',         content: 'website' });
     this.meta.updateTag({ property: 'og:title',        content: 'ApnaInsights — Community Stories from Every Corner of India' });
     this.meta.updateTag({ property: 'og:description',  content: 'Discover real stories from real people across India. 10K+ blogs on Technology, Lifestyle, Health, Business, Village Life and more. Free to read, free to write.' });
@@ -499,7 +560,7 @@ export class Home implements OnInit, OnDestroy {
     try {
       const stored = localStorage.getItem('apna_liked_posts');
       if (stored) this.likedPostIds.set(new Set(JSON.parse(stored)));
-    } catch { /* storage unavailable */ }
+    } catch { }
   }
 
   private persistLikedIds(ids: Set<string>): void {
@@ -525,7 +586,6 @@ export class Home implements OnInit, OnDestroy {
       this.patchPost(post._id, { likesCount: post.likesCount + 1 });
       this.postService.likePost(post._id).subscribe({
         error: () => {
-          // Rollback optimistic update on failure
           newSet.delete(post._id);
           this.likedPostIds.set(new Set(newSet));
           this.persistLikedIds(newSet);
@@ -591,7 +651,7 @@ export class Home implements OnInit, OnDestroy {
       next: (res) => {
         const incoming: DrawerComment[] = (res.comments ?? []) as DrawerComment[];
 
-        // ✅ FIX 2 — backend sends `totalComments`, not `total` / `totalCount`
+        // ✅ backend returns `totalComments` — not `total` or `totalCount`
         const total: number = res.totalComments ?? incoming.length;
 
         this.drawerComments.set(

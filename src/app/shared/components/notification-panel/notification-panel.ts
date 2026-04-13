@@ -4,14 +4,14 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatIconModule } from '@angular/material/icon';
 import { filter, Subject, take, takeUntil } from 'rxjs';
 
 import {
   Notification, NotificationType, NOTIFICATION_META,
 } from '../../models/notification.model';
 import { NotificationService } from '../../../core/services/notification-service';
-import { NotificationNavigationService, NON_NAVIGABLE_TYPES} from '../../../core/services/open-notification/notification-navigation';
+import { NotificationNavigationService, NON_NAVIGABLE_TYPES } from '../../../core/services/open-notification/notification-navigation';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-notification-panel',
@@ -84,11 +84,14 @@ export class NotificationPanel implements OnInit, OnDestroy {
     }
 
     if (this.isNavigable(notification.type) && notification.resourceId) {
-      this.navSvc.navigateTo({
-        type:       notification.type,
-        resourceId: notification.resourceId,
-        metadata:   notification.metadata ?? {},
-      });
+      this.navSvc.navigateTo(
+        {
+          type:       notification.type,
+          resourceId: notification.resourceId,
+          metadata:   notification.metadata ?? {},
+        },
+        notification.resourceUrl   // pass resourceUrl so user notifications navigate to /blog/:id directly
+      );
       this.panelOpen.set(false);
     }
   }

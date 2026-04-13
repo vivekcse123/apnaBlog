@@ -44,10 +44,11 @@ export class UserHome implements OnInit, AfterViewInit, OnDestroy {
   currentDate = new Date();
   selectedRange: '7d' | '14d' | '30d' = '14d';
 
-  user         = signal<any>(null);
-  userId       = signal<string>('');
-  isLoading    = signal<boolean>(true);
-  isRefreshing = signal<boolean>(false);
+  user            = signal<any>(null);
+  userId          = signal<string>('');
+  followersCount  = signal<number>(0);
+  isLoading       = signal<boolean>(true);
+  isRefreshing    = signal<boolean>(false);
 
   totalBlogs     = signal<number>(0);
   totalPublished = signal<number>(0);
@@ -92,7 +93,10 @@ export class UserHome implements OnInit, AfterViewInit, OnDestroy {
     this.userService.getUserById(uid)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (res) => this.user.set(res.data),
+        next: (res) => {
+          this.user.set(res.data);
+          this.followersCount.set(res.followersCount ?? 0);
+        },
         error: (err) => console.error('Failed to load user:', err),
       });
 

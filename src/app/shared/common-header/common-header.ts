@@ -8,30 +8,22 @@ import { NotificationService } from '../../core/services/notification-service';
 @Component({
   selector: 'app-common-header',
   standalone: true,
-  imports: [
-    RouterLink,         // covers routerLink on the <a class="logo"> anchor too
-    RouterLinkActive,
-    CommonModule,
-    MatIconModule,
-    NotificationPanel,
-  ],
+  imports: [RouterLink, RouterLinkActive, CommonModule, MatIconModule, NotificationPanel],
   templateUrl: './common-header.html',
   styleUrls: ['./common-header.css'],
 })
 export class CommonHeader implements OnInit {
-
-  @Input() logo:    string = 'ApnaInsights';
-  @Input() profile: string | null = '';
-  @Input() navs:    { label: string; routerLink: string }[] = [];
+  @Input() logo:      string = 'ApnaInsights';
+  @Input() profile:   string | null = '';
+  @Input() avatarUrl: string | null = null; // ← new
+  @Input() navs:      { label: string; routerLink: string }[] = [];
   @Output() open = new EventEmitter<void>();
 
   menuOpen = false;
 
   private notifSvc = inject(NotificationService);
 
-  ngOnInit(): void {
-    // this.notifSvc.startPolling();
-  }
+  ngOnInit(): void {}
 
   toggleMenu():          void { this.menuOpen = !this.menuOpen; }
   openProfile(e: Event): void { e.stopPropagation(); this.open.emit(); }
