@@ -17,17 +17,27 @@ export interface UploadResponse {
   publicId: string;
 }
 
+// ── Reply shape ───────────────────────────────────────────────────────────────
+export interface CommentReply {
+  _id?:       string;
+  name:       string;
+  comment:    string;
+  user?:      string | null;
+  createdAt?: string;
+}
+
 // ── Strongly-typed shape the backend actually returns for comments ─────────────
 export interface CommentsResponse {
   status:        number;
   message:       string;
-  totalComments: number;   // ✅ exact field name from backend
+  totalComments: number;
   comments:      Array<{
-    _id?:      string;
-    name:      string;
-    comment:   string;
-    user?:     string | null;
+    _id?:       string;
+    name:       string;
+    comment:    string;
+    user?:      string | null;
     createdAt?: string;
+    replies?:   CommentReply[];
   }>;
 }
 
@@ -36,7 +46,7 @@ export interface CommentsResponse {
 })
 export class PostService {
   private endPoint       = environment.apiPostEndpoint.replace(/\/+$/, '');
-  private uplaodEndPoint = environment.apiUploadEndpoint;
+  private uplaodEndPoint = environment.apiUploadEndpoint.replace(/\/+$/, '');
 
   private http = inject(HttpClient);
 
@@ -125,6 +135,25 @@ export class PostService {
   deleteComment(postId: string, commentId: string): Observable<apiResponse<null>> {
     return this.http.delete<apiResponse<null>>(
       `${this.endPoint}/${postId}/comment/${commentId}`
+    );
+  }
+
+  addReply(
+    postId:    string,
+    commentId: string,
+    comment:   string,
+    userId?:   string
+  ): Observable<{ status: number; message: string; data: { reply: CommentReply; commentId: string } }> {
+    const body: Record<string, string> = { comment: comment.trim() };
+    if (userId?.trim()) body['userId'] = userId;
+    return this.http.post<{ status: number; message: string; data: { reply: CommentReply; commentId: string } }>(
+      `${this.endPoint}/${postId}/comment/${commentId}/reply`, body
+    );
+  }
+
+  deleteReply(postId: string, commentId: string, replyId: string): Observable<apiResponse<null>> {
+    return this.http.delete<apiResponse<null>>(
+      `${this.endPoint}/${postId}/comment/${commentId}/reply/${replyId}`
     );
   }
 

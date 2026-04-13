@@ -230,7 +230,90 @@
                   }
                 </div>
                 <p class="comment-text">{{ c.comment }}</p>
+
+                <!-- Reply actions row -->
+                <div class="comment-footer">
+                  @if (c._id) {
+                    <button class="reply-toggle-btn"
+                      [class.active]="replyingToId() === c._id"
+                      (click)="startReply(c._id!)">
+                      ↩ {{ replyingToId() === c._id ? 'Cancel' : 'Reply' }}
+                    </button>
+                  }
+                  @if ((c.replies?.length ?? 0) > 0) {
+                    <button class="view-replies-btn" (click)="toggleReplies(c._id!)">
+                      {{ c.showReplies ? '▴ Hide' : '▾ Show' }}
+                      {{ c.replies!.length }} repl{{ c.replies!.length === 1 ? 'y' : 'ies' }}
+                    </button>
+                  }
+                </div>
+
+                <!-- Inline reply form -->
+                @if (replyingToId() === c._id) {
+                  <div class="reply-form">
+                    <div class="reply-form-avatar">
+                      {{ (isLoggedIn ? loggedInUserName : 'A').charAt(0).toUpperCase() }}
+                    </div>
+                    <div class="reply-form-body">
+                      <textarea class="reply-textarea"
+                        [ngModel]="replyText()"
+                        (ngModelChange)="replyText.set($event)"
+                        placeholder="Write a reply…"
+                        rows="2"
+                        maxlength="500"
+                        (keydown.enter)="$any($event).ctrlKey && submitReply(c._id!)">
+                      </textarea>
+                      <div class="reply-form-actions">
+                        <span class="char-count" [class.warn]="replyText().length > 450">
+                          {{ replyText().length }}/500
+                        </span>
+                        @if (replyFeedback()) {
+                          <span class="reply-feedback" [class.error]="replyFeedback()!.type === 'error'">
+                            {{ replyFeedback()!.msg }}
+                          </span>
+                        }
+                        <div class="reply-btns">
+                          <button class="reply-cancel-btn" type="button" (click)="cancelReply()">Cancel</button>
+                          <button class="reply-submit-btn" type="button"
+                            [disabled]="!replyText().trim() || replySubmitting()"
+                            (click)="submitReply(c._id!)">
+                            @if (replySubmitting()) { <span class="btn-spinner"></span> } @else { Reply }
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                }
+
+                <!-- Replies thread -->
+                @if (c.showReplies && (c.replies?.length ?? 0) > 0) {
+                  <div class="replies-list">
+                    @for (r of c.replies!; track r._id) {
+                      <div class="reply-item">
+                        <div class="reply-avatar">{{ r.name.charAt(0).toUpperCase() }}</div>
+                        <div class="reply-content">
+                          <div class="comment-meta">
+                            <span class="comment-author">{{ r.name }}</span>
+                            @if (r.createdAt) {
+                              <span class="comment-time">{{ r.createdAt | date:'MMM d, y' }}</span>
+                            }
+                          </div>
+                          <p class="comment-text">{{ r.comment }}</p>
+                        </div>
+                        @if (isPostOwner() && r._id) {
+                          <button class="comment-delete-btn"
+                            [class.deleting]="deletingReplyId() === r._id"
+                            [disabled]="deletingReplyId() === r._id"
+                            (click)="deleteReply(c._id!, r._id!, $event)" aria-label="Delete reply">
+                            @if (deletingReplyId() === r._id) { <span class="btn-spinner"></span> } @else { 🗑 }
+                          </button>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
               </div>
+
               @if (isPostOwner() && c._id) {
                 <button class="comment-delete-btn"
                   [class.deleting]="deletingCommentId() === c._id"
@@ -303,15 +386,31 @@
           </div>
           <div class="apm-stat-div"></div>
           <div class="apm-stat">
-            <span class="apm-stat-val">{{ post()!.views }}</span>
-            <span class="apm-stat-lbl">Views this post</span>
+            <span class="apm-stat-val">{{ authorFollowersCount() }}</span>
+            <span class="apm-stat-lbl">Followers</span>
           </div>
           <div class="apm-stat-div"></div>
           <div class="apm-stat">
-            <span class="apm-stat-val">{{ post()!.likesCount }}</span>
-            <span class="apm-stat-lbl">Likes this post</span>
+            <span class="apm-stat-val">{{ post()!.views }}</span>
+            <span class="apm-stat-lbl">Views</span>
           </div>
         </div>
+
+        <!-- Follow button (only shown to logged-in users who are not the author) -->
+        @if (isLoggedIn && currentUser?._id !== authorId()) {
+          <button class="follow-btn"
+            [class.following]="isFollowingAuthor()"
+            [disabled]="followLoading()"
+            (click)="toggleFollow()" type="button">
+            @if (followLoading()) {
+              <span class="btn-spinner"></span>
+            } @else if (isFollowingAuthor()) {
+              ✓ Following
+            } @else {
+              + Follow
+            }
+          </button>
+        }
 
         <div class="apm-info">
           @if (authorBio) {
