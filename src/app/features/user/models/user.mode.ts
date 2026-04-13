@@ -4,7 +4,7 @@ export interface User {
   email:        string;
   password:     string;
   dob:          Date;
-  location:     string;   
+  location:     string;
   role:         string;
   status:       string;
   bio: string;
@@ -14,5 +14,7 @@ export interface User {
   updatedAt:    Date;
   lastLoggedInAt: Date;
   deletionScheduledAt: any;
-  avatar: string
+  avatar: string;
+  followersCount?: number;
+  isFollowing?: boolean;
 }

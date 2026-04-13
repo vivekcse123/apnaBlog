@@ -378,21 +378,24 @@ export class Home implements OnInit, OnDestroy {
       });
   }
 
-  /** Dedup by _id, filter to published, stamp _ts, write to signal + cache. */
+  /**
+   * Dedup by _id, filter to published + legacy-draft, stamp _ts, write to signal + cache.
+   * 'draft' = posts created before the pending-review workflow; they must remain visible.
+   */
   private commitPosts(raw: Post[]): void {
-    const seen  = new Set<string>();
-    const published: PostWithTs[] = [];
+    const seen    = new Set<string>();
+    const visible: PostWithTs[] = [];
 
     for (const p of raw) {
-      if (p.status !== 'published') continue;
+      if (p.status !== 'published' && p.status !== 'draft') continue;
       if (seen.has(p._id)) continue;   // guard against duplicate pages
       seen.add(p._id);
-      published.push({ ...p, _ts: new Date(p.createdAt).getTime() });
+      visible.push({ ...p, _ts: new Date(p.createdAt).getTime() });
     }
 
-    this.allPosts.set(published);
-    this.postCache.set(published);
-    this.updateJsonLdPostCount(published.length);
+    this.allPosts.set(visible);
+    this.postCache.set(visible);
+    this.updateJsonLdPostCount(visible.length);
   }
 
   private fetchCurrentUser(): void {

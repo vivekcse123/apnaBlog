@@ -13,7 +13,7 @@ export interface UploadResponse {
 @Injectable({ providedIn: 'root' })
 export class UploadService {
   private http           = inject(HttpClient);
-  private uploadEndpoint = environment.apiUploadEndpoint; 
+  private uploadEndpoint = environment.apiUploadEndpoint.replace(/\/+$/, '');
 
   uploadImage(file: File): Observable<UploadResponse> {
     const formData = new FormData();

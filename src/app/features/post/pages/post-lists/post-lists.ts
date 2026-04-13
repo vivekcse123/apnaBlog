@@ -111,7 +111,7 @@ loadPosts(userId?: string): void {
   this.role.set(role);
 
   const posts$ = role === 'admin'
-    ? this.postService.getAllPost(1, 1000)
+    ? this.postService.getAllPostAdmin(1, 1000)
     : this.postService.getPostByUserId(id, 1, 1000);
 
   this.loader.show('skeleton', 'md', this.itemsPerPage());

@@ -51,6 +51,7 @@ export class AdminHome implements OnInit, AfterViewInit, OnDestroy {
   totalUsers     = signal<number>(0);
   totalPublished = signal<number>(0);
   totalDrafts    = signal<number>(0);
+  totalPending   = signal<number>(0);
   totalViews     = signal<number>(0);
   totalComments  = signal<number>(0);
   totalLikes     = signal<number>(0);
@@ -126,7 +127,7 @@ export class AdminHome implements OnInit, AfterViewInit, OnDestroy {
     }
 
     forkJoin({
-      posts: this.postService.getAllPost(1, 1000),
+      posts: this.postService.getAllPostAdmin(1, 1000),
       users: this.adminService.getAllUsers(1, 1000),
     })
     .pipe(takeUntilDestroyed(this.destroyRef))
@@ -160,15 +161,17 @@ export class AdminHome implements OnInit, AfterViewInit, OnDestroy {
 
     const published            = allPosts.filter((p: any) => p.status === 'published');
     const drafts               = allPosts.filter((p: any) => p.status === 'draft');
+    const pending              = allPosts.filter((p: any) => p.status === 'pending');
     const newBlogsThisWeek     = allPosts.filter((p: any) => new Date(p.createdAt) >= weekAgo);
     const newPublishedThisWeek = published.filter((p: any) => new Date(p.createdAt) >= weekAgo);
 
     this.totalBlogs.set(allPosts.length);
     this.totalPublished.set(published.length);
     this.totalDrafts.set(drafts.length);
+    this.totalPending.set(pending.length);
     this.newBlogs.set(newBlogsThisWeek.length);
     this.newPublished.set(newPublishedThisWeek.length);
-    this.pendingReview.set(drafts.length);
+    this.pendingReview.set(pending.length);
 
     const totalViews    = allPosts.reduce((s: number, p: any) => s + (p.views         ?? 0), 0);
     const totalComments = allPosts.reduce((s: number, p: any) => s + (p.commentsCount ?? 0), 0);
@@ -305,9 +308,9 @@ export class AdminHome implements OnInit, AfterViewInit, OnDestroy {
   private buildOrUpdateContentDoughnut(): void {
     if (!this.contentDoughnutRef) return;
 
-    const data   = [this.totalPublished(), this.totalDrafts()];
-    const labels = ['Published', 'Drafts'];
-    const colors = ['#43cea2', '#BA7517'];
+    const data   = [this.totalPublished(), this.totalDrafts(), this.totalPending()];
+    const labels = ['Published', 'Drafts', 'Pending'];
+    const colors = ['#43cea2', '#BA7517', '#dc2626'];
 
     if (this.contentDoughnut) {
       this.contentDoughnut.data.datasets[0].data = data;
@@ -493,7 +496,7 @@ export class AdminHome implements OnInit, AfterViewInit, OnDestroy {
         new Date(p.createdAt) >= start && new Date(p.createdAt) <= end
       ).length);
       drafts.push(this.allPosts.filter((p: any) =>
-        p.status === 'draft' &&
+        (p.status === 'draft' || p.status === 'pending') &&
         new Date(p.createdAt) >= start && new Date(p.createdAt) <= end
       ).length);
     }

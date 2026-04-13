@@ -8,4 +8,6 @@ export interface apiResponse<T> {
   totalPages?: number;
   totalBlogs: number;
   totalViews: number;
+  followersCount?: number;
+  isFollowing?: boolean;
 }

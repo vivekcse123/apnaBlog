@@ -132,6 +132,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 8px;
   padding: 12px 20px;
   position: sticky;
   top: 0;
@@ -149,6 +150,8 @@
   display: flex;
   gap: 6px;
   flex-wrap: wrap;
+  flex: 1;
+  min-width: 0;
 }
 
 .cat-pill {
@@ -166,7 +169,7 @@
 
 /* ─── Close button ───────────────────────────────────────── */
 .close-btn {
-  flex-shrink: 0;
+  flex-shrink: 0 !important;
   width: 32px;
   height: 32px;
   border-radius: 50%;

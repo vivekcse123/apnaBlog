@@ -14,12 +14,22 @@ import { Auth } from '../../../../core/services/auth';
 import { UserService } from '../../../user/services/user-service';
 import { User } from '../../../user/models/user.mode';
 
+interface DrawerReply {
+  _id?:       string;
+  name:       string;
+  comment:    string;
+  user?:      string | null;
+  createdAt?: string;
+}
+
 interface DrawerComment {
-  _id?: string;
-  name: string;
-  comment: string;
-  user: string | null;
-  createdAt: string;
+  _id?:       string;
+  name:       string;
+  comment:    string;
+  user:       string | null;
+  createdAt:  string;
+  replies?:   DrawerReply[];
+  showReplies?: boolean;
 }
 
 interface TableOfContentsItem {
@@ -97,6 +107,19 @@ export class BlogDetail implements OnInit, AfterViewInit {
   shareCount      = signal(0);
   shareMenuOpen   = signal(false);
   copyLinkSuccess = signal(false);
+
+  /* ── Reply state ── */
+  replyingToId      = signal<string | null>(null);
+  replyText         = signal('');
+  replySubmitting   = signal(false);
+  replyFeedback     = signal<{ type: 'success' | 'error'; msg: string } | null>(null);
+  deletingReplyId   = signal<string | null>(null);
+
+  /* ── Follow state ── */
+  authorFollowersCount = signal(0);
+  isFollowingAuthor    = signal(false);
+  followLoading        = signal(false);
+  authorId             = signal<string | null>(null);
 
   /* ── Author profile modal ── */
   showAuthorModal  = signal(false);
@@ -192,6 +215,11 @@ export class BlogDetail implements OnInit, AfterViewInit {
       this.showAuthorModal.set(false);
       this.showAuthorPostsModal.set(false);
       this.authorTotalPosts.set(0);
+      this.replyingToId.set(null);
+      this.replyText.set('');
+      this.authorFollowersCount.set(0);
+      this.isFollowingAuthor.set(false);
+      this.authorId.set(null);
       this.contentEl = null;
       this.lockScroll(false);
 
@@ -232,10 +260,19 @@ export class BlogDetail implements OnInit, AfterViewInit {
     ).subscribe({
       next: (res) => {
         const postData = res.data;
-        if (!postData || postData.status !== 'published') {
+        // Allow both published and legacy-draft posts; only block pending-review ones
+        if (!postData || (postData.status !== 'published' && postData.status !== 'draft')) {
           this.router.navigate(['/welcome']); return;
         }
         this.post.set(postData);
+
+        // Extract author ID and fetch follow data (followers count + current user's follow status)
+        const aId = (postData.user as any)?._id ?? (postData.user as any);
+        if (aId) {
+          this.authorId.set(aId.toString());
+          this.fetchAuthorFollowData(aId.toString());
+        }
+
         this.addView(postData);
         this.loadComments(postId);
         this.loadRelatedAndAuthorPosts(postData);
@@ -256,7 +293,8 @@ export class BlogDetail implements OnInit, AfterViewInit {
 
   /* One API call — populates related posts AND all author posts with zero duplication */
   private loadRelatedAndAuthorPosts(currentPost: Post): void {
-    this.postService.getAllPost(1, 100).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+    // Use limit=500 to capture enough posts for any category (including niche ones like 'village')
+    this.postService.getAllPost(1, 500).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (res) => {
         const allPosts: Post[] = res.data ?? [];
         const authorId = (currentPost.user as any)?._id ?? currentPost.user;
@@ -266,7 +304,7 @@ export class BlogDetail implements OnInit, AfterViewInit {
           .filter(p => {
             const pid = (p.user as any)?._id ?? p.user;
             return pid?.toString() === authorId?.toString()
-              && p.status === 'published'
+              && (p.status === 'published' || p.status === 'draft')
               && p._id !== currentPost._id;
           })
           .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
@@ -274,19 +312,21 @@ export class BlogDetail implements OnInit, AfterViewInit {
         this.allAuthorPostsData.set(authorPosts);
         this.authorTotalPosts.set(authorPosts.length + 1); /* +1 for the current post */
 
-        /* Related posts */
+        /* Related posts — case-insensitive category matching */
         if (!currentPost.categories?.length) { this.relatedPosts.set([]); return; }
+
+        const currentCatsLower = currentPost.categories.map(c => c.toLowerCase());
 
         const related = allPosts
           .filter(p =>
             p._id !== currentPost._id &&
-            p.status === 'published' &&
+            (p.status === 'published' || p.status === 'draft') &&
             Array.isArray(p.categories) &&
-            p.categories.some(c => currentPost.categories.includes(c))
+            p.categories.some(c => currentCatsLower.includes(c.toLowerCase()))
           )
           .sort((a, b) => {
-            const aM = a.categories.filter(c => currentPost.categories.includes(c)).length;
-            const bM = b.categories.filter(c => currentPost.categories.includes(c)).length;
+            const aM = a.categories.filter(c => currentCatsLower.includes(c.toLowerCase())).length;
+            const bM = b.categories.filter(c => currentCatsLower.includes(c.toLowerCase())).length;
             return bM !== aM ? bM - aM : new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
           });
         this.relatedPosts.set(related.slice(0, 4));
@@ -299,7 +339,13 @@ export class BlogDetail implements OnInit, AfterViewInit {
     this.commentsLoading.set(true);
     this.postService.getComments(postId).subscribe({
       next: (res: any) => {
-        const all: DrawerComment[] = res.comments ?? [];
+        const raw = res.comments ?? [];
+        // Normalise: ensure replies array always exists and showReplies defaults false
+        const all: DrawerComment[] = raw.map((c: any) => ({
+          ...c,
+          replies: c.replies ?? [],
+          showReplies: false,
+        }));
         this.allComments.set(all);
         this.comments.set(all.slice(0, COMMENTS_PAGE_SIZE));
         this.commentsPage.set(1);
@@ -607,6 +653,119 @@ export class BlogDetail implements OnInit, AfterViewInit {
         this.deletingCommentId.set(null);
       },
       error: () => this.deletingCommentId.set(null),
+    });
+  }
+
+  /* ── Reply methods ─────────────────────────────────────────────────────── */
+
+  startReply(commentId: string): void {
+    if (this.replyingToId() === commentId) {
+      this.replyingToId.set(null);
+      this.replyText.set('');
+    } else {
+      this.replyingToId.set(commentId);
+      this.replyText.set('');
+      this.replyFeedback.set(null);
+    }
+  }
+
+  cancelReply(): void {
+    this.replyingToId.set(null);
+    this.replyText.set('');
+    this.replyFeedback.set(null);
+  }
+
+  submitReply(commentId: string): void {
+    const text = this.replyText().trim();
+    const p    = this.post();
+    if (!text || !p || this.replySubmitting()) return;
+    this.replySubmitting.set(true);
+    this.replyFeedback.set(null);
+
+    this.postService.addReply(p._id, commentId, text, this.currentUserData()?._id).subscribe({
+      next: (res) => {
+        this.replySubmitting.set(false);
+        this.replyText.set('');
+        this.replyingToId.set(null);
+        const newReply: DrawerReply = {
+          _id:       res.data?.reply?._id,
+          name:      this.currentUserData()?.name ?? 'Anonymous',
+          comment:   text,
+          user:      this.currentUserData()?._id ?? null,
+          createdAt: new Date().toISOString(),
+        };
+        // Append reply into comment in both allComments and comments signals
+        const appendReply = (list: DrawerComment[]) =>
+          list.map(c => c._id === commentId
+            ? { ...c, replies: [...(c.replies ?? []), newReply], showReplies: true }
+            : c
+          );
+        this.allComments.set(appendReply(this.allComments()));
+        this.comments.set(appendReply(this.comments()));
+      },
+      error: (err) => {
+        this.replySubmitting.set(false);
+        this.replyFeedback.set({ type: 'error', msg: err?.error?.message ?? 'Failed to post reply.' });
+      },
+    });
+  }
+
+  deleteReply(commentId: string, replyId: string, event: Event): void {
+    event.stopPropagation();
+    const p = this.post();
+    if (!p || !replyId || this.deletingReplyId()) return;
+    this.deletingReplyId.set(replyId);
+
+    this.postService.deleteReply(p._id, commentId, replyId).subscribe({
+      next: () => {
+        const removeReply = (list: DrawerComment[]) =>
+          list.map(c => c._id === commentId
+            ? { ...c, replies: (c.replies ?? []).filter(r => r._id !== replyId) }
+            : c
+          );
+        this.allComments.set(removeReply(this.allComments()));
+        this.comments.set(removeReply(this.comments()));
+        this.deletingReplyId.set(null);
+      },
+      error: () => this.deletingReplyId.set(null),
+    });
+  }
+
+  toggleReplies(commentId: string): void {
+    const toggle = (list: DrawerComment[]) =>
+      list.map(c => c._id === commentId ? { ...c, showReplies: !c.showReplies } : c);
+    this.allComments.set(toggle(this.allComments()));
+    this.comments.set(toggle(this.comments()));
+  }
+
+  /* ── Follow methods ─────────────────────────────────────────────────────── */
+
+  private fetchAuthorFollowData(aId: string): void {
+    this.userService.getUserById(aId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (res) => {
+        this.authorFollowersCount.set(res.followersCount ?? 0);
+        this.isFollowingAuthor.set(res.isFollowing ?? false);
+      },
+      error: () => {},
+    });
+  }
+
+  toggleFollow(): void {
+    const aId = this.authorId();
+    if (!aId || this.followLoading() || !this.isLoggedIn) return;
+    this.followLoading.set(true);
+
+    const action$ = this.isFollowingAuthor()
+      ? this.userService.unfollowUser(aId)
+      : this.userService.followUser(aId);
+
+    action$.subscribe({
+      next: (res) => {
+        this.authorFollowersCount.set(res.data.followersCount);
+        this.isFollowingAuthor.set(res.data.isFollowing);
+        this.followLoading.set(false);
+      },
+      error: () => this.followLoading.set(false),
     });
   }
 
