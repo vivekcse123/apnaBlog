@@ -20,10 +20,10 @@ export class UserService {
     return this.http.put<apiResponse<User>>(`${this.endPoint}${id}/update`, data);
   }
 
-  uploadAvatar(file: File): Observable<{ url: string }> {
+  uploadAvatar(file: File): Observable<{ success: boolean; url: string }> {
     const formData = new FormData();
     formData.append('avatar', file);
-    return this.http.post<{ url: string }>(`${environment.apiUrl}/upload/avatar`, formData);
+    return this.http.post<{ success: boolean; url: string }>(`${environment.apiUrl}/upload/avatar`, formData);
   }
 
   updateAvatar(userId: string, avatarUrl: string): Observable<apiResponse<User>> {

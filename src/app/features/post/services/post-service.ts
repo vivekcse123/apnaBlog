@@ -10,13 +10,6 @@ type CreatePostPayload = Omit<
   '_id' | 'user' | 'userId' | 'likesCount' | 'commentsCount' | 'views' | 'createdAt' | 'updatedAt'
 >;
 
-export interface UploadResponse {
-  success:  boolean;
-  message:  string;
-  url:      string;
-  publicId: string;
-}
-
 // ── Reply shape ───────────────────────────────────────────────────────────────
 export interface CommentReply {
   _id?:       string;
@@ -45,8 +38,7 @@ export interface CommentsResponse {
   providedIn: 'root',
 })
 export class PostService {
-  private endPoint       = environment.apiPostEndpoint.replace(/\/+$/, '');
-  private uplaodEndPoint = environment.apiUploadEndpoint.replace(/\/+$/, '');
+  private endPoint = environment.apiPostEndpoint.replace(/\/+$/, '');
 
   private http = inject(HttpClient);
 
@@ -157,15 +149,4 @@ export class PostService {
     );
   }
 
-  uploadImage(file: File): Observable<UploadResponse> {
-    const formData = new FormData();
-    formData.append('image', file);
-    return this.http.post<UploadResponse>(`${this.uplaodEndPoint}`, formData);
-  }
-
-  deleteImage(publicId: string): Observable<{ success: boolean }> {
-    return this.http.delete<{ success: boolean }>(
-      `${this.uplaodEndPoint}/${encodeURIComponent(publicId)}`
-    );
-  }
 }
