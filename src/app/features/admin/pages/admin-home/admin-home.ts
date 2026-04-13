@@ -134,13 +134,9 @@ export class AdminHome implements OnInit, AfterViewInit, OnDestroy {
     forkJoin({
       posts:       this.postService.getAllPostAdmin(1, 1000),
       users:       this.adminService.getAllUsers(1, 1000),
-<<<<<<< HEAD
-      followStats: this.adminService.getFollowStats(),
-=======
       followStats: this.adminService.getFollowStats().pipe(
         catchError(() => of({ status: 200, totalFollows: 0 }))
       ),
->>>>>>> dev
     })
     .pipe(takeUntilDestroyed(this.destroyRef))
     .subscribe({
