@@ -89,7 +89,7 @@
 
 .info-container {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 16px;
 }
 
@@ -520,6 +520,7 @@ tbody > tr:hover td { background: var(--bg-hover); }
 
 .status-published { background: var(--success-bg); color: var(--success); }
 .status-draft     { background: var(--accent-subtle); color: var(--accent-text); }
+.status-pending   { background: rgba(239,68,68,0.10); color: #dc2626; }
 .inactive-badge-pill { background: rgba(220,38,38,0.1); color: #dc2626; }
 
 .user-cell {

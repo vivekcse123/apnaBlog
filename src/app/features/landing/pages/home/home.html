@@ -402,6 +402,10 @@
       <div class="card-body" (click)="readBlog(blog._id)">
         <h3 itemprop="name">{{ blog.title }}</h3>
         <p itemprop="abstract">{{ blog.description }}</p>
+        <div class="card-author-row">
+          <span class="card-author-avatar">{{ (blog.user?.name || 'A').charAt(0).toUpperCase() }}</span>
+          <span class="card-author-name">{{ blog.user?.name || 'Anonymous' }}</span>
+        </div>
         <div class="card-meta-row">
           <span class="card-reading-time">
             <time aria-label="{{ getReadingTime(blog) }} minute read">

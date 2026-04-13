@@ -232,7 +232,8 @@ export class BlogDetail implements OnInit, AfterViewInit {
     ).subscribe({
       next: (res) => {
         const postData = res.data;
-        if (!postData || postData.status !== 'published') {
+        // Allow both published and legacy-draft posts; only block pending-review ones
+        if (!postData || (postData.status !== 'published' && postData.status !== 'draft')) {
           this.router.navigate(['/welcome']); return;
         }
         this.post.set(postData);
@@ -256,7 +257,8 @@ export class BlogDetail implements OnInit, AfterViewInit {
 
   /* One API call — populates related posts AND all author posts with zero duplication */
   private loadRelatedAndAuthorPosts(currentPost: Post): void {
-    this.postService.getAllPost(1, 100).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+    // Use limit=500 to capture enough posts for any category (including niche ones like 'village')
+    this.postService.getAllPost(1, 500).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (res) => {
         const allPosts: Post[] = res.data ?? [];
         const authorId = (currentPost.user as any)?._id ?? currentPost.user;
@@ -266,7 +268,7 @@ export class BlogDetail implements OnInit, AfterViewInit {
           .filter(p => {
             const pid = (p.user as any)?._id ?? p.user;
             return pid?.toString() === authorId?.toString()
-              && p.status === 'published'
+              && (p.status === 'published' || p.status === 'draft')
               && p._id !== currentPost._id;
           })
           .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
@@ -274,19 +276,21 @@ export class BlogDetail implements OnInit, AfterViewInit {
         this.allAuthorPostsData.set(authorPosts);
         this.authorTotalPosts.set(authorPosts.length + 1); /* +1 for the current post */
 
-        /* Related posts */
+        /* Related posts — case-insensitive category matching */
         if (!currentPost.categories?.length) { this.relatedPosts.set([]); return; }
+
+        const currentCatsLower = currentPost.categories.map(c => c.toLowerCase());
 
         const related = allPosts
           .filter(p =>
             p._id !== currentPost._id &&
-            p.status === 'published' &&
+            (p.status === 'published' || p.status === 'draft') &&
             Array.isArray(p.categories) &&
-            p.categories.some(c => currentPost.categories.includes(c))
+            p.categories.some(c => currentCatsLower.includes(c.toLowerCase()))
           )
           .sort((a, b) => {
-            const aM = a.categories.filter(c => currentPost.categories.includes(c)).length;
-            const bM = b.categories.filter(c => currentPost.categories.includes(c)).length;
+            const aM = a.categories.filter(c => currentCatsLower.includes(c.toLowerCase())).length;
+            const bM = b.categories.filter(c => currentCatsLower.includes(c.toLowerCase())).length;
             return bM !== aM ? bM - aM : new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
           });
         this.relatedPosts.set(related.slice(0, 4));

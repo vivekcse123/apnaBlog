@@ -77,7 +77,21 @@
         <div class="info-content">
           <span class="info-label">Drafts</span>
           <span class="info-value">{{ totalDrafts() }}</span>
-          <span class="info-badge drafts-badge">{{ pendingReview() }} pending review</span>
+          <span class="info-badge drafts-badge">Legacy / editor drafts</span>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-icon" style="background:rgba(239,68,68,0.10)">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+            <circle cx="11" cy="11" r="8" stroke="#dc2626" stroke-width="2" fill="none"/>
+            <path d="M11 7v4M11 15h.01" stroke="#dc2626" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="info-content">
+          <span class="info-label">Pending Review</span>
+          <span class="info-value">{{ totalPending() }}</span>
+          <span class="info-badge" style="background:rgba(239,68,68,0.10);color:#dc2626;">Awaiting approval</span>
         </div>
       </div>
 
@@ -201,6 +215,11 @@
             <span class="legend-dot" style="background:#BA7517"></span>
             <span class="legend-label">Drafts</span>
             <span class="legend-val">{{ totalDrafts() }}</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-dot" style="background:#dc2626"></span>
+            <span class="legend-label">Pending</span>
+            <span class="legend-val">{{ totalPending() }}</span>
           </div>
           <div class="legend-item">
             <span class="legend-dot" style="background:#185a9d"></span>
@@ -421,7 +440,8 @@
                   <td>
                     <span class="status-badge"
                       [class.status-published]="blog.status === 'published'"
-                      [class.status-draft]="blog.status === 'draft'">
+                      [class.status-draft]="blog.status === 'draft'"
+                      [class.status-pending]="blog.status === 'pending'">
                       {{ blog.status | titlecase }}
                     </span>
                   </td>

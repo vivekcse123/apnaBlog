@@ -320,17 +320,20 @@ export class Home implements OnInit, OnDestroy {
         })
       )
       .subscribe(res => {
-        // ✅ Show ONLY published posts on the public landing page
-        const published = (res.data ?? [])
-          .filter((p: Post) => p.status === 'published')
+        // Show published + legacy-draft posts on the landing page.
+        // The backend already excludes 'pending' posts for non-admin callers,
+        // so 'draft' here means legacy posts created before the pending-review
+        // workflow — they must remain publicly visible.
+        const visible = (res.data ?? [])
+          .filter((p: Post) => p.status === 'published' || p.status === 'draft')
           .map((p: Post): PostWithTs => ({
             ...p,
             _ts: new Date(p.createdAt).getTime(),
           }));
 
-        this.allPosts.set(published);
-        this.postCache.set(published);
-        this.updateJsonLdPostCount(published.length);
+        this.allPosts.set(visible);
+        this.postCache.set(visible);
+        this.updateJsonLdPostCount(visible.length);
       });
   }
 
