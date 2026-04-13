@@ -55,6 +55,7 @@ export class AdminHome implements OnInit, AfterViewInit, OnDestroy {
   totalViews     = signal<number>(0);
   totalComments  = signal<number>(0);
   totalLikes     = signal<number>(0);
+  totalFollows   = signal<number>(0);
   activeUsers    = signal<number>(0);
   inactiveUsers  = signal<number>(0);
 
@@ -127,14 +128,16 @@ export class AdminHome implements OnInit, AfterViewInit, OnDestroy {
     }
 
     forkJoin({
-      posts: this.postService.getAllPostAdmin(1, 1000),
-      users: this.adminService.getAllUsers(1, 1000),
+      posts:       this.postService.getAllPostAdmin(1, 1000),
+      users:       this.adminService.getAllUsers(1, 1000),
+      followStats: this.adminService.getFollowStats(),
     })
     .pipe(takeUntilDestroyed(this.destroyRef))
     .subscribe({
-      next: ({ posts, users }) => {
+      next: ({ posts, users, followStats }) => {
         this.allPosts = posts.data ?? [];
         this.allUsers = users.data ?? [];
+        this.totalFollows.set(followStats.totalFollows ?? 0);
         this.dashboardCache.set(this.allPosts, this.allUsers);
 
         this.computeStats();

@@ -140,6 +140,7 @@
 .likes-icon     { background: rgba(217, 83,  79,  0.12); }
 .active-icon    { background: rgba(92,  184, 92,  0.12); }
 .inactive-icon  { background: rgba(220, 38,  38,  0.10); }
+.followers-icon { background: rgba(24,  90,  157, 0.12); }
 
 .info-content {
   display: flex;
@@ -187,6 +188,7 @@
 .likes-badge     { background: rgba(217, 83,  79,  0.12); color: #c9302c; }
 .active-badge    { background: rgba(92,  184, 92,  0.12); color: #3a7a3a; }
 .inactive-badge  { background: rgba(220, 38,  38,  0.10); color: #dc2626; }
+.followers-badge { background: rgba(24,  90,  157, 0.12); color: #185a9d; }
 
 [data-theme="dark"] .blog-badge      { color: #43cea2; }
 [data-theme="dark"] .user-badge      { color: #60a5fa; }
@@ -197,6 +199,7 @@
 [data-theme="dark"] .likes-badge     { color: #f87171; }
 [data-theme="dark"] .active-badge    { color: #4ade80; }
 [data-theme="dark"] .inactive-badge  { color: #f87171; }
+[data-theme="dark"] .followers-badge { color: #60a5fa; }
 
 
 .charts-section { display: flex; flex-direction: column; gap: 0; }
