@@ -833,7 +833,7 @@ body {
   .hamburger { display: flex; }
   .mobile-drawer { display: flex; top: 60px; }
   .drawer-backdrop { display: block; }
-  .filter-wrap { top: 60px; }
+  .filter-wrap { top: 0px; }
 
   .hero-wrap { padding: 40px 5% 36px; }
   .hero-title { font-size: 32px; }
@@ -953,7 +953,6 @@ input[type="search"]::-webkit-search-decoration {
   -webkit-appearance: none;
 }
 
-/* Hero and filter must always be rendered — never defer them */
 .hero-wrap,
 .filter-wrap {
   content-visibility: visible;
