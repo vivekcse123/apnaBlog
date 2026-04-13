@@ -227,7 +227,7 @@ body {
 
 .filter-wrap {
   /* top: 66px = desktop header height — keeps the filter bar visible below the sticky header */
-  position: sticky; top: 66px; z-index: 800;
+  position: sticky; top: 0px; z-index: 800;
   background: var(--bg-surface);
   border-bottom: 1px solid var(--border);
   box-shadow: var(--card-shadow);
@@ -878,7 +878,7 @@ body {
   .hamburger { display: flex; }
   .mobile-drawer { display: flex; top: 60px; }
   .drawer-backdrop { display: block; }
-  .filter-wrap { top: 60px; }
+  .filter-wrap { top: 0px; }
 
   .hero-wrap { padding: 40px 5% 36px; }
   .hero-title { font-size: 32px; }
