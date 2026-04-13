@@ -153,9 +153,29 @@
           {{ authorBio || 'A passionate writer sharing insights on ApnaInsights.' }}
         </p>
       </div>
-      <div class="author-card-stat">
-        <span class="author-stat-value">{{ authorTotalPosts() }}</span>
-        <span class="author-stat-label">Articles</span>
+      <div class="author-card-right">
+        <div class="author-card-stat">
+          <span class="author-stat-value">{{ authorTotalPosts() }}</span>
+          <span class="author-stat-label">Articles</span>
+        </div>
+        <div class="author-card-stat">
+          <span class="author-stat-value">{{ authorFollowersCount() }}</span>
+          <span class="author-stat-label">Followers</span>
+        </div>
+        @if (isLoggedIn && currentUser?._id !== authorId()) {
+          <button class="author-card-follow-btn"
+            [class.following]="isFollowingAuthor()"
+            [disabled]="followLoading()"
+            (click)="toggleFollow()" type="button">
+            @if (followLoading()) {
+              <span class="btn-spinner"></span>
+            } @else if (isFollowingAuthor()) {
+              ✓ Following
+            } @else {
+              + Follow
+            }
+          </button>
+        }
       </div>
     </div>
 

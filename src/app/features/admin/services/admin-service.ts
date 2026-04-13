@@ -51,4 +51,8 @@ exportAllData(userId: string) {
   return this.http.get(`${this.endPoint}export/${userId}`);
 }
 
+getFollowStats(): Observable<{ status: number; totalFollows: number }> {
+  return this.http.get<{ status: number; totalFollows: number }>(`${this.endPoint}follow-stats`);
+}
+
 }

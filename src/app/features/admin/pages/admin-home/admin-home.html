@@ -6,6 +6,12 @@
       @if (isRefreshing()) {
         <span class="refresh-indicator">Refreshing data…</span>
       }
+      <button class="write-story-btn" (click)="showCreateModal.set(true)" type="button">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M2 13h3l8-8-3-3L2 10v3z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </svg>
+        Write a Story
+      </button>
       <span class="date-badge">{{ currentDate | date: 'EEE, MMM d, y' }}</span>
     </div>
   </header>
@@ -164,6 +170,21 @@
           <span class="info-label">Inactive Users</span>
           <span class="info-value">{{ inactiveUsers() }}</span>
           <span class="info-badge inactive-badge">frozen accounts</span>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-icon followers-icon">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+            <circle cx="8" cy="7" r="3.5" stroke="#185a9d" stroke-width="2" fill="none"/>
+            <path d="M2 18c0-3.314 2.686-5 6-5s6 1.686 6 5" stroke="#185a9d" stroke-width="2" stroke-linecap="round" fill="none"/>
+            <path d="M15 10l1.5 1.5L19 9" stroke="#43cea2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="info-content">
+          <span class="info-label">Total Follows</span>
+          <span class="info-value">{{ totalFollows() }}</span>
+          <span class="info-badge followers-badge">platform connections</span>
         </div>
       </div>
 
@@ -558,3 +579,10 @@
   </div>
 
 </div>
+
+@if (showCreateModal()) {
+  <app-create-blog
+    (close)="showCreateModal.set(false)"
+    (postCreated)="showCreateModal.set(false)"
+  />
+}

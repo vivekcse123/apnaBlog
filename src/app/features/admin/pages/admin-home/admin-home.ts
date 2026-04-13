@@ -3,10 +3,13 @@ import {
   Component, DestroyRef, inject, OnInit, OnDestroy,
   AfterViewInit, ViewChild, ElementRef, signal
 } from '@angular/core';
-import { forkJoin } from 'rxjs';
+import { RouterModule } from '@angular/router';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { Chart, registerables } from 'chart.js';
 import { PostService } from '../../../post/services/post-service';
 import { AdminService } from '../../services/admin-service';
+import { CreatePost } from '../../../post/pages/create-post/create-post';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Auth } from '../../../../core/services/auth';
 import { DashboardCache } from '../../../../core/services/dashboard-cache';
@@ -16,7 +19,7 @@ Chart.register(...registerables);
 @Component({
   selector: 'app-admin-home',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule, CreatePost],
   templateUrl: './admin-home.html',
   styleUrl: './admin-home.css',
 })
@@ -55,6 +58,7 @@ export class AdminHome implements OnInit, AfterViewInit, OnDestroy {
   totalViews     = signal<number>(0);
   totalComments  = signal<number>(0);
   totalLikes     = signal<number>(0);
+  totalFollows   = signal<number>(0);
   activeUsers    = signal<number>(0);
   inactiveUsers  = signal<number>(0);
 
@@ -71,8 +75,9 @@ export class AdminHome implements OnInit, AfterViewInit, OnDestroy {
   recentUsers  = signal<any[]>([]);
   inactiveList = signal<any[]>([]);
 
-  isLoading      = signal<boolean>(true);
-  isRefreshing   = signal<boolean>(false);
+  isLoading       = signal<boolean>(true);
+  isRefreshing    = signal<boolean>(false);
+  showCreateModal = signal<boolean>(false);
 
   // ── Raw data store for chart rebuilds ─────────────────────
   private allPosts: any[] = [];
@@ -127,14 +132,18 @@ export class AdminHome implements OnInit, AfterViewInit, OnDestroy {
     }
 
     forkJoin({
-      posts: this.postService.getAllPostAdmin(1, 1000),
-      users: this.adminService.getAllUsers(1, 1000),
+      posts:       this.postService.getAllPostAdmin(1, 1000),
+      users:       this.adminService.getAllUsers(1, 1000),
+      followStats: this.adminService.getFollowStats().pipe(
+        catchError(() => of({ status: 200, totalFollows: 0 }))
+      ),
     })
     .pipe(takeUntilDestroyed(this.destroyRef))
     .subscribe({
-      next: ({ posts, users }) => {
+      next: ({ posts, users, followStats }) => {
         this.allPosts = posts.data ?? [];
         this.allUsers = users.data ?? [];
+        this.totalFollows.set(followStats.totalFollows ?? 0);
         this.dashboardCache.set(this.allPosts, this.allUsers);
 
         this.computeStats();

@@ -10,6 +10,12 @@
       @if (isRefreshing()) {
         <span class="refresh-indicator">Refreshing…</span>
       }
+      <button class="write-story-btn" (click)="showCreateModal.set(true)" type="button">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M2 13h3l8-8-3-3L2 10v3z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </svg>
+        Write a Story
+      </button>
       <span class="date-badge">{{ currentDate | date: 'EEE, MMM d, y' }}</span>
     </div>
   </header>
@@ -26,7 +32,8 @@
     <p class="section-label">Your Statistics</p>
     <div class="info-container">
 
-      <div class="info-card">
+      <div class="info-card clickable-card" (click)="openBlogsModal()" role="button" tabindex="0"
+        (keydown.enter)="openBlogsModal()" title="View all your blogs">
         <div class="info-icon blogs-icon">
           <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
             <rect x="3" y="3" width="16" height="3" rx="1.5" fill="#43cea2"/>
@@ -39,6 +46,7 @@
           <span class="info-value">{{ totalBlogs() }}</span>
           <span class="info-badge blog-badge">+{{ newBlogs() }} this week</span>
         </div>
+        <span class="card-expand-hint">›</span>
       </div>
 
       <div class="info-card">
@@ -469,3 +477,73 @@
   </div>
 
 </div>
+
+<!-- ── My Blogs Modal ── -->
+@if (showBlogsModal()) {
+  <div class="modal-backdrop" (click)="closeBlogsModal()" role="dialog" aria-modal="true" aria-label="My Blogs">
+    <div class="blogs-modal" (click)="$event.stopPropagation()">
+
+      <div class="blogs-modal-header">
+        <div class="blogs-modal-title-group">
+          <h2 class="blogs-modal-title">My Blogs</h2>
+          <span class="blogs-modal-count">{{ blogsModalList().length }} total</span>
+        </div>
+        <button class="blogs-modal-close" (click)="closeBlogsModal()" aria-label="Close">✕</button>
+      </div>
+
+      <div class="blogs-modal-body">
+        @if (blogsModalList().length === 0) {
+          <div class="blogs-modal-empty">
+            <span class="blogs-modal-empty-icon">📝</span>
+            <p>You haven't written any blogs yet.</p>
+            <a [routerLink]="manageBlogsLink()" class="write-story-btn" (click)="closeBlogsModal()">
+              Write your first story →
+            </a>
+          </div>
+        } @else {
+          <div class="blogs-modal-list">
+            @for (blog of blogsModalList(); track blog._id) {
+              <div class="blog-modal-item">
+                @if (blog.featuredImage) {
+                  <div class="blog-modal-thumb">
+                    <img [src]="blog.featuredImage" [alt]="blog.title" loading="lazy"/>
+                  </div>
+                } @else {
+                  <div class="blog-modal-thumb blog-modal-thumb-fallback">
+                    {{ blog.title.charAt(0).toUpperCase() }}
+                  </div>
+                }
+                <div class="blog-modal-info">
+                  <div class="blog-modal-meta">
+                    <span class="blog-modal-status" [class]="'status-' + blog.status">{{ blog.status }}</span>
+                    @if (blog.categories?.length) {
+                      <span class="blog-modal-cat">{{ blog.categories[0] }}</span>
+                    }
+                  </div>
+                  <p class="blog-modal-title">{{ blog.title }}</p>
+                  <p class="blog-modal-desc">{{ blog.description }}</p>
+                  <div class="blog-modal-stats">
+                    <span>📅 {{ blog.createdAt | date:'MMM d, y' }}</span>
+                    <span>👁 {{ blog.views ?? 0 }}</span>
+                    <span>💬 {{ blog.commentsCount ?? 0 }}</span>
+                  </div>
+                </div>
+                <button class="blog-modal-view-btn" (click)="openBlog(blog._id)" type="button">
+                  View →
+                </button>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+    </div>
+  </div>
+}
+
+@if (showCreateModal()) {
+  <app-create-blog
+    (close)="showCreateModal.set(false)"
+    (postCreated)="onPostCreated()"
+  />
+}

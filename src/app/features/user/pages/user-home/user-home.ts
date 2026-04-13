@@ -1,21 +1,22 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser, DOCUMENT } from '@angular/common';
 import {
   Component, DestroyRef, inject, OnInit, OnDestroy,
-  AfterViewInit, ViewChild, ElementRef, signal, computed
+  AfterViewInit, ViewChild, ElementRef, signal, computed, PLATFORM_ID
 } from '@angular/core';
-import { ActivatedRoute, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Chart, registerables } from 'chart.js';
 import { PostService } from '../../../post/services/post-service';
 import { UserService } from '../../../user/services/user-service';
 import { DashboardCache } from '../../../../core/services/dashboard-cache';
+import { CreatePost } from '../../../post/pages/create-post/create-post';
 
 Chart.register(...registerables);
 
 @Component({
   selector: 'app-user-home',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, CreatePost],
   templateUrl: './user-home.html',
   styleUrl: './user-home.css',
 })
@@ -35,6 +36,9 @@ export class UserHome implements OnInit, AfterViewInit, OnDestroy {
   private userService    = inject(UserService);
   private destroyRef     = inject(DestroyRef);
   private route          = inject(ActivatedRoute);
+  private router         = inject(Router);
+  private platformId     = inject(PLATFORM_ID);
+  private document       = inject(DOCUMENT);
   private dashboardCache = inject(DashboardCache);
 
   currentDate = new Date();
@@ -66,8 +70,11 @@ export class UserHome implements OnInit, AfterViewInit, OnDestroy {
       : 0
   );
 
-  recentBlogs = signal<any[]>([]);
-  topBlogs    = signal<any[]>([]);
+  recentBlogs   = signal<any[]>([]);
+  topBlogs      = signal<any[]>([]);
+  showBlogsModal  = signal(false);
+  blogsModalList  = signal<any[]>([]);
+  showCreateModal = signal(false);
 
   createBlogLink  = computed(() => `/user/${this.userId()}/manage-blogs`);
   manageBlogsLink = computed(() => `/user/${this.userId()}/manage-blogs`);
@@ -115,6 +122,7 @@ export class UserHome implements OnInit, AfterViewInit, OnDestroy {
     this.contentDonutChart?.destroy();
     this.engagementChart?.destroy();
     this.topPostsChart?.destroy();
+    if (isPlatformBrowser(this.platformId)) this.document.body.style.overflow = '';
   }
 
   private fetchUserPosts(uid: string, showLoader: boolean): void {
@@ -171,6 +179,10 @@ export class UserHome implements OnInit, AfterViewInit, OnDestroy {
       [...published]
         .sort((a: any, b: any) => (b.views ?? 0) - (a.views ?? 0))
         .slice(0, 5)
+    );
+
+    this.blogsModalList.set(
+      [...posts].sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     );
   }
 
@@ -466,6 +478,26 @@ export class UserHome implements OnInit, AfterViewInit, OnDestroy {
     }
 
     return { labels, viewsData, commentsData, likesData };
+  }
+
+  onPostCreated(): void {
+    this.showCreateModal.set(false);
+    this.fetchUserPosts(this.userId(), false);
+  }
+
+  openBlogsModal(): void {
+    this.showBlogsModal.set(true);
+    if (isPlatformBrowser(this.platformId)) this.document.body.style.overflow = 'hidden';
+  }
+
+  closeBlogsModal(): void {
+    this.showBlogsModal.set(false);
+    if (isPlatformBrowser(this.platformId)) this.document.body.style.overflow = '';
+  }
+
+  openBlog(postId: string): void {
+    this.closeBlogsModal();
+    this.router.navigate(['/blog', postId]);
   }
 
   getInitials(name: string): string {
