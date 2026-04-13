@@ -6,6 +6,12 @@
       @if (isRefreshing()) {
         <span class="refresh-indicator">Refreshing data…</span>
       }
+      <button class="write-story-btn" (click)="showCreateModal.set(true)" type="button">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M2 13h3l8-8-3-3L2 10v3z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </svg>
+        Write a Story
+      </button>
       <span class="date-badge">{{ currentDate | date: 'EEE, MMM d, y' }}</span>
     </div>
   </header>
@@ -573,3 +579,10 @@
   </div>
 
 </div>
+
+@if (showCreateModal()) {
+  <app-create-blog
+    (close)="showCreateModal.set(false)"
+    (postCreated)="showCreateModal.set(false)"
+  />
+}

@@ -56,6 +56,32 @@
   white-space: nowrap;
 }
 
+.write-story-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 18px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #43cea2, #185a9d);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.2s, box-shadow 0.2s;
+  white-space: nowrap;
+  box-shadow: 0 3px 10px rgba(67, 206, 162, 0.3);
+}
+
+.write-story-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 5px 16px rgba(67, 206, 162, 0.4);
+}
+
+.write-story-btn:active { transform: scale(0.97); }
+
 .loading-state {
   display: flex;
   align-items: center;

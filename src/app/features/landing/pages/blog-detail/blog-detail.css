@@ -529,9 +529,51 @@ body {
   -webkit-box-orient: vertical; overflow: hidden;
 }
 
+.author-card-right {
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  padding-left: 24px; border-left: 1px solid var(--border); flex-shrink: 0;
+}
+
 .author-card-stat {
   display: flex; flex-direction: column; align-items: center; gap: 3px;
-  padding-left: 24px; border-left: 1px solid var(--border); flex-shrink: 0;
+}
+
+.author-card-follow-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 7px 18px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1.5px solid #43cea2;
+  background: transparent;
+  color: #43cea2;
+  transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.15s;
+  white-space: nowrap;
+}
+
+.author-card-follow-btn:hover:not(:disabled) {
+  background: rgba(67, 206, 162, 0.1);
+  transform: translateY(-1px);
+}
+
+.author-card-follow-btn.following {
+  background: linear-gradient(135deg, #43cea2, #185a9d);
+  border-color: transparent;
+  color: #fff;
+}
+
+.author-card-follow-btn.following:hover:not(:disabled) {
+  opacity: 0.88;
+}
+
+.author-card-follow-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .author-stat-value { font-size: 24px; font-weight: 700; color: var(--text-primary); line-height: 1; }
@@ -961,7 +1003,7 @@ body {
 @media print {
   .header, .reading-progress-bar, .floating-actions,
   .toc-sidebar, .toc-backdrop, .like-btn-main,
-  .author-chip, .author-card, .comment-input-area,
+  .author-chip, .author-card-follow-btn, .author-card, .comment-input-area,
   .comments-section, .related-section, .tags-section,
   .modal-backdrop { display: none !important; }
 
@@ -993,7 +1035,8 @@ body {
   .comments-title, .related-title { font-size: 22px; }
 
   .author-card { flex-wrap: wrap; }
-  .author-card-stat { border-left: none; border-top: 1px solid var(--border); padding-left: 0; padding-top: 14px; flex-direction: row; gap: 8px; width: 100%; }
+  .author-card-right { border-left: none; border-top: 1px solid var(--border); padding-left: 0; padding-top: 14px; flex-direction: row; gap: 16px; width: 100%; align-items: center; }
+  .author-card-stat { flex-direction: row; gap: 6px; }
 
   .author-modal { border-radius: 16px; }
   .apm-hero     { padding: 20px 20px 16px; }
