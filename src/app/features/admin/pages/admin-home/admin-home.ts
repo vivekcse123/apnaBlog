@@ -10,6 +10,7 @@ import { Chart, registerables } from 'chart.js';
 import { PostService } from '../../../post/services/post-service';
 import { AdminService } from '../../services/admin-service';
 import { CreatePost } from '../../../post/pages/create-post/create-post';
+import { CreateUser } from '../create-user/create-user';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Auth } from '../../../../core/services/auth';
 import { DashboardCache } from '../../../../core/services/dashboard-cache';
@@ -19,7 +20,7 @@ Chart.register(...registerables);
 @Component({
   selector: 'app-admin-home',
   standalone: true,
-  imports: [CommonModule, RouterModule, CreatePost],
+  imports: [CommonModule, RouterModule, CreatePost, CreateUser],
   templateUrl: './admin-home.html',
   styleUrl: './admin-home.css',
 })
@@ -75,9 +76,10 @@ export class AdminHome implements OnInit, AfterViewInit, OnDestroy {
   recentUsers  = signal<any[]>([]);
   inactiveList = signal<any[]>([]);
 
-  isLoading       = signal<boolean>(true);
-  isRefreshing    = signal<boolean>(false);
-  showCreateModal = signal<boolean>(false);
+  isLoading           = signal<boolean>(true);
+  isRefreshing        = signal<boolean>(false);
+  showCreateModal     = signal<boolean>(false);
+  showCreateUserModal = signal<boolean>(false);
 
   // ── Raw data store for chart rebuilds ─────────────────────
   private allPosts: any[] = [];

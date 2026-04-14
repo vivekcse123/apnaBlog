@@ -1,588 +1,738 @@
-<div class="home-container">
+<div class="admin-dash">
 
-  <header class="header">
-    <h1 class="heading">Admin Dashboard</h1>
-    <div class="header-right">
+  <!-- ── Admin Header ── -->
+  <header class="admin-header">
+    <div class="admin-header-left">
+      <span class="admin-badge" aria-label="Admin mode">ADMIN</span>
+      <div>
+        <h1 class="admin-title">Command Center</h1>
+        <p class="admin-subtitle">Platform overview &amp; management</p>
+      </div>
+    </div>
+    <div class="admin-header-right">
       @if (isRefreshing()) {
-        <span class="refresh-indicator">Refreshing data…</span>
+        <span class="refreshing-badge">
+          <span class="refresh-dot"></span>
+          Refreshing
+        </span>
       }
-      <button class="write-story-btn" (click)="showCreateModal.set(true)" type="button">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <path d="M2 13h3l8-8-3-3L2 10v3z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <button class="btn-primary" (click)="showCreateModal.set(true)" type="button">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M2 13h3l8-8-3-3L2 10v3z" stroke="currentColor" stroke-width="1.5"
+            stroke-linecap="round" stroke-linejoin="round" fill="none"/>
         </svg>
         Write a Story
       </button>
-      <span class="date-badge">{{ currentDate | date: 'EEE, MMM d, y' }}</span>
+      <span class="date-pill">{{ currentDate | date: 'EEE, MMM d, y' }}</span>
     </div>
   </header>
 
-  @if (isLoading()) {
-    <div class="loading-state">
-      <div class="spinner"></div>
-      Loading dashboard...
+  <!-- ── Pending Review Alert ── -->
+  @if (!isLoading() && totalPending() > 0) {
+    <div class="pending-alert" role="alert">
+      <div class="pending-alert-icon" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 22 22" fill="none">
+          <circle cx="11" cy="11" r="8" stroke="#dc2626" stroke-width="2" fill="none"/>
+          <path d="M11 7v4M11 15h.01" stroke="#dc2626" stroke-width="2"
+            stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="pending-alert-body">
+        <strong>{{ totalPending() }} blog{{ totalPending() === 1 ? '' : 's' }} awaiting review</strong>
+        <span>Review and approve or reject pending content</span>
+      </div>
+      <a [routerLink]="['/admin', userId, 'manage-blogs']" class="pending-alert-cta">
+        Review Now →
+      </a>
     </div>
   }
 
-  <!-- ── Statistics ── -->
-  <section class="statistics-section">
-    <p class="section-label">Statistics</p>
-    <div class="info-container">
-
-      <div class="info-card">
-        <div class="info-icon blogs-icon">
-          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-            <rect x="3" y="3" width="16" height="3" rx="1.5" fill="#43cea2"/>
-            <rect x="3" y="9" width="11" height="3" rx="1.5" fill="#43cea2"/>
-            <rect x="3" y="15" width="13" height="3" rx="1.5" fill="#43cea2"/>
-          </svg>
+  <!-- ── Skeleton Loading ── -->
+  @if (isLoading()) {
+    <div class="sk-section" aria-hidden="true">
+      <div class="sk-stats-row">
+        <div class="sk-stat shimmer"></div>
+        <div class="sk-stat shimmer"></div>
+        <div class="sk-stat shimmer"></div>
+        <div class="sk-stat shimmer"></div>
+        <div class="sk-stat shimmer"></div>
+        <div class="sk-stat shimmer"></div>
+      </div>
+      <div class="sk-stats-row sk-row-2">
+        <div class="sk-stat shimmer"></div>
+        <div class="sk-stat shimmer"></div>
+        <div class="sk-stat shimmer"></div>
+        <div class="sk-stat shimmer"></div>
+        <div class="sk-stat shimmer"></div>
+      </div>
+      <div class="sk-body">
+        <div class="sk-col-main">
+          <div class="sk-chart shimmer"></div>
+          <div class="sk-chart sk-chart--sm shimmer"></div>
+          <div class="sk-feed-card shimmer"></div>
+          <div class="sk-feed-card shimmer"></div>
+          <div class="sk-feed-card shimmer"></div>
         </div>
-        <div class="info-content">
-          <span class="info-label">Total Blogs</span>
-          <span class="info-value">{{ totalBlogs() }}</span>
-          <span class="info-badge blog-badge">+{{ newBlogs() }} this week</span>
+        <div class="sk-col-side">
+          <div class="sk-actions shimmer"></div>
+          <div class="sk-lb shimmer"></div>
+          <div class="sk-lb shimmer"></div>
         </div>
       </div>
-
-      <div class="info-card">
-        <div class="info-icon users-icon">
-          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-            <circle cx="9" cy="7" r="4" fill="#185a9d"/>
-            <path d="M2 19c0-4.418 3.134-7 7-7s7 2.582 7 7" stroke="#185a9d" stroke-width="2" stroke-linecap="round" fill="none"/>
-            <circle cx="17" cy="8" r="2.5" fill="#43cea2"/>
-            <path d="M15 15c1-.8 2.5-1.2 4-1" stroke="#43cea2" stroke-width="1.5" stroke-linecap="round" fill="none"/>
-          </svg>
-        </div>
-        <div class="info-content">
-          <span class="info-label">Total Users</span>
-          <span class="info-value">{{ totalUsers() }}</span>
-          <span class="info-badge user-badge">+{{ newUsers() }} this week</span>
-        </div>
-      </div>
-
-      <div class="info-card">
-        <div class="info-icon published-icon">
-          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-            <circle cx="11" cy="11" r="8" stroke="#0f7a5a" stroke-width="2" fill="none"/>
-            <path d="M7 11l3 3 5-5" stroke="#0f7a5a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
-        <div class="info-content">
-          <span class="info-label">Published</span>
-          <span class="info-value">{{ totalPublished() }}</span>
-          <span class="info-badge published-badge">+{{ newPublished() }} this week</span>
-        </div>
-      </div>
-
-      <div class="info-card">
-        <div class="info-icon drafts-icon">
-          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-            <rect x="3" y="3" width="16" height="16" rx="3" stroke="#BA7517" stroke-width="2" fill="none"/>
-            <path d="M7 11h8M7 7h5M7 15h6" stroke="#BA7517" stroke-width="1.5" stroke-linecap="round"/>
-          </svg>
-        </div>
-        <div class="info-content">
-          <span class="info-label">Drafts</span>
-          <span class="info-value">{{ totalDrafts() }}</span>
-          <span class="info-badge drafts-badge">Legacy / editor drafts</span>
-        </div>
-      </div>
-
-      <div class="info-card">
-        <div class="info-icon" style="background:rgba(239,68,68,0.10)">
-          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-            <circle cx="11" cy="11" r="8" stroke="#dc2626" stroke-width="2" fill="none"/>
-            <path d="M11 7v4M11 15h.01" stroke="#dc2626" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-        </div>
-        <div class="info-content">
-          <span class="info-label">Pending Review</span>
-          <span class="info-value">{{ totalPending() }}</span>
-          <span class="info-badge" style="background:rgba(239,68,68,0.10);color:#dc2626;">Awaiting approval</span>
-        </div>
-      </div>
-
-      <div class="info-card">
-        <div class="info-icon views-icon">
-          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-            <ellipse cx="11" cy="11" rx="8" ry="5" stroke="#7F77DD" stroke-width="2" fill="none"/>
-            <circle cx="11" cy="11" r="2.5" fill="#7F77DD"/>
-          </svg>
-        </div>
-        <div class="info-content">
-          <span class="info-label">Total Views</span>
-          <span class="info-value">{{ totalViews() | number }}</span>
-          <span class="info-badge views-badge">+{{ weekViews() }} this week</span>
-        </div>
-      </div>
-
-      <div class="info-card">
-        <div class="info-icon comments-icon">
-          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-            <path d="M4 4h14a2 2 0 012 2v8a2 2 0 01-2 2H8l-4 3V6a2 2 0 012-2z" stroke="#378ADD" stroke-width="2" fill="none" stroke-linejoin="round"/>
-            <path d="M8 9h6M8 12h4" stroke="#378ADD" stroke-width="1.5" stroke-linecap="round"/>
-          </svg>
-        </div>
-        <div class="info-content">
-          <span class="info-label">Total Comments</span>
-          <span class="info-value">{{ totalComments() }}</span>
-          <span class="info-badge comments-badge">+{{ weekComments() }} this week</span>
-        </div>
-      </div>
-
-      <div class="info-card">
-        <div class="info-icon likes-icon">
-          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-            <path d="M11 18s-7-4.5-7-9a4 4 0 018 0 4 4 0 018 0c0 4.5-7 9-7 9z" stroke="#d9534f" stroke-width="2" fill="none" stroke-linejoin="round"/>
-          </svg>
-        </div>
-        <div class="info-content">
-          <span class="info-label">Total Likes</span>
-          <span class="info-value">{{ totalLikes() }}</span>
-          <span class="info-badge likes-badge">+{{ weekLikes() }} this week</span>
-        </div>
-      </div>
-
-      <div class="info-card">
-        <div class="info-icon active-icon">
-          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-            <circle cx="11" cy="11" r="8" stroke="#5cb85c" stroke-width="2" fill="none"/>
-            <circle cx="11" cy="11" r="3" fill="#5cb85c"/>
-            <circle cx="11" cy="11" r="6" stroke="#5cb85c" stroke-width="1" stroke-dasharray="2 2" fill="none"/>
-          </svg>
-        </div>
-        <div class="info-content">
-          <span class="info-label">Active Users</span>
-          <span class="info-value">{{ activeUsers() }}</span>
-          <span class="info-badge active-badge">last 30 days</span>
-        </div>
-      </div>
-
-      <div class="info-card">
-        <div class="info-icon inactive-icon">
-          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-            <circle cx="11" cy="11" r="8" stroke="#dc2626" stroke-width="2" fill="none"/>
-            <circle cx="11" cy="11" r="3" fill="#dc2626" opacity="0.3"/>
-            <line x1="7" y1="7" x2="15" y2="15" stroke="#dc2626" stroke-width="2" stroke-linecap="round"/>
-            <line x1="15" y1="7" x2="7" y2="15" stroke="#dc2626" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-        </div>
-        <div class="info-content">
-          <span class="info-label">Inactive Users</span>
-          <span class="info-value">{{ inactiveUsers() }}</span>
-          <span class="info-badge inactive-badge">frozen accounts</span>
-        </div>
-      </div>
-
-      <div class="info-card">
-        <div class="info-icon followers-icon">
-          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-            <circle cx="8" cy="7" r="3.5" stroke="#185a9d" stroke-width="2" fill="none"/>
-            <path d="M2 18c0-3.314 2.686-5 6-5s6 1.686 6 5" stroke="#185a9d" stroke-width="2" stroke-linecap="round" fill="none"/>
-            <path d="M15 10l1.5 1.5L19 9" stroke="#43cea2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
-        <div class="info-content">
-          <span class="info-label">Total Follows</span>
-          <span class="info-value">{{ totalFollows() }}</span>
-          <span class="info-badge followers-badge">platform connections</span>
-        </div>
-      </div>
-
     </div>
-  </section>
+  }
 
-  <!-- ── Charts Section ── -->
-  <section class="charts-section">
-    <p class="section-label">Analytics Overview</p>
+  @if (!isLoading()) {
 
-    <div class="charts-top-row">
+    <!-- ── Stats Grid ── -->
+    <section class="stats-section" aria-label="Platform statistics">
 
-      <!-- Blog Growth Line Chart -->
-      <div class="chart-card wide-chart">
-        <div class="chart-header">
-          <div class="chart-title-group">
-            <h3 class="chart-title">Blog Growth</h3>
-            <span class="chart-subtitle">Published vs Drafts over time</span>
-          </div>
-          <div class="range-tabs">
-            <button [class.active]="selectedRange === '7d'"  (click)="onRangeChange('7d')">7D</button>
-            <button [class.active]="selectedRange === '14d'" (click)="onRangeChange('14d')">30D</button>
-            <button [class.active]="selectedRange === '30d'" (click)="onRangeChange('30d')">90D</button>
-          </div>
-        </div>
-        <div class="chart-wrap" style="height: 220px;">
-          <canvas #blogGrowthChartRef></canvas>
-        </div>
-      </div>
+      <!-- Row 1: Content metrics -->
+      <div class="stats-group">
+        <span class="stats-group-label">Content</span>
+        <div class="stats-row">
 
-      <!-- Content Status Doughnut -->
-      <div class="chart-card narrow-chart">
-        <div class="chart-header">
-          <div class="chart-title-group">
-            <h3 class="chart-title">Content Status</h3>
-            <span class="chart-subtitle">Distribution</span>
-          </div>
-        </div>
-        <div class="chart-wrap" style="height: 170px;">
-          <canvas #contentDoughnutRef></canvas>
-        </div>
-        <div class="doughnut-legend">
-          <div class="legend-item">
-            <span class="legend-dot" style="background:#43cea2"></span>
-            <span class="legend-label">Published</span>
-            <span class="legend-val">{{ totalPublished() }}</span>
-          </div>
-          <div class="legend-item">
-            <span class="legend-dot" style="background:#BA7517"></span>
-            <span class="legend-label">Drafts</span>
-            <span class="legend-val">{{ totalDrafts() }}</span>
-          </div>
-          <div class="legend-item">
-            <span class="legend-dot" style="background:#dc2626"></span>
-            <span class="legend-label">Pending</span>
-            <span class="legend-val">{{ totalPending() }}</span>
-          </div>
-          <div class="legend-item">
-            <span class="legend-dot" style="background:#185a9d"></span>
-            <span class="legend-label">Total</span>
-            <span class="legend-val">{{ totalBlogs() }}</span>
-          </div>
-        </div>
-      </div>
-
-    </div>
-
-    <div class="charts-bottom-row">
-
-      <!-- Weekly Engagement Bar Chart -->
-      <div class="chart-card">
-        <div class="chart-header">
-          <div class="chart-title-group">
-            <h3 class="chart-title">Weekly Engagement</h3>
-            <span class="chart-subtitle">Views · Comments · Likes</span>
-          </div>
-        </div>
-        <div class="chart-wrap" style="height: 190px;">
-          <canvas #engagementBarRef></canvas>
-        </div>
-      </div>
-
-      <!-- User Activity Bar Chart -->
-      <div class="chart-card">
-        <div class="chart-header">
-          <div class="chart-title-group">
-            <h3 class="chart-title">User Overview</h3>
-            <span class="chart-subtitle">Active vs Inactive</span>
-          </div>
-        </div>
-        <div class="chart-wrap" style="height: 190px;">
-          <canvas #userActivityRef></canvas>
-        </div>
-      </div>
-
-      <!-- Top Metrics Mini Summary -->
-      <div class="chart-card metrics-summary-card">
-        <div class="chart-header">
-          <div class="chart-title-group">
-            <h3 class="chart-title">This Week</h3>
-            <span class="chart-subtitle">Performance snapshot</span>
-          </div>
-        </div>
-        <div class="metrics-list">
-          <div class="metric-row">
-            <div class="metric-icon" style="background:rgba(67,206,162,0.12)">
-              <svg width="14" height="14" viewBox="0 0 22 22" fill="none">
+          <div class="stat-card">
+            <div class="stat-icon-wrap blogs-icon">
+              <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden="true">
                 <rect x="3" y="3" width="16" height="3" rx="1.5" fill="#43cea2"/>
                 <rect x="3" y="9" width="11" height="3" rx="1.5" fill="#43cea2"/>
                 <rect x="3" y="15" width="13" height="3" rx="1.5" fill="#43cea2"/>
               </svg>
             </div>
-            <div class="metric-info">
-              <span class="metric-label">New Blogs</span>
-              <div class="metric-bar-wrap">
-                <div class="metric-bar" style="background:#43cea2" [style.width.%]="getPercent(newBlogs(), totalBlogs())"></div>
-              </div>
+            <div class="stat-body">
+              <span class="stat-label">Total Blogs</span>
+              <span class="stat-value">{{ totalBlogs() }}</span>
+              <span class="stat-chip blog-chip">+{{ newBlogs() }} this week</span>
             </div>
-            <span class="metric-val">+{{ newBlogs() }}</span>
           </div>
-          <div class="metric-row">
-            <div class="metric-icon" style="background:rgba(24,90,157,0.12)">
-              <svg width="14" height="14" viewBox="0 0 22 22" fill="none">
-                <circle cx="9" cy="7" r="4" fill="#185a9d"/>
-                <path d="M2 19c0-4.418 3.134-7 7-7s7 2.582 7 7" stroke="#185a9d" stroke-width="2" fill="none"/>
+
+          <div class="stat-card">
+            <div class="stat-icon-wrap published-icon">
+              <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+                <circle cx="11" cy="11" r="8" stroke="#0f7a5a" stroke-width="2" fill="none"/>
+                <path d="M7 11l3 3 5-5" stroke="#0f7a5a" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
             </div>
-            <div class="metric-info">
-              <span class="metric-label">New Users</span>
-              <div class="metric-bar-wrap">
-                <div class="metric-bar" style="background:#185a9d" [style.width.%]="getPercent(newUsers(), totalUsers())"></div>
-              </div>
+            <div class="stat-body">
+              <span class="stat-label">Published</span>
+              <span class="stat-value">{{ totalPublished() }}</span>
+              <span class="stat-chip published-chip">+{{ newPublished() }} this week</span>
             </div>
-            <span class="metric-val">+{{ newUsers() }}</span>
           </div>
-          <div class="metric-row">
-            <div class="metric-icon" style="background:rgba(127,119,221,0.12)">
-              <svg width="14" height="14" viewBox="0 0 22 22" fill="none">
-                <ellipse cx="11" cy="11" rx="8" ry="5" stroke="#7F77DD" stroke-width="2" fill="none"/>
+
+          <div class="stat-card">
+            <div class="stat-icon-wrap drafts-icon">
+              <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+                <rect x="3" y="3" width="16" height="16" rx="3" stroke="#BA7517"
+                  stroke-width="2" fill="none"/>
+                <path d="M7 11h8M7 7h5M7 15h6" stroke="#BA7517" stroke-width="1.5"
+                  stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="stat-body">
+              <span class="stat-label">Drafts</span>
+              <span class="stat-value">{{ totalDrafts() }}</span>
+              <span class="stat-chip drafts-chip">Unpublished content</span>
+            </div>
+          </div>
+
+          <div class="stat-card stat-card--alert">
+            <div class="stat-icon-wrap pending-icon">
+              <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+                <circle cx="11" cy="11" r="8" stroke="#dc2626" stroke-width="2" fill="none"/>
+                <path d="M11 7v4M11 15h.01" stroke="#dc2626" stroke-width="2"
+                  stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="stat-body">
+              <span class="stat-label">Pending Review</span>
+              <span class="stat-value">{{ totalPending() }}</span>
+              <span class="stat-chip pending-chip">Awaiting approval</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Row 2: Users & Engagement -->
+      <div class="stats-group">
+        <span class="stats-group-label">Users &amp; Engagement</span>
+        <div class="stats-row stats-row--7">
+
+          <div class="stat-card">
+            <div class="stat-icon-wrap users-icon">
+              <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+                <circle cx="9" cy="7" r="4" fill="#185a9d"/>
+                <path d="M2 19c0-4.418 3.134-7 7-7s7 2.582 7 7" stroke="#185a9d"
+                  stroke-width="2" stroke-linecap="round" fill="none"/>
+                <circle cx="17" cy="8" r="2.5" fill="#43cea2"/>
+              </svg>
+            </div>
+            <div class="stat-body">
+              <span class="stat-label">Total Users</span>
+              <span class="stat-value">{{ totalUsers() }}</span>
+              <span class="stat-chip user-chip">+{{ newUsers() }} this week</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon-wrap active-icon">
+              <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+                <circle cx="11" cy="11" r="8" stroke="#5cb85c" stroke-width="2" fill="none"/>
+                <circle cx="11" cy="11" r="3" fill="#5cb85c"/>
+              </svg>
+            </div>
+            <div class="stat-body">
+              <span class="stat-label">Active Users</span>
+              <span class="stat-value">{{ activeUsers() }}</span>
+              <span class="stat-chip active-chip">Last 30 days</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon-wrap inactive-icon">
+              <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+                <circle cx="11" cy="11" r="8" stroke="#dc2626" stroke-width="2" fill="none"/>
+                <line x1="7" y1="7" x2="15" y2="15" stroke="#dc2626" stroke-width="2"
+                  stroke-linecap="round"/>
+                <line x1="15" y1="7" x2="7" y2="15" stroke="#dc2626" stroke-width="2"
+                  stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="stat-body">
+              <span class="stat-label">Frozen Accounts</span>
+              <span class="stat-value">{{ inactiveUsers() }}</span>
+              <span class="stat-chip inactive-chip">Suspended</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon-wrap views-icon">
+              <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+                <ellipse cx="11" cy="11" rx="8" ry="5" stroke="#7F77DD"
+                  stroke-width="2" fill="none"/>
                 <circle cx="11" cy="11" r="2.5" fill="#7F77DD"/>
               </svg>
             </div>
-            <div class="metric-info">
-              <span class="metric-label">Views</span>
-              <div class="metric-bar-wrap">
-                <div class="metric-bar" style="background:#7F77DD" [style.width.%]="getPercent(weekViews(), totalViews())"></div>
-              </div>
+            <div class="stat-body">
+              <span class="stat-label">Total Views</span>
+              <span class="stat-value">{{ totalViews() | number }}</span>
+              <span class="stat-chip views-chip">+{{ weekViews() }} this week</span>
             </div>
-            <span class="metric-val">{{ weekViews() }}</span>
           </div>
-          <div class="metric-row">
-            <div class="metric-icon" style="background:rgba(55,138,221,0.12)">
-              <svg width="14" height="14" viewBox="0 0 22 22" fill="none">
-                <path d="M4 4h14a2 2 0 012 2v8a2 2 0 01-2 2H8l-4 3V6a2 2 0 012-2z" stroke="#378ADD" stroke-width="2" fill="none"/>
+
+          <div class="stat-card">
+            <div class="stat-icon-wrap comments-icon">
+              <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+                <path d="M4 4h14a2 2 0 012 2v8a2 2 0 01-2 2H8l-4 3V6a2 2 0 012-2z"
+                  stroke="#378ADD" stroke-width="2" fill="none" stroke-linejoin="round"/>
+                <path d="M8 9h6M8 12h4" stroke="#378ADD" stroke-width="1.5"
+                  stroke-linecap="round"/>
               </svg>
             </div>
-            <div class="metric-info">
-              <span class="metric-label">Comments</span>
-              <div class="metric-bar-wrap">
-                <div class="metric-bar" style="background:#378ADD" [style.width.%]="getPercent(weekComments(), totalComments())"></div>
-              </div>
+            <div class="stat-body">
+              <span class="stat-label">Total Comments</span>
+              <span class="stat-value">{{ totalComments() }}</span>
+              <span class="stat-chip comments-chip">+{{ weekComments() }} this week</span>
             </div>
-            <span class="metric-val">{{ weekComments() }}</span>
           </div>
-          <div class="metric-row">
-            <div class="metric-icon" style="background:rgba(217,83,79,0.12)">
-              <svg width="14" height="14" viewBox="0 0 22 22" fill="none">
-                <path d="M11 18s-7-4.5-7-9a4 4 0 018 0 4 4 0 018 0c0 4.5-7 9-7 9z" stroke="#d9534f" stroke-width="2" fill="none"/>
+
+          <div class="stat-card">
+            <div class="stat-icon-wrap likes-icon">
+              <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+                <path d="M11 18s-7-4.5-7-9a4 4 0 018 0 4 4 0 018 0c0 4.5-7 9-7 9z"
+                  stroke="#d9534f" stroke-width="2" fill="none" stroke-linejoin="round"/>
               </svg>
             </div>
-            <div class="metric-info">
-              <span class="metric-label">Likes</span>
-              <div class="metric-bar-wrap">
-                <div class="metric-bar" style="background:#d9534f" [style.width.%]="getPercent(weekLikes(), totalLikes())"></div>
+            <div class="stat-body">
+              <span class="stat-label">Total Likes</span>
+              <span class="stat-value">{{ totalLikes() }}</span>
+              <span class="stat-chip likes-chip">+{{ weekLikes() }} this week</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon-wrap followers-icon">
+              <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+                <circle cx="8" cy="7" r="3.5" stroke="#185a9d" stroke-width="2" fill="none"/>
+                <path d="M2 18c0-3.314 2.686-5 6-5s6 1.686 6 5" stroke="#185a9d"
+                  stroke-width="2" stroke-linecap="round" fill="none"/>
+                <path d="M15 10l1.5 1.5L19 9" stroke="#43cea2" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="stat-body">
+              <span class="stat-label">Total Follows</span>
+              <span class="stat-value">{{ totalFollows() }}</span>
+              <span class="stat-chip followers-chip">Platform connections</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Dashboard Body (2-column) ── -->
+    <div class="dash-body">
+
+      <!-- ── Left / Main Column ── -->
+      <div class="dash-main">
+
+        <!-- Charts Top Row -->
+        <div class="charts-top-row">
+
+          <div class="chart-card chart-card--wide">
+            <div class="chart-hd">
+              <div class="chart-hd-left">
+                <h3 class="chart-title">Blog Growth</h3>
+                <span class="chart-sub">Published vs Drafts over time</span>
+              </div>
+              <div class="range-tabs" role="group" aria-label="Date range">
+                <button [class.active]="selectedRange === '7d'"
+                  (click)="onRangeChange('7d')">7D</button>
+                <button [class.active]="selectedRange === '14d'"
+                  (click)="onRangeChange('14d')">30D</button>
+                <button [class.active]="selectedRange === '30d'"
+                  (click)="onRangeChange('30d')">90D</button>
               </div>
             </div>
-            <span class="metric-val">{{ weekLikes() }}</span>
+            <div class="chart-canvas" style="height:220px">
+              <canvas #blogGrowthChartRef></canvas>
+            </div>
           </div>
+
+          <div class="chart-card chart-card--narrow">
+            <div class="chart-hd">
+              <div class="chart-hd-left">
+                <h3 class="chart-title">Content Status</h3>
+                <span class="chart-sub">Distribution</span>
+              </div>
+            </div>
+            <div class="chart-canvas" style="height:160px">
+              <canvas #contentDoughnutRef></canvas>
+            </div>
+            <div class="donut-legend">
+              <div class="legend-row">
+                <span class="legend-dot" style="background:#43cea2"></span>
+                <span class="legend-label">Published</span>
+                <span class="legend-val">{{ totalPublished() }}</span>
+              </div>
+              <div class="legend-row">
+                <span class="legend-dot" style="background:#BA7517"></span>
+                <span class="legend-label">Drafts</span>
+                <span class="legend-val">{{ totalDrafts() }}</span>
+              </div>
+              <div class="legend-row">
+                <span class="legend-dot" style="background:#dc2626"></span>
+                <span class="legend-label">Pending</span>
+                <span class="legend-val">{{ totalPending() }}</span>
+              </div>
+              <div class="legend-row">
+                <span class="legend-dot" style="background:#185a9d"></span>
+                <span class="legend-label">Total</span>
+                <span class="legend-val">{{ totalBlogs() }}</span>
+              </div>
+            </div>
+          </div>
+
         </div>
-      </div>
 
-    </div>
-  </section>
+        <!-- Charts Bottom Row -->
+        <div class="charts-bottom-row">
 
-  <!-- ── Quick Actions ── -->
-  <section class="quick-actions-section">
-    <p class="section-label">Quick Actions</p>
-    <div class="quick-actions">
+          <div class="chart-card">
+            <div class="chart-hd">
+              <div class="chart-hd-left">
+                <h3 class="chart-title">Weekly Engagement</h3>
+                <span class="chart-sub">Views · Comments · Likes</span>
+              </div>
+            </div>
+            <div class="chart-canvas" style="height:190px">
+              <canvas #engagementBarRef></canvas>
+            </div>
+          </div>
 
-      <div class="action-card">
-        <div class="action-icon">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <rect x="2" y="2" width="12" height="2" rx="1" fill="#378ADD"/>
-            <rect x="2" y="6" width="8" height="2" rx="1" fill="#378ADD"/>
-            <rect x="2" y="10" width="10" height="2" rx="1" fill="#378ADD"/>
-            <circle cx="13" cy="13" r="2" fill="#378ADD"/>
-            <path d="M12 13h2M13 12v2" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
-          </svg>
+          <div class="chart-card">
+            <div class="chart-hd">
+              <div class="chart-hd-left">
+                <h3 class="chart-title">User Overview</h3>
+                <span class="chart-sub">Active vs Inactive</span>
+              </div>
+            </div>
+            <div class="chart-canvas" style="height:190px">
+              <canvas #userActivityRef></canvas>
+            </div>
+          </div>
+
         </div>
-        <span class="action-label">Create Blog</span>
-      </div>
 
-      <div class="action-card">
-        <div class="action-icon">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <circle cx="8" cy="5" r="3" fill="#639922"/>
-            <path d="M2 13c0-3.314 2.686-5 6-5s6 1.686 6 5" stroke="#639922" stroke-width="1.4" stroke-linecap="round" fill="none"/>
-            <circle cx="13" cy="11" r="2" fill="#639922"/>
-            <path d="M12 11h2M13 10v2" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
-          </svg>
-        </div>
-        <span class="action-label">Create User</span>
-      </div>
+        <!-- ── Recent Blogs Feed ── -->
+        <section class="feed-section">
+          <div class="section-hd">
+            <div class="section-hd-left">
+              <h2 class="section-hd-title">Recent Blogs</h2>
+              <p class="section-hd-sub">Latest content across the platform</p>
+            </div>
+            <a [routerLink]="['/admin', userId, 'manage-blogs']" class="view-all-link">
+              View all →
+            </a>
+          </div>
 
-      <div class="action-card">
-        <div class="action-icon">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <rect x="2" y="2" width="12" height="2" rx="1" fill="#7F77DD"/>
-            <rect x="2" y="6" width="8" height="2" rx="1" fill="#7F77DD"/>
-            <rect x="2" y="10" width="10" height="2" rx="1" fill="#7F77DD"/>
-            <path d="M11 11l3 3" stroke="#7F77DD" stroke-width="1.4" stroke-linecap="round"/>
-            <circle cx="11" cy="11" r="2.5" stroke="#7F77DD" stroke-width="1.2" fill="none"/>
-          </svg>
-        </div>
-        <span class="action-label">Manage Blogs</span>
-      </div>
-
-      <div class="action-card">
-        <div class="action-icon">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <circle cx="6" cy="5" r="3" fill="#BA7517"/>
-            <path d="M2 12c0-2.761 1.79-4 4-4" stroke="#BA7517" stroke-width="1.4" stroke-linecap="round" fill="none"/>
-            <circle cx="11" cy="10" r="3" stroke="#BA7517" stroke-width="1.2" fill="none"/>
-            <path d="M10 10h2M11 9v2" stroke="#BA7517" stroke-width="1.2" stroke-linecap="round"/>
-          </svg>
-        </div>
-        <span class="action-label">Manage Users</span>
-      </div>
-
-      <div class="action-card">
-        <div class="action-icon">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <circle cx="8" cy="8" r="2" stroke="#5F5E5A" stroke-width="1.3" fill="none"/>
-            <path d="M8 2v2M8 12v2M2 8h2M12 8h2M3.5 3.5l1.4 1.4M11.1 11.1l1.4 1.4M3.5 12.5l1.4-1.4M11.1 4.9l1.4-1.4" stroke="#5F5E5A" stroke-width="1.2" stroke-linecap="round"/>
-          </svg>
-        </div>
-        <span class="action-label">Settings</span>
-      </div>
-
-    </div>
-  </section>
-
-  <div class="bottom-grid">
-
-    <section class="recent-blogs-section">
-      <p class="section-label">Recent Blogs</p>
-      <div class="table-card">
-        <div class="table-scroll">
-          <table>
-            <thead>
-              <tr>
-                <th>Title</th>
-                <th>Author</th>
-                <th>Date</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (blog of recentBlogs(); track blog._id) {
-                <tr>
-                  <td>{{ blog.title }}</td>
-                  <td>{{ blog.user?.name || 'Unknown' }}</td>
-                  <td>{{ blog.createdAt | date: 'MMM d, y' }}</td>
-                  <td>
-                    <span class="status-badge"
-                      [class.status-published]="blog.status === 'published'"
-                      [class.status-draft]="blog.status === 'draft'"
-                      [class.status-pending]="blog.status === 'pending'">
+          <div class="feed-list">
+            @for (blog of recentBlogs(); track blog._id) {
+              <article class="feed-card">
+                <div class="feed-thumb feed-thumb--letter">
+                  {{ blog.title.charAt(0).toUpperCase() }}
+                </div>
+                <div class="feed-content">
+                  <div class="feed-meta-row">
+                    <span class="feed-status-chip"
+                      [class.chip-published]="blog.status === 'published'"
+                      [class.chip-draft]="blog.status === 'draft'"
+                      [class.chip-pending]="blog.status === 'pending'">
                       {{ blog.status | titlecase }}
                     </span>
-                  </td>
-                </tr>
-              }
-              @if (recentBlogs().length === 0 && !isLoading()) {
-                <tr><td colspan="4" class="empty-row">No blogs found</td></tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <section class="recent-users-section" style="margin-top: 24px;">
-      <p class="section-label">Recently Registered Users</p>
-      <div class="table-card">
-        <div class="table-scroll">
-          <table>
-            <thead>
-              <tr>
-                <th>User</th>
-                <th>Email</th>
-                <th>Joined</th>
-                <th>Role</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (user of recentUsers(); track user._id) {
-                <tr>
-                  <td>
-                    <div class="user-cell">
-                      <div class="user-avatar">{{ getInitials(user.name) }}</div>
-                      <span>{{ user.name }}</span>
-                    </div>
-                  </td>
-                  <td class="email-cell">{{ user.email }}</td>
-                  <td>{{ user.createdAt | date: 'MMM d, y' }}</td>
-                  <td>
-                    <span class="role-badge"
-                      [class.admin-role]="user.role?.toLowerCase() === 'admin'"
-                      [class.user-role]="user.role?.toLowerCase() === 'user'">
-                      {{ user.role | titlecase }}
+                    <span class="feed-author">
+                      <svg width="11" height="11" viewBox="0 0 22 22" fill="none"
+                        aria-hidden="true">
+                        <circle cx="11" cy="8" r="4" stroke="currentColor"
+                          stroke-width="2" fill="none"/>
+                        <path d="M3 19c0-4.418 3.582-7 8-7s8 2.582 8 7"
+                          stroke="currentColor" stroke-width="2"
+                          stroke-linecap="round" fill="none"/>
+                      </svg>
+                      {{ blog.user?.name || 'Unknown' }}
                     </span>
-                  </td>
-                </tr>
-              }
-              @if (recentUsers().length === 0 && !isLoading()) {
-                <tr><td colspan="4" class="empty-row">No active users found</td></tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-  </div>
-
-  <div class="bottom-grid" style="margin-top: 5px;">
-    <section class="recent-users-section" style="grid-column: 1 / -1;">
-      <p class="section-label">
-        🚫 Inactive / Frozen Users
-        <span class="inactive-count-badge">{{ inactiveUsers() }} frozen</span>
-      </p>
-      <div class="table-card">
-        <div class="table-scroll">
-          <table>
-            <thead>
-              <tr>
-                <th>User</th>
-                <th>Email</th>
-                <th>Role</th>
-                <th>Joined</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (user of inactiveList(); track user._id) {
-                <tr class="inactive-row">
-                  <td>
-                    <div class="user-cell">
-                      <div class="user-avatar inactive-avatar">{{ getInitials(user.name) }}</div>
-                      <span>{{ user.name }}</span>
-                    </div>
-                  </td>
-                  <td class="email-cell">{{ user.email }}</td>
-                  <td>
-                    <span class="role-badge"
-                      [class.admin-role]="user.role?.toLowerCase() === 'admin'"
-                      [class.user-role]="user.role?.toLowerCase() === 'user'">
-                      {{ user.role | titlecase }}
+                    <span class="feed-date">{{ blog.createdAt | date: 'MMM d, y' }}</span>
+                  </div>
+                  <h3 class="feed-title">{{ blog.title }}</h3>
+                  <div class="feed-stat-row">
+                    <span class="feed-stat">
+                      <svg width="12" height="12" viewBox="0 0 22 22" fill="none"
+                        aria-hidden="true">
+                        <ellipse cx="11" cy="11" rx="8" ry="5" stroke="currentColor"
+                          stroke-width="2" fill="none"/>
+                        <circle cx="11" cy="11" r="2.5" fill="currentColor"/>
+                      </svg>
+                      {{ blog.views ?? 0 | number }}
                     </span>
-                  </td>
-                  <td>{{ user.createdAt | date: 'MMM d, y' }}</td>
-                  <td>
-                    <span class="status-badge inactive-badge-pill">Frozen</span>
-                  </td>
-                </tr>
-              }
-              @if (inactiveList().length === 0 && !isLoading()) {
-                <tr>
-                  <td colspan="5" class="empty-row">
-                    <div class="empty-state">
-                      <p>✅ No frozen users — all accounts are active</p>
-                    </div>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
+                    <span class="feed-stat">
+                      <svg width="11" height="11" viewBox="0 0 22 22" fill="none"
+                        aria-hidden="true">
+                        <path d="M11 18s-7-4.5-7-9a4 4 0 018 0 4 4 0 018 0c0 4.5-7 9-7 9z"
+                          stroke="currentColor" stroke-width="2" fill="none"
+                          stroke-linejoin="round"/>
+                      </svg>
+                      {{ blog.likesCount ?? 0 }}
+                    </span>
+                    <span class="feed-stat">
+                      <svg width="11" height="11" viewBox="0 0 22 22" fill="none"
+                        aria-hidden="true">
+                        <path d="M4 4h14a2 2 0 012 2v8a2 2 0 01-2 2H8l-4 3V6a2 2 0 012-2z"
+                          stroke="currentColor" stroke-width="2" fill="none"/>
+                      </svg>
+                      {{ blog.commentsCount ?? 0 }}
+                    </span>
+                  </div>
+                </div>
+              </article>
+            }
+            @if (recentBlogs().length === 0) {
+              <div class="feed-empty">
+                <span class="feed-empty-icon">📄</span>
+                <p>No blogs found on the platform yet</p>
+              </div>
+            }
+          </div>
+        </section>
+
       </div>
-    </section>
-  </div>
+
+      <!-- ── Right Sidebar ── -->
+      <aside class="dash-sidebar">
+
+        <!-- Quick Actions -->
+        <section class="sidebar-section">
+          <div class="section-hd">
+            <h2 class="section-hd-title">Quick Actions</h2>
+          </div>
+          <div class="qa-grid">
+
+            <button class="qa-card" type="button" (click)="showCreateModal.set(true)">
+              <div class="qa-icon qa-icon--teal">
+                <svg width="18" height="18" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <path d="M2 13h3l8-8-3-3L2 10v3z" stroke="currentColor" stroke-width="1.5"
+                    stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                </svg>
+              </div>
+              <span class="qa-label">Create Blog</span>
+            </button>
+
+            <button class="qa-card" type="button" (click)="showCreateUserModal.set(true)">
+              <div class="qa-icon qa-icon--blue">
+                <svg width="18" height="18" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <circle cx="7" cy="5" r="3" stroke="currentColor" stroke-width="1.4"
+                    fill="none"/>
+                  <path d="M1 13c0-3.314 2.686-5 6-5" stroke="currentColor" stroke-width="1.4"
+                    stroke-linecap="round" fill="none"/>
+                  <path d="M13 10v4M11 12h4" stroke="currentColor" stroke-width="1.4"
+                    stroke-linecap="round"/>
+                </svg>
+              </div>
+              <span class="qa-label">Create User</span>
+            </button>
+
+            <a class="qa-card" [routerLink]="['/admin', userId, 'manage-blogs']">
+              <div class="qa-icon qa-icon--purple">
+                <svg width="18" height="18" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <rect x="2" y="2" width="12" height="2" rx="1" fill="currentColor"/>
+                  <rect x="2" y="6" width="8"  height="2" rx="1" fill="currentColor"/>
+                  <rect x="2" y="10" width="10" height="2" rx="1" fill="currentColor"/>
+                </svg>
+              </div>
+              <span class="qa-label">Manage Blogs</span>
+            </a>
+
+            <a class="qa-card" [routerLink]="['/admin', userId, 'manage-users']">
+              <div class="qa-icon qa-icon--amber">
+                <svg width="18" height="18" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <circle cx="6" cy="5" r="3" stroke="currentColor" stroke-width="1.4"
+                    fill="none"/>
+                  <path d="M1 13c0-2.761 2.239-4 5-4" stroke="currentColor" stroke-width="1.4"
+                    stroke-linecap="round" fill="none"/>
+                  <circle cx="11" cy="11" r="3" stroke="currentColor" stroke-width="1.2"
+                    fill="none"/>
+                  <path d="M10 11h2M11 10v2" stroke="currentColor" stroke-width="1.2"
+                    stroke-linecap="round"/>
+                </svg>
+              </div>
+              <span class="qa-label">Manage Users</span>
+            </a>
+
+            <a class="qa-card" [routerLink]="['/admin', userId, 'visitor']">
+              <div class="qa-icon qa-icon--teal">
+                <svg width="18" height="18" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <path d="M1 12l4-5 3 2 4-5 3 2" stroke="currentColor" stroke-width="1.4"
+                    stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <span class="qa-label">Traffic Analytics</span>
+            </a>
+
+            <a class="qa-card" [routerLink]="['/admin', userId, 'settings']">
+              <div class="qa-icon qa-icon--gray">
+                <svg width="18" height="18" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.3"
+                    fill="none"/>
+                  <path d="M8 2v2M8 12v2M2 8h2M12 8h2M3.5 3.5l1.4 1.4M11.1 11.1l1.4 1.4
+                    M3.5 12.5l1.4-1.4M11.1 4.9l1.4-1.4"
+                    stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <span class="qa-label">Settings</span>
+            </a>
+
+          </div>
+        </section>
+
+        <!-- Recent Users -->
+        <section class="sidebar-section">
+          <div class="section-hd">
+            <h2 class="section-hd-title">New Users</h2>
+            <a [routerLink]="['/admin', userId, 'manage-users']" class="view-all-link">
+              View all →
+            </a>
+          </div>
+          <div class="user-list">
+            @for (user of recentUsers(); track user._id) {
+              <div class="user-row">
+                <div class="user-avatar">{{ getInitials(user.name) }}</div>
+                <div class="user-info">
+                  <span class="user-name">{{ user.name }}</span>
+                  <span class="user-email">{{ user.email }}</span>
+                </div>
+                <span class="user-joined">{{ user.createdAt | date: 'MMM d' }}</span>
+              </div>
+            }
+            @if (recentUsers().length === 0) {
+              <p class="empty-list">No recent users</p>
+            }
+          </div>
+        </section>
+
+        <!-- This Week Metrics -->
+        <section class="sidebar-section">
+          <div class="section-hd">
+            <h2 class="section-hd-title">This Week</h2>
+            <span class="section-hd-badge">snapshot</span>
+          </div>
+          <div class="metrics-list">
+
+            <div class="metric-row">
+              <div class="metric-icon-wrap" style="background:rgba(67,206,162,0.12)">
+                <svg width="13" height="13" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+                  <rect x="3" y="3" width="16" height="3" rx="1.5" fill="#43cea2"/>
+                  <rect x="3" y="9" width="11" height="3" rx="1.5" fill="#43cea2"/>
+                  <rect x="3" y="15" width="13" height="3" rx="1.5" fill="#43cea2"/>
+                </svg>
+              </div>
+              <div class="metric-detail">
+                <span class="metric-label">New Blogs</span>
+                <div class="metric-track">
+                  <div class="metric-fill" style="background:#43cea2"
+                    [style.width.%]="getPercent(newBlogs(), totalBlogs())"></div>
+                </div>
+              </div>
+              <span class="metric-num">+{{ newBlogs() }}</span>
+            </div>
+
+            <div class="metric-row">
+              <div class="metric-icon-wrap" style="background:rgba(24,90,157,0.12)">
+                <svg width="13" height="13" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+                  <circle cx="9" cy="7" r="4" fill="#185a9d"/>
+                  <path d="M2 19c0-4.418 3.134-7 7-7s7 2.582 7 7" stroke="#185a9d"
+                    stroke-width="2" fill="none"/>
+                </svg>
+              </div>
+              <div class="metric-detail">
+                <span class="metric-label">New Users</span>
+                <div class="metric-track">
+                  <div class="metric-fill" style="background:#185a9d"
+                    [style.width.%]="getPercent(newUsers(), totalUsers())"></div>
+                </div>
+              </div>
+              <span class="metric-num">+{{ newUsers() }}</span>
+            </div>
+
+            <div class="metric-row">
+              <div class="metric-icon-wrap" style="background:rgba(127,119,221,0.12)">
+                <svg width="13" height="13" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+                  <ellipse cx="11" cy="11" rx="8" ry="5" stroke="#7F77DD"
+                    stroke-width="2" fill="none"/>
+                  <circle cx="11" cy="11" r="2.5" fill="#7F77DD"/>
+                </svg>
+              </div>
+              <div class="metric-detail">
+                <span class="metric-label">Views</span>
+                <div class="metric-track">
+                  <div class="metric-fill" style="background:#7F77DD"
+                    [style.width.%]="getPercent(weekViews(), totalViews())"></div>
+                </div>
+              </div>
+              <span class="metric-num">{{ weekViews() }}</span>
+            </div>
+
+            <div class="metric-row">
+              <div class="metric-icon-wrap" style="background:rgba(55,138,221,0.12)">
+                <svg width="13" height="13" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+                  <path d="M4 4h14a2 2 0 012 2v8a2 2 0 01-2 2H8l-4 3V6a2 2 0 012-2z"
+                    stroke="#378ADD" stroke-width="2" fill="none"/>
+                </svg>
+              </div>
+              <div class="metric-detail">
+                <span class="metric-label">Comments</span>
+                <div class="metric-track">
+                  <div class="metric-fill" style="background:#378ADD"
+                    [style.width.%]="getPercent(weekComments(), totalComments())"></div>
+                </div>
+              </div>
+              <span class="metric-num">{{ weekComments() }}</span>
+            </div>
+
+            <div class="metric-row">
+              <div class="metric-icon-wrap" style="background:rgba(217,83,79,0.12)">
+                <svg width="13" height="13" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+                  <path d="M11 18s-7-4.5-7-9a4 4 0 018 0 4 4 0 018 0c0 4.5-7 9-7 9z"
+                    stroke="#d9534f" stroke-width="2" fill="none"/>
+                </svg>
+              </div>
+              <div class="metric-detail">
+                <span class="metric-label">Likes</span>
+                <div class="metric-track">
+                  <div class="metric-fill" style="background:#d9534f"
+                    [style.width.%]="getPercent(weekLikes(), totalLikes())"></div>
+                </div>
+              </div>
+              <span class="metric-num">{{ weekLikes() }}</span>
+            </div>
+
+          </div>
+        </section>
+
+      </aside>
+
+    </div>
+
+    <!-- ── Frozen / Inactive Users (Full-width) ── -->
+    @if (inactiveList().length > 0) {
+      <section class="frozen-section">
+        <div class="section-hd">
+          <div class="section-hd-left">
+            <h2 class="section-hd-title frozen-title">
+              Frozen Accounts
+              <span class="frozen-count-badge">{{ inactiveUsers() }}</span>
+            </h2>
+            <p class="section-hd-sub">Suspended user accounts requiring attention</p>
+          </div>
+          <a [routerLink]="['/admin', userId, 'manage-users']" class="view-all-link">
+            Manage Users →
+          </a>
+        </div>
+
+        <div class="frozen-grid">
+          @for (user of inactiveList(); track user._id) {
+            <div class="frozen-card">
+              <div class="frozen-avatar">{{ getInitials(user.name) }}</div>
+              <div class="frozen-info">
+                <span class="frozen-name">{{ user.name }}</span>
+                <span class="frozen-email">{{ user.email }}</span>
+                <span class="frozen-date">
+                  Joined {{ user.createdAt | date: 'MMM d, y' }}
+                </span>
+              </div>
+              <div class="frozen-meta">
+                <span class="role-chip"
+                  [class.chip-admin]="user.role?.toLowerCase() === 'admin'"
+                  [class.chip-user]="user.role?.toLowerCase() === 'user'">
+                  {{ user.role | titlecase }}
+                </span>
+                <span class="frozen-badge">Frozen</span>
+              </div>
+            </div>
+          }
+        </div>
+      </section>
+    }
+
+    @if (inactiveList().length === 0) {
+      <div class="all-clear-banner">
+        <svg width="18" height="18" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+          <circle cx="11" cy="11" r="8" stroke="#0f7a5a" stroke-width="2" fill="none"/>
+          <path d="M7 11l3 3 5-5" stroke="#0f7a5a" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>All accounts are active — no frozen users</span>
+      </div>
+    }
+
+  }
+
+  <!-- ── Create Blog Modal ── -->
+  @if (showCreateModal()) {
+    <app-create-blog
+      (close)="showCreateModal.set(false)"
+      (postCreated)="showCreateModal.set(false)"
+    />
+  }
+
+  <!-- ── Create User Modal ── -->
+  @if (showCreateUserModal()) {
+    <app-create-user
+      (close)="showCreateUserModal.set(false)"
+      (userCreated)="showCreateUserModal.set(false)"
+    />
+  }
 
 </div>
-
-@if (showCreateModal()) {
-  <app-create-blog
-    (close)="showCreateModal.set(false)"
-    (postCreated)="showCreateModal.set(false)"
-  />
-}

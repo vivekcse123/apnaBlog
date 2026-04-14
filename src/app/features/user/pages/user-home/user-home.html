@@ -1,564 +1,626 @@
-<div class="home-container">
+<div class="dash">
 
-  <!-- Header -->
-  <header class="header">
-    <div class="header-left">
-      <h1 class="heading">Welcome back, {{ user()?.name?.split(' ')[0] || 'Writer' }} ✦</h1>
-      <p class="heading-sub">Here's what's happening with your blogs</p>
+  <!-- ── Dashboard Header ── -->
+  <header class="dash-header">
+    <div class="dash-header-left">
+      <h1 class="dash-title">Welcome back, {{ user()?.name?.split(' ')[0] || 'Writer' }} ✦</h1>
+      <p class="dash-subtitle">Here's what's happening with your blogs</p>
     </div>
-    <div class="header-right">
+    <div class="dash-header-right">
       @if (isRefreshing()) {
-        <span class="refresh-indicator">Refreshing…</span>
+        <span class="refreshing-badge">
+          <span class="refresh-dot"></span>
+          Refreshing
+        </span>
       }
-      <button class="write-story-btn" (click)="showCreateModal.set(true)" type="button">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <path d="M2 13h3l8-8-3-3L2 10v3z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <button class="btn-write" (click)="showCreateModal.set(true)" type="button">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M2 13h3l8-8-3-3L2 10v3z" stroke="currentColor" stroke-width="1.5"
+            stroke-linecap="round" stroke-linejoin="round" fill="none"/>
         </svg>
         Write a Story
       </button>
-      <span class="date-badge">{{ currentDate | date: 'EEE, MMM d, y' }}</span>
+      <span class="date-pill">{{ currentDate | date: 'EEE, MMM d, y' }}</span>
     </div>
   </header>
 
+  <!-- ── Skeleton Loading State ── -->
   @if (isLoading()) {
-    <div class="loading-state">
-      <div class="loading-dots"><span></span><span></span><span></span></div>
-      <p>Loading your dashboard...</p>
+    <div class="sk-section" aria-hidden="true">
+      <div class="sk-stats-row">
+        <div class="sk-stat shimmer"></div>
+        <div class="sk-stat shimmer"></div>
+        <div class="sk-stat shimmer"></div>
+        <div class="sk-stat shimmer"></div>
+        <div class="sk-stat shimmer"></div>
+      </div>
+      <div class="sk-stats-row sk-stats-row--sm">
+        <div class="sk-stat shimmer"></div>
+        <div class="sk-stat shimmer"></div>
+        <div class="sk-stat shimmer"></div>
+        <div class="sk-stat shimmer"></div>
+      </div>
+      <div class="sk-body">
+        <div class="sk-col-main">
+          <div class="sk-chart shimmer"></div>
+          <div class="sk-feed-card shimmer"></div>
+          <div class="sk-feed-card shimmer"></div>
+          <div class="sk-feed-card shimmer"></div>
+        </div>
+        <div class="sk-col-side">
+          <div class="sk-actions shimmer"></div>
+          <div class="sk-lb shimmer"></div>
+          <div class="sk-lb shimmer"></div>
+        </div>
+      </div>
     </div>
   }
 
-  <!-- ── Statistics ── -->
-  <section class="statistics-section">
-    <p class="section-label">Your Statistics</p>
-    <div class="info-container">
+  @if (!isLoading()) {
 
-      <div class="info-card clickable-card" (click)="openBlogsModal()" role="button" tabindex="0"
-        (keydown.enter)="openBlogsModal()" title="View all your blogs">
-        <div class="info-icon blogs-icon">
-          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-            <rect x="3" y="3" width="16" height="3" rx="1.5" fill="#43cea2"/>
-            <rect x="3" y="9" width="11" height="3" rx="1.5" fill="#43cea2"/>
-            <rect x="3" y="15" width="13" height="3" rx="1.5" fill="#43cea2"/>
-          </svg>
+    <!-- ── Stats Grid ── -->
+    <section class="stats-section">
+      <div class="stats-grid">
+
+        <button class="stat-card stat-card--clickable" (click)="openBlogsModal()"
+          type="button" aria-label="View all your blogs">
+          <div class="stat-icon-wrap blogs-icon">
+            <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+              <rect x="3" y="3" width="16" height="3" rx="1.5" fill="#43cea2"/>
+              <rect x="3" y="9" width="11" height="3" rx="1.5" fill="#43cea2"/>
+              <rect x="3" y="15" width="13" height="3" rx="1.5" fill="#43cea2"/>
+            </svg>
+          </div>
+          <div class="stat-body">
+            <span class="stat-label">My Blogs</span>
+            <span class="stat-value">{{ totalBlogs() }}</span>
+            <span class="stat-chip blog-chip">+{{ newBlogs() }} this week</span>
+          </div>
+          <span class="stat-chevron" aria-hidden="true">›</span>
+        </button>
+
+        <div class="stat-card">
+          <div class="stat-icon-wrap published-icon">
+            <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+              <circle cx="11" cy="11" r="8" stroke="#0f7a5a" stroke-width="2" fill="none"/>
+              <path d="M7 11l3 3 5-5" stroke="#0f7a5a" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="stat-body">
+            <span class="stat-label">Published</span>
+            <span class="stat-value">{{ totalPublished() }}</span>
+            <span class="stat-chip published-chip">{{ publishedPercent() }}% of total</span>
+          </div>
         </div>
-        <div class="info-content">
-          <span class="info-label">My Blogs</span>
-          <span class="info-value">{{ totalBlogs() }}</span>
-          <span class="info-badge blog-badge">+{{ newBlogs() }} this week</span>
+
+        <div class="stat-card">
+          <div class="stat-icon-wrap drafts-icon">
+            <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+              <rect x="3" y="3" width="16" height="16" rx="3" stroke="#BA7517"
+                stroke-width="2" fill="none"/>
+              <path d="M7 11h8M7 7h5M7 15h6" stroke="#BA7517" stroke-width="1.5"
+                stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="stat-body">
+            <span class="stat-label">Drafts</span>
+            <span class="stat-value">{{ totalDrafts() }}</span>
+            <span class="stat-chip drafts-chip">{{ totalDrafts() }} unpublished</span>
+          </div>
         </div>
-        <span class="card-expand-hint">›</span>
+
+        <div class="stat-card">
+          <div class="stat-icon-wrap views-icon">
+            <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+              <ellipse cx="11" cy="11" rx="8" ry="5" stroke="#7F77DD"
+                stroke-width="2" fill="none"/>
+              <circle cx="11" cy="11" r="2.5" fill="#7F77DD"/>
+            </svg>
+          </div>
+          <div class="stat-body">
+            <span class="stat-label">Total Views</span>
+            <span class="stat-value">{{ totalViews() | number }}</span>
+            <span class="stat-chip views-chip">across all posts</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon-wrap likes-icon">
+            <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+              <path d="M11 18s-7-4.5-7-9a4 4 0 018 0 4 4 0 018 0c0 4.5-7 9-7 9z"
+                stroke="#d9534f" stroke-width="2" fill="none" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="stat-body">
+            <span class="stat-label">Total Likes</span>
+            <span class="stat-value">{{ totalLikes() }}</span>
+            <span class="stat-chip likes-chip">from readers</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon-wrap comments-icon">
+            <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+              <path d="M4 4h14a2 2 0 012 2v8a2 2 0 01-2 2H8l-4 3V6a2 2 0 012-2z"
+                stroke="#378ADD" stroke-width="2" fill="none" stroke-linejoin="round"/>
+              <path d="M8 9h6M8 12h4" stroke="#378ADD" stroke-width="1.5"
+                stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="stat-body">
+            <span class="stat-label">Comments</span>
+            <span class="stat-value">{{ totalComments() }}</span>
+            <span class="stat-chip comments-chip">reader engagement</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon-wrap top-icon">
+            <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+              <path d="M11 3l2.5 5 5.5.8-4 3.9.9 5.5L11 15.5l-4.9 2.7.9-5.5L3 8.8l5.5-.8z"
+                stroke="#f59e0b" stroke-width="1.8" fill="none" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="stat-body">
+            <span class="stat-label">Top Post Views</span>
+            <span class="stat-value">{{ topPostViews() | number }}</span>
+            <span class="stat-chip top-chip">your best post</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon-wrap avg-icon">
+            <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+              <path d="M3 17l4-5 4 3 4-6 4 2" stroke="#5cb85c" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            </svg>
+          </div>
+          <div class="stat-body">
+            <span class="stat-label">Avg. Views / Post</span>
+            <span class="stat-value">{{ avgViews() }}</span>
+            <span class="stat-chip avg-chip">per blog</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon-wrap followers-icon">
+            <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+              <circle cx="8" cy="7" r="3.5" stroke="#185a9d" stroke-width="2" fill="none"/>
+              <path d="M2 18c0-3.314 2.686-5 6-5s6 1.686 6 5" stroke="#185a9d"
+                stroke-width="2" stroke-linecap="round" fill="none"/>
+              <path d="M15 10l1.5 1.5L19 9" stroke="#43cea2" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="stat-body">
+            <span class="stat-label">Followers</span>
+            <span class="stat-value">{{ followersCount() }}</span>
+            <span class="stat-chip followers-chip">following you</span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── Dashboard Body (2-column) ── -->
+    <div class="dash-body">
+
+      <!-- ── Left / Main Column ── -->
+      <div class="dash-main">
+
+        <!-- Charts Top Row -->
+        <div class="charts-top-row">
+
+          <div class="chart-card chart-card--wide">
+            <div class="chart-card-hd">
+              <div class="chart-card-hd-left">
+                <h3 class="chart-card-title">Blog Growth</h3>
+                <span class="chart-card-sub">Published vs Drafts over time</span>
+              </div>
+              <div class="range-tabs" role="group" aria-label="Date range">
+                <button [class.active]="selectedRange === '7d'"
+                  (click)="onRangeChange('7d')">7D</button>
+                <button [class.active]="selectedRange === '14d'"
+                  (click)="onRangeChange('14d')">30D</button>
+                <button [class.active]="selectedRange === '30d'"
+                  (click)="onRangeChange('30d')">90D</button>
+              </div>
+            </div>
+            <div class="chart-canvas-wrap" style="height:220px">
+              <canvas #blogGrowthRef></canvas>
+            </div>
+          </div>
+
+          <div class="chart-card chart-card--narrow">
+            <div class="chart-card-hd">
+              <div class="chart-card-hd-left">
+                <h3 class="chart-card-title">Content Split</h3>
+                <span class="chart-card-sub">Distribution</span>
+              </div>
+            </div>
+            <div class="chart-canvas-wrap" style="height:160px">
+              <canvas #contentDonutRef></canvas>
+            </div>
+            <div class="donut-legend">
+              <div class="legend-row">
+                <span class="legend-dot" style="background:#43cea2"></span>
+                <span class="legend-label">Published</span>
+                <span class="legend-val">{{ totalPublished() }}</span>
+              </div>
+              <div class="legend-row">
+                <span class="legend-dot" style="background:#BA7517"></span>
+                <span class="legend-label">Drafts</span>
+                <span class="legend-val">{{ totalDrafts() }}</span>
+              </div>
+              <div class="legend-row">
+                <span class="legend-dot" style="background:#185a9d"></span>
+                <span class="legend-label">Total</span>
+                <span class="legend-val">{{ totalBlogs() }}</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ── Recent Blogs Feed ── -->
+        <section class="feed-section">
+          <div class="section-hd">
+            <div class="section-hd-left">
+              <h2 class="section-hd-title">Recent Blogs</h2>
+              <p class="section-hd-sub">Your latest content</p>
+            </div>
+            <a [routerLink]="manageBlogsLink()" class="view-all-link">View all →</a>
+          </div>
+
+          <div class="feed-list">
+            @for (blog of recentBlogs(); track blog._id) {
+              <article class="feed-card">
+                @if (blog.featuredImage) {
+                  <div class="feed-thumb">
+                    <img [src]="blog.featuredImage" [alt]="blog.title" loading="lazy" />
+                  </div>
+                } @else {
+                  <div class="feed-thumb feed-thumb--letter">
+                    {{ blog.title.charAt(0).toUpperCase() }}
+                  </div>
+                }
+                <div class="feed-content">
+                  <div class="feed-meta-row">
+                    <span class="feed-status-chip"
+                      [class.chip-published]="blog.status === 'published'"
+                      [class.chip-draft]="blog.status === 'draft'">
+                      {{ blog.status | titlecase }}
+                    </span>
+                    @if (blog.categories?.[0]) {
+                      <span class="feed-cat-chip">{{ blog.categories[0] }}</span>
+                    }
+                    <span class="feed-date">{{ blog.createdAt | date: 'MMM d, y' }}</span>
+                  </div>
+                  <h3 class="feed-title">{{ blog.title }}</h3>
+                  <div class="feed-stat-row">
+                    <span class="feed-stat">
+                      <svg width="12" height="12" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+                        <ellipse cx="11" cy="11" rx="8" ry="5" stroke="currentColor" stroke-width="2" fill="none"/>
+                        <circle cx="11" cy="11" r="2.5" fill="currentColor"/>
+                      </svg>
+                      {{ blog.views ?? 0 | number }}
+                    </span>
+                    <span class="feed-stat">
+                      <svg width="11" height="11" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+                        <path d="M11 18s-7-4.5-7-9a4 4 0 018 0 4 4 0 018 0c0 4.5-7 9-7 9z"
+                          stroke="currentColor" stroke-width="2" fill="none" stroke-linejoin="round"/>
+                      </svg>
+                      {{ blog.likesCount ?? 0 }}
+                    </span>
+                    <span class="feed-stat">
+                      <svg width="11" height="11" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+                        <path d="M4 4h14a2 2 0 012 2v8a2 2 0 01-2 2H8l-4 3V6a2 2 0 012-2z"
+                          stroke="currentColor" stroke-width="2" fill="none"/>
+                      </svg>
+                      {{ blog.commentsCount ?? 0 }}
+                    </span>
+                  </div>
+                </div>
+              </article>
+            }
+            @if (recentBlogs().length === 0) {
+              <div class="feed-empty">
+                <span class="feed-empty-icon">📝</span>
+                <p>No blogs yet —
+                  <a [routerLink]="createBlogLink()" class="feed-empty-link">
+                    write your first story
+                  </a>
+                </p>
+              </div>
+            }
+          </div>
+        </section>
+
       </div>
 
-      <div class="info-card">
-        <div class="info-icon published-icon">
-          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-            <circle cx="11" cy="11" r="8" stroke="#0f7a5a" stroke-width="2" fill="none"/>
-            <path d="M7 11l3 3 5-5" stroke="#0f7a5a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
-        <div class="info-content">
-          <span class="info-label">Published</span>
-          <span class="info-value">{{ totalPublished() }}</span>
-          <span class="info-badge published-badge">{{ publishedPercent() }}% of total</span>
-        </div>
-      </div>
+      <!-- ── Right Sidebar ── -->
+      <aside class="dash-sidebar">
 
-      <div class="info-card">
-        <div class="info-icon drafts-icon">
-          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-            <rect x="3" y="3" width="16" height="16" rx="3" stroke="#BA7517" stroke-width="2" fill="none"/>
-            <path d="M7 11h8M7 7h5M7 15h6" stroke="#BA7517" stroke-width="1.5" stroke-linecap="round"/>
-          </svg>
-        </div>
-        <div class="info-content">
-          <span class="info-label">Drafts</span>
-          <span class="info-value">{{ totalDrafts() }}</span>
-          <span class="info-badge drafts-badge">{{ totalDrafts() }} unpublished</span>
-        </div>
-      </div>
+        <!-- Quick Actions -->
+        <section class="sidebar-section">
+          <div class="section-hd">
+            <h2 class="section-hd-title">Quick Actions</h2>
+          </div>
+          <div class="qa-grid">
+            <a class="qa-card" [routerLink]="createBlogLink()">
+              <div class="qa-icon qa-icon--blue">
+                <svg width="18" height="18" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <path d="M2 13h3l8-8-3-3L2 10v3z" stroke="currentColor" stroke-width="1.5"
+                    stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                </svg>
+              </div>
+              <span class="qa-label">Write New Blog</span>
+            </a>
+            <a class="qa-card" [routerLink]="manageBlogsLink()">
+              <div class="qa-icon qa-icon--purple">
+                <svg width="18" height="18" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <rect x="2" y="2" width="12" height="2" rx="1" fill="currentColor"/>
+                  <rect x="2" y="6" width="8"  height="2" rx="1" fill="currentColor"/>
+                  <rect x="2" y="10" width="10" height="2" rx="1" fill="currentColor"/>
+                </svg>
+              </div>
+              <span class="qa-label">Manage Blogs</span>
+            </a>
+            <a class="qa-card" [routerLink]="settingsLink()">
+              <div class="qa-icon qa-icon--gray">
+                <svg width="18" height="18" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.3" fill="none"/>
+                  <path d="M8 2v2M8 12v2M2 8h2M12 8h2M3.5 3.5l1.4 1.4M11.1 11.1l1.4 1.4M3.5 12.5l1.4-1.4M11.1 4.9l1.4-1.4"
+                    stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <span class="qa-label">Settings</span>
+            </a>
+            <a class="qa-card" [routerLink]="exploreLink()">
+              <div class="qa-icon qa-icon--green">
+                <svg width="18" height="18" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.4" fill="none"/>
+                  <path d="M10.5 5.5l-2 4-4 2 2-4 4-2z" stroke="currentColor"
+                    stroke-width="1.2" stroke-linejoin="round" fill="none"/>
+                </svg>
+              </div>
+              <span class="qa-label">Explore Blogs</span>
+            </a>
+          </div>
+        </section>
 
-      <div class="info-card">
-        <div class="info-icon views-icon">
-          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-            <ellipse cx="11" cy="11" rx="8" ry="5" stroke="#7F77DD" stroke-width="2" fill="none"/>
-            <circle cx="11" cy="11" r="2.5" fill="#7F77DD"/>
-          </svg>
-        </div>
-        <div class="info-content">
-          <span class="info-label">Total Views</span>
-          <span class="info-value">{{ totalViews() | number }}</span>
-          <span class="info-badge views-badge">across all posts</span>
-        </div>
-      </div>
+        <!-- Top Posts Leaderboard -->
+        <section class="sidebar-section">
+          <div class="section-hd">
+            <h2 class="section-hd-title">Top Posts</h2>
+            <span class="section-hd-badge">by views</span>
+          </div>
+          <div class="leaderboard">
+            @for (blog of topBlogs(); track blog._id; let i = $index) {
+              <div class="lb-item">
+                <span class="lb-rank" aria-label="Rank {{ i + 1 }}">
+                  {{ i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '#' + (i + 1) }}
+                </span>
+                <div class="lb-body">
+                  <p class="lb-title">{{ blog.title }}</p>
+                  <div class="lb-stats">
+                    <span>👁 {{ blog.views ?? 0 | number }}</span>
+                    <span>👍 {{ blog.likesCount ?? 0 }}</span>
+                    <span>💬 {{ blog.commentsCount ?? 0 }}</span>
+                  </div>
+                </div>
+              </div>
+            }
+            @if (topBlogs().length === 0) {
+              <p class="lb-empty">No published posts yet</p>
+            }
+          </div>
+        </section>
 
-      <div class="info-card">
-        <div class="info-icon likes-icon">
-          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-            <path d="M11 18s-7-4.5-7-9a4 4 0 018 0 4 4 0 018 0c0 4.5-7 9-7 9z"
-              stroke="#d9534f" stroke-width="2" fill="none" stroke-linejoin="round"/>
-          </svg>
-        </div>
-        <div class="info-content">
-          <span class="info-label">Total Likes</span>
-          <span class="info-value">{{ totalLikes() }}</span>
-          <span class="info-badge likes-badge">from readers</span>
-        </div>
-      </div>
+        <!-- This Week Metrics -->
+        <section class="sidebar-section">
+          <div class="section-hd">
+            <h2 class="section-hd-title">This Week</h2>
+            <span class="section-hd-badge">snapshot</span>
+          </div>
+          <div class="metrics-list">
 
-      <div class="info-card">
-        <div class="info-icon comments-icon">
-          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-            <path d="M4 4h14a2 2 0 012 2v8a2 2 0 01-2 2H8l-4 3V6a2 2 0 012-2z"
-              stroke="#378ADD" stroke-width="2" fill="none" stroke-linejoin="round"/>
-            <path d="M8 9h6M8 12h4" stroke="#378ADD" stroke-width="1.5" stroke-linecap="round"/>
-          </svg>
-        </div>
-        <div class="info-content">
-          <span class="info-label">Comments</span>
-          <span class="info-value">{{ totalComments() }}</span>
-          <span class="info-badge comments-badge">reader engagement</span>
-        </div>
-      </div>
+            <div class="metric-row">
+              <div class="metric-icon-wrap" style="background:rgba(67,206,162,0.12)">
+                <svg width="13" height="13" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+                  <rect x="3" y="3" width="16" height="3" rx="1.5" fill="#43cea2"/>
+                  <rect x="3" y="9" width="11" height="3" rx="1.5" fill="#43cea2"/>
+                  <rect x="3" y="15" width="13" height="3" rx="1.5" fill="#43cea2"/>
+                </svg>
+              </div>
+              <div class="metric-detail">
+                <span class="metric-label">New Blogs</span>
+                <div class="metric-track">
+                  <div class="metric-fill" style="background:#43cea2"
+                    [style.width.%]="getPercent(newBlogs(), totalBlogs())"></div>
+                </div>
+              </div>
+              <span class="metric-num">+{{ newBlogs() }}</span>
+            </div>
 
-      <div class="info-card">
-        <div class="info-icon top-icon">
-          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-            <path d="M11 3l2.5 5 5.5.8-4 3.9.9 5.5L11 15.5l-4.9 2.7.9-5.5L3 8.8l5.5-.8z"
-              stroke="#f59e0b" stroke-width="1.8" fill="none" stroke-linejoin="round"/>
-          </svg>
-        </div>
-        <div class="info-content">
-          <span class="info-label">Top Post Views</span>
-          <span class="info-value">{{ topPostViews() | number }}</span>
-          <span class="info-badge top-badge">your best post</span>
-        </div>
-      </div>
+            <div class="metric-row">
+              <div class="metric-icon-wrap" style="background:rgba(127,119,221,0.12)">
+                <svg width="13" height="13" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+                  <ellipse cx="11" cy="11" rx="8" ry="5" stroke="#7F77DD"
+                    stroke-width="2" fill="none"/>
+                  <circle cx="11" cy="11" r="2.5" fill="#7F77DD"/>
+                </svg>
+              </div>
+              <div class="metric-detail">
+                <span class="metric-label">Total Views</span>
+                <div class="metric-track">
+                  <div class="metric-fill" style="background:#7F77DD;width:100%"></div>
+                </div>
+              </div>
+              <span class="metric-num">{{ totalViews() }}</span>
+            </div>
 
-      <div class="info-card">
-        <div class="info-icon avg-icon">
-          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-            <path d="M3 17l4-5 4 3 4-6 4 2"
-              stroke="#5cb85c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-          </svg>
-        </div>
-        <div class="info-content">
-          <span class="info-label">Avg. Views/Post</span>
-          <span class="info-value">{{ avgViews() }}</span>
-          <span class="info-badge avg-badge">per blog</span>
-        </div>
-      </div>
+            <div class="metric-row">
+              <div class="metric-icon-wrap" style="background:rgba(55,138,221,0.12)">
+                <svg width="13" height="13" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+                  <path d="M4 4h14a2 2 0 012 2v8a2 2 0 01-2 2H8l-4 3V6a2 2 0 012-2z"
+                    stroke="#378ADD" stroke-width="2" fill="none"/>
+                </svg>
+              </div>
+              <div class="metric-detail">
+                <span class="metric-label">Comments</span>
+                <div class="metric-track">
+                  <div class="metric-fill" style="background:#378ADD;width:100%"></div>
+                </div>
+              </div>
+              <span class="metric-num">{{ totalComments() }}</span>
+            </div>
 
-      <div class="info-card">
-        <div class="info-icon followers-icon">
-          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-            <circle cx="8" cy="7" r="3.5" stroke="#185a9d" stroke-width="2" fill="none"/>
-            <path d="M2 18c0-3.314 2.686-5 6-5s6 1.686 6 5" stroke="#185a9d" stroke-width="2" stroke-linecap="round" fill="none"/>
-            <path d="M15 10l1.5 1.5L19 9" stroke="#43cea2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
-        <div class="info-content">
-          <span class="info-label">Followers</span>
-          <span class="info-value">{{ followersCount() }}</span>
-          <span class="info-badge followers-badge">people following you</span>
-        </div>
-      </div>
+            <div class="metric-row">
+              <div class="metric-icon-wrap" style="background:rgba(217,83,79,0.12)">
+                <svg width="13" height="13" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+                  <path d="M11 18s-7-4.5-7-9a4 4 0 018 0 4 4 0 018 0c0 4.5-7 9-7 9z"
+                    stroke="#d9534f" stroke-width="2" fill="none"/>
+                </svg>
+              </div>
+              <div class="metric-detail">
+                <span class="metric-label">Likes</span>
+                <div class="metric-track">
+                  <div class="metric-fill" style="background:#d9534f;width:100%"></div>
+                </div>
+              </div>
+              <span class="metric-num">{{ totalLikes() }}</span>
+            </div>
+
+            <div class="metric-row">
+              <div class="metric-icon-wrap" style="background:rgba(245,158,11,0.12)">
+                <svg width="13" height="13" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+                  <path d="M11 3l2.5 5 5.5.8-4 3.9.9 5.5L11 15.5l-4.9 2.7.9-5.5L3 8.8l5.5-.8z"
+                    stroke="#f59e0b" stroke-width="1.8" fill="none"/>
+                </svg>
+              </div>
+              <div class="metric-detail">
+                <span class="metric-label">Avg Views / Post</span>
+                <div class="metric-track">
+                  <div class="metric-fill" style="background:#f59e0b"
+                    [style.width.%]="getPercent(avgViews(), topPostViews())"></div>
+                </div>
+              </div>
+              <span class="metric-num">{{ avgViews() }}</span>
+            </div>
+
+          </div>
+        </section>
+
+      </aside>
 
     </div>
-  </section>
 
-  <!-- ── Charts Section ── -->
-  <section class="charts-section">
-    <p class="section-label">Analytics Overview</p>
-
-    <div class="charts-top-row">
-
-      <!-- Blog Growth Line Chart -->
-      <div class="chart-card wide-chart">
-        <div class="chart-header">
-          <div class="chart-title-group">
-            <h3 class="chart-title">My Blog Growth</h3>
-            <span class="chart-subtitle">Published vs Drafts over time</span>
-          </div>
-          <div class="range-tabs">
-            <button [class.active]="selectedRange === '7d'"  (click)="onRangeChange('7d')">7D</button>
-            <button [class.active]="selectedRange === '14d'" (click)="onRangeChange('14d')">30D</button>
-            <button [class.active]="selectedRange === '30d'" (click)="onRangeChange('30d')">90D</button>
-          </div>
-        </div>
-        <div class="chart-wrap" style="height:220px;">
-          <canvas #blogGrowthRef></canvas>
-        </div>
-      </div>
-
-      <!-- Content Status Donut -->
-      <div class="chart-card narrow-chart">
-        <div class="chart-header">
-          <div class="chart-title-group">
-            <h3 class="chart-title">Content Status</h3>
-            <span class="chart-subtitle">Distribution</span>
-          </div>
-        </div>
-        <div class="chart-wrap" style="height:170px;">
-          <canvas #contentDonutRef></canvas>
-        </div>
-        <div class="doughnut-legend">
-          <div class="legend-item">
-            <span class="legend-dot" style="background:#43cea2"></span>
-            <span class="legend-label">Published</span>
-            <span class="legend-val">{{ totalPublished() }}</span>
-          </div>
-          <div class="legend-item">
-            <span class="legend-dot" style="background:#BA7517"></span>
-            <span class="legend-label">Drafts</span>
-            <span class="legend-val">{{ totalDrafts() }}</span>
-          </div>
-          <div class="legend-item">
-            <span class="legend-dot" style="background:#185a9d"></span>
-            <span class="legend-label">Total</span>
-            <span class="legend-val">{{ totalBlogs() }}</span>
-          </div>
-        </div>
-      </div>
-
-    </div>
-
+    <!-- ── Full-Width Charts Bottom ── -->
     <div class="charts-bottom-row">
 
-      <!-- Weekly Engagement Bar -->
       <div class="chart-card">
-        <div class="chart-header">
-          <div class="chart-title-group">
-            <h3 class="chart-title">Weekly Engagement</h3>
-            <span class="chart-subtitle">Views · Comments · Likes</span>
+        <div class="chart-card-hd">
+          <div class="chart-card-hd-left">
+            <h3 class="chart-card-title">Weekly Engagement</h3>
+            <span class="chart-card-sub">Views · Comments · Likes</span>
           </div>
         </div>
-        <div class="chart-wrap" style="height:190px;">
+        <div class="chart-canvas-wrap" style="height:190px">
           <canvas #engagementRef></canvas>
         </div>
       </div>
 
-      <!-- Top Posts Horizontal Bar -->
       <div class="chart-card">
-        <div class="chart-header">
-          <div class="chart-title-group">
-            <h3 class="chart-title">Top Posts</h3>
-            <span class="chart-subtitle">By views</span>
+        <div class="chart-card-hd">
+          <div class="chart-card-hd-left">
+            <h3 class="chart-card-title">Top Posts</h3>
+            <span class="chart-card-sub">By views</span>
           </div>
         </div>
-        <div class="chart-wrap" style="height:190px;">
+        <div class="chart-canvas-wrap" style="height:190px">
           <canvas #topPostsRef></canvas>
         </div>
       </div>
 
-      <!-- This Week Metrics Summary -->
-      <div class="chart-card metrics-summary-card">
-        <div class="chart-header">
-          <div class="chart-title-group">
-            <h3 class="chart-title">This Week</h3>
-            <span class="chart-subtitle">Performance snapshot</span>
-          </div>
-        </div>
-        <div class="metrics-list">
-
-          <div class="metric-row">
-            <div class="metric-icon" style="background:rgba(67,206,162,0.12)">
-              <svg width="14" height="14" viewBox="0 0 22 22" fill="none">
-                <rect x="3" y="3" width="16" height="3" rx="1.5" fill="#43cea2"/>
-                <rect x="3" y="9" width="11" height="3" rx="1.5" fill="#43cea2"/>
-                <rect x="3" y="15" width="13" height="3" rx="1.5" fill="#43cea2"/>
-              </svg>
-            </div>
-            <div class="metric-info">
-              <span class="metric-label">New Blogs</span>
-              <div class="metric-bar-wrap">
-                <div class="metric-bar" style="background:#43cea2"
-                  [style.width.%]="getPercent(newBlogs(), totalBlogs())"></div>
-              </div>
-            </div>
-            <span class="metric-val">+{{ newBlogs() }}</span>
-          </div>
-
-          <div class="metric-row">
-            <div class="metric-icon" style="background:rgba(127,119,221,0.12)">
-              <svg width="14" height="14" viewBox="0 0 22 22" fill="none">
-                <ellipse cx="11" cy="11" rx="8" ry="5" stroke="#7F77DD" stroke-width="2" fill="none"/>
-                <circle cx="11" cy="11" r="2.5" fill="#7F77DD"/>
-              </svg>
-            </div>
-            <div class="metric-info">
-              <span class="metric-label">Total Views</span>
-              <div class="metric-bar-wrap">
-                <div class="metric-bar" style="background:#7F77DD"
-                  [style.width.%]="getPercent(totalViews(), totalViews())"></div>
-              </div>
-            </div>
-            <span class="metric-val">{{ totalViews() }}</span>
-          </div>
-
-          <div class="metric-row">
-            <div class="metric-icon" style="background:rgba(55,138,221,0.12)">
-              <svg width="14" height="14" viewBox="0 0 22 22" fill="none">
-                <path d="M4 4h14a2 2 0 012 2v8a2 2 0 01-2 2H8l-4 3V6a2 2 0 012-2z"
-                  stroke="#378ADD" stroke-width="2" fill="none"/>
-              </svg>
-            </div>
-            <div class="metric-info">
-              <span class="metric-label">Comments</span>
-              <div class="metric-bar-wrap">
-                <div class="metric-bar" style="background:#378ADD"
-                  [style.width.%]="getPercent(totalComments(), totalComments())"></div>
-              </div>
-            </div>
-            <span class="metric-val">{{ totalComments() }}</span>
-          </div>
-
-          <div class="metric-row">
-            <div class="metric-icon" style="background:rgba(217,83,79,0.12)">
-              <svg width="14" height="14" viewBox="0 0 22 22" fill="none">
-                <path d="M11 18s-7-4.5-7-9a4 4 0 018 0 4 4 0 018 0c0 4.5-7 9-7 9z"
-                  stroke="#d9534f" stroke-width="2" fill="none"/>
-              </svg>
-            </div>
-            <div class="metric-info">
-              <span class="metric-label">Likes</span>
-              <div class="metric-bar-wrap">
-                <div class="metric-bar" style="background:#d9534f"
-                  [style.width.%]="getPercent(totalLikes(), totalLikes())"></div>
-              </div>
-            </div>
-            <span class="metric-val">{{ totalLikes() }}</span>
-          </div>
-
-          <div class="metric-row">
-            <div class="metric-icon" style="background:rgba(245,158,11,0.12)">
-              <svg width="14" height="14" viewBox="0 0 22 22" fill="none">
-                <path d="M11 3l2.5 5 5.5.8-4 3.9.9 5.5L11 15.5l-4.9 2.7.9-5.5L3 8.8l5.5-.8z"
-                  stroke="#f59e0b" stroke-width="1.8" fill="none"/>
-              </svg>
-            </div>
-            <div class="metric-info">
-              <span class="metric-label">Avg Views/Post</span>
-              <div class="metric-bar-wrap">
-                <div class="metric-bar" style="background:#f59e0b"
-                  [style.width.%]="getPercent(avgViews(), topPostViews())"></div>
-              </div>
-            </div>
-            <span class="metric-val">{{ avgViews() }}</span>
-          </div>
-
-        </div>
-      </div>
-
     </div>
-  </section>
 
-  <!-- ── Quick Actions ── -->
-  <section class="quick-actions-section">
-    <p class="section-label">Quick Actions</p>
-    <div class="quick-actions">
+  }
 
-      <div class="action-card" [routerLink]="createBlogLink()">
-        <div class="action-icon">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <rect x="2" y="2" width="12" height="2" rx="1" fill="#378ADD"/>
-            <rect x="2" y="6" width="8" height="2" rx="1" fill="#378ADD"/>
-            <rect x="2" y="10" width="10" height="2" rx="1" fill="#378ADD"/>
-            <circle cx="13" cy="13" r="2" fill="#378ADD"/>
-            <path d="M12 13h2M13 12v2" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
-          </svg>
+  <!-- ── My Blogs Modal ── -->
+  @if (showBlogsModal()) {
+    <div class="modal-backdrop" (click)="closeBlogsModal()"
+      role="dialog" aria-modal="true" aria-label="My Blogs">
+      <div class="blogs-modal" (click)="$event.stopPropagation()">
+
+        <div class="blogs-modal-header">
+          <div class="blogs-modal-title-group">
+            <h2 class="blogs-modal-title">My Blogs</h2>
+            <span class="blogs-modal-count">{{ blogsModalList().length }} total</span>
+          </div>
+          <button class="blogs-modal-close" (click)="closeBlogsModal()"
+            aria-label="Close dialog">✕</button>
         </div>
-        <span class="action-label">Write New Blog</span>
-      </div>
 
-      <div class="action-card" [routerLink]="manageBlogsLink()">
-        <div class="action-icon">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <rect x="2" y="2" width="12" height="2" rx="1" fill="#7F77DD"/>
-            <rect x="2" y="6" width="8" height="2" rx="1" fill="#7F77DD"/>
-            <rect x="2" y="10" width="10" height="2" rx="1" fill="#7F77DD"/>
-            <path d="M11 11l3 3" stroke="#7F77DD" stroke-width="1.4" stroke-linecap="round"/>
-            <circle cx="11" cy="11" r="2.5" stroke="#7F77DD" stroke-width="1.2" fill="none"/>
-          </svg>
+        <div class="blogs-modal-body">
+          @if (blogsModalList().length === 0) {
+            <div class="blogs-modal-empty">
+              <span class="blogs-modal-empty-icon">📝</span>
+              <p>You haven't written any blogs yet.</p>
+              <a [routerLink]="manageBlogsLink()" class="write-story-btn"
+                (click)="closeBlogsModal()">
+                Write your first story →
+              </a>
+            </div>
+          } @else {
+            <div class="blogs-modal-list">
+              @for (blog of blogsModalList(); track blog._id) {
+                <div class="blog-modal-item">
+                  @if (blog.featuredImage) {
+                    <div class="blog-modal-thumb">
+                      <img [src]="blog.featuredImage" [alt]="blog.title" loading="lazy"/>
+                    </div>
+                  } @else {
+                    <div class="blog-modal-thumb blog-modal-thumb-fallback">
+                      {{ blog.title.charAt(0).toUpperCase() }}
+                    </div>
+                  }
+                  <div class="blog-modal-info">
+                    <div class="blog-modal-meta">
+                      <span class="blog-modal-status"
+                        [class]="'status-' + blog.status">{{ blog.status }}</span>
+                      @if (blog.categories?.length) {
+                        <span class="blog-modal-cat">{{ blog.categories[0] }}</span>
+                      }
+                    </div>
+                    <p class="blog-modal-title">{{ blog.title }}</p>
+                    <p class="blog-modal-desc">{{ blog.description }}</p>
+                    <div class="blog-modal-stats">
+                      <span>📅 {{ blog.createdAt | date:'MMM d, y' }}</span>
+                      <span>👁 {{ blog.views ?? 0 }}</span>
+                      <span>💬 {{ blog.commentsCount ?? 0 }}</span>
+                    </div>
+                  </div>
+                  <button class="blog-modal-view-btn" (click)="openBlog(blog._id)"
+                    type="button">
+                    View →
+                  </button>
+                </div>
+              }
+            </div>
+          }
         </div>
-        <span class="action-label">Manage Blogs</span>
-      </div>
 
-      <div class="action-card" [routerLink]="settingsLink()">
-        <div class="action-icon">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <circle cx="8" cy="8" r="2" stroke="#5F5E5A" stroke-width="1.3" fill="none"/>
-            <path d="M8 2v2M8 12v2M2 8h2M12 8h2M3.5 3.5l1.4 1.4M11.1 11.1l1.4 1.4M3.5 12.5l1.4-1.4M11.1 4.9l1.4-1.4"
-              stroke="#5F5E5A" stroke-width="1.2" stroke-linecap="round"/>
-          </svg>
-        </div>
-        <span class="action-label">Settings</span>
       </div>
-
-      <div class="action-card" [routerLink]="exploreLink()">
-        <div class="action-icon">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <circle cx="8" cy="8" r="6" stroke="#43cea2" stroke-width="1.4" fill="none"/>
-            <path d="M10.5 5.5l-2 4-4 2 2-4 4-2z"
-              stroke="#43cea2" stroke-width="1.2" stroke-linejoin="round" fill="none"/>
-          </svg>
-        </div>
-        <span class="action-label">Explore Blogs</span>
-      </div>
-
     </div>
-  </section>
+  }
 
-  <!-- ── Bottom Grid: Tables ── -->
-  <div class="bottom-grid">
-
-    <section class="recent-blogs-section">
-      <p class="section-label">My Recent Blogs</p>
-      <div class="table-card">
-        <div class="table-scroll">
-          <table>
-            <thead>
-              <tr>
-                <th>Title</th>
-                <th>Category</th>
-                <th>Date</th>
-                <th>Views</th>
-                <th>Likes</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (blog of recentBlogs(); track blog._id) {
-                <tr>
-                  <td class="title-cell">{{ blog.title }}</td>
-                  <td><span class="cat-chip">{{ blog.categories?.[0] || '—' }}</span></td>
-                  <td>{{ blog.createdAt | date: 'MMM d, y' }}</td>
-                  <td>👁 {{ blog.views ?? 0 }}</td>
-                  <td>👍 {{ blog.likesCount ?? 0 }}</td>
-                  <td>
-                    <span class="status-badge"
-                      [class.status-published]="blog.status === 'published'"
-                      [class.status-draft]="blog.status === 'draft'">
-                      {{ blog.status | titlecase }}
-                    </span>
-                  </td>
-                </tr>
-              }
-              @if (recentBlogs().length === 0 && !isLoading()) {
-                <tr><td colspan="6" class="empty-row">No blogs yet — start writing!</td></tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <section class="top-blogs-section">
-      <p class="section-label">🏆 Top Performing Posts</p>
-      <div class="table-card">
-        <div class="table-scroll">
-          <table>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Title</th>
-                <th>Views</th>
-                <th>Likes</th>
-                <th>Comments</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (blog of topBlogs(); track blog._id; let i = $index) {
-                <tr>
-                  <td>
-                    <span class="rank-badge">
-                      {{ i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1 }}
-                    </span>
-                  </td>
-                  <td class="title-cell">{{ blog.title }}</td>
-                  <td>{{ blog.views ?? 0 | number }}</td>
-                  <td>{{ blog.likesCount ?? 0 }}</td>
-                  <td>{{ blog.commentsCount ?? 0 }}</td>
-                </tr>
-              }
-              @if (topBlogs().length === 0 && !isLoading()) {
-                <tr><td colspan="5" class="empty-row">No published posts yet</td></tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-  </div>
+  @if (showCreateModal()) {
+    <app-create-blog
+      (close)="showCreateModal.set(false)"
+      (postCreated)="onPostCreated()"
+    />
+  }
 
 </div>
-
-<!-- ── My Blogs Modal ── -->
-@if (showBlogsModal()) {
-  <div class="modal-backdrop" (click)="closeBlogsModal()" role="dialog" aria-modal="true" aria-label="My Blogs">
-    <div class="blogs-modal" (click)="$event.stopPropagation()">
-
-      <div class="blogs-modal-header">
-        <div class="blogs-modal-title-group">
-          <h2 class="blogs-modal-title">My Blogs</h2>
-          <span class="blogs-modal-count">{{ blogsModalList().length }} total</span>
-        </div>
-        <button class="blogs-modal-close" (click)="closeBlogsModal()" aria-label="Close">✕</button>
-      </div>
-
-      <div class="blogs-modal-body">
-        @if (blogsModalList().length === 0) {
-          <div class="blogs-modal-empty">
-            <span class="blogs-modal-empty-icon">📝</span>
-            <p>You haven't written any blogs yet.</p>
-            <a [routerLink]="manageBlogsLink()" class="write-story-btn" (click)="closeBlogsModal()">
-              Write your first story →
-            </a>
-          </div>
-        } @else {
-          <div class="blogs-modal-list">
-            @for (blog of blogsModalList(); track blog._id) {
-              <div class="blog-modal-item">
-                @if (blog.featuredImage) {
-                  <div class="blog-modal-thumb">
-                    <img [src]="blog.featuredImage" [alt]="blog.title" loading="lazy"/>
-                  </div>
-                } @else {
-                  <div class="blog-modal-thumb blog-modal-thumb-fallback">
-                    {{ blog.title.charAt(0).toUpperCase() }}
-                  </div>
-                }
-                <div class="blog-modal-info">
-                  <div class="blog-modal-meta">
-                    <span class="blog-modal-status" [class]="'status-' + blog.status">{{ blog.status }}</span>
-                    @if (blog.categories?.length) {
-                      <span class="blog-modal-cat">{{ blog.categories[0] }}</span>
-                    }
-                  </div>
-                  <p class="blog-modal-title">{{ blog.title }}</p>
-                  <p class="blog-modal-desc">{{ blog.description }}</p>
-                  <div class="blog-modal-stats">
-                    <span>📅 {{ blog.createdAt | date:'MMM d, y' }}</span>
-                    <span>👁 {{ blog.views ?? 0 }}</span>
-                    <span>💬 {{ blog.commentsCount ?? 0 }}</span>
-                  </div>
-                </div>
-                <button class="blog-modal-view-btn" (click)="openBlog(blog._id)" type="button">
-                  View →
-                </button>
-              </div>
-            }
-          </div>
-        }
-      </div>
-
-    </div>
-  </div>
-}
-
-@if (showCreateModal()) {
-  <app-create-blog
-    (close)="showCreateModal.set(false)"
-    (postCreated)="onPostCreated()"
-  />
-}
