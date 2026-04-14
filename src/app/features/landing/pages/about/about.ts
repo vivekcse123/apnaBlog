@@ -108,9 +108,9 @@ export class About implements OnInit, OnDestroy {
     this.meta.updateTag({ property: 'og:type', content: 'website' });
     this.meta.updateTag({ property: 'og:title', content: 'About ApnaInsights | Community Blogging Platform Built for India' });
     this.meta.updateTag({ property: 'og:description', content: 'ApnaInsights is India\'s community-first blogging platform where real people share real experiences. 10K+ stories, 5K+ active writers, 50K+ monthly readers.' });
-    this.meta.updateTag({ property: 'og:url', content: 'https://www.apnainsights.com/about' });
+    this.meta.updateTag({ property: 'og:url', content: 'https://apnainsights.com/about' });
     this.meta.updateTag({ property: 'og:site_name', content: 'ApnaInsights' });
-    this.meta.updateTag({ property: 'og:image', content: 'https://www.apnainsights.com/images/og-about.jpg' });
+    this.meta.updateTag({ property: 'og:image', content: 'https://apnainsights.com/images/og-about.jpg' });
     this.meta.updateTag({ property: 'og:image:width', content: '1200' });
     this.meta.updateTag({ property: 'og:image:height', content: '630' });
     this.meta.updateTag({ property: 'og:image:alt', content: 'ApnaInsights - Community Blogging Platform for India' });
@@ -119,7 +119,7 @@ export class About implements OnInit, OnDestroy {
     this.meta.updateTag({ name: 'twitter:card', content: 'summary_large_image' });
     this.meta.updateTag({ name: 'twitter:title', content: 'About ApnaInsights | Community Blogging Platform' });
     this.meta.updateTag({ name: 'twitter:description', content: 'India\'s community-first blogging platform. Write, share, and connect. 10K+ stories published. Free to join.' });
-    this.meta.updateTag({ name: 'twitter:image', content: 'https://www.apnainsights.com/images/og-about.jpg' });
+    this.meta.updateTag({ name: 'twitter:image', content: 'https://apnainsights.com/images/og-about.jpg' });
     this.meta.updateTag({ name: 'twitter:site', content: '@apnainsights' });
     this.meta.updateTag({ name: 'twitter:creator', content: '@apnainsights' });
 
@@ -129,7 +129,7 @@ export class About implements OnInit, OnDestroy {
       canonical.setAttribute('rel', 'canonical');
       this.document.head.appendChild(canonical);
     }
-    canonical.setAttribute('href', 'https://www.apnainsights.com/about');
+    canonical.setAttribute('href', 'https://apnainsights.com/about');
   }
 
   private injectJsonLd(): void {
@@ -141,13 +141,13 @@ export class About implements OnInit, OnDestroy {
         '@graph': [
           {
             '@type': 'Organization',
-            '@id': 'https://www.apnainsights.com/#organization',
+            '@id': 'https://apnainsights.com/#organization',
             name: 'ApnaInsights',
             alternateName: 'Apna Insights',
-            url: 'https://www.apnainsights.com',
+            url: 'https://apnainsights.com',
             logo: {
               '@type': 'ImageObject',
-              url: 'https://www.apnainsights.com/logo.png'
+              url: 'https://apnainsights.com/logo.png'
             },
             description: 'ApnaInsights is India\'s community-first blogging platform where real people share real experiences — from village life to tech innovations, from health journeys to business breakthroughs.',
             foundingDate: '2024',
@@ -170,29 +170,29 @@ export class About implements OnInit, OnDestroy {
           },
           {
             '@type': 'WebSite',
-            '@id': 'https://www.apnainsights.com/#website',
-            url: 'https://www.apnainsights.com',
+            '@id': 'https://apnainsights.com/#website',
+            url: 'https://apnainsights.com',
             name: 'ApnaInsights',
-            publisher: { '@id': 'https://www.apnainsights.com/#organization' }
+            publisher: { '@id': 'https://apnainsights.com/#organization' }
           },
           {
             '@type': 'WebPage',
-            '@id': 'https://www.apnainsights.com/about#webpage',
-            url: 'https://www.apnainsights.com/about',
+            '@id': 'https://apnainsights.com/about#webpage',
+            url: 'https://apnainsights.com/about',
             name: 'About ApnaInsights | Community Blogging Platform Built for India',
             description: 'Learn about ApnaInsights, India\'s community-first blogging platform. Meet the team, discover our mission, and find out how we empower writers across India.',
             inLanguage: 'en-IN',
-            isPartOf: { '@id': 'https://www.apnainsights.com/#website' },
-            about: { '@id': 'https://www.apnainsights.com/#organization' },
+            isPartOf: { '@id': 'https://apnainsights.com/#website' },
+            about: { '@id': 'https://apnainsights.com/#organization' },
             datePublished: '2024-01-01',
             dateModified: '2026-01-01'
           },
           {
             '@type': 'BreadcrumbList',
-            '@id': 'https://www.apnainsights.com/about#breadcrumb',
+            '@id': 'https://apnainsights.com/about#breadcrumb',
             itemListElement: [
-              { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.apnainsights.com' },
-              { '@type': 'ListItem', position: 2, name: 'About', item: 'https://www.apnainsights.com/about' }
+              { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://apnainsights.com' },
+              { '@type': 'ListItem', position: 2, name: 'About', item: 'https://apnainsights.com/about' }
             ]
           }
         ]
@@ -218,12 +218,12 @@ export class About implements OnInit, OnDestroy {
             position: 1,
             item: {
               '@type': 'Review',
-              '@id': 'https://www.apnainsights.com/about#review-1',
+              '@id': 'https://apnainsights.com/about#review-1',
               itemReviewed: {
                 '@type': 'Organization',
-                '@id': 'https://www.apnainsights.com/#organization',
+                '@id': 'https://apnainsights.com/#organization',
                 name: 'ApnaInsights',
-                url: 'https://www.apnainsights.com'
+                url: 'https://apnainsights.com'
               },
               reviewRating: {
                 '@type': 'Rating',
@@ -237,7 +237,7 @@ export class About implements OnInit, OnDestroy {
                 name: 'Ravi Prasad'
               },
               publisher: {
-                '@id': 'https://www.apnainsights.com/#organization'
+                '@id': 'https://apnainsights.com/#organization'
               }
             }
           },
@@ -246,12 +246,12 @@ export class About implements OnInit, OnDestroy {
             position: 2,
             item: {
               '@type': 'Review',
-              '@id': 'https://www.apnainsights.com/about#review-2',
+              '@id': 'https://apnainsights.com/about#review-2',
               itemReviewed: {
                 '@type': 'Organization',
-                '@id': 'https://www.apnainsights.com/#organization',
+                '@id': 'https://apnainsights.com/#organization',
                 name: 'ApnaInsights',
-                url: 'https://www.apnainsights.com'
+                url: 'https://apnainsights.com'
               },
               reviewRating: {
                 '@type': 'Rating',
@@ -265,7 +265,7 @@ export class About implements OnInit, OnDestroy {
                 name: 'Sneha Mehta'
               },
               publisher: {
-                '@id': 'https://www.apnainsights.com/#organization'
+                '@id': 'https://apnainsights.com/#organization'
               }
             }
           },
@@ -274,12 +274,12 @@ export class About implements OnInit, OnDestroy {
             position: 3,
             item: {
               '@type': 'Review',
-              '@id': 'https://www.apnainsights.com/about#review-3',
+              '@id': 'https://apnainsights.com/about#review-3',
               itemReviewed: {
                 '@type': 'Organization',
-                '@id': 'https://www.apnainsights.com/#organization',
+                '@id': 'https://apnainsights.com/#organization',
                 name: 'ApnaInsights',
-                url: 'https://www.apnainsights.com'
+                url: 'https://apnainsights.com'
               },
               reviewRating: {
                 '@type': 'Rating',
@@ -293,7 +293,7 @@ export class About implements OnInit, OnDestroy {
                 name: 'Virat Verma'
               },
               publisher: {
-                '@id': 'https://www.apnainsights.com/#organization'
+                '@id': 'https://apnainsights.com/#organization'
               }
             }
           }

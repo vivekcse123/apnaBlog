@@ -368,7 +368,7 @@ export class BlogDetail implements OnInit, AfterViewInit {
   }
 
   private updateMetaTags(post: Post): void {
-    const canonicalUrl = `https://www.apnainsights.com/blog/${post._id}`;
+    const canonicalUrl = `https://apnainsights.com/blog/${post._id}`;
     this.titleService.setTitle(`${post.title} | ApnaInsights`);
     this.meta.updateTag({ name: 'description',        content: post.description || post.title });
     this.meta.updateTag({ property: 'og:title',       content: post.title });
@@ -411,9 +411,9 @@ export class BlogDetail implements OnInit, AfterViewInit {
       'author': { '@type': 'Person', 'name': (post.user as any)?.name ?? 'Anonymous Author' },
       'publisher': {
         '@type': 'Organization', 'name': 'ApnaInsights',
-        'logo': { '@type': 'ImageObject', 'url': 'https://www.apnainsights.com/logo.png', 'width': 497, 'height': 497 }
+        'logo': { '@type': 'ImageObject', 'url': 'https://apnainsights.com/logo.png', 'width': 497, 'height': 497 }
       },
-      'mainEntityOfPage': `https://www.apnainsights.com/blog/${post._id}`
+      'mainEntityOfPage': `https://apnainsights.com/blog/${post._id}`
     };
     let el = this.document.getElementById('article-schema');
     if (!el) {
@@ -504,7 +504,7 @@ export class BlogDetail implements OnInit, AfterViewInit {
 
   private shareUrl(): string {
     const p = this.post();
-    return p ? `https://www.apnainsights.com/blog/${p._id}` : '';
+    return p ? `https://apnainsights.com/blog/${p._id}` : '';
   }
 
   private loadShareCount(postId: string): void {

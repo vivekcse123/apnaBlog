@@ -421,9 +421,9 @@ export class Home implements OnInit, OnDestroy {
     this.meta.updateTag({ property: 'og:type',         content: 'website' });
     this.meta.updateTag({ property: 'og:title',        content: 'ApnaInsights — Community Stories from Every Corner of India' });
     this.meta.updateTag({ property: 'og:description',  content: 'Discover real stories from real people across India. 10K+ blogs on Technology, Lifestyle, Health, Business, Village Life and more. Free to read, free to write.' });
-    this.meta.updateTag({ property: 'og:url',          content: 'https://www.apnainsights.com' });
+    this.meta.updateTag({ property: 'og:url',          content: 'https://apnainsights.com' });
     this.meta.updateTag({ property: 'og:site_name',    content: 'ApnaInsights' });
-    this.meta.updateTag({ property: 'og:image',        content: 'https://www.apnainsights.com/images/og-home.jpg' });
+    this.meta.updateTag({ property: 'og:image',        content: 'https://apnainsights.com/images/og-home.jpg' });
     this.meta.updateTag({ property: 'og:image:width',  content: '1200' });
     this.meta.updateTag({ property: 'og:image:height', content: '630' });
     this.meta.updateTag({ property: 'og:image:alt',    content: 'ApnaInsights — Community Stories from Every Corner of India' });
@@ -431,7 +431,7 @@ export class Home implements OnInit, OnDestroy {
     this.meta.updateTag({ name: 'twitter:card',        content: 'summary_large_image' });
     this.meta.updateTag({ name: 'twitter:title',       content: 'ApnaInsights — Community Stories from India' });
     this.meta.updateTag({ name: 'twitter:description', content: 'Real stories from real people. 10K+ blogs on technology, lifestyle, health, village life. Free community platform.' });
-    this.meta.updateTag({ name: 'twitter:image',       content: 'https://www.apnainsights.com/images/og-home.jpg' });
+    this.meta.updateTag({ name: 'twitter:image',       content: 'https://apnainsights.com/images/og-home.jpg' });
     this.meta.updateTag({ name: 'twitter:site',        content: '@apnainsights' });
 
     let canonical = this.document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
@@ -440,7 +440,7 @@ export class Home implements OnInit, OnDestroy {
       canonical.setAttribute('rel', 'canonical');
       this.document.head.appendChild(canonical);
     }
-    canonical.setAttribute('href', 'https://www.apnainsights.com');
+    canonical.setAttribute('href', 'https://apnainsights.com');
   }
 
   private injectJsonLd(): void {
@@ -450,16 +450,16 @@ export class Home implements OnInit, OnDestroy {
       {
         '@context': 'https://schema.org',
         '@type': 'CollectionPage',
-        '@id': 'https://www.apnainsights.com',
-        url: 'https://www.apnainsights.com',
+        '@id': 'https://apnainsights.com',
+        url: 'https://apnainsights.com',
         name: 'ApnaInsights — Community Stories from Every Corner of India',
         description: 'Browse trending, most-viewed, and latest community blogs from writers across India.',
         inLanguage: 'en-IN',
-        isPartOf: { '@type': 'WebSite', url: 'https://www.apnainsights.com' },
+        isPartOf: { '@type': 'WebSite', url: 'https://apnainsights.com' },
         about: { '@type': 'Thing', name: 'Community Blogging India' },
         breadcrumb: {
           '@type': 'BreadcrumbList',
-          itemListElement: [{ '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.apnainsights.com' }]
+          itemListElement: [{ '@type': 'ListItem', position: 1, name: 'Home', item: 'https://apnainsights.com' }]
         }
       }
     ];

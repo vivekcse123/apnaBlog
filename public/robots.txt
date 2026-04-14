@@ -1,4 +1,4 @@
-# robots.txt — ApnaInsights (https://www.apnainsights.com)
+# robots.txt — ApnaInsights (https://apnainsights.com)
 # Allow all crawlers to index public content
 
 User-agent: *
@@ -13,4 +13,4 @@ Disallow: /user/
 Disallow: /admin/
 
 # Sitemap
-Sitemap: https://www.apnainsights.com/sitemap.xml
+Sitemap: https://apnainsights.com/sitemap.xml
