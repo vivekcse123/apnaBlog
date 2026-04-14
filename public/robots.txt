@@ -1,0 +1,16 @@
+# robots.txt — ApnaInsights (https://www.apnainsights.com)
+# Allow all crawlers to index public content
+
+User-agent: *
+Allow: /
+Allow: /welcome
+Allow: /about
+Allow: /blog/
+
+# Block auth, user-account, and admin pages — no indexing value
+Disallow: /auth/
+Disallow: /user/
+Disallow: /admin/
+
+# Sitemap
+Sitemap: https://www.apnainsights.com/sitemap.xml
