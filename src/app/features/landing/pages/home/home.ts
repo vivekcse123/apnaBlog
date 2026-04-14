@@ -449,25 +449,6 @@ export class Home implements OnInit, OnDestroy {
     const schemas = [
       {
         '@context': 'https://schema.org',
-        '@type': 'WebSite',
-        name: 'ApnaInsights',
-        alternateName: 'Apna Insights',
-        url: 'https://www.apnainsights.com',
-        description: 'India\'s community-first blogging platform.',
-        inLanguage: 'en-IN',
-        potentialAction: {
-          '@type': 'SearchAction',
-          target: { '@type': 'EntryPoint', urlTemplate: 'https://www.apnainsights.com/welcome?category={search_term_string}' },
-          'query-input': 'required name=search_term_string'
-        },
-        publisher: {
-          '@type': 'Organization',
-          name: 'ApnaInsights',
-          logo: { '@type': 'ImageObject', url: 'https://www.apnainsights.com/logo.png', width: 200, height: 200 }
-        }
-      },
-      {
-        '@context': 'https://schema.org',
         '@type': 'CollectionPage',
         '@id': 'https://www.apnainsights.com',
         url: 'https://www.apnainsights.com',
@@ -493,7 +474,7 @@ export class Home implements OnInit, OnDestroy {
   }
 
   private updateJsonLdPostCount(count: number): void {
-    const script = this.document.querySelector('script[data-apna-home-schema="1"]');
+    const script = this.document.querySelector('script[data-apna-home-schema="0"]');
     if (!script) return;
     try {
       const data = JSON.parse(script.textContent ?? '{}');
