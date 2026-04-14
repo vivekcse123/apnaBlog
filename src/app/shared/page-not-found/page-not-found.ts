@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { Meta } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-page-not-found',
@@ -9,6 +10,10 @@ import { RouterLink } from '@angular/router';
   templateUrl: './page-not-found.html',
   styleUrl: './page-not-found.css',
 })
-export class PageNotFound {
+export class PageNotFound implements OnInit {
+  private meta = inject(Meta);
 
+  ngOnInit(): void {
+    this.meta.updateTag({ name: 'robots', content: 'noindex, nofollow' });
+  }
 }

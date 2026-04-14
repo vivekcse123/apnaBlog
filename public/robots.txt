@@ -3,9 +3,6 @@
 
 User-agent: *
 Allow: /
-Allow: /welcome
-Allow: /about
-Allow: /blog/
 
 # Block auth, user-account, and admin pages — no indexing value
 Disallow: /auth/

@@ -407,11 +407,11 @@ export class BlogDetail implements OnInit, AfterViewInit {
     const schema = {
       '@context': 'https://schema.org', '@type': 'Article',
       'headline': post.title, 'description': post.description,
-      'image': post.featuredImage, 'datePublished': post.createdAt,
+      'image': post.featuredImage, 'datePublished': post.createdAt, 'dateModified': post.updatedAt ?? post.createdAt,
       'author': { '@type': 'Person', 'name': (post.user as any)?.name ?? 'Anonymous Author' },
       'publisher': {
         '@type': 'Organization', 'name': 'ApnaInsights',
-        'logo': { '@type': 'ImageObject', 'url': 'https://apnainsights.com/logo.png', 'width': 497, 'height': 497 }
+        'logo': { '@type': 'ImageObject', 'url': 'https://apnainsights.com/logo.png', 'width': 1024, 'height': 1024 }
       },
       'mainEntityOfPage': `https://apnainsights.com/blog/${post._id}`
     };

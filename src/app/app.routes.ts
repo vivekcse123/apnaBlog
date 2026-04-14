@@ -33,6 +33,7 @@ export const routes: Routes = [
     {
         path: 'auth',
         component: AuthLayout,
+        title: 'Sign In | ApnaInsights',
         canActivate: [guestGuard],
         loadChildren: () => import('./features/auth/auth-module').then(m => m.AuthModule),
     },
@@ -43,20 +44,23 @@ export const routes: Routes = [
         children: [
             {
                 path: 'admin/:id',
-                canActivate: [adminGuard, roleGuard], 
+                title: 'Dashboard | ApnaInsights',
+                canActivate: [adminGuard, roleGuard],
                 loadChildren: () => import('./features/admin/admin-module').then(m => m.AdminModule),
                 data: { role: 'admin' }
             },
             {
                 path: 'user/:id',
+                title: 'Profile | ApnaInsights',
                 canActivate: [roleGuard],
                 loadChildren: () => import('./features/user/user-module').then(m => m.UserModule),
-                data: { role: 'user' } 
+                data: { role: 'user' }
             }
         ]
     },
     {
         path: '**',
+        title: 'Page Not Found | ApnaInsights',
         component: PageNotFound
     }
 ];
