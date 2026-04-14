@@ -22,7 +22,8 @@ export class AdminDashboard implements OnInit, OnDestroy{
   private router = inject(Router);
 
   initial = signal<string | null>(null);
-  userId = signal<string | null>(null);
+  avatar  = signal<string | null>(null);
+  userId  = signal<string | null>(null);
 
   user = signal<User | any>('');
   sub!: Subscription;
@@ -45,9 +46,11 @@ export class AdminDashboard implements OnInit, OnDestroy{
         }
         const name = user.data.name;
         const parts = name.trim().split(' ');
-        const initial = parts[0].charAt(0).toUpperCase() + parts[1].charAt(0).toUpperCase();
-        this.initial.set(initial);
+        const first  = parts[0]?.charAt(0).toUpperCase() ?? '';
+        const second = parts[1]?.charAt(0).toUpperCase() ?? '';
+        this.initial.set(first + second);
 
+        this.avatar.set(user.data.avatar ?? null);
         this.user.set(user.data);
       },
       error: (err) => {

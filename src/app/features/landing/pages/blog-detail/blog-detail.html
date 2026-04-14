@@ -104,7 +104,13 @@
       <!-- Author chip -->
       <button class="author-chip" (click)="openAuthorModal()" type="button"
         [attr.aria-label]="'View author: ' + authorName">
-        <div class="author-avatar-sm">{{ authorInitial }}</div>
+        <div class="author-avatar-sm">
+          @if (authorAvatar) {
+            <img [src]="authorAvatar" class="author-avatar-img" [alt]="authorName" />
+          } @else {
+            {{ authorInitial }}
+          }
+        </div>
         <div class="author-chip-text">
           <span class="author-chip-label">Written by</span>
           <span class="author-chip-name">{{ authorName }}</span>
@@ -145,7 +151,13 @@
     <!-- Author card -->
     <div class="author-card">
       <button class="author-card-avatar" type="button" (click)="openAuthorModal()"
-        [attr.aria-label]="'View profile of ' + authorName">{{ authorInitial }}</button>
+        [attr.aria-label]="'View profile of ' + authorName">
+        @if (authorAvatar) {
+          <img [src]="authorAvatar" class="author-card-avatar-img" [alt]="authorName" />
+        } @else {
+          {{ authorInitial }}
+        }
+      </button>
       <div class="author-card-body">
         <span class="author-card-label">About the author</span>
         <button class="author-card-name" type="button" (click)="openAuthorModal()">{{ authorName }}</button>
@@ -391,13 +403,19 @@
       <div class="author-modal" (click)="$event.stopPropagation()">
         <div class="apos-header">
           <div class="apos-header-left">
-          <div class="apos-header-avatar">{{ authorInitial }}</div>
-          <div class="apm-identity">
-            <h2 class="apm-name">{{ authorName }}</h2>
-            <span class="apm-role">Author · ApnaInsights</span>
+            <div class="apos-header-avatar">
+              @if (authorAvatar) {
+                <img [src]="authorAvatar" class="apos-avatar-img" [alt]="authorName" />
+              } @else {
+                {{ authorInitial }}
+              }
+            </div>
+            <div class="apm-identity">
+              <h2 class="apm-name">{{ authorName }}</h2>
+              <span class="apm-role">Author · ApnaInsights</span>
+            </div>
           </div>
-        </div>
-        <button class="modal-close-btn" (click)="closeAuthorModal()" aria-label="Close" id="custom-close">✕</button>
+          <button class="modal-close-btn" (click)="closeAuthorModal()" aria-label="Close" id="custom-close">✕</button>
         </div>
         <div class="apm-stats">
           <div class="apm-stat">
@@ -479,7 +497,13 @@
         <!-- Header -->
         <div class="apos-header">
           <div class="apos-header-left">
-            <div class="apos-header-avatar">{{ authorInitial }}</div>
+            <div class="apos-header-avatar">
+              @if (authorAvatar) {
+                <img [src]="authorAvatar" class="apos-avatar-img" [alt]="authorName" />
+              } @else {
+                {{ authorInitial }}
+              }
+            </div>
             <div>
               <h2 class="apos-title">{{ authorName }}</h2>
               <span class="apos-subtitle">{{ authorTotalPosts() }} article{{ authorTotalPosts() === 1 ? '' : 's' }} published</span>

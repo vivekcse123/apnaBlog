@@ -3,7 +3,13 @@
 
     <div class="modal-header">
       <div class="header-profile">
-        <div class="avatar">{{ user()?.name?.charAt(0)?.toUpperCase() || 'U' }}</div>
+        <div class="avatar">
+          @if (user()?.avatar) {
+            <img [src]="user()!.avatar" class="avatar-img" [alt]="user()?.name" />
+          } @else {
+            {{ user()?.name?.charAt(0)?.toUpperCase() || 'U' }}
+          }
+        </div>
         <div>
           <h4>{{ isEditing() ? 'Edit User' : user()?.name }}</h4>
           <p>{{ user()?.email }}</p>

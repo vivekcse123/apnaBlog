@@ -80,7 +80,11 @@
         @if (post()?.user) {
           <div class="author-block">
             <div class="author-avatar-wrap">
-              <p class="author-avatar">{{ post()?.user?.name?.charAt(0) }}</p>
+              @if (post()?.user?.avatar) {
+                <img [src]="post()!.user.avatar" class="author-avatar-img" [alt]="post()?.user?.name" />
+              } @else {
+                <p class="author-avatar">{{ post()?.user?.name?.charAt(0) }}</p>
+              }
             </div>
             <div class="author-meta">
               <span class="author-name">{{ post()?.user?.name }}</span>

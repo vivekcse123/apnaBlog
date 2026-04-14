@@ -51,7 +51,13 @@
 
               <td>
                 <div class="user-cell">
-                  <div class="user-avatar">{{ user.name.charAt(0) | uppercase }}</div>
+                  <div class="user-avatar">
+                    @if (user.avatar) {
+                      <img [src]="user.avatar" class="user-avatar-img" [alt]="user.name" />
+                    } @else {
+                      {{ user.name.charAt(0) | uppercase }}
+                    }
+                  </div>
                   <span>{{ user.name | titlecase }}</span>
                 </div>
               </td>

@@ -28,7 +28,8 @@
 }
 
 /* ── Logo ── */
-.logo {
+.logo,
+.app-logo {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -38,7 +39,8 @@
   transition: opacity 0.2s ease;
 }
 
-.logo:hover { opacity: 0.8; }
+.logo:hover,
+.app-logo:hover { opacity: 0.8; }
 
 .logo-hex {
   font-size: 1.4rem;
@@ -48,7 +50,17 @@
   background-clip: text;
 }
 
-.logo-text {
+.app-logo-img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  border-radius: 6px;
+  display: block;
+  flex-shrink: 0;
+}
+
+.logo-text,
+.app-logo-text {
   font-family: 'Playfair Display', serif;
   font-size: 22px;
   font-weight: 700;
@@ -278,7 +290,8 @@
 
 @media (max-width: 480px) {
   .header    { padding: 0 16px; }
-  .logo-text { font-size: 18px; }
+  .logo-text,
+  .app-logo-text { font-size: 18px; }
 
   .profile {
     width: 36px; height: 36px;

@@ -163,6 +163,7 @@ export class BlogDetail implements OnInit, AfterViewInit {
   /* ── Author helpers ── */
   get authorName(): string       { return (this.post()?.user as any)?.name ?? 'Anonymous Author'; }
   get authorInitial(): string    { return this.authorName.charAt(0).toUpperCase(); }
+  get authorAvatar(): string     { return (this.post()?.user as any)?.avatar ?? ''; }
   get authorJoinedDate(): string { return (this.post()?.user as any)?.createdAt ?? ''; }
   get authorEmail(): string      { return (this.post()?.user as any)?.email ?? ''; }
   get authorBio(): string        { return (this.post()?.user as any)?.bio ?? ''; }

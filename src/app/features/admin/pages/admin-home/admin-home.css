@@ -1122,11 +1122,16 @@
 @media (max-width: 900px) {
   .admin-dash { padding: 24px 20px; }
 
-  .dash-body {
-    grid-template-columns: 1fr;
+  .dash-body { grid-template-columns: 1fr; }
+
+  .dash-sidebar {
+    position: static;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
   }
 
-  .dash-sidebar { position: static; }
+  .dash-sidebar .sidebar-section:last-child { grid-column: 1 / -1; }
 
   .charts-bottom-row { grid-template-columns: 1fr; }
 
@@ -1151,6 +1156,9 @@
   }
 
   .frozen-grid { grid-template-columns: 1fr; }
+
+  .dash-sidebar { grid-template-columns: 1fr; }
+  .dash-sidebar .sidebar-section:last-child { grid-column: auto; }
 }
 
 @media (max-width: 560px) {

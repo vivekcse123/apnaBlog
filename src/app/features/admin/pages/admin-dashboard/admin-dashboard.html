@@ -4,19 +4,21 @@
     { label: 'Users', routerLink: `/admin/${userId()}/manage-users` },
     { label: 'Blogs', routerLink: `/admin/${userId()}/manage-blogs` },
     { label: 'Settings', routerLink: `/admin/${userId()}/settings` },
-     { label: 'Traffic →', routerLink: `/admin/${userId()}/visitor` }
+    { label: 'Traffic →', routerLink: `/admin/${userId()}/visitor` }
   ]"
   [profile]="initial()"
+  [avatarUrl]="avatar()"
   (open)="openProfile()"
-  >
+>
 </app-common-header>
 
 @if(isOpened()){
 <app-user-profile
-[name]="user()?.name"
-[email]="user()?.email"
-[role]="user()?.role"
-(close)="closeProfile()"
+  [name]="user()?.name"
+  [email]="user()?.email"
+  [role]="user()?.role"
+  [avatar]="avatar()"
+  (close)="closeProfile()"
 >
 <a [routerLink]="['/admin', userId(), 'settings']"
    class="edit_setting"
