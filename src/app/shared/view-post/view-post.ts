@@ -1,6 +1,6 @@
 import {
   Component, computed, ElementRef, inject, input,
-  OnDestroy, OnInit, output, signal, ViewChild
+  OnDestroy, OnInit, output, signal, ViewChild, ChangeDetectionStrategy
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -21,7 +21,8 @@ interface ImageItem {
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './view-post.html',
-  styleUrl: './view-post.css'
+  styleUrl: './view-post.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ViewPost implements OnInit, OnDestroy {
   private fb            = inject(FormBuilder);

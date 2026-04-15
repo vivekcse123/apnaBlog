@@ -1,0 +1,189 @@
+<!-- ─── Post Card Component ─────────────────────────────────────────────────
+     Variants: default | compact | featured
+     Uses CSS custom-property design tokens + Tailwind utilities
+─────────────────────────────────────────────────────────────────────────── -->
+
+<article
+  class="group relative flex flex-col rounded-2xl overflow-hidden transition-all duration-300 ease-out cursor-pointer
+         bg-[var(--bg-surface)] border border-[var(--border)]
+         hover:shadow-[var(--card-shadow-lg)] hover:-translate-y-0.5 hover:border-[var(--border-strong)]
+         animate-[fadeIn_0.4s_ease-out_both]"
+  [class.flex-row]="variant === 'compact'"
+  [class.min-h-[420px]]="variant === 'featured'"
+  (mouseenter)="isHovered.set(true)"
+  (mouseleave)="isHovered.set(false)"
+  (click)="onRead($event)"
+  [attr.aria-label]="'Read post: ' + post.title"
+  role="button"
+  tabindex="0"
+  (keydown.enter)="onRead($event)"
+  (keydown.space)="onRead($event)"
+  itemscope
+  itemtype="https://schema.org/BlogPosting"
+>
+
+  <!-- ── Featured Image ───────────────────────────────────────────────── -->
+  @if (post.featuredImage && !imgError()) {
+    <div
+      class="relative overflow-hidden flex-shrink-0"
+      [class.h-48]="variant === 'default'"
+      [class.h-36]="variant === 'compact'"
+      [class.h-64]="variant === 'featured'"
+      [class.w-32]="variant === 'compact'"
+    >
+      <img
+        [src]="post.featuredImage"
+        [alt]="post.title"
+        itemprop="image"
+        loading="lazy"
+        decoding="async"
+        class="w-full h-full object-cover transition-transform duration-500
+               group-hover:scale-105"
+        (error)="onImageError()"
+      />
+      <!-- gradient overlay for featured -->
+      @if (variant === 'featured') {
+        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent pointer-events-none"></div>
+      }
+      <!-- Category badge on image -->
+      @if (primaryCategory && showBadge) {
+        <span
+          class="absolute top-3 left-3 px-2.5 py-1 rounded-full text-xs font-semibold
+                 bg-[var(--accent)] text-white backdrop-blur-sm shadow-sm"
+          itemprop="about"
+        >{{ primaryCategory }}</span>
+      }
+    </div>
+  } @else if (!post.featuredImage || imgError()) {
+    <!-- Placeholder gradient block (only for non-compact without image) -->
+    @if (variant !== 'compact') {
+      <div
+        class="relative flex items-center justify-center flex-shrink-0 overflow-hidden"
+        [class.h-48]="variant === 'default'"
+        [class.h-64]="variant === 'featured'"
+        style="background: linear-gradient(135deg, var(--accent-subtle), var(--bg-surface-alt))"
+      >
+        <span class="text-5xl select-none pointer-events-none" aria-hidden="true">
+          {{ categoryEmojis[primaryCategory] ?? '📝' }}
+        </span>
+        @if (primaryCategory && showBadge) {
+          <span class="absolute top-3 left-3 px-2.5 py-1 rounded-full text-xs font-semibold
+                       bg-[var(--accent)] text-white">{{ primaryCategory }}</span>
+        }
+      </div>
+    }
+  }
+
+  <!-- ── Card Body ─────────────────────────────────────────────────────── -->
+  <div
+    class="flex flex-col flex-1 p-4 gap-3"
+    [class.p-3]="variant === 'compact'"
+  >
+
+    <!-- Title -->
+    <h2
+      class="font-display font-bold text-[var(--text-primary)] leading-snug line-clamp-2
+             transition-colors duration-200 group-hover:text-[var(--accent)]"
+      [class.text-base]="variant === 'compact'"
+      [class.text-lg]="variant === 'default'"
+      [class.text-xl]="variant === 'featured'"
+      itemprop="headline"
+    >{{ post.title }}</h2>
+
+    <!-- Description -->
+    @if (variant !== 'compact') {
+      <p
+        class="text-sm text-[var(--text-secondary)] line-clamp-2 leading-relaxed flex-1"
+        itemprop="description"
+      >{{ post.description }}</p>
+    }
+
+    <!-- Extra categories -->
+    @if (post.categories?.length > 1 && variant === 'default') {
+      <div class="flex flex-wrap gap-1.5">
+        @for (cat of post.categories.slice(1, 4); track trackByCat($index, cat)) {
+          <span class="px-2 py-0.5 rounded-full text-[11px] font-medium
+                       bg-[var(--accent-subtle)] text-[var(--accent-text)]">
+            {{ cat }}
+          </span>
+        }
+      </div>
+    }
+
+    <!-- ── Footer Row ─────────────────────────────────────────────────── -->
+    <div class="flex items-center justify-between gap-2 mt-auto pt-3
+                border-t border-[var(--border)]">
+
+      <!-- Author -->
+      <div class="flex items-center gap-2 min-w-0">
+        @if (authorAvatar) {
+          <img
+            [src]="authorAvatar"
+            [alt]="authorName"
+            loading="lazy"
+            class="w-7 h-7 rounded-full object-cover flex-shrink-0 ring-1 ring-[var(--border)]"
+          />
+        } @else {
+          <span
+            class="inline-flex items-center justify-center w-7 h-7 rounded-full
+                   bg-[var(--accent-subtle)] text-[var(--accent-text)] text-xs font-bold
+                   flex-shrink-0 select-none"
+            aria-hidden="true"
+          >{{ authorInitials }}</span>
+        }
+        <div class="min-w-0">
+          <p class="text-xs font-medium text-[var(--text-primary)] truncate"
+             itemprop="author" itemscope itemtype="https://schema.org/Person">
+            <span itemprop="name">{{ authorName }}</span>
+          </p>
+          <p class="text-[11px] text-[var(--text-muted)]">{{ formattedDate }}</p>
+        </div>
+      </div>
+
+      <!-- Stats + Like -->
+      <div class="flex items-center gap-3 flex-shrink-0 text-[var(--text-muted)]">
+        <!-- Reading time -->
+        <span class="hidden sm:flex items-center gap-1 text-xs">
+          <i class="bi bi-clock text-[10px]" aria-hidden="true"></i>
+          {{ readingTime }}m
+        </span>
+
+        <!-- Views -->
+        <span class="flex items-center gap-1 text-xs" [attr.aria-label]="post.views + ' views'">
+          <i class="bi bi-eye text-[10px]" aria-hidden="true"></i>
+          {{ post.views | formatCount }}
+        </span>
+
+        <!-- Comments -->
+        <span class="flex items-center gap-1 text-xs" [attr.aria-label]="post.commentsCount + ' comments'">
+          <i class="bi bi-chat text-[10px]" aria-hidden="true"></i>
+          {{ post.commentsCount | formatCount }}
+        </span>
+
+        <!-- Like button -->
+        <button
+          class="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-full
+                 transition-all duration-200 ease-out select-none
+                 hover:scale-110 active:scale-95 focus-visible:outline focus-visible:outline-2
+                 focus-visible:outline-[var(--accent)]"
+          [class.text-red-500]="isLiked"
+          [class.text-[var(--text-muted)]]="!isLiked"
+          [class.bg-red-50]="isLiked"
+          [attr.aria-pressed]="isLiked"
+          [attr.aria-label]="(isLiked ? 'Unlike' : 'Like') + ' post: ' + post.title"
+          (click)="onLike($event)"
+          type="button"
+        >
+          <i
+            class="text-sm transition-transform duration-200"
+            [class.bi-heart-fill]="isLiked"
+            [class.bi-heart]="!isLiked"
+            [class.scale-125]="isLiked"
+            aria-hidden="true"
+          ></i>
+          <span>{{ post.likesCount | formatCount }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</article>

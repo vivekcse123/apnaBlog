@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, OnInit, DestroyRef } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, DestroyRef, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -19,6 +19,7 @@ import { NotificationNavigationService, POST_NOTIFICATION_TYPES } from '../../..
   imports: [CommonModule, FormsModule, CreatePost, ViewPost, MessageModal],
   templateUrl: './post-lists.html',
   styleUrl: './post-lists.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PostLists implements OnInit {
 

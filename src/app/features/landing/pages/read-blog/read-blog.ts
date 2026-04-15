@@ -7,6 +7,7 @@ import {
   HostListener,
   OnInit,
   DestroyRef,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -18,6 +19,7 @@ import { Post } from '../../../../core/models/post.model';
   imports: [DatePipe, CommonModule],
   templateUrl: './read-blog.html',
   styleUrl: './read-blog.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 
 export class ReadBlog implements OnInit {

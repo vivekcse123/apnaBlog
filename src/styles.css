@@ -1,3 +1,43 @@
+/* ─── Tailwind CSS ───────────────────────────────────────────────────────── */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Tailwind component layer: reusable app button primitives ────────────── */
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold
+           text-white transition-all duration-200 hover:-translate-y-0.5
+           focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2;
+    background: linear-gradient(135deg, #43cea2, #185a9d);
+  }
+  .btn-primary:hover {
+    @apply opacity-90 shadow-lg;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold
+           border border-[var(--border)] bg-transparent text-[var(--text-secondary)]
+           hover:bg-[var(--accent-subtle)] hover:border-[var(--accent)]
+           hover:text-[var(--accent-text)] transition-all duration-200 cursor-pointer;
+  }
+
+  .card-base {
+    @apply rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)]
+           shadow-[var(--card-shadow)] transition-all duration-300;
+  }
+
+  .card-base:hover {
+    @apply shadow-[var(--card-shadow-lg)] -translate-y-0.5;
+  }
+
+  /* Content-visibility optimization for below-fold sections */
+  .content-auto {
+    content-visibility: auto;
+    contain-intrinsic-size: 0 400px;
+  }
+}
+
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap');
 
 * {
@@ -329,6 +369,26 @@ app-promo-modal .modal .cta-btn {
 
 html, body { height: 100%; }
 
+
+/* ═══════════════════════════════════════════════════
+   GLOBAL SKELETON SHIMMER
+   Used in post-card skeletons and other loading states.
+   ═══════════════════════════════════════════════════ */
+.skeleton-shimmer {
+  background: linear-gradient(
+    105deg,
+    var(--sk-base, #e5e7eb) 35%,
+    var(--sk-shine, #f3f4f6) 50%,
+    var(--sk-base, #e5e7eb) 65%
+  );
+  background-size: 600px 100%;
+  animation: globalShimmer 1.6s ease-in-out infinite;
+}
+
+@keyframes globalShimmer {
+  0%   { background-position: -600px 0; }
+  100% { background-position: 600px 0; }
+}
 
 /* ═══════════════════════════════════════════════════
    GLOBAL LOGO

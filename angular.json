@@ -30,6 +30,9 @@
               "node_modules/bootstrap-icons/font/bootstrap-icons.css",
               "src/styles.css"
             ],
+            "stylePreprocessorOptions": {
+              "includePaths": []
+            },
             "server": "src/main.server.ts",
             "outputMode": "static",
             "ssr": {

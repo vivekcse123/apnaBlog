@@ -1,18 +1,40 @@
-@if (standalone) {
+<!-- ═══════════════════════════════════════════════════════════════════════
+     ApnaInsights — Redesigned Home Feed
+     Modern social-media layout: sticky header + left sidebar + main feed
+     + right sidebar (desktop). All existing logic preserved.
+════════════════════════════════════════════════════════════════════════ -->
 
+<!-- ── Sticky Header ─────────────────────────────────────────────────────── -->
+@if (standalone) {
 <header class="header" role="banner">
   <div class="header-left">
-    <a class="app-logo" routerLink="/"
-       aria-label="ApnaInsights — Go to homepage">
-      <img class="app-logo-img"
-           src="/logo.png"
-           alt="ApnaInsights"
-           width="32"
-           height="32"
-           loading="eager"
-           fetchpriority="high" />
+    <a class="app-logo" routerLink="/" aria-label="ApnaInsights — Go to homepage">
+      <img class="app-logo-img" src="/logo.png" alt="ApnaInsights"
+           width="32" height="32" loading="eager" fetchpriority="high" />
       <span class="app-logo-text">ApnaInsights</span>
     </a>
+  </div>
+
+  <!-- Centre search (desktop only) -->
+  <div class="hidden md:flex flex-1 max-w-sm mx-6">
+    <div class="relative w-full">
+      <i class="bi bi-search absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] text-sm pointer-events-none" aria-hidden="true"></i>
+      <input
+        #searchInput
+        type="search"
+        class="w-full pl-9 pr-9 py-2 rounded-xl text-sm
+               bg-[var(--bg-surface-alt)] border border-[var(--border)]
+               text-[var(--text-primary)] placeholder:text-[var(--text-muted)]
+               focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent
+               transition-all duration-200"
+        placeholder="Search stories…"
+        aria-label="Search community stories"
+        autocomplete="off"
+        (input)="onSearchInput($any($event.target).value)"
+      />
+      <kbd class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-[var(--text-muted)]
+                  border border-[var(--border)] rounded px-1 pointer-events-none">/</kbd>
+    </div>
   </div>
 
   <div class="header-right">
@@ -22,16 +44,12 @@
             title="Toggle theme">
       <span class="theme-icon" aria-hidden="true">{{ themeService.theme() === 'dark' ? '☀' : '☾' }}</span>
     </button>
-    <button class="about-btn desktop-only"
-            routerLink="/about"
-            aria-label="About ApnaInsights">About Us</button>
-    <button class="create-btn desktop-only"
-            routerLink="/auth/login"
-            aria-label="Sign in to write a story on ApnaInsights">
+    <button class="about-btn desktop-only" routerLink="/about" aria-label="About ApnaInsights">About</button>
+    <button class="create-btn desktop-only" routerLink="/auth/login"
+            aria-label="Sign in to write a story">
       <span aria-hidden="true">✦</span> Write a Story
     </button>
-    <button class="signup-btn desktop-only"
-            routerLink="/auth/register"
+    <button class="signup-btn desktop-only" routerLink="/auth/register"
             aria-label="Create a free ApnaInsights account">Sign Up</button>
 
     <button class="hamburger"
@@ -47,436 +65,396 @@
   </div>
 </header>
 
-<nav id="mobile-drawer"
-     class="mobile-drawer"
-     [class.open]="menuOpen()"
-     role="navigation"
-     aria-label="Mobile navigation">
-  <a class="drawer-link"
-     routerLink="/about"
-     (click)="menuOpen.set(false)"
-     aria-label="About ApnaInsights">About</a>
-  <a class="drawer-link crt-btn"
-     routerLink="/auth/login"
-     (click)="menuOpen.set(false)"
-     aria-label="Sign in to write a story">
+<!-- Mobile drawer -->
+<nav id="mobile-drawer" class="mobile-drawer" [class.open]="menuOpen()"
+     role="navigation" aria-label="Mobile navigation">
+  <a class="drawer-link" routerLink="/about" (click)="menuOpen.set(false)">About</a>
+  <a class="drawer-link crt-btn" routerLink="/auth/login" (click)="menuOpen.set(false)">
     <span aria-hidden="true">✦</span>&nbsp; Write a Story
   </a>
-  <a class="drawer-link"
-     routerLink="/auth/register"
-     (click)="menuOpen.set(false)"
-     aria-label="Sign up for a free account">Sign Up</a>
+  <a class="drawer-link" routerLink="/auth/register" (click)="menuOpen.set(false)">Sign Up</a>
 </nav>
-
-<div class="drawer-backdrop"
-     [class.open]="menuOpen()"
-     (click)="menuOpen.set(false)"
-     aria-hidden="true"></div>
+<div class="drawer-backdrop" [class.open]="menuOpen()" (click)="menuOpen.set(false)" aria-hidden="true"></div>
 }
 
+<!-- ── Welcome modal ──────────────────────────────────────────────────────── -->
 @defer (on idle) {
   @if (showWelcomeModal()) {
     <app-welcome-modal (close)="dismissWelcomeModal()"></app-welcome-modal>
   }
 }
 
-<main id="main-content" role="main">
+<!-- ═══════════════════════════════════════════════════════════════════════
+     THREE-COLUMN PAGE LAYOUT
+════════════════════════════════════════════════════════════════════════ -->
+<div class="mx-auto max-w-[1320px] px-4 sm:px-6 lg:px-8 py-6
+            grid grid-cols-1 lg:grid-cols-[240px_1fr_260px] xl:grid-cols-[260px_1fr_280px]
+            gap-6 items-start">
 
-  <section class="hero-wrap"
-           aria-labelledby="hero-heading"
-           itemscope
-           itemtype="https://schema.org/Blog">
+  <!-- ══════════════════════════════════════════════════════════════════
+       LEFT SIDEBAR
+  ═════════════════════════════════════════════════════════════════════ -->
+  <aside class="hidden lg:block sticky top-20 space-y-5" aria-label="Site navigation">
 
-    <meta itemprop="name" content="ApnaInsights — Community Stories" />
-    <meta itemprop="description" content="Discover real stories from real people across India on technology, lifestyle, health, business, education and village life." />
-    <link itemprop="url" href="https://apnainsights.com" />
-
-    <div class="hero-content">
-      <span class="hero-pill" aria-hidden="true">✦ Community Stories</span>
-      <h1 class="hero-title" id="hero-heading">
-        Stories from <span class="hero-gradient">Every Corner</span>
-      </h1>
-      <p class="hero-sub">
-        Discover blogs written by real people sharing real experience 🌿
-      </p>
-
-      @if (!isLoading() && allPosts().length > 0) {
-        <div class="hero-stats"
-             role="region"
-             aria-label="Platform statistics">
-          <div class="hero-stat">
-            <strong class="hero-stat-num"
-                    itemprop="numberOfItems"
-                    [attr.content]="allPosts().length">
-              {{ allPosts().length }}
-            </strong>
-            <span class="hero-stat-label">Stories</span>
+    @if (!isLoading() && allPosts().length > 0) {
+      <div class="rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)]
+                  p-4 shadow-[var(--card-shadow)] space-y-3 animate-[fadeIn_0.4s_ease-out_both]"
+           role="region" aria-label="Platform statistics">
+        <p class="text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">Community</p>
+        <div class="grid grid-cols-3 gap-2 text-center">
+          <div>
+            <p class="text-lg font-bold text-[var(--text-primary)]">{{ allPosts().length }}</p>
+            <p class="text-[11px] text-[var(--text-muted)]">Stories</p>
           </div>
-          <div class="hero-stat-sep" aria-hidden="true"></div>
-          <div class="hero-stat">
-            <strong class="hero-stat-num">{{ categories.length }}</strong>
-            <span class="hero-stat-label">Topics</span>
+          <div>
+            <p class="text-lg font-bold text-[var(--text-primary)]">{{ categories.length }}</p>
+            <p class="text-[11px] text-[var(--text-muted)]">Topics</p>
           </div>
-          <div class="hero-stat-sep" aria-hidden="true"></div>
-          <div class="hero-stat">
-
-            <strong class="hero-stat-num">{{ totalViews() | formatCount }}</strong>
-            <span class="hero-stat-label">Total Reads</span>
+          <div>
+            <p class="text-lg font-bold text-[var(--text-primary)]">{{ totalViews() | formatCount }}</p>
+            <p class="text-[11px] text-[var(--text-muted)]">Reads</p>
           </div>
         </div>
-      }
-    </div>
-  </section>
+      </div>
+    }
 
-  <div class="filter-wrap" role="search" aria-label="Filter and search stories">
-    <div class="filter-inner">
-      <div class="search-wrap">
-        <span class="search-icon" aria-hidden="true">🔍</span>
+    <!-- Categories nav -->
+    <div class="rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)]
+                overflow-hidden shadow-[var(--card-shadow)]">
+      <div class="px-4 py-3 border-b border-[var(--border)] flex items-center justify-between">
+        <p class="text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">Topics</p>
+        @if (selectedCategory()) {
+          <button class="text-xs text-[var(--accent)] hover:underline"
+                  (click)="selectedCategory.set(''); feedDisplayCount.set(12)"
+                  aria-label="Clear category filter">Clear</button>
+        }
+      </div>
+      <nav class="p-2 space-y-0.5" aria-label="Browse by category">
+        <button class="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium
+                       transition-all duration-150 text-left hover:bg-[var(--bg-hover)]"
+                [class.bg-[var(--accent-subtle)]]="selectedCategory() === ''"
+                [class.text-[var(--accent-text)]]="selectedCategory() === ''"
+                [class.text-[var(--text-secondary)]]="selectedCategory() !== ''"
+                (click)="selectedCategory.set(''); feedDisplayCount.set(12)"
+                [attr.aria-pressed]="selectedCategory() === ''">
+          <span aria-hidden="true">🌐</span> All Topics
+          <span class="ml-auto text-[11px] text-[var(--text-muted)]">{{ allPosts().length }}</span>
+        </button>
+        @for (cat of categories; track trackByCategory($index, cat)) {
+          <button class="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium
+                         transition-all duration-150 text-left hover:bg-[var(--bg-hover)]"
+                  [class.bg-[var(--accent-subtle)]]="selectedCategory() === cat"
+                  [class.text-[var(--accent-text)]]="selectedCategory() === cat"
+                  [class.text-[var(--text-secondary)]]="selectedCategory() !== cat"
+                  (click)="selectedCategory.set(selectedCategory() === cat ? '' : cat); feedDisplayCount.set(12)"
+                  [attr.aria-pressed]="selectedCategory() === cat"
+                  [attr.aria-label]="'Browse ' + cat + ' stories'">
+            <span aria-hidden="true">{{ categoryEmojis[cat] }}</span>
+            {{ cat }}
+            @if (getCatCount(cat) > 0) {
+              <span class="ml-auto text-[11px] text-[var(--text-muted)]">{{ getCatCount(cat) }}</span>
+            }
+          </button>
+        }
+      </nav>
+    </div>
+
+    <!-- Quick links -->
+    <div class="rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)]
+                overflow-hidden shadow-[var(--card-shadow)]">
+      <div class="px-4 py-3 border-b border-[var(--border)]">
+        <p class="text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">Navigate</p>
+      </div>
+      <nav class="p-2 space-y-0.5">
+        <a routerLink="/about"
+           class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-[var(--text-secondary)]
+                  font-medium transition-all duration-150 hover:bg-[var(--bg-hover)]
+                  hover:text-[var(--accent)] no-underline">
+          <i class="bi bi-info-circle text-base" aria-hidden="true"></i> About Us
+        </a>
+        <a routerLink="/auth/login"
+           class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-[var(--text-secondary)]
+                  font-medium transition-all duration-150 hover:bg-[var(--bg-hover)]
+                  hover:text-[var(--accent)] no-underline">
+          <i class="bi bi-pencil-square text-base" aria-hidden="true"></i> Write a Story
+        </a>
+        <a routerLink="/auth/register"
+           class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-[var(--text-secondary)]
+                  font-medium transition-all duration-150 hover:bg-[var(--bg-hover)]
+                  hover:text-[var(--accent)] no-underline">
+          <i class="bi bi-person-plus text-base" aria-hidden="true"></i> Join Community
+        </a>
+      </nav>
+    </div>
+
+  </aside>
+
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       MAIN FEED
+  ═════════════════════════════════════════════════════════════════════ -->
+  <main id="main-content" class="min-w-0" role="main"
+        itemscope itemtype="https://schema.org/Blog">
+    <meta itemprop="name" content="ApnaInsights — Community Stories" />
+    <meta itemprop="description" content="Discover real stories from real people across India." />
+    <link itemprop="url" href="https://apnainsights.com" />
+
+    <!-- Hero -->
+    <section class="hero-wrap mb-5" aria-labelledby="hero-heading">
+      <div class="hero-content">
+        <span class="hero-pill" aria-hidden="true">✦ Community Stories</span>
+        <h1 class="hero-title" id="hero-heading">
+          Stories from <span class="hero-gradient">Every Corner</span>
+        </h1>
+        <p class="hero-sub">Discover blogs written by real people sharing real experiences 🌿</p>
+      </div>
+    </section>
+
+    <!-- Mobile search -->
+    <div class="md:hidden mb-4">
+      <div class="relative">
+        <i class="bi bi-search absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] text-sm pointer-events-none" aria-hidden="true"></i>
         <input
-          #searchInput
           type="search"
-          class="search-box"
+          class="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm
+                 bg-[var(--bg-surface)] border border-[var(--border)]
+                 text-[var(--text-primary)] placeholder:text-[var(--text-muted)]
+                 focus:outline-none focus:ring-2 focus:ring-[var(--accent)] transition-all duration-200"
           placeholder="Search stories…"
           aria-label="Search community stories"
           autocomplete="off"
           (input)="onSearchInput($any($event.target).value)"
         />
-        <kbd class="search-shortcut" aria-label="Press / to focus search">/</kbd>
-      </div>
-
-      <div class="filter-selects">
-        <select class="filter-select"
-                aria-label="Filter by category"
-                [ngModel]="selectedCategory()"
-                (ngModelChange)="selectedCategory.set($event)">
-          <option value="">All Categories</option>
-          @for (cat of categories; track trackByCategory($index, cat)) {
-            <option [value]="cat">{{ cat }}</option>
-          }
-        </select>
-
-        <select class="filter-select"
-                aria-label="Sort stories by"
-                [ngModel]="selectedSort()"
-                (ngModelChange)="selectedSort.set($event)">
-          <option value="newest">Newest</option>
-          <option value="liked">Most Liked</option>
-          <option value="viewed">Most Viewed</option>
-          <option value="comments">Most Comments</option>
-        </select>
       </div>
     </div>
 
-    <nav class="category-bar"
-         role="navigation"
-         aria-label="Browse by topic">
-      <button class="cat-tag"
-              [class.active]="selectedCategory() === ''"
-              (click)="selectedCategory.set('')"
-              [attr.aria-pressed]="selectedCategory() === ''"
-              aria-label="Show all categories">
-        All
-      </button>
-      @for (cat of categories; track trackByCategory($index, cat)) {
-        <button
-          class="cat-tag"
-          [class.active]="selectedCategory() === cat"
-          (click)="selectedCategory.set(selectedCategory() === cat ? '' : cat)"
-          [attr.aria-pressed]="selectedCategory() === cat"
-          [attr.aria-label]="'Browse ' + cat + ' stories' + (getCatCount(cat) > 0 ? ', ' + getCatCount(cat) + ' stories' : '')">
-          <span class="cat-emoji" aria-hidden="true">{{ categoryEmojis[cat] }}</span> {{ cat }}
-          @if (getCatCount(cat) > 0) {
-            <span class="cat-pill-count" aria-hidden="true">{{ getCatCount(cat) }}</span>
-          }
-        </button>
-      }
-    </nav>
-  </div>
-
-  <ng-template #skeletonGrid>
-    <div class="blog-grid" aria-busy="true" aria-label="Loading stories…">
-      @for (s of skeletonItems; track $index) {
-        <div class="skeleton-card" role="status" aria-label="Loading story">
-          <div class="skeleton-img-block"></div>
-          <div class="skeleton-body">
-            <div class="skeleton-line title w-70"></div>
-            <div class="skeleton-line w-full"></div>
-            <div class="skeleton-line w-85"></div>
-            <div class="skeleton-line w-50" style="margin-top:4px;height:10px;"></div>
-          </div>
-          <div class="skeleton-footer">
-            <div class="skeleton-line" style="width:110px;height:28px;border-radius:8px;"></div>
-            <div class="skeleton-line" style="width:66px;height:28px;border-radius:8px;"></div>
-          </div>
-        </div>
-      }
+    <!-- Filter bar -->
+    <div class="flex items-center gap-3 mb-4 flex-wrap" role="search" aria-label="Sort and filter">
+      <div class="lg:hidden overflow-x-auto flex gap-1.5 pb-1 flex-1 min-w-0 category-bar"
+           role="navigation" aria-label="Browse by topic">
+        <button class="cat-tag flex-shrink-0"
+                [class.active]="selectedCategory() === ''"
+                (click)="selectedCategory.set(''); feedDisplayCount.set(12)">All</button>
+        @for (cat of categories; track trackByCategory($index, cat)) {
+          <button class="cat-tag flex-shrink-0"
+                  [class.active]="selectedCategory() === cat"
+                  (click)="selectedCategory.set(selectedCategory() === cat ? '' : cat); feedDisplayCount.set(12)"
+                  [attr.aria-pressed]="selectedCategory() === cat">
+            <span aria-hidden="true">{{ categoryEmojis[cat] }}</span> {{ cat }}
+          </button>
+        }
+      </div>
+      <select class="filter-select ml-auto flex-shrink-0"
+              aria-label="Sort stories by"
+              [ngModel]="selectedSort()"
+              (ngModelChange)="selectedSort.set($event); feedDisplayCount.set(12)">
+        <option value="newest">✨ Newest</option>
+        <option value="liked">❤️ Most Liked</option>
+        <option value="viewed">👁 Most Viewed</option>
+        <option value="comments">💬 Most Comments</option>
+      </select>
     </div>
-  </ng-template>
 
-  @if (isFiltering()) {
-    <section class="section" aria-labelledby="results-heading">
-      <div class="section-header">
-        <h2 class="section-title" id="results-heading">🔍 Results</h2>
-        <span class="result-count"
-              role="status"
-              aria-live="polite"
-              aria-atomic="true">
-          {{ filteredPosts().length }} found
+    <!-- Active filter banner -->
+    @if (isFiltering()) {
+      <div class="flex items-center justify-between gap-3 mb-4 px-4 py-2.5 rounded-xl
+                  bg-[var(--accent-subtle)] border border-[var(--border)]
+                  animate-[fadeIn_0.3s_ease-out_both]"
+           role="status" aria-live="polite">
+        <span class="text-sm text-[var(--accent-text)] font-medium">
+          <i class="bi bi-funnel-fill mr-1.5" aria-hidden="true"></i>
+          {{ filteredPosts().length }} {{ filteredPosts().length === 1 ? 'result' : 'results' }}
+          @if (selectedCategory()) { · {{ selectedCategory() }} }
         </span>
-        @if (selectedCategory()) {
-          <button class="clear-filter-btn"
-                  (click)="selectedCategory.set(''); selectedSort.set('newest')"
-                  aria-label="Clear all active filters">
-            ✕ Clear filters
-          </button>
-        }
+        <button class="text-xs text-[var(--accent)] hover:underline flex items-center gap-1"
+                (click)="selectedCategory.set(''); selectedSort.set('newest'); feedDisplayCount.set(12)"
+                aria-label="Clear all filters">
+          <i class="bi bi-x-circle" aria-hidden="true"></i> Clear
+        </button>
       </div>
-      <div class="blog-grid">
-        @if (filteredPosts().length === 0) {
-          <div class="no-results" role="status">
-            <span class="no-results-icon" aria-hidden="true">🔍</span>
-            <span>No stories match your filters.</span>
-            <button class="clear-filter-btn"
-                    (click)="selectedCategory.set(''); selectedSort.set('newest')"
-                    aria-label="Clear filters to see all stories">
-              Clear filters
-            </button>
+    }
+
+    <!-- Skeleton grid -->
+    @if (isLoading()) {
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" aria-busy="true" aria-label="Loading stories…">
+        @for (s of skeletonItems; track $index) {
+          <div class="rounded-2xl overflow-hidden border border-[var(--border)]
+                      bg-[var(--bg-surface)] shadow-[var(--card-shadow)]"
+               role="status" aria-label="Loading story">
+            <div class="h-44 skeleton-shimmer"></div>
+            <div class="p-4 space-y-3">
+              <div class="h-4 rounded-full skeleton-shimmer w-3/4"></div>
+              <div class="h-3.5 rounded-full skeleton-shimmer w-full"></div>
+              <div class="h-3.5 rounded-full skeleton-shimmer w-5/6"></div>
+              <div class="flex items-center justify-between pt-2 border-t border-[var(--border)]">
+                <div class="flex items-center gap-2">
+                  <div class="w-7 h-7 rounded-full skeleton-shimmer flex-shrink-0"></div>
+                  <div class="h-3 rounded-full skeleton-shimmer w-20"></div>
+                </div>
+                <div class="h-7 rounded-full skeleton-shimmer w-16"></div>
+              </div>
+            </div>
           </div>
         }
-        @for (blog of filteredPosts(); track blog._id) {
-          <ng-container [ngTemplateOutlet]="blogCard"
-                        [ngTemplateOutletContext]="{ $implicit: blog }"></ng-container>
-        }
       </div>
-    </section>
-  }
-
-  <section class="section" aria-labelledby="trending-heading">
-    <div class="section-header">
-      <span class="section-pill trending" aria-hidden="true">HOT</span>
-      <h2 class="section-title" id="trending-heading">🔥 Trending Stories</h2>
-      <nav class="pagination-btns" aria-label="Trending stories pagination">
-        <button class="page-btn"
-                [disabled]="trendingPage() === 0"
-                (click)="prevPage(trendingPage)"
-                aria-label="Previous page of trending stories">‹</button>
-        <span class="page-info"
-              aria-live="polite"
-              aria-atomic="true">{{ trendingPage() + 1 }} / {{ trendingPageCount() }}</span>
-        <button class="page-btn"
-                [disabled]="trendingPage() >= trendingPageCount() - 1"
-                (click)="nextPage(trendingPage, trendingPageCount())"
-                aria-label="Next page of trending stories">›</button>
-      </nav>
-    </div>
-
-    @if (isLoading()) {
-      <ng-container [ngTemplateOutlet]="skeletonGrid"></ng-container>
+    } @else if (filteredPosts().length === 0) {
+      <!-- Empty state -->
+      <div class="flex flex-col items-center justify-center py-20 text-center space-y-4
+                  animate-[fadeIn_0.4s_ease-out_both]"
+           role="status">
+        <span class="text-6xl" aria-hidden="true">🔍</span>
+        <p class="text-[var(--text-secondary)] text-base">No stories match your search.</p>
+        <button class="px-4 py-2 rounded-xl text-sm font-semibold
+                       bg-[var(--accent-subtle)] text-[var(--accent-text)]
+                       hover:bg-[var(--accent)] hover:text-white transition-all duration-200"
+                (click)="selectedCategory.set(''); selectedSort.set('newest'); feedDisplayCount.set(12)"
+                aria-label="Clear all filters">
+          Clear filters
+        </button>
+      </div>
     } @else {
-      <div class="blog-grid">
-        @for (blog of trendingPosts(); track blog._id) {
-          <ng-container [ngTemplateOutlet]="blogCard"
-                        [ngTemplateOutletContext]="{ $implicit: blog }"></ng-container>
-        }
-      </div>
-    }
-  </section>
-
-  <section class="section" aria-labelledby="hot-heading">
-    <div class="section-header">
-      <span class="section-pill hot" aria-hidden="true">VIEWS</span>
-      <h2 class="section-title" id="hot-heading">👁 Most Viewed</h2>
-      <nav class="pagination-btns" aria-label="Most viewed stories pagination">
-        <button class="page-btn"
-                [disabled]="hotPage() === 0"
-                (click)="prevPage(hotPage)"
-                aria-label="Previous page of most viewed stories">‹</button>
-        <span class="page-info"
-              aria-live="polite"
-              aria-atomic="true">{{ hotPage() + 1 }} / {{ hotPageCount() }}</span>
-        <button class="page-btn"
-                [disabled]="hotPage() >= hotPageCount() - 1"
-                (click)="nextPage(hotPage, hotPageCount())"
-                aria-label="Next page of most viewed stories">›</button>
-      </nav>
-    </div>
-
-    @if (isLoading()) {
-      <ng-container [ngTemplateOutlet]="skeletonGrid"></ng-container>
-    } @else {
-      <div class="blog-grid">
-        @for (blog of hotPosts(); track blog._id) {
-          <ng-container [ngTemplateOutlet]="blogCard"
-                        [ngTemplateOutletContext]="{ $implicit: blog }"></ng-container>
-        }
-      </div>
-    }
-  </section>
-
-  <section class="section" aria-labelledby="latest-heading">
-    <div class="section-header">
-      <span class="section-pill new" aria-hidden="true">NEW</span>
-      <h2 class="section-title" id="latest-heading">✨ Latest Stories</h2>
-      <nav class="pagination-btns" aria-label="Latest stories pagination">
-        <button class="page-btn"
-                [disabled]="latestPage() === 0"
-                (click)="prevPage(latestPage)"
-                aria-label="Previous page of latest stories">‹</button>
-        <span class="page-info"
-              aria-live="polite"
-              aria-atomic="true">{{ latestPage() + 1 }} / {{ latestPageCount() }}</span>
-        <button class="page-btn"
-                [disabled]="latestPage() >= latestPageCount() - 1"
-                (click)="nextPage(latestPage, latestPageCount())"
-                aria-label="Next page of latest stories">›</button>
-      </nav>
-    </div>
-
-    @if (isLoading()) {
-      <ng-container [ngTemplateOutlet]="skeletonGrid"></ng-container>
-    } @else {
-      <div class="blog-grid">
-        @for (blog of latestPosts(); track blog._id) {
-          <ng-container [ngTemplateOutlet]="blogCard"
-                        [ngTemplateOutletContext]="{ $implicit: blog }"></ng-container>
-        }
-      </div>
-    }
-  </section>
-
-  <ng-template #blogCard let-blog>
-    <article class="blog-card"
-             itemscope
-             itemtype="https://schema.org/BlogPosting"
-             [attr.aria-label]="blog.title">
-
-      <meta itemprop="headline"       [attr.content]="blog.title" />
-      <meta itemprop="description"    [attr.content]="blog.description" />
-      <meta itemprop="datePublished"  [attr.content]="blog.createdAt" />
-      <meta itemprop="url"            [attr.content]="'https://apnainsights.com/blog/' + blog._id" />
-      @if (blog.categories?.[0]) {
-        <meta itemprop="articleSection" [attr.content]="blog.categories[0]" />
-      }
-      <div itemprop="author" itemscope itemtype="https://schema.org/Person" style="display:none">
-        <meta itemprop="name" [attr.content]="(blog.user?.name) || 'Anonymous Writer'" />
-      </div>
-      <div itemprop="publisher" itemscope itemtype="https://schema.org/Organization" style="display:none">
-        <meta itemprop="name" content="ApnaInsights" />
-        <div itemprop="logo" itemscope itemtype="https://schema.org/ImageObject">
-          <meta itemprop="url" content="https://apnainsights.com/logo.png" />
-        </div>
-      </div>
-
-      <div itemprop="interactionStatistic" itemscope itemtype="https://schema.org/InteractionCounter" style="display:none">
-        <meta itemprop="interactionType" content="https://schema.org/LikeAction" />
-        <meta itemprop="userInteractionCount" [attr.content]="blog.likesCount" />
-      </div>
-      <div itemprop="interactionStatistic" itemscope itemtype="https://schema.org/InteractionCounter" style="display:none">
-        <meta itemprop="interactionType" content="https://schema.org/ReadAction" />
-        <meta itemprop="userInteractionCount" [attr.content]="blog.views" />
-      </div>
-
-      <div class="card-img-wrap" (click)="readBlog(blog._id)">
-        @if (blog.featuredImage) {
-          <img
-            itemprop="image"
-            [src]="blog.featuredImage"
-            [alt]="blog.title"
-            loading="lazy"
-            decoding="async"
-            width="400"
-            height="185"
-            (error)="blog.featuredImage = null"
+      <!-- Post grid with infinite scroll -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        @for (post of mainFeedPosts(); track post._id) {
+          <app-post-card
+            [post]="post"
+            [isLiked]="isLiked(post._id)"
+            (readPost)="readBlog($event._id)"
+            (toggleLike)="toggleLike($event)"
           />
-        } @else {
-          <div class="no-img-block" role="img" [attr.aria-label]="blog.title + ' — no cover image'">
-            <span class="no-img-letter" aria-hidden="true">{{ blog.title?.charAt(0)?.toUpperCase() }}</span>
+        }
+      </div>
+
+      <!-- Infinite scroll sentinel -->
+      @if (hasFeedMore()) {
+        <div appInfiniteScroll [disabled]="!hasFeedMore()" (scrolled)="loadMoreFeed()"
+             class="flex justify-center py-8">
+          <div class="flex items-center gap-2 text-sm text-[var(--text-muted)]">
+            <span class="w-5 h-5 rounded-full border-2 border-[var(--accent)] border-t-transparent
+                         animate-spin" aria-hidden="true"></span>
+            Loading more stories…
           </div>
+        </div>
+      } @else if (mainFeedPosts().length > 0) {
+        <div class="flex justify-center py-8" role="status">
+          <p class="text-sm text-[var(--text-muted)] flex items-center gap-1.5">
+            <i class="bi bi-check-circle text-green-500" aria-hidden="true"></i>
+            You're all caught up!
+          </p>
+        </div>
+      }
+    }
+
+    @if (isViewed()) {
+      <app-read-blog [postId]="selectedId()" (close)="isViewed.set(false)"></app-read-blog>
+    }
+  </main>
+
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       RIGHT SIDEBAR
+  ═════════════════════════════════════════════════════════════════════ -->
+  <aside class="hidden lg:block sticky top-20 space-y-5" aria-label="Trending and tags">
+
+    <!-- Trending mini-list -->
+    <div class="rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)]
+                overflow-hidden shadow-[var(--card-shadow)]">
+      <div class="flex items-center gap-2 px-4 py-3 border-b border-[var(--border)]">
+        <span class="text-base" aria-hidden="true">🔥</span>
+        <p class="text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">Trending</p>
+      </div>
+      <div class="divide-y divide-[var(--border)]">
+        @if (isLoading()) {
+          @for (s of [1,2,3,4,5]; track $index) {
+            <div class="flex gap-3 p-3">
+              <div class="w-7 h-7 rounded-full skeleton-shimmer flex-shrink-0"></div>
+              <div class="flex-1 space-y-1.5 py-0.5">
+                <div class="h-3 rounded-full skeleton-shimmer w-full"></div>
+                <div class="h-2.5 rounded-full skeleton-shimmer w-2/3"></div>
+              </div>
+            </div>
+          }
+        } @else {
+          @for (post of sidebarTrending(); track post._id; let i = $index) {
+            <button class="w-full flex items-start gap-3 p-3 text-left
+                           hover:bg-[var(--bg-hover)] transition-colors duration-150 group"
+                    (click)="readBlog(post._id)"
+                    [attr.aria-label]="'Read: ' + post.title" type="button">
+              <span class="text-lg font-bold flex-shrink-0 text-[var(--text-muted)]
+                           w-6 text-center group-hover:text-[var(--accent)] transition-colors">
+                {{ i + 1 }}
+              </span>
+              <div class="min-w-0">
+                <p class="text-sm font-semibold text-[var(--text-primary)] line-clamp-2
+                           group-hover:text-[var(--accent)] transition-colors leading-snug">
+                  {{ post.title }}
+                </p>
+                <p class="text-[11px] text-[var(--text-muted)] mt-0.5 flex items-center gap-1">
+                  <i class="bi bi-heart-fill text-red-400 text-[9px]" aria-hidden="true"></i>
+                  {{ post.likesCount | formatCount }} likes
+                </p>
+              </div>
+            </button>
+          }
         }
-        <span class="card-cat" aria-hidden="true">{{ blog.categories[0] }}</span>
-        @if (isNew(blog)) {
-          <span class="new-badge" aria-label="New story — published in the last 48 hours">NEW</span>
-        }
       </div>
+    </div>
 
-      <div class="card-body" (click)="readBlog(blog._id)">
-        <h3 itemprop="name">{{ blog.title }}</h3>
-        <p itemprop="abstract">{{ blog.description }}</p>
-        <div class="card-author-row">
-          <span class="card-author-avatar">{{ (blog.user?.name || 'A').charAt(0).toUpperCase() }}</span>
-          <span class="card-author-name">{{ blog.user?.name || 'Anonymous' }}</span>
+    <!-- Tags cloud -->
+    @if (!isLoading() && allPosts().length > 0) {
+      <div class="rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)]
+                  overflow-hidden shadow-[var(--card-shadow)]">
+        <div class="flex items-center gap-2 px-4 py-3 border-b border-[var(--border)]">
+          <span class="text-base" aria-hidden="true">🏷️</span>
+          <p class="text-xs font-semibold uppercase tracking-widest text-[var(--text-muted)]">Topics</p>
         </div>
-        <div class="card-meta-row">
-          <span class="card-reading-time">
-            <time aria-label="{{ getReadingTime(blog) }} minute read">
-              ⏱ {{ getReadingTime(blog) }} min read
-            </time>
-          </span>
-          <time class="card-date"
-                itemprop="datePublished"
-                [attr.datetime]="blog.createdAt">
-            {{ blog.createdAt | date:'MMM d' }}
-          </time>
-        </div>
-      </div>
-
-      <div class="card-footer">
-        <div class="card-stats">
-          <button
-            class="stat-btn like-btn"
-            [class.liked]="isLiked(blog._id)"
-            (click)="toggleLike(blog, $event)"
-            [attr.aria-label]="(isLiked(blog._id) ? 'Unlike' : 'Like') + ' ' + blog.title + ', ' + blog.likesCount + ' likes'">
-            <span class="stat-icon" aria-hidden="true">{{ isLiked(blog._id) ? '❤️' : '🤍' }}</span>
-            <span class="stat-count" aria-hidden="true">{{ blog.likesCount }}</span>
-          </button>
-          <button class="stat-btn comment-btn"
-                  (click)="openCommentDrawer(blog, $event)"
-                  [attr.aria-label]="'Open comments for ' + blog.title + ', ' + blog.commentsCount + ' comments'">
-            <span class="stat-icon" aria-hidden="true">💬</span>
-            <span class="stat-count" aria-hidden="true">{{ blog.commentsCount }}</span>
-          </button>
-          <span class="stat-display"
-                [attr.aria-label]="(blog.views | formatCount) + ' views'">
-            <span class="stat-icon" aria-hidden="true">👁</span>
-            <span class="stat-count" aria-hidden="true">{{ blog.views | formatCount }}</span>
-          </span>
-        </div>
-
-        <div class="card-actions">
-          <button
-            class="card-bookmark-btn"
-            [class.bookmarked]="isBookmarked(blog._id)"
-            (click)="toggleBookmark(blog._id, $event)"
-            [attr.aria-label]="(isBookmarked(blog._id) ? 'Remove bookmark for ' : 'Bookmark ') + blog.title"
-            [attr.aria-pressed]="isBookmarked(blog._id)">
-            <span aria-hidden="true">{{ isBookmarked(blog._id) ? '🔖' : '📑' }}</span>
-          </button>
-          
-          <a class="read-btn"
-             [attr.href]="'/blog/' + blog._id"
-             (click)="$event.preventDefault(); readBlog(blog._id)"
-             [attr.aria-label]="'Read story: ' + blog.title"
-             itemprop="url">
-            Read →
-          </a>
+        <div class="p-3 flex flex-wrap gap-1.5">
+          @for (cat of categories; track trackByCategory($index, cat)) {
+            @if (getCatCount(cat) > 0) {
+              <button class="px-2.5 py-1 rounded-full text-xs font-medium
+                             transition-all duration-200 hover:scale-105 active:scale-95"
+                      [class.bg-[var(--accent)]]="selectedCategory() === cat"
+                      [class.text-white]="selectedCategory() === cat"
+                      [class.bg-[var(--accent-subtle)]]="selectedCategory() !== cat"
+                      [class.text-[var(--accent-text)]]="selectedCategory() !== cat"
+                      (click)="selectedCategory.set(selectedCategory() === cat ? '' : cat); feedDisplayCount.set(12)"
+                      [attr.aria-pressed]="selectedCategory() === cat"
+                      [attr.aria-label]="cat + ': ' + getCatCount(cat) + ' stories'">
+                {{ categoryEmojis[cat] }} {{ cat }} <span class="opacity-60">({{ getCatCount(cat) }})</span>
+              </button>
+            }
+          }
         </div>
       </div>
+    }
 
-    </article>
-  </ng-template>
+    <!-- Write CTA card -->
+    <div class="rounded-2xl overflow-hidden shadow-[var(--card-shadow)]"
+         style="background: linear-gradient(135deg, #43cea2 0%, #185a9d 100%)">
+      <div class="p-5 text-white text-center space-y-3">
+        <p class="text-2xl" aria-hidden="true">✍️</p>
+        <p class="font-bold text-base leading-snug">Share your story with the world</p>
+        <p class="text-sm opacity-80">Join thousands of writers on ApnaInsights</p>
+        <a routerLink="/auth/register"
+           class="inline-block mt-1 px-5 py-2 rounded-xl bg-white text-[#185a9d]
+                  text-sm font-bold no-underline hover:opacity-90
+                  transition-all duration-200 hover:-translate-y-0.5">
+          Get Started Free →
+        </a>
+      </div>
+    </div>
 
-  @if (isViewed()) {
-    <app-read-blog [postId]="selectedId()" (close)="isViewed.set(false)"></app-read-blog>
-  }
+  </aside>
 
-</main>
+</div><!-- /THREE-COLUMN LAYOUT -->
 
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     COMMENT DRAWER
+════════════════════════════════════════════════════════════════════════ -->
 @if (commentDrawerPostId()) {
-  <div class="comment-backdrop"
-       (click)="closeCommentDrawer()"
-       role="presentation"
-       aria-hidden="true"></div>
+  <div class="comment-backdrop" (click)="closeCommentDrawer()"
+       role="presentation" aria-hidden="true"></div>
 }
 
 <div class="comment-drawer"

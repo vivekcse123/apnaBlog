@@ -32,8 +32,12 @@ body {
   font-size: 16px;
   transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.2s;
 }
-.theme-toggle:hover { background: var(--accent-subtle); border-color: var(--accent); color: var(--accent-text); transform: rotate(15deg); }
-.theme-icon { line-height: 1; }
+.theme-toggle:hover { background: var(--accent-subtle); border-color: var(--accent); color: var(--accent-text); transform: rotate(20deg) scale(1.1); }
+.theme-icon {
+  line-height: 1;
+  display: inline-block;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease;
+}
 
 .about-btn {
   background: transparent; border: 1.5px solid var(--border);
@@ -92,13 +96,14 @@ body {
   width: 260px;
   background: var(--bg-surface); border: 1px solid var(--border);
   border-top: none; border-radius: 0 0 0 16px;
-  padding: 20px 16px; display: none; flex-direction: column; gap: 10px;
+  padding: 20px 16px; display: flex; flex-direction: column; gap: 10px;
   z-index: 999;
   transform: translateX(110%);
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: -4px 8px 24px rgba(0,0,0,0.12);
+  pointer-events: none;
 }
-.mobile-drawer.open { transform: translateX(0); }
+.mobile-drawer.open { transform: translateX(0); pointer-events: auto; }
 
 .drawer-link {
   width: 100%; display: flex; align-items: center;
@@ -1163,4 +1168,38 @@ input[type="search"]::-webkit-search-decoration {
   .site-footer .footer-dot {
     display: none;
   }
+}
+/* == NEW LAYOUT � responsive helpers ================================== */
+
+/* Hamburger: mobile only */
+@media (max-width: 767px) {
+  .hamburger { display: flex !important; }
+  .desktop-only { display: none !important; }
+}
+@media (min-width: 768px) {
+  .hamburger { display: none !important; }
+  .desktop-only { display: inline-flex; }
+}
+
+/* Smaller header padding on phones */
+@media (max-width: 600px) {
+  .header { padding: 0 16px; }
+}
+
+/* Hero inside 3-col layout */
+.hero-wrap {
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  margin-bottom: 0;
+}
+
+/* Page-entry animation for Tailwind animate-[fadeIn_...] */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Spin keyframe */
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }

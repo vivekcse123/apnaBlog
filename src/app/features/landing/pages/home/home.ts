@@ -22,6 +22,8 @@ import { VisitorService } from '../../../../core/services/visitor';
 import { WelcomeModal } from '../welcome.modal';
 import { FormatCountPipe } from '../../../../shared/pipes/format-count-pipe';
 import { PostCache } from '../../../post/services/post-cache';
+import { PostCard } from '../../../../shared/components/post-card/post-card';
+import { InfiniteScrollDirective } from '../../../../shared/directives/infinite-scroll.directive';
 
 interface DrawerComment {
   _id?: string;
@@ -46,7 +48,7 @@ const FETCH_LIMIT = 100;
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [RouterLink, CommonModule, FormsModule, ReadBlog, NgTemplateOutlet, WelcomeModal, FormatCountPipe],
+  imports: [RouterLink, CommonModule, FormsModule, ReadBlog, NgTemplateOutlet, WelcomeModal, FormatCountPipe, PostCard, InfiniteScrollDirective],
   templateUrl: './home.html',
   styleUrl: './home.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -197,6 +199,24 @@ export class Home implements OnInit, OnDestroy {
   totalViews = computed(() =>
     this.allPosts().reduce((sum, p) => sum + (p.views ?? 0), 0)
   );
+
+  // ── Infinite scroll feed ──────────────────────────────────────────────────
+  feedDisplayCount = signal(12);
+
+  mainFeedPosts = computed(() =>
+    this.filteredPosts().slice(0, this.feedDisplayCount())
+  );
+
+  hasFeedMore = computed(() =>
+    this.feedDisplayCount() < this.filteredPosts().length
+  );
+
+  loadMoreFeed(): void {
+    this.feedDisplayCount.update(c => c + 8);
+  }
+
+  /** Top-5 by likes for the right sidebar */
+  sidebarTrending = computed(() => this.byLikes().slice(0, 5));
 
   isDrawerPostOwner = computed(() => {
     const postId = this.commentDrawerPostId();
@@ -496,6 +516,7 @@ export class Home implements OnInit, OnDestroy {
 
   onSearchInput(value: string): void {
     this.searchInput$.next(value);
+    this.feedDisplayCount.set(12);
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────────
@@ -550,8 +571,8 @@ export class Home implements OnInit, OnDestroy {
 
   isLiked(postId: string): boolean { return this.likedPostIds().has(postId); }
 
-  toggleLike(post: Post, event: Event): void {
-    event.stopPropagation();
+  toggleLike(post: Post, event?: Event): void {
+    event?.stopPropagation();
     const liked  = this.isLiked(post._id);
     const newSet = new Set(this.likedPostIds());
 

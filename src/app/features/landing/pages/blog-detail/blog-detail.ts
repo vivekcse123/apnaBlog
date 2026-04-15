@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit, DestroyRef, PLATFORM_ID, computed, AfterViewInit, ElementRef } from '@angular/core';
+import { Component, inject, signal, OnInit, DestroyRef, PLATFORM_ID, computed, AfterViewInit, ElementRef, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule, isPlatformBrowser, DOCUMENT } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -47,6 +47,7 @@ const AUTHOR_POSTS_PER_PAGE = 10;
   imports: [RouterLink, CommonModule, FormsModule],
   templateUrl: './blog-detail.html',
   styleUrl: './blog-detail.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BlogDetail implements OnInit, AfterViewInit {
   private postService    = inject(PostService);
