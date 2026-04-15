@@ -1,29 +1,22 @@
 {
   "outputDirectory": "dist/blog-app/browser",
-  "rewrites": [
+  "routes": [
     {
-      "source": "/sitemap.xml",
-      "destination": "/api/sitemap"
+      "src": "/sitemap.xml",
+      "headers": { "Content-Type": "application/xml", "Cache-Control": "public, max-age=3600" },
+      "dest": "/api/sitemap"
     },
     {
-      "source": "/(.*)",
-      "destination": "/index.csr.html"
-    }
-  ],
-  "headers": [
-    {
-      "source": "/sitemap.xml",
-      "headers": [
-        { "key": "Content-Type", "value": "application/xml" },
-        { "key": "Cache-Control", "value": "public, max-age=3600" }
-      ]
+      "src": "/robots.txt",
+      "headers": { "Content-Type": "text/plain", "Cache-Control": "public, max-age=86400" },
+      "dest": "/robots.txt"
     },
     {
-      "source": "/robots.txt",
-      "headers": [
-        { "key": "Content-Type", "value": "text/plain" },
-        { "key": "Cache-Control", "value": "public, max-age=86400" }
-      ]
-    }
+      "src": "/ads.txt",
+      "headers": { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "public, max-age=86400" },
+      "dest": "/ads.txt"
+    },
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/index.csr.html" }
   ]
 }
