@@ -3,7 +3,7 @@ import {
   Input, ChangeDetectionStrategy, WritableSignal, PLATFORM_ID,
   HostListener, ElementRef, ViewChild
 } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink, ParamMap } from '@angular/router';
 import { CommonModule, isPlatformBrowser, NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Meta, Title } from '@angular/platform-browser';
@@ -123,27 +123,27 @@ export class Home implements OnInit, OnDestroy {
   private readingTimeCache = new Map<string, number>();
 
   // ── Sorted pools ──────────────────────────────────────────────────────────
-  private byLikes = computed(() =>
+  private byLikes = computed((): PostWithTs[] =>
     [...this.allPosts()].sort((a, b) => b.likesCount - a.likesCount)
   );
-  private byViews = computed(() =>
+  private byViews = computed((): PostWithTs[] =>
     [...this.allPosts()].sort((a, b) => b.views - a.views)
   );
-  private byDate = computed(() =>
+  private byDate = computed((): PostWithTs[] =>
     [...this.allPosts()].sort((a, b) => b._ts - a._ts)
   );
 
-  private trendingPool = computed(() => this.byLikes());
-  private hotPool = computed(() => {
-    const trendingIds = new Set(this.trendingPool().slice(0, PAGE_SIZE).map(p => p._id));
-    return this.byViews().filter(p => !trendingIds.has(p._id));
+  private trendingPool = computed((): PostWithTs[] => this.byLikes());
+  private hotPool = computed((): PostWithTs[] => {
+    const trendingIds = new Set<string>(this.trendingPool().slice(0, PAGE_SIZE).map((p: PostWithTs) => p._id));
+    return this.byViews().filter((p: PostWithTs) => !trendingIds.has(p._id));
   });
-  private latestPool = computed(() => {
-    const usedIds = new Set([
-      ...this.trendingPool().slice(0, PAGE_SIZE).map(p => p._id),
-      ...this.hotPool().slice(0, PAGE_SIZE).map(p => p._id),
+  private latestPool = computed((): PostWithTs[] => {
+    const usedIds = new Set<string>([
+      ...this.trendingPool().slice(0, PAGE_SIZE).map((p: PostWithTs) => p._id),
+      ...this.hotPool().slice(0, PAGE_SIZE).map((p: PostWithTs) => p._id),
     ]);
-    return this.byDate().filter(p => !usedIds.has(p._id));
+    return this.byDate().filter((p: PostWithTs) => !usedIds.has(p._id));
   });
 
   trendingPosts = computed(() => {
@@ -197,7 +197,7 @@ export class Home implements OnInit, OnDestroy {
   );
 
   totalViews = computed(() =>
-    this.allPosts().reduce((sum, p) => sum + (p.views ?? 0), 0)
+    this.allPosts().reduce((sum: number, p: PostWithTs) => sum + (p.views ?? 0), 0)
   );
 
   // ── Infinite scroll feed ──────────────────────────────────────────────────
@@ -212,7 +212,7 @@ export class Home implements OnInit, OnDestroy {
   );
 
   loadMoreFeed(): void {
-    this.feedDisplayCount.update(c => c + 8);
+    this.feedDisplayCount.update((c: number) => c + 8);
   }
 
   /** Top-5 by likes for the right sidebar */
@@ -222,7 +222,7 @@ export class Home implements OnInit, OnDestroy {
     const postId = this.commentDrawerPostId();
     const userId = this.currentUserData()?._id;
     if (!postId || !userId) return false;
-    const post = this.allPosts().find(p => p._id === postId);
+    const post = this.allPosts().find((p: PostWithTs) => p._id === postId);
     if (!post) return false;
     const postOwnerId = (post.user as any)?._id ?? (post.user as any);
     return postOwnerId?.toString() === userId.toString();
@@ -277,7 +277,7 @@ export class Home implements OnInit, OnDestroy {
 
     this.route.queryParamMap
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(params => {
+      .subscribe((params: ParamMap) => {
         const cat = params.get('category');
         if (cat) this.selectedCategory.set(cat);
       });
@@ -286,7 +286,7 @@ export class Home implements OnInit, OnDestroy {
       debounceTime(350),
       distinctUntilChanged(),
       takeUntilDestroyed(this.destroyRef)
-    ).subscribe(val => this.searchQuery.set(val));
+    ).subscribe((val: string) => this.searchQuery.set(val));
 
     this.loadInitialData();
   }
@@ -298,7 +298,7 @@ export class Home implements OnInit, OnDestroy {
     }
     this.readingTimeCache.clear();
     const scripts = this.document.querySelectorAll('script[data-apna-home-schema]');
-    scripts.forEach(s => s.remove());
+    scripts.forEach((s: Element) => s.remove());
   }
 
   // ── Core loading ──────────────────────────────────────────────────────────
@@ -345,13 +345,13 @@ export class Home implements OnInit, OnDestroy {
     this.postService.getAllPost(1, FETCH_LIMIT)
       .pipe(
         takeUntilDestroyed(this.destroyRef),
-        catchError(err => {
+        catchError((err: unknown) => {
           console.error('[Home] page 1 failed:', err);
           this.isLoading.set(false);
           return of(null);
         })
       )
-      .subscribe(firstRes => {
+      .subscribe((firstRes: any) => {
         if (!firstRes) return;
 
         const firstBatch: Post[] = firstRes.data       ?? [];
@@ -370,7 +370,7 @@ export class Home implements OnInit, OnDestroy {
         forkJoin(
           pageNums.map(page =>
             this.postService.getAllPost(page, FETCH_LIMIT).pipe(
-              catchError(err => {
+              catchError((err: unknown) => {
                 console.error(`[Home] page ${page} failed:`, err);
                 // Return empty shell — forkJoin won't abort on one failed page
                 return of({
@@ -387,10 +387,10 @@ export class Home implements OnInit, OnDestroy {
           )
         )
         .pipe(takeUntilDestroyed(this.destroyRef))
-        .subscribe(restResponses => {
+        .subscribe((restResponses: any[]) => {
           const allRaw: Post[] = [
             ...firstBatch,
-            ...restResponses.flatMap(r => r.data ?? []),
+            ...restResponses.flatMap((r: any) => r.data ?? []),
           ];
           this.commitPosts(allRaw);
           this.isLoading.set(false);
@@ -427,7 +427,7 @@ export class Home implements OnInit, OnDestroy {
         takeUntilDestroyed(this.destroyRef),
         catchError(() => of({ data: null }))
       )
-      .subscribe(res => this.currentUserData.set(res.data ?? null));
+      .subscribe((res: any) => this.currentUserData.set(res.data ?? null));
   }
 
   // ── Meta / SEO ────────────────────────────────────────────────────────────
@@ -574,7 +574,7 @@ export class Home implements OnInit, OnDestroy {
   toggleLike(post: Post, event?: Event): void {
     event?.stopPropagation();
     const liked  = this.isLiked(post._id);
-    const newSet = new Set(this.likedPostIds());
+    const newSet = new Set<string>(this.likedPostIds());
 
     if (liked) {
       newSet.delete(post._id);
@@ -589,7 +589,7 @@ export class Home implements OnInit, OnDestroy {
       this.postService.likePost(post._id).subscribe({
         error: () => {
           newSet.delete(post._id);
-          this.likedPostIds.set(new Set(newSet));
+          this.likedPostIds.set(new Set<string>(newSet));
           this.persistLikedIds(newSet);
           this.patchPost(post._id, { likesCount: post.likesCount });
         },
@@ -614,7 +614,7 @@ export class Home implements OnInit, OnDestroy {
 
   toggleBookmark(postId: string, event: Event): void {
     event.stopPropagation();
-    const newSet = new Set(this.bookmarkedPostIds());
+    const newSet = new Set<string>(this.bookmarkedPostIds());
     if (newSet.has(postId)) newSet.delete(postId);
     else newSet.add(postId);
     this.bookmarkedPostIds.set(newSet);
@@ -650,7 +650,7 @@ export class Home implements OnInit, OnDestroy {
       : this.loadingMoreComments.set(true);
 
     this.postService.getComments(postId, skip, COMMENT_PAGE_SIZE).subscribe({
-      next: (res) => {
+      next: (res: any) => {
         const incoming: DrawerComment[] = (res.comments ?? []) as DrawerComment[];
 
         // ✅ backend returns `totalComments` — not `total` or `totalCount`
@@ -721,7 +721,7 @@ export class Home implements OnInit, OnDestroy {
         this.commentFetchedCount.set(this.commentFetchedCount() + 1);
         this.totalCommentsCount.set(this.totalCommentsCount() + 1);
 
-        const post = this.allPosts().find(p => p._id === postId);
+        const post = this.allPosts().find((p: PostWithTs) => p._id === postId);
         if (post) this.patchPost(postId, { commentsCount: post.commentsCount + 1 });
 
         setTimeout(() => this.commentFeedback.set(null), 3000);
@@ -746,11 +746,11 @@ export class Home implements OnInit, OnDestroy {
 
     this.postService.deleteComment(postId, commentId).subscribe({
       next: () => {
-        this.drawerComments.set(this.drawerComments().filter(c => c._id !== commentId));
+        this.drawerComments.set(this.drawerComments().filter((c: DrawerComment) => c._id !== commentId));
         this.commentFetchedCount.set(Math.max(0, this.commentFetchedCount() - 1));
         this.totalCommentsCount.set(Math.max(0, this.totalCommentsCount() - 1));
 
-        const post = this.allPosts().find(p => p._id === postId);
+        const post = this.allPosts().find((p: PostWithTs) => p._id === postId);
         if (post) this.patchPost(postId, { commentsCount: Math.max(0, post.commentsCount - 1) });
 
         this.deletingCommentId.set(null);
@@ -766,7 +766,7 @@ export class Home implements OnInit, OnDestroy {
 
   private patchPost(postId: string, updates: Partial<Post>): void {
     this.allPosts.set(
-      this.allPosts().map(p => p._id === postId ? { ...p, ...updates } : p)
+      this.allPosts().map((p: PostWithTs) => p._id === postId ? { ...p, ...updates } : p)
     );
   }
 
