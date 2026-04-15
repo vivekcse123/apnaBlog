@@ -4,6 +4,7 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { NotificationPanel } from '../components/notification-panel/notification-panel';
 import { NotificationService } from '../../core/services/notification-service';
+import { ThemeService } from '../../core/services/theme-service';
 
 @Component({
   selector: 'app-common-header',
@@ -15,13 +16,14 @@ import { NotificationService } from '../../core/services/notification-service';
 export class CommonHeader implements OnInit {
   @Input() logo:      string = 'ApnaInsights';
   @Input() profile:   string | null = '';
-  @Input() avatarUrl: string | null = null; // ← new
+  @Input() avatarUrl: string | null = null;
   @Input() navs:      { label: string; routerLink: string }[] = [];
   @Output() open = new EventEmitter<void>();
 
   menuOpen = false;
 
   private notifSvc = inject(NotificationService);
+  themeService     = inject(ThemeService);
 
   ngOnInit(): void {}
 

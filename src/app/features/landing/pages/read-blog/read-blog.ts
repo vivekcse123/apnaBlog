@@ -8,8 +8,10 @@ import {
   OnInit,
   DestroyRef,
   ChangeDetectionStrategy,
+  computed,
 } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { PostService } from '../../../post/services/post-service';
 import { Post } from '../../../../core/models/post.model';
@@ -25,6 +27,7 @@ import { Post } from '../../../../core/models/post.model';
 export class ReadBlog implements OnInit {
   private postService = inject(PostService);
   private destroyRef  = inject(DestroyRef);
+  private sanitizer   = inject(DomSanitizer);
 
   postId    = input('');
   post      = signal<Post | null>(null);
@@ -32,6 +35,10 @@ export class ReadBlog implements OnInit {
   isVisible = signal(false);
 
   close = output<void>();
+
+  safeContent = computed<SafeHtml>(() =>
+    this.sanitizer.bypassSecurityTrustHtml(this.post()?.content ?? '')
+  );
 
   ngOnInit(): void {
     setTimeout(() => this.isVisible.set(true), 10);

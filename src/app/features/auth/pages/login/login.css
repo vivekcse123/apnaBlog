@@ -577,3 +577,40 @@
   .brand-panel  { padding: 24px 20px; }
   .brand-name   { font-size: 20px; }
 }
+/* -- Eye toggle (show/hide password) -- */
+.eye-toggle {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  color: var(--text-muted);
+  border-radius: 6px;
+  transition: color 0.2s, background 0.2s;
+  z-index: 1;
+}
+
+.eye-toggle:hover { color: var(--text-primary); background: var(--bg-surface-alt); }
+
+.input-wrap:has(.eye-toggle) input {
+  padding-right: 42px;
+}
+
+/* -- Field label row (label + forgot link same line) -- */
+.field-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.field-label-row label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  letter-spacing: 0.03em;
+}
+
+.input-icon svg { display: block; }

@@ -115,7 +115,7 @@
 
         <div class="detail-block full">
           <span class="detail-label">Content</span>
-          <div class="detail-text content-text" [innerHTML]="post()?.content"></div>
+          <div class="detail-text content-text" [innerHTML]="safeContent()"></div>
         </div>
 
         <div class="detail-row">

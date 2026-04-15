@@ -24,6 +24,7 @@ import { FormatCountPipe } from '../../../../shared/pipes/format-count-pipe';
 import { PostCache } from '../../../post/services/post-cache';
 import { PostCard } from '../../../../shared/components/post-card/post-card';
 import { InfiniteScrollDirective } from '../../../../shared/directives/infinite-scroll.directive';
+import { Footer } from '../../../../shared/components/footer/footer';
 
 interface DrawerComment {
   _id?: string;
@@ -48,7 +49,7 @@ const FETCH_LIMIT = 100;
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [RouterLink, CommonModule, FormsModule, ReadBlog, NgTemplateOutlet, WelcomeModal, FormatCountPipe, PostCard, InfiniteScrollDirective],
+  imports: [RouterLink, CommonModule, FormsModule, ReadBlog, NgTemplateOutlet, WelcomeModal, FormatCountPipe, PostCard, InfiniteScrollDirective, Footer],
   templateUrl: './home.html',
   styleUrl: './home.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

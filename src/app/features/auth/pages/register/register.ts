@@ -68,4 +68,6 @@ export class Register implements OnInit{
   }
 
   showPassword = false;
+
+  togglePasswordVisibility(): void { this.showPassword = !this.showPassword; }
 }

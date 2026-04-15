@@ -1,7 +1,7 @@
 <header class="header">
 
   <a class="app-logo" routerLink="/">
-    <img class="app-logo-img" src="/logo.png" alt="ApnaInsights" />
+    <img class="app-logo-img" src="/logo.png" alt="ApnaInsights" width="36" height="36" />
     <span class="app-logo-text">ApnaInsights</span>
   </a>
 
@@ -19,15 +19,32 @@
   </nav>
 
   <div class="right-section">
+    <button class="theme-toggle-btn"
+      (click)="themeService.toggleTheme()"
+      [attr.aria-label]="themeService.theme() === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
+      title="Toggle theme">
+      @if (themeService.theme() === 'dark') {
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2"/>
+          <path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      } @else {
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      }
+    </button>
+
     <app-notification-panel />
 
-    <div class="profile" (click)="openProfile($event)">
+    <button class="profile" (click)="openProfile($event)" type="button"
+      [attr.aria-label]="'Open profile menu'">
       @if (avatarUrl) {
-        <img [src]="avatarUrl" class="profile-avatar-img" alt="Profile" />
+        <img [src]="avatarUrl" class="profile-avatar-img" alt="Profile" width="42" height="42" />
       } @else {
         {{ profile }}
       }
-    </div>
+    </button>
   </div>
 
   <button
@@ -57,6 +74,14 @@
       {{ nav.label }}
     </a>
   }
+  <div class="drawer-theme-row">
+    <span class="drawer-theme-label">
+      {{ themeService.theme() === 'dark' ? '☾ Dark Mode' : '☀ Light Mode' }}
+    </span>
+    <button class="drawer-theme-btn" (click)="themeService.toggleTheme()">
+      Switch
+    </button>
+  </div>
 </div>
 
 <div

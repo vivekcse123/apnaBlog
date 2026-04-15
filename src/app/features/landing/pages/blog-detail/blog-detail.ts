@@ -13,6 +13,7 @@ import { ThemeService } from '../../../../core/services/theme-service';
 import { Auth } from '../../../../core/services/auth';
 import { UserService } from '../../../user/services/user-service';
 import { User } from '../../../user/models/user.mode';
+import { Footer } from '../../../../shared/components/footer/footer';
 
 interface DrawerReply {
   _id?:       string;
@@ -44,7 +45,7 @@ const AUTHOR_POSTS_PER_PAGE = 10;
 @Component({
   selector: 'app-blog-detail',
   standalone: true,
-  imports: [RouterLink, CommonModule, FormsModule],
+  imports: [RouterLink, CommonModule, FormsModule, Footer],
   templateUrl: './blog-detail.html',
   styleUrl: './blog-detail.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -4,6 +4,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { Subject, takeUntil } from 'rxjs';
 import { PostService } from '../../features/post/services/post-service';
 import { UploadService } from '../../features/post/services/upload-service';
@@ -29,12 +30,18 @@ export class ViewPost implements OnInit, OnDestroy {
   private postService   = inject(PostService);
   private uploadService = inject(UploadService);
   private authService   = inject(Auth);
+  private sanitizer     = inject(DomSanitizer);
   private destroy$      = new Subject<void>();
 
   isAdmin = computed(() => this.authService.getCurrentUser()?.role?.toLowerCase() === 'admin');
 
   /** True when the post is pending AND the viewer is not admin — hides status controls */
   isPendingForUser = computed(() => this.post()?.status === 'pending' && !this.isAdmin());
+
+  /** Sanitized post content for safe injection */
+  safeContent = computed<SafeHtml>(() =>
+    this.sanitizer.bypassSecurityTrustHtml(this.post()?.content ?? '')
+  );
 
   postId      = input<string>('');
   message     = input<string>('');
