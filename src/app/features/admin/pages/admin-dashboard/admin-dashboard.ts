@@ -61,9 +61,7 @@ export class AdminDashboard implements OnInit, OnDestroy{
   }
 
   isOpened = signal(false);
-  openProfile(){
-    this.isOpened.set(true);
-  }
+  openProfile(): void { this.isOpened.set(!this.isOpened()); }
 
   closeProfile(){
     this.isOpened.set(false);

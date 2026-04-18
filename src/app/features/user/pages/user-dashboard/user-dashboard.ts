@@ -54,7 +54,7 @@ export class UserDashboard implements OnInit {
       });
   }
 
-  openProfile():  void { this.isOpened.set(true);  }
+  openProfile():  void { this.isOpened.set(!this.isOpened()); }
   closeProfile(): void { this.isOpened.set(false); }
   logout():       void { this.authService.logout(); }
 }

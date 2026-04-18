@@ -30,7 +30,7 @@
 
     <app-notification-panel />
 
-    <div class="profile" (click)="openProfile($event)">
+    <div class="profile" [class.open]="profileOpen" (click)="openProfile($event)">
       @if (avatarUrl) {
         <img [src]="avatarUrl" class="profile-avatar-img" alt="Profile" />
       } @else {
