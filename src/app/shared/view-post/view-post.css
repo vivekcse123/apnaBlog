@@ -552,7 +552,7 @@
   border-radius: 8px;
   border: 1px solid var(--input-border);
   font-size: 14px;
-  font-family: 'Poppins', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   color: var(--text-primary);
   background: var(--input-bg);
   width: 100%;
@@ -895,7 +895,7 @@
   background: transparent;
   color: var(--text-secondary);
   font-size: 13px;
-  font-family: 'Poppins', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   cursor: pointer;
   transition: background 0.15s ease, color 0.15s ease;
   padding: 0;
@@ -930,7 +930,7 @@
   padding: 12px 14px;
   outline: none;
   font-size: 14px;
-  font-family: 'Poppins', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   color: var(--text-primary);
   line-height: 1.7;
   word-break: break-word;
@@ -974,7 +974,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: border-color 0.2s, background 0.2s, color 0.2s;
-  font-family: 'Poppins', sans-serif;
+  font-family: 'DM Sans', sans-serif;
 }
 
 .file-upload-btn:hover {

@@ -181,7 +181,7 @@
         <button
           class="cat-tag"
           [class.active]="selectedCategory() === cat"
-          (click)="selectedCategory.set(selectedCategory() === cat ? '' : cat)"
+          (click)="selectCategory(cat)"
           [attr.aria-pressed]="selectedCategory() === cat"
           [attr.aria-label]="'Browse ' + cat + ' stories' + (getCatCount(cat) > 0 ? ', ' + getCatCount(cat) + ' stories' : '')">
           <span class="cat-emoji" aria-hidden="true">{{ categoryEmojis[cat] }}</span> {{ cat }}

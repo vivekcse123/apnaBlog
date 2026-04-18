@@ -70,14 +70,14 @@
 }
 
 /* ── Text ── */
-h2 {
+.modal-content h2 {
   margin: 0 0 8px;
   font-size: 17px;
   font-weight: 600;
   color: var(--text-primary);
 }
 
-p {
+.modal-content p {
   margin: 0 0 22px;
   font-size: 13px;
   color: var(--text-muted);

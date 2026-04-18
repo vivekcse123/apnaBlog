@@ -25,22 +25,22 @@
 }
 
 .ring-a {
-  border-top-color: #6366f1;
-  border-right-color: #6366f130;
+  border-top-color: #43cea2;
+  border-right-color: rgba(67, 206, 162, 0.18);
   animation: rot-a 1.1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
 .ring-b {
   inset: 12px;
-  border-bottom-color: #a78bfa;
-  border-left-color: #a78bfa30;
+  border-bottom-color: #185a9d;
+  border-left-color: rgba(24, 90, 157, 0.18);
   animation: rot-b 0.85s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
 .ring-c {
   inset: 24px;
-  border-top-color: #c4b5fd;
-  border-right-color: #c4b5fd30;
+  border-top-color: #2da882;
+  border-right-color: rgba(45, 168, 130, 0.18);
   animation: rot-c 1.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
@@ -48,7 +48,7 @@
   position: absolute;
   inset: 34px;
   border-radius: 50%;
-  background: #6366f1;
+  background: linear-gradient(135deg, #43cea2, #185a9d);
   animation: breathe 1.6s ease-in-out infinite;
 }
 

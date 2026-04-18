@@ -89,7 +89,7 @@ form input {
   background: var(--input-bg);
   color: var(--text-primary);
   font-size: 14px;
-  font-family: 'Poppins', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
   outline: none;
 }
@@ -120,7 +120,7 @@ form input:focus {
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  font-family: 'Poppins', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
@@ -141,7 +141,7 @@ form input:focus {
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  font-family: 'Poppins', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   transition: opacity 0.2s ease, transform 0.2s ease;
 }
 

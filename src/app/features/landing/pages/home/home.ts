@@ -514,6 +514,17 @@ export class Home implements OnInit, OnDestroy {
 
   getCatCount(cat: string): number { return this.categoryCounts()[cat] ?? 0; }
 
+  selectCategory(cat: string): void {
+    const next = this.selectedCategory() === cat ? '' : cat;
+    this.selectedCategory.set(next);
+    if (isPlatformBrowser(this.platformId)) {
+      setTimeout(() => {
+        const el = this.document.querySelector('.filter-wrap') as HTMLElement | null;
+        el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 60);
+    }
+  }
+
   prevPage(page: WritableSignal<number>): void {
     if (page() > 0) page.set(page() - 1);
   }
