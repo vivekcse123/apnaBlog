@@ -13,11 +13,12 @@ import { NotificationService } from '../../core/services/notification-service';
   styleUrls: ['./common-header.css'],
 })
 export class CommonHeader implements OnInit {
-  @Input() logo:      string = 'ApnaInsights';
-  @Input() profile:   string | null = '';
-  @Input() avatarUrl: string | null = null;
-  @Input() userRole:  string | null = null;
-  @Input() navs:      { label: string; routerLink: string }[] = [];
+  @Input() logo:          string = 'ApnaInsights';
+  @Input() profile:       string | null = '';
+  @Input() avatarUrl:     string | null = null;
+  @Input() userRole:      string | null = null;
+  @Input() navs:          { label: string; routerLink: string }[] = [];
+  @Input() set panelOpen(v: boolean) { this.profileOpen = v; }
   @Output() open = new EventEmitter<void>();
 
   getRoleLabel(): string {
@@ -26,12 +27,18 @@ export class CommonHeader implements OnInit {
     return 'User';
   }
 
-  menuOpen = false;
+  menuOpen    = false;
+  profileOpen = false;
 
   private notifSvc = inject(NotificationService);
 
   ngOnInit(): void {}
 
-  toggleMenu():          void { this.menuOpen = !this.menuOpen; }
-  openProfile(e: Event): void { e.stopPropagation(); this.open.emit(); }
+  toggleMenu(): void { this.menuOpen = !this.menuOpen; }
+
+  openProfile(e: Event): void {
+    e.stopPropagation();
+    this.profileOpen = !this.profileOpen;
+    this.open.emit();
+  }
 }
