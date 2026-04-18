@@ -22,6 +22,14 @@ getAllUsers(page: number, limit: number): Observable<apiResponse<User[]>> {
     );
 }
 
+getAllUsersRaw(page: number, limit: number): Observable<apiResponse<User[]>> {
+  return this.http.get<apiResponse<User[]>>(`${this.endPoint}?page=${page}&limit=${limit}`);
+}
+
+changeUserRole(userId: string, role: string): Observable<apiResponse<User>> {
+  return this.http.patch<apiResponse<User>>(`${this.endPoint}${userId}/change-role`, { role });
+}
+
 freezeUser(userId: string | null): Observable<apiResponse<User>>{
   return this.http.patch<apiResponse<User>>(`${this.endPoint}${userId}/freeze`, {});
 }

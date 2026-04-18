@@ -75,7 +75,9 @@ export class Login implements OnInit {
           this.successMessage.set('Logged in successfully!');
 
           setTimeout(() => {
-            if (role === 'admin') {
+            if (role === 'super_admin') {
+              this.router.navigate(['/super-admin', userId]);
+            } else if (role === 'admin') {
               this.router.navigate(['/admin', userId]);
             } else {
               this.router.navigate(['/user', userId]);

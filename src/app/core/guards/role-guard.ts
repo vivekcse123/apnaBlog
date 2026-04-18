@@ -20,7 +20,12 @@ export const roleGuard: CanActivateFn = (route: ActivatedRouteSnapshot, state: R
     return false;
   }
 
-  if (currentUser.role !== requiredRole) {
+  // super_admin inherits access to admin routes
+  const roleMatches =
+    currentUser.role === requiredRole ||
+    (requiredRole === 'admin' && currentUser.role === 'super_admin');
+
+  if (!roleMatches) {
     router.navigate(['/']);
     return false;
   }

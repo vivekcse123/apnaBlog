@@ -4,6 +4,7 @@ import { MainLayout } from './layouts/main-layout/main-layout';
 import { PageNotFound } from './shared/page-not-found/page-not-found';
 import { authGuard, guestGuard } from './core/guards/auth-guard';
 import { adminGuard } from './core/guards/admin-guard';
+import { superAdminGuard } from './core/guards/super-admin-guard';
 import { roleGuard } from './core/guards/role-guard';
 
 export const routes: Routes = [
@@ -55,6 +56,13 @@ export const routes: Routes = [
                 canActivate: [roleGuard],
                 loadChildren: () => import('./features/user/user-module').then(m => m.UserModule),
                 data: { role: 'user' }
+            },
+            {
+                path: 'super-admin/:id',
+                title: 'Super Admin | ApnaInsights',
+                canActivate: [superAdminGuard, roleGuard],
+                loadChildren: () => import('./features/super-admin/super-admin.module').then(m => m.SuperAdminModule),
+                data: { role: 'super_admin' }
             }
         ]
     },

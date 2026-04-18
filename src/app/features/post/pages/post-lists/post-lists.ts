@@ -110,7 +110,7 @@ loadPosts(userId?: string): void {
   const role = currentUser?.role?.toLowerCase() ?? '';
   this.role.set(role);
 
-  const posts$ = role === 'admin'
+  const posts$ = (role === 'admin' || role === 'super_admin')
     ? this.postService.getAllPostAdmin(1, 1000)
     : this.postService.getPostByUserId(id, 1, 1000);
 
