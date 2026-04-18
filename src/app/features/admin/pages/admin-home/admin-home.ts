@@ -26,7 +26,7 @@ Chart.register(...registerables);
 })
 export class AdminHome implements OnInit, AfterViewInit, OnDestroy {
 
-  // ── Chart canvas refs ──────────────────────────────────────
+
   @ViewChild('blogGrowthChartRef') blogGrowthChartRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('contentDoughnutRef') contentDoughnutRef!:  ElementRef<HTMLCanvasElement>;
   @ViewChild('engagementBarRef')   engagementBarRef!:    ElementRef<HTMLCanvasElement>;
