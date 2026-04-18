@@ -19,6 +19,15 @@
   </nav>
 
   <div class="right-section">
+    @if (userRole) {
+      <span class="header-role-badge"
+        [class.badge-user]="userRole === 'user'"
+        [class.badge-admin]="userRole === 'admin'"
+        [class.badge-super]="userRole === 'super_admin'">
+        {{ getRoleLabel() }}
+      </span>
+    }
+
     <app-notification-panel />
 
     <div class="profile" (click)="openProfile($event)">
@@ -46,6 +55,16 @@
 </header>
 
 <div class="mobile-drawer" [class.open]="menuOpen" role="navigation" aria-label="Mobile navigation">
+  @if (userRole) {
+    <div class="drawer-role-row">
+      <span class="header-role-badge drawer-role-badge"
+        [class.badge-user]="userRole === 'user'"
+        [class.badge-admin]="userRole === 'admin'"
+        [class.badge-super]="userRole === 'super_admin'">
+        {{ getRoleLabel() }}
+      </span>
+    </div>
+  }
   @for (nav of navs; track nav.label) {
     <a
       [routerLink]="nav.routerLink"

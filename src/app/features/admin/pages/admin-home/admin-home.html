@@ -694,9 +694,10 @@
               </div>
               <div class="frozen-meta">
                 <span class="role-chip"
-                  [class.chip-admin]="user.role?.toLowerCase() === 'admin'"
-                  [class.chip-user]="user.role?.toLowerCase() === 'user'">
-                  {{ user.role | titlecase }}
+                  [class.chip-admin]="user.role === 'admin'"
+                  [class.chip-user]="user.role === 'user'"
+                  [class.chip-super]="user.role === 'super_admin'">
+                  {{ user.role === 'super_admin' ? 'Super Admin' : (user.role | titlecase) }}
                 </span>
                 <span class="frozen-badge">Frozen</span>
               </div>

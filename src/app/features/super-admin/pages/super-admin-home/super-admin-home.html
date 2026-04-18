@@ -1,0 +1,316 @@
+<div class="sa-dash">
+
+  <!-- ── Header ── -->
+  <header class="sa-header">
+    <div class="sa-header-left">
+      <span class="sa-badge">SUPER ADMIN</span>
+      <div>
+        <h1 class="sa-title">Control Center</h1>
+        <p class="sa-subtitle">Platform-wide management &amp; role control</p>
+      </div>
+    </div>
+    <div class="sa-header-right">
+      <a [routerLink]="['/super-admin', userId, 'role-management']" class="btn-role-mgmt">
+        <svg width="14" height="14" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+          <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2" fill="none"/>
+          <path d="M2 19c0-4.418 3.134-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+          <path d="M15 13l1.5 1.5L19 12M15 17l1.5 1.5L19 16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Manage Roles
+      </a>
+      <span class="date-pill">{{ currentDate | date: 'EEE, MMM d, y' }}</span>
+    </div>
+  </header>
+
+  @if (isLoading()) {
+    <div class="sk-section" aria-hidden="true">
+      <div class="sk-row">
+        <div class="sk-card shimmer"></div>
+        <div class="sk-card shimmer"></div>
+        <div class="sk-card shimmer"></div>
+        <div class="sk-card shimmer"></div>
+      </div>
+      <div class="sk-row">
+        <div class="sk-card shimmer"></div>
+        <div class="sk-card shimmer"></div>
+        <div class="sk-card shimmer"></div>
+        <div class="sk-card shimmer"></div>
+      </div>
+    </div>
+  }
+
+  @if (!isLoading()) {
+
+    <!-- ── Role Distribution Banner ── -->
+    <div class="role-banner">
+      <div class="role-banner-inner">
+        <div class="role-item">
+          <span class="role-dot dot-user"></span>
+          <span class="role-count">{{ totalUsers() - adminCount() - superAdminCount() }}</span>
+          <span class="role-label">Users</span>
+        </div>
+        <div class="role-divider"></div>
+        <div class="role-item">
+          <span class="role-dot dot-admin"></span>
+          <span class="role-count">{{ adminCount() }}</span>
+          <span class="role-label">Admins</span>
+        </div>
+        <div class="role-divider"></div>
+        <div class="role-item">
+          <span class="role-dot dot-super"></span>
+          <span class="role-count">{{ superAdminCount() }}</span>
+          <span class="role-label">Super Admins</span>
+        </div>
+        <div class="role-divider"></div>
+        <div class="role-item">
+          <span class="role-dot dot-frozen"></span>
+          <span class="role-count">{{ inactiveUsers() }}</span>
+          <span class="role-label">Frozen</span>
+        </div>
+        <a [routerLink]="['/super-admin', userId, 'role-management']" class="role-mgmt-cta">
+          Manage Roles →
+        </a>
+      </div>
+    </div>
+
+    <!-- ── Stats Grid ── -->
+    <section class="stats-section" aria-label="Platform statistics">
+
+      <div class="stats-group">
+        <span class="stats-group-label">Content</span>
+        <div class="stats-row">
+
+          <div class="stat-card">
+            <div class="stat-icon-wrap blogs-icon">
+              <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+                <rect x="3" y="3" width="16" height="3" rx="1.5" fill="#43cea2"/>
+                <rect x="3" y="9" width="11" height="3" rx="1.5" fill="#43cea2"/>
+                <rect x="3" y="15" width="13" height="3" rx="1.5" fill="#43cea2"/>
+              </svg>
+            </div>
+            <div class="stat-body">
+              <span class="stat-label">Total Blogs</span>
+              <span class="stat-value">{{ totalBlogs() }}</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon-wrap published-icon">
+              <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+                <circle cx="11" cy="11" r="8" stroke="#0f7a5a" stroke-width="2" fill="none"/>
+                <path d="M7 11l3 3 5-5" stroke="#0f7a5a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="stat-body">
+              <span class="stat-label">Published</span>
+              <span class="stat-value">{{ totalPublished() }}</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon-wrap drafts-icon">
+              <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+                <rect x="3" y="3" width="16" height="16" rx="3" stroke="#BA7517" stroke-width="2" fill="none"/>
+                <path d="M7 11h8M7 7h5M7 15h6" stroke="#BA7517" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="stat-body">
+              <span class="stat-label">Drafts</span>
+              <span class="stat-value">{{ totalDrafts() }}</span>
+            </div>
+          </div>
+
+          <div class="stat-card stat-card--alert">
+            <div class="stat-icon-wrap pending-icon">
+              <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+                <circle cx="11" cy="11" r="8" stroke="#dc2626" stroke-width="2" fill="none"/>
+                <path d="M11 7v4M11 15h.01" stroke="#dc2626" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="stat-body">
+              <span class="stat-label">Pending Review</span>
+              <span class="stat-value">{{ totalPending() }}</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="stats-group">
+        <span class="stats-group-label">Users &amp; Engagement</span>
+        <div class="stats-row">
+
+          <div class="stat-card">
+            <div class="stat-icon-wrap users-icon">
+              <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+                <circle cx="9" cy="7" r="4" fill="#185a9d"/>
+                <path d="M2 19c0-4.418 3.134-7 7-7s7 2.582 7 7" stroke="#185a9d" stroke-width="2" stroke-linecap="round" fill="none"/>
+                <circle cx="17" cy="8" r="2.5" fill="#43cea2"/>
+              </svg>
+            </div>
+            <div class="stat-body">
+              <span class="stat-label">Total Users</span>
+              <span class="stat-value">{{ totalUsers() }}</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon-wrap active-icon">
+              <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+                <circle cx="11" cy="11" r="8" stroke="#5cb85c" stroke-width="2" fill="none"/>
+                <circle cx="11" cy="11" r="3" fill="#5cb85c"/>
+              </svg>
+            </div>
+            <div class="stat-body">
+              <span class="stat-label">Active Users</span>
+              <span class="stat-value">{{ activeUsers() }}</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon-wrap views-icon">
+              <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+                <ellipse cx="11" cy="11" rx="8" ry="5" stroke="#7F77DD" stroke-width="2" fill="none"/>
+                <circle cx="11" cy="11" r="2.5" fill="#7F77DD"/>
+              </svg>
+            </div>
+            <div class="stat-body">
+              <span class="stat-label">Total Views</span>
+              <span class="stat-value">{{ totalViews() | number }}</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon-wrap likes-icon">
+              <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+                <path d="M11 18s-7-4.5-7-9a4 4 0 018 0 4 4 0 018 0c0 4.5-7 9-7 9z"
+                  stroke="#d9534f" stroke-width="2" fill="none" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="stat-body">
+              <span class="stat-label">Total Likes</span>
+              <span class="stat-value">{{ totalLikes() }}</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ── Dashboard Body ── -->
+    <div class="dash-body">
+
+      <!-- Quick Actions -->
+      <section class="qa-section">
+        <div class="section-hd">
+          <h2 class="section-hd-title">Quick Actions</h2>
+        </div>
+        <div class="qa-grid">
+
+          <a class="qa-card qa-card--super" [routerLink]="['/super-admin', userId, 'role-management']">
+            <div class="qa-icon qa-icon--amber">
+              <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+                <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="1.8" fill="none"/>
+                <path d="M2 19c0-4.418 3.134-7 7-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+                <path d="M15 13l1.5 1.5L19 12M15 17l1.5 1.5L19 16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="qa-body">
+              <span class="qa-label">Role Management</span>
+              <span class="qa-desc">Assign &amp; change user roles</span>
+            </div>
+            <span class="qa-arrow">→</span>
+          </a>
+
+          <a class="qa-card" [routerLink]="['/super-admin', userId, 'manage-users']">
+            <div class="qa-icon qa-icon--blue">
+              <svg width="18" height="18" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <circle cx="6" cy="5" r="3" stroke="currentColor" stroke-width="1.4" fill="none"/>
+                <path d="M1 13c0-2.761 2.239-4 5-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+                <circle cx="11" cy="11" r="3" stroke="currentColor" stroke-width="1.2" fill="none"/>
+                <path d="M10 11h2M11 10v2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="qa-body">
+              <span class="qa-label">Manage Users</span>
+              <span class="qa-desc">Freeze, delete, update</span>
+            </div>
+          </a>
+
+          <a class="qa-card" [routerLink]="['/super-admin', userId, 'manage-blogs']">
+            <div class="qa-icon qa-icon--purple">
+              <svg width="18" height="18" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <rect x="2" y="2" width="12" height="2" rx="1" fill="currentColor"/>
+                <rect x="2" y="6" width="8" height="2" rx="1" fill="currentColor"/>
+                <rect x="2" y="10" width="10" height="2" rx="1" fill="currentColor"/>
+              </svg>
+            </div>
+            <div class="qa-body">
+              <span class="qa-label">Manage Blogs</span>
+              <span class="qa-desc">Review &amp; moderate content</span>
+            </div>
+          </a>
+
+          <a class="qa-card" [routerLink]="['/super-admin', userId, 'visitor']">
+            <div class="qa-icon qa-icon--teal">
+              <svg width="18" height="18" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M1 12l4-5 3 2 4-5 3 2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="qa-body">
+              <span class="qa-label">Traffic Analytics</span>
+              <span class="qa-desc">Visitor &amp; traffic data</span>
+            </div>
+          </a>
+
+          <a class="qa-card" [routerLink]="['/super-admin', userId, 'settings']">
+            <div class="qa-icon qa-icon--gray">
+              <svg width="18" height="18" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.3" fill="none"/>
+                <path d="M8 2v2M8 12v2M2 8h2M12 8h2M3.5 3.5l1.4 1.4M11.1 11.1l1.4 1.4M3.5 12.5l1.4-1.4M11.1 4.9l1.4-1.4"
+                  stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="qa-body">
+              <span class="qa-label">Settings</span>
+              <span class="qa-desc">Profile &amp; account</span>
+            </div>
+          </a>
+
+        </div>
+      </section>
+
+      <!-- Recent Users -->
+      <section class="sidebar-section">
+        <div class="section-hd">
+          <h2 class="section-hd-title">Recent Users</h2>
+          <a [routerLink]="['/super-admin', userId, 'manage-users']" class="view-all-link">View all →</a>
+        </div>
+        <div class="user-list">
+          @for (user of recentUsers(); track user._id) {
+            <div class="user-row">
+              <div class="user-avatar">{{ getInitials(user.name) }}</div>
+              <div class="user-info">
+                <span class="user-name">{{ user.name }}</span>
+                <span class="user-email">{{ user.email }}</span>
+              </div>
+              <span class="role-pill"
+                [class.pill-user]="user.role === 'user'"
+                [class.pill-admin]="user.role === 'admin'"
+                [class.pill-super]="user.role === 'super_admin'">
+                {{ user.role === 'super_admin' ? 'Super Admin' : (user.role | titlecase) }}
+              </span>
+            </div>
+          }
+          @if (recentUsers().length === 0) {
+            <p class="empty-list">No users found</p>
+          }
+        </div>
+      </section>
+
+    </div>
+
+  }
+
+</div>

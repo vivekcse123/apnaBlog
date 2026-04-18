@@ -28,8 +28,9 @@ export class Auth {
     this.isBrowser ? localStorage.getItem('token') : null
   );
 
-  isAuthorized = computed(() => !!this.token());
-  isAdmin = computed(() => this.userRole() === 'admin');
+  isAuthorized  = computed(() => !!this.token());
+  isAdmin       = computed(() => this.userRole() === 'admin');
+  isSuperAdmin  = computed(() => this.userRole() === 'super_admin');
 
   login(userCred: { email: string; password: string }): Observable<apiResponse<User>> {
     return this.http.post<apiResponse<User>>(`${this.authEndpoint}login`, userCred).pipe(

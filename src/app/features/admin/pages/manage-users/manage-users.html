@@ -18,6 +18,7 @@
         <option value="">Filter by Role</option>
         <option value="user">User</option>
         <option value="admin">Admin</option>
+        <option value="super_admin">Super Admin</option>
       </select>
       <select
         [ngModel]="selectedStatus()"
@@ -65,8 +66,10 @@
               <td class="email-cell">{{ user.email }}</td>
 
               <td>
-                <span class="role-badge" [class.admin]="user.role.toLowerCase() === 'admin'">
-                  {{ user.role | titlecase }}
+                <span class="role-badge"
+                  [class.admin]="user.role === 'admin'"
+                  [class.super-admin]="user.role === 'super_admin'">
+                  {{ user.role === 'super_admin' ? 'Super Admin' : (user.role | titlecase) }}
                 </span>
               </td>
 

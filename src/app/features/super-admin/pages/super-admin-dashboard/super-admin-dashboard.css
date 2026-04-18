@@ -1,0 +1,20 @@
+.logout_btn {
+  color: var(--danger);
+  text-decoration: none;
+  transition: color 0.2s ease;
+  font-weight: 500;
+}
+.logout_btn:hover {
+  color: var(--danger-hover);
+  text-decoration: underline;
+}
+.edit_setting {
+  color: white;
+  text-decoration: none;
+  transition: color 0.2s ease;
+  font-weight: 500;
+}
+.edit_setting:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}

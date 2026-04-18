@@ -2,10 +2,9 @@ import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { Auth } from '../services/auth';
 
-export const adminGuard: CanActivateFn = () => {
+export const superAdminGuard: CanActivateFn = () => {
   const authService = inject(Auth);
   const router = inject(Router);
-
   const userId = authService.userId();
 
   if (!authService.isAuthorized()) {
@@ -13,12 +12,12 @@ export const adminGuard: CanActivateFn = () => {
     return false;
   }
 
-  if (authService.isAdmin()) {
+  if (authService.isSuperAdmin()) {
     return true;
   }
 
-  if (authService.isSuperAdmin()) {
-    router.navigate(['/super-admin', userId]);
+  if (authService.isAdmin()) {
+    router.navigate(['/admin', userId]);
     return false;
   }
 

@@ -10,6 +10,7 @@ import { DisabledDirective } from '../../../../shared/directives/highlight';
 import { CreateUser } from '../create-user/create-user';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NotificationNavEvent, NotificationNavigationService, USER_NOTIFICATION_TYPES } from '../../../../core/services/open-notification/notification-navigation';
+import { Auth } from '../../../../core/services/auth';
 
 @Component({
   selector: 'app-manage-users',
@@ -23,6 +24,7 @@ export class ManageUsers implements OnInit {
   private route        = inject(ActivatedRoute);
   private destroyRef   = inject(DestroyRef);
   private navSvc       = inject(NotificationNavigationService);
+  private authService  = inject(Auth);
 
   allUsers = signal<User[]>([]);
 
@@ -87,14 +89,15 @@ ngOnInit(): void {
     });
 }
 
-// ✅ Remove onComplete callback
 loadUsers(): void {
-  this.adminService.getAllUsers(1, 100)
-    .pipe(takeUntilDestroyed(this.destroyRef))
-    .subscribe({
-      next:  res => this.allUsers.set(res.data || []),
-      error: err => console.error(err?.error?.message),
-    });
+  const loader = this.authService.isSuperAdmin()
+    ? this.adminService.getAllUsersRaw(1, 1000)
+    : this.adminService.getAllUsers(1, 100);
+
+  loader.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+    next:  res => this.allUsers.set(res.data || []),
+    error: err => console.error(err?.error?.message),
+  });
 }
 
   debounceSearch(value: string): void {

@@ -1,0 +1,167 @@
+<div class="rm-page">
+
+  <!-- ── Page Header ── -->
+  <header class="rm-header">
+    <div class="rm-header-left">
+      <span class="sa-badge">SUPER ADMIN</span>
+      <div>
+        <h1 class="rm-title">Role Management</h1>
+        <p class="rm-subtitle">Assign and change user roles across the platform</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── Role Summary ── -->
+  <div class="role-summary">
+    <div class="rs-card rs-card--user">
+      <span class="rs-count">{{ countByRole('user') }}</span>
+      <span class="rs-label">Users</span>
+    </div>
+    <div class="rs-card rs-card--admin">
+      <span class="rs-count">{{ countByRole('admin') }}</span>
+      <span class="rs-label">Admins</span>
+    </div>
+    <div class="rs-card rs-card--super">
+      <span class="rs-count">{{ countByRole('super_admin') }}</span>
+      <span class="rs-label">Super Admins</span>
+    </div>
+    <div class="rs-card rs-card--total">
+      <span class="rs-count">{{ users().length }}</span>
+      <span class="rs-label">Total Users</span>
+    </div>
+  </div>
+
+  <!-- ── Filters ── -->
+  <div class="rm-filters">
+    <div class="search-wrap">
+      <svg class="search-icon" width="16" height="16" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+        <circle cx="9.5" cy="9.5" r="6.5" stroke="currentColor" stroke-width="2"/>
+        <path d="M14 14l4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <input
+        type="text"
+        class="rm-search"
+        placeholder="Search by name or email…"
+        [(ngModel)]="searchQuery"
+        (input)="applyFilter()"
+      />
+    </div>
+    <select class="rm-select" [(ngModel)]="filterRole" (change)="applyFilter()">
+      <option value="">All Roles</option>
+      <option value="user">User</option>
+      <option value="admin">Admin</option>
+      <option value="super_admin">Super Admin</option>
+    </select>
+  </div>
+
+  <!-- ── Loading Skeleton ── -->
+  @if (isLoading()) {
+    <div class="sk-list" aria-hidden="true">
+      @for (_ of [1,2,3,4,5]; track _) {
+        <div class="sk-row shimmer"></div>
+      }
+    </div>
+  }
+
+  <!-- ── User Table ── -->
+  @if (!isLoading()) {
+    <div class="rm-table-wrap">
+      <table class="rm-table" role="table">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Email</th>
+            <th>Current Role</th>
+            <th>Status</th>
+            <th>Change Role</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (user of filtered(); track user._id) {
+            <tr class="rm-row">
+              <td class="cell-user">
+                <div class="user-avatar-sm">{{ getInitials(user.name) }}</div>
+                <span class="user-name-txt">{{ user.name }}</span>
+              </td>
+              <td class="cell-email">{{ user.email }}</td>
+              <td class="cell-role">
+                <span class="role-badge"
+                  [class.badge-user]="user.role === 'user'"
+                  [class.badge-admin]="user.role === 'admin'"
+                  [class.badge-super]="user.role === 'super_admin'">
+                  {{ getRoleLabel(user.role) }}
+                </span>
+              </td>
+              <td class="cell-status">
+                <span class="status-dot"
+                  [class.dot-active]="user.status === 'active'"
+                  [class.dot-frozen]="user.status !== 'active'">
+                </span>
+                {{ user.status | titlecase }}
+              </td>
+              <td class="cell-actions">
+                <div class="role-btns">
+                  @for (role of roles; track role) {
+                    <button
+                      class="role-btn"
+                      [class.role-btn--active]="user.role === role"
+                      [class.role-btn--user]="role === 'user'"
+                      [class.role-btn--admin]="role === 'admin'"
+                      [class.role-btn--super]="role === 'super_admin'"
+                      [disabled]="user.role === role"
+                      (click)="openConfirm(user, role)"
+                      type="button"
+                      [title]="'Set to ' + getRoleLabel(role)"
+                    >
+                      {{ getRoleLabel(role) }}
+                    </button>
+                  }
+                </div>
+              </td>
+            </tr>
+          }
+          @if (filtered().length === 0) {
+            <tr>
+              <td colspan="5" class="empty-row">No users found</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  <!-- ── Confirm Modal ── -->
+  @if (confirmUser()) {
+    <div class="modal-backdrop" (click)="cancelConfirm()" role="dialog" aria-modal="true">
+      <div class="confirm-modal" (click)="$event.stopPropagation()">
+        <div class="confirm-icon">
+          <svg width="28" height="28" viewBox="0 0 22 22" fill="none">
+            <circle cx="11" cy="11" r="8" stroke="#f59e0b" stroke-width="2" fill="none"/>
+            <path d="M11 7v4M11 15h.01" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <h3 class="confirm-title">Change Role</h3>
+        <p class="confirm-msg">
+          Set <strong>{{ confirmUser()?.name }}</strong>'s role from
+          <span class="role-badge badge-{{ confirmUser()?.role }}">{{ getRoleLabel(confirmUser()?.role) }}</span>
+          to
+          <span class="role-badge badge-{{ pendingRole() }}">{{ getRoleLabel(pendingRole() ?? '') }}</span>?
+        </p>
+        <div class="confirm-actions">
+          <button class="btn-cancel" (click)="cancelConfirm()" type="button">Cancel</button>
+          <button class="btn-confirm" (click)="confirmChange()" [disabled]="isSaving()" type="button">
+            {{ isSaving() ? 'Saving…' : 'Confirm' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ── Toast ── -->
+  @if (toast()) {
+    <div class="toast" [class.toast-success]="toast()!.type === 'success'" [class.toast-error]="toast()!.type === 'error'">
+      {{ toast()!.msg }}
+    </div>
+  }
+
+</div>

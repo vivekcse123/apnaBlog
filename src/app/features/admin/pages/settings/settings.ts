@@ -12,7 +12,7 @@ import { MessageModal } from '../../../../shared/message-modal/message-modal';
 import { switchMap } from 'rxjs';
 
 type NotifKey = 'newPosts' | 'comments' | 'likes' | 'newUsers' | 'weeklyDigest' | 'security';
-type Role = 'user' | 'admin';
+type Role = 'user' | 'admin' | 'super_admin';
 const USER_ALLOWED_KEYS = ['comments', 'likes', 'security'] as const;
 
 interface NotifState {
@@ -100,7 +100,7 @@ export class Settings implements OnInit {
   ];
 
   get visibleNotifItems() {
-    if (this.role === 'admin') return this.notifItems;
+    if (this.role === 'admin' || this.role === 'super_admin') return this.notifItems;
     return this.notifItems.filter(item =>
       (USER_ALLOWED_KEYS as readonly string[]).includes(item.key)
     );

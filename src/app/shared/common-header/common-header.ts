@@ -15,9 +15,16 @@ import { NotificationService } from '../../core/services/notification-service';
 export class CommonHeader implements OnInit {
   @Input() logo:      string = 'ApnaInsights';
   @Input() profile:   string | null = '';
-  @Input() avatarUrl: string | null = null; // ← new
+  @Input() avatarUrl: string | null = null;
+  @Input() userRole:  string | null = null;
   @Input() navs:      { label: string; routerLink: string }[] = [];
   @Output() open = new EventEmitter<void>();
+
+  getRoleLabel(): string {
+    if (this.userRole === 'super_admin') return 'Super Admin';
+    if (this.userRole === 'admin')       return 'Admin';
+    return 'User';
+  }
 
   menuOpen = false;
 

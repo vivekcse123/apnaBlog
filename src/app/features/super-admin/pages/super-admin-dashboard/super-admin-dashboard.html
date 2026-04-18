@@ -1,0 +1,33 @@
+<app-common-header
+  [navs]="[
+    { label: 'Home',            routerLink: '/super-admin/' + userId() },
+    { label: 'Role Management', routerLink: '/super-admin/' + userId() + '/role-management' },
+    { label: 'Users',           routerLink: '/super-admin/' + userId() + '/manage-users' },
+    { label: 'Blogs',           routerLink: '/super-admin/' + userId() + '/manage-blogs' },
+    { label: 'Settings',        routerLink: '/super-admin/' + userId() + '/settings' },
+    { label: 'Traffic →',       routerLink: '/super-admin/' + userId() + '/visitor' }
+  ]"
+  [profile]="initial()"
+  [avatarUrl]="avatar()"
+  [userRole]="'super_admin'"
+  (open)="openProfile()"
+>
+</app-common-header>
+
+@if (isOpened()) {
+  <app-user-profile
+    [name]="user()?.name"
+    [email]="user()?.email"
+    [role]="user()?.role"
+    [avatar]="avatar()"
+    (close)="closeProfile()"
+  >
+    <a [routerLink]="['/super-admin', userId(), 'settings']"
+       class="edit_setting" primary-action>
+      Edit Setting
+    </a>
+    <a routerLink="/" secondary-action (click)="logout()" class="logout_btn">Logout</a>
+  </app-user-profile>
+}
+
+<router-outlet></router-outlet>
