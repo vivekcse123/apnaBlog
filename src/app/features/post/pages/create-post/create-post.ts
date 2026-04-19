@@ -46,6 +46,7 @@ export class CreatePost {
   );
 
   categoryOptions = [
+    'Update', 'News',
     'Sports', 'Technology', 'Lifestyle', 'Education', 'Health', 'Business',
     'Entertainment', 'Social', 'Village', 'Cooking', 'Quotes', 'Exercise',
   ];
