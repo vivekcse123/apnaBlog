@@ -1,10 +1,11 @@
-import { Component, effect, inject, input, OnDestroy, OnInit, output, signal } from '@angular/core';
+import { Component, effect, inject, input, OnDestroy, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil, finalize } from 'rxjs';
 import { AdminService } from '../../features/admin/services/admin-service';
 import { UserService } from '../../features/user/services/user-service';
 import { User } from '../../features/user/models/user.mode';
+import { ToastService } from '../../core/services/toast.service';
 
 @Component({
   selector: 'app-view-user',
@@ -17,6 +18,7 @@ export class ViewUser implements OnDestroy {
   private fb           = inject(FormBuilder);
   private userService  = inject(UserService);
   private adminService = inject(AdminService);
+  private toastService = inject(ToastService);
   private destroy$     = new Subject<void>();
 
   userId = input<string>('');
@@ -24,22 +26,20 @@ export class ViewUser implements OnDestroy {
   close       = output<void>();
   userUpdated = output<User>();
 
-  user           = signal<any>(null);
-  isEditing      = signal(false);
-  successMessage = signal('');
-  errorMessage   = signal('');
+  user      = signal<any>(null);
+  isLoading = signal(false);
+  isEditing = signal(false);
+  isSaving  = signal(false);
+  errorMessage = signal('');
   editForm!: FormGroup;
 
   totalBlogs = signal<number>(0);
   totalViews = signal<number>(0);
 
   constructor() {
-    // ✅ Runs automatically whenever userId input changes
     effect(() => {
       const id = this.userId();
-      if (id) {
-        this.loadUser(id);
-      }
+      if (id) this.loadUser(id);
     });
   }
 
@@ -49,29 +49,27 @@ export class ViewUser implements OnDestroy {
   }
 
   loadUser(id: string): void {
-    
     this.user.set(null);
     this.totalBlogs.set(0);
     this.totalViews.set(0);
     this.isEditing.set(false);
-    this.successMessage.set('');
+    this.isLoading.set(true);
     this.errorMessage.set('');
 
     this.userService.getUserById(id)
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntil(this.destroy$), finalize(() => this.isLoading.set(false)))
       .subscribe({
         next: (res) => {
           this.user.set(res.data ?? res);
           this.totalBlogs.set(res.totalBlogs ?? 0);
           this.totalViews.set(res.totalViews ?? 0);
         },
-        error: (err) => console.error(err)
+        error: () => this.toastService.show('Failed to load user details.', 'error'),
       });
   }
 
   startEdit(): void {
     const u = this.user();
-    this.successMessage.set('');
     this.errorMessage.set('');
 
     this.editForm = this.fb.group({
@@ -88,7 +86,6 @@ export class ViewUser implements OnDestroy {
 
   cancelEdit(): void {
     this.isEditing.set(false);
-    this.successMessage.set('');
     this.errorMessage.set('');
     this.editForm.reset();
   }
@@ -96,24 +93,19 @@ export class ViewUser implements OnDestroy {
   saveUser(): void {
     if (this.editForm.invalid) return;
 
-    this.successMessage.set('');
+    this.isSaving.set(true);
     this.errorMessage.set('');
 
     this.adminService.updateUser(this.user()?._id, this.editForm.value)
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntil(this.destroy$), finalize(() => this.isSaving.set(false)))
       .subscribe({
         next: (res) => {
           const updated = res.data ?? { ...this.user(), ...this.editForm.value };
-
           this.user.set(updated);
           this.isEditing.set(false);
-          this.successMessage.set('User updated successfully!');
-
-          setTimeout(() => {
-            this.successMessage.set('');
-            this.userUpdated.emit(updated);
-            this.closeModal();
-          }, 1500);
+          this.toastService.show('User updated successfully', 'success');
+          this.userUpdated.emit(updated);
+          this.closeModal();
         },
         error: (err) => {
           this.errorMessage.set(err?.error?.message ?? 'Something went wrong. Please try again.');

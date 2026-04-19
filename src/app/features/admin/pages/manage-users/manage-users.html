@@ -236,14 +236,6 @@
   </div>
 }
 
-<app-message-modal
-  [show]="showMessage()"
-  [type]="modalType()"
-  [title]="modalTitle()"
-  [message]="modalMessage()"
-  (closed)="showMessage.set(false)"
-/>
-
 @if (isProfileOpened()) {
   <app-view-user
     [userId]="selectedUserId()"

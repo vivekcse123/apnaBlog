@@ -4,7 +4,6 @@ import { DOCUMENT } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule, NgForm } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
 import { ContactService } from '../../../../core/services/contact-service';
 
 interface ContactData {
