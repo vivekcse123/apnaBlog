@@ -16,6 +16,11 @@
       "headers": { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "public, max-age=86400" },
       "dest": "/ads.txt"
     },
+    {
+      "src": "^/welcome/?$",
+      "status": 301,
+      "headers": { "Location": "/" }
+    },
     { "handle": "filesystem" },
     { "src": "/(.*)", "dest": "/index.csr.html" }
   ]

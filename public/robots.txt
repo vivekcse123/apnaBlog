@@ -1,13 +1,25 @@
 # robots.txt — ApnaInsights (https://apnainsights.com)
-# Allow all crawlers to index public content
 
+# ── General crawlers ──────────────────────────────────────────────────────────
 User-agent: *
 Allow: /
-
-# Block auth, user-account, and admin pages — no indexing value
 Disallow: /auth/
 Disallow: /user/
 Disallow: /admin/
+Disallow: /super-admin/
 
-# Sitemap
+# ── Google AdSense & Ads crawlers (must be explicitly allowed) ────────────────
+# Mediapartners-Google: crawls pages to select relevant ads
+User-agent: Mediapartners-Google
+Allow: /
+
+# AdsBot-Google: validates landing pages for Google Ads quality
+User-agent: AdsBot-Google
+Allow: /
+
+# AdsBot-Google-Mobile: same as above for mobile user-agent
+User-agent: AdsBot-Google-Mobile
+Allow: /
+
+# ── Sitemap ───────────────────────────────────────────────────────────────────
 Sitemap: https://apnainsights.com/sitemap.xml

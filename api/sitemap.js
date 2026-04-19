@@ -42,8 +42,8 @@ module.exports = async function handler(req, res) {
 
     // Static routes
     const staticLinks = [
-      { url: '/welcome', changefreq: 'daily', priority: 1.0 },
-      { url: '/about', changefreq: 'monthly', priority: 0.8 }
+      { url: '/',       changefreq: 'daily',   priority: 1.0 },
+      { url: '/about',  changefreq: 'monthly',  priority: 0.8 },
     ];
 
     // Dynamic blog routes

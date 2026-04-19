@@ -421,7 +421,7 @@ export class Home implements OnInit, OnDestroy {
     this.meta.updateTag({ property: 'og:type',         content: 'website' });
     this.meta.updateTag({ property: 'og:title',        content: 'ApnaInsights — Community Stories from Every Corner of India' });
     this.meta.updateTag({ property: 'og:description',  content: 'Discover real stories from real people across India. 10K+ blogs on Technology, Lifestyle, Health, Business, Village Life and more. Free to read, free to write.' });
-    this.meta.updateTag({ property: 'og:url',          content: 'https://apnainsights.com' });
+    this.meta.updateTag({ property: 'og:url',          content: 'https://apnainsights.com/' });
     this.meta.updateTag({ property: 'og:site_name',    content: 'ApnaInsights' });
     this.meta.updateTag({ property: 'og:image',        content: 'https://apnainsights.com/logo.png' });
     this.meta.updateTag({ property: 'og:image:width',  content: '1024' });
@@ -440,7 +440,7 @@ export class Home implements OnInit, OnDestroy {
       canonical.setAttribute('rel', 'canonical');
       this.document.head.appendChild(canonical);
     }
-    canonical.setAttribute('href', 'https://apnainsights.com');
+    canonical.setAttribute('href', 'https://apnainsights.com/');
   }
 
   private injectJsonLd(): void {
