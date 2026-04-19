@@ -17,23 +17,32 @@ export class App implements OnInit, OnDestroy {
   loaderService = inject(LoaderService);
 
   private routerSub!: Subscription;
-  private aliveService = inject(AliveService);
-  private aliveStarted = false;
+  private aliveService  = inject(AliveService);
+  private aliveStarted  = false;
+  private isFirstNav    = true;
 
   constructor(private router: Router) {}
 
   ngOnInit(): void {
     this.routerSub = this.router.events.subscribe(event => {
       if (event instanceof NavigationStart) {
-        this.loaderService.show('overlay', 'sm');
+        // Skip overlay on the initial page load — prevents the fixed overlay
+        // from blocking AdSense / crawlers before Angular finishes mounting.
+        // Each component owns its own skeleton loader for first-render feedback.
+        if (!this.isFirstNav) {
+          this.loaderService.show('overlay', 'sm');
+        }
       } else if (
         event instanceof NavigationEnd ||
         event instanceof NavigationCancel ||
         event instanceof NavigationError
       ) {
-        this.loaderService.hide();
+        if (this.isFirstNav) {
+          this.isFirstNav = false;
+        } else {
+          this.loaderService.hide();
+        }
 
-        // Start alive-service only once after first successful navigation
         if (!this.aliveStarted) {
           this.aliveStarted = true;
           this.aliveService.start();
