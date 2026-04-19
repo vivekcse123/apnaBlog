@@ -29,7 +29,7 @@ export class Auth {
   );
 
   isAuthorized  = computed(() => !!this.token());
-  isAdmin       = computed(() => this.userRole() === 'admin');
+  isAdmin       = computed(() => this.userRole() === 'admin' || this.userRole() === 'super_admin');
   isSuperAdmin  = computed(() => this.userRole() === 'super_admin');
 
   login(userCred: { email: string; password: string }): Observable<apiResponse<User>> {

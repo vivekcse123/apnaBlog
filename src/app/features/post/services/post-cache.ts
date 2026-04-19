@@ -1,37 +1,70 @@
 import { Injectable, signal } from '@angular/core';
 import { Post } from '../../../core/models/post.model';
 
-interface PostWithTs extends Post { _ts: number; }
+export interface PostWithTs extends Post { _ts: number; }
+
+const STORE_KEY = 'apna_pc_v3';
+const TTL_MS    = 5 * 60 * 1000; // 5 min
+
+function readStorage(): { posts: PostWithTs[]; ts: number } | null {
+  try {
+    if (typeof localStorage === 'undefined') return null;
+    const raw = localStorage.getItem(STORE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed?.posts)) return null;
+    return parsed;
+  } catch { return null; }
+}
 
 @Injectable({ providedIn: 'root' })
 export class PostCache {
-  private _cache   = signal<PostWithTs[] | null>(null);
-  private _cachedAt: number | null = null;
-  private readonly TTL_MS = 5 * 60 * 1000; // 5-minute TTL — matches the Google Font cache warm window
+  // Hydrate synchronously from localStorage — zero HTTP cost on reload
+  private readonly _stored  = readStorage();
+  private _posts    = signal<PostWithTs[]>(
+    this._stored && Date.now() - this._stored.ts < TTL_MS ? this._stored.posts : []
+  );
+  private _cachedAt = this._stored && Date.now() - this._stored.ts < TTL_MS
+    ? this._stored.ts : 0;
 
+  /** All cached posts, or null if cache is empty / expired. */
   get(): PostWithTs[] | null {
-    if (!this._cache() || !this._cachedAt) return null;
-
-    if (Date.now() - this._cachedAt > this.TTL_MS) {
-      this._cache.set(null);
-      this._cachedAt = null;
-      return null;
-    }
-    return this._cache();
+    const posts = this._posts();
+    if (!posts.length || !this._cachedAt) return null;
+    if (Date.now() - this._cachedAt > TTL_MS) { this._clear(); return null; }
+    return posts;
   }
 
-  /** Returns how many milliseconds ago the cache was populated, or null if empty. */
+  /** O(n) lookup by post _id — used by blog-detail for instant render. */
+  getById(id: string): PostWithTs | null {
+    const posts = this.get();
+    return posts?.find(p => p._id === id) ?? null;
+  }
+
+  /** Milliseconds since last set(), or null. */
   getAge(): number | null {
     return this._cachedAt ? Date.now() - this._cachedAt : null;
   }
 
   set(posts: PostWithTs[]): void {
-    this._cache.set(posts);
     this._cachedAt = Date.now();
+    this._posts.set(posts);
+    this._persist(posts);
   }
 
-  invalidate(): void {
-    this._cache.set(null);
-    this._cachedAt = null;
+  invalidate(): void { this._clear(); }
+
+  private _clear(): void {
+    this._posts.set([]);
+    this._cachedAt = 0;
+    try { localStorage.removeItem(STORE_KEY); } catch { /* SSR / quota */ }
+  }
+
+  private _persist(posts: PostWithTs[]): void {
+    try {
+      if (typeof localStorage === 'undefined') return;
+      // Store only fields needed for instant render — keeps payload small
+      localStorage.setItem(STORE_KEY, JSON.stringify({ posts, ts: this._cachedAt }));
+    } catch { /* quota exceeded — silently skip */ }
   }
 }

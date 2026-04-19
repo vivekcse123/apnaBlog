@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, shareReplay, finalize } from 'rxjs';
 import { apiResponse } from '../../../core/models/api-response.model';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Post } from '../../../core/models/post.model';
@@ -10,7 +10,6 @@ type CreatePostPayload = Omit<
   '_id' | 'user' | 'userId' | 'likesCount' | 'commentsCount' | 'views' | 'createdAt' | 'updatedAt'
 >;
 
-// ── Reply shape ───────────────────────────────────────────────────────────────
 export interface CommentReply {
   _id?:       string;
   name:       string;
@@ -19,7 +18,6 @@ export interface CommentReply {
   createdAt?: string;
 }
 
-// ── Strongly-typed shape the backend actually returns for comments ─────────────
 export interface CommentsResponse {
   status:        number;
   message:       string;
@@ -34,32 +32,62 @@ export interface CommentsResponse {
   }>;
 }
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class PostService {
   private endPoint = environment.apiPostEndpoint.replace(/\/+$/, '');
+  private http     = inject(HttpClient);
 
-  private http = inject(HttpClient);
+  // In-flight request deduplication — concurrent callers share one HTTP request
+  private readonly _inflight = new Map<string, Observable<any>>();
 
-  createBlog(postData: CreatePostPayload): Observable<apiResponse<Post>> {
-    return this.http.post<apiResponse<Post>>(`${this.endPoint}`, postData);
+  private dedupe<T>(key: string, create: () => Observable<T>): Observable<T> {
+    if (!this._inflight.has(key)) {
+      this._inflight.set(
+        key,
+        create().pipe(
+          shareReplay(1),
+          finalize(() => this._inflight.delete(key))
+        )
+      );
+    }
+    return this._inflight.get(key)!;
   }
 
-  getAllPost(page: number = 1, limit: number = 10): Observable<apiResponse<Post[]>> {
-    return this.http.get<apiResponse<Post[]>>(
-      `${this.endPoint}?page=${page}&limit=${limit}`
+  // ── Read (deduped) ─────────────────────────────────────────────────────────
+
+  getAllPost(page = 1, limit = 10): Observable<apiResponse<Post[]>> {
+    return this.dedupe(`all_${page}_${limit}`,
+      () => this.http.get<apiResponse<Post[]>>(`${this.endPoint}?page=${page}&limit=${limit}`)
     );
   }
 
-  getAllPostAdmin(page: number = 1, limit: number = 10): Observable<apiResponse<Post[]>> {
-    return this.http.get<apiResponse<Post[]>>(
-      `${this.endPoint}?page=${page}&limit=${limit}&status=all`
+  getAllPostAdmin(page = 1, limit = 10): Observable<apiResponse<Post[]>> {
+    return this.dedupe(`admin_${page}_${limit}`,
+      () => this.http.get<apiResponse<Post[]>>(`${this.endPoint}?page=${page}&limit=${limit}&status=all`)
     );
   }
 
   getPostById(id: string): Observable<apiResponse<Post>> {
-    return this.http.get<apiResponse<Post>>(`${this.endPoint}/${id}`);
+    return this.dedupe(`post_${id}`,
+      () => this.http.get<apiResponse<Post>>(`${this.endPoint}/${id}`)
+    );
+  }
+
+  getPostByUserId(id: string, page = 1, limit = 10): Observable<apiResponse<Post[]>> {
+    return this.dedupe(`user_${id}_${page}_${limit}`,
+      () => this.http.get<apiResponse<Post[]>>(`${this.endPoint}/user/${id}?page=${page}&limit=${limit}`)
+    );
+  }
+
+  getComments(postId: string, skip = 0, limit = 10): Observable<CommentsResponse> {
+    const params = new HttpParams().set('skip', skip).set('limit', limit);
+    return this.http.get<CommentsResponse>(`${this.endPoint}/${postId}/comments`, { params });
+  }
+
+  // ── Write (never deduped — each is a distinct mutation) ───────────────────
+
+  createBlog(postData: CreatePostPayload): Observable<apiResponse<Post>> {
+    return this.http.post<apiResponse<Post>>(`${this.endPoint}`, postData);
   }
 
   deletePost(id: string): Observable<apiResponse<null>> {
@@ -70,12 +98,6 @@ export class PostService {
     return this.http.patch<apiResponse<Post>>(`${this.endPoint}/${id}`, postData);
   }
 
-  getPostByUserId(id: string, page: number = 1, limit: number = 10): Observable<apiResponse<Post[]>> {
-    return this.http.get<apiResponse<Post[]>>(
-      `${this.endPoint}/user/${id}?page=${page}&limit=${limit}`
-    );
-  }
-
   likePost(postId: string): Observable<apiResponse<Post>> {
     return this.http.post<apiResponse<Post>>(`${this.endPoint}/${postId}/like`, {});
   }
@@ -84,45 +106,18 @@ export class PostService {
     return this.http.post<apiResponse<Post>>(`${this.endPoint}/${postId}/view`, {});
   }
 
-  commentPost(
-    postId: string,
-    comment: string,
-    userId?: string
-  ): Observable<apiResponse<Post>> {
+  commentPost(postId: string, comment: string, userId?: string): Observable<apiResponse<Post>> {
     const body: Record<string, string> = { comment: comment.trim() };
-    if (userId?.trim()) {
-      body['userId'] = userId;
-    }
+    if (userId?.trim()) body['userId'] = userId;
     return this.http.post<apiResponse<Post>>(`${this.endPoint}/${postId}/comment`, body);
   }
 
-  /**
-   * ✅ Fix for Bug 3: return type now uses `totalComments` (the actual field
-   *    the backend sends) instead of the non-existent `total` / `totalCount`.
-   */
-  getComments(
-    postId: string,
-    skip:   number = 0,
-    limit:  number = 10
-  ): Observable<CommentsResponse> {
-    const params = new HttpParams()
-      .set('skip',  skip.toString())
-      .set('limit', limit.toString());
-
-    return this.http.get<CommentsResponse>(`${this.endPoint}/${postId}/comments`, { params });
-  }
-
   deleteComment(postId: string, commentId: string): Observable<apiResponse<null>> {
-    return this.http.delete<apiResponse<null>>(
-      `${this.endPoint}/${postId}/comment/${commentId}`
-    );
+    return this.http.delete<apiResponse<null>>(`${this.endPoint}/${postId}/comment/${commentId}`);
   }
 
   addReply(
-    postId:    string,
-    commentId: string,
-    comment:   string,
-    userId?:   string
+    postId: string, commentId: string, comment: string, userId?: string
   ): Observable<{ status: number; message: string; data: { reply: CommentReply; commentId: string } }> {
     const body: Record<string, string> = { comment: comment.trim() };
     if (userId?.trim()) body['userId'] = userId;
@@ -136,5 +131,4 @@ export class PostService {
       `${this.endPoint}/${postId}/comment/${commentId}/reply/${replyId}`
     );
   }
-
 }

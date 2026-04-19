@@ -8,6 +8,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Meta, Title, DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 import { PostService } from '../../../post/services/post-service';
+import { PostCache } from '../../../post/services/post-cache';
 import { Post } from '../../../../core/models/post.model';
 import { ThemeService } from '../../../../core/services/theme-service';
 import { Auth } from '../../../../core/services/auth';
@@ -50,6 +51,7 @@ const AUTHOR_POSTS_PER_PAGE = 10;
 })
 export class BlogDetail implements OnInit, AfterViewInit {
   private postService    = inject(PostService);
+  private postCache      = inject(PostCache);
   private destroyRef     = inject(DestroyRef);
   private route          = inject(ActivatedRoute);
   private router         = inject(Router);
@@ -255,85 +257,103 @@ export class BlogDetail implements OnInit, AfterViewInit {
   ngAfterViewInit(): void {}
 
   private loadPost(postId: string): void {
+    // ── Cache-first: render instantly if post is already in cache ─────────────
+    const cached = this.postCache.getById(postId);
+    if (cached) {
+      this.post.set(cached as unknown as Post);
+      this.isLoading.set(false);
+      this._bootstrapPost(cached as unknown as Post, postId);
+    }
+
+    // ── Always fetch fresh from network (silent refresh if cached, primary if not) ──
     this.postService.getPostById(postId).pipe(
       takeUntilDestroyed(this.destroyRef),
       finalize(() => this.isLoading.set(false))
     ).subscribe({
       next: (res) => {
         const postData = res.data;
-        // Allow both published and legacy-draft posts; only block pending-review ones
         if (!postData || (postData.status !== 'published' && postData.status !== 'draft')) {
-          this.router.navigate(['/welcome']); return;
+          if (!cached) this.router.navigate(['/welcome']);
+          return;
         }
         this.post.set(postData);
-
-        // Extract author ID and fetch follow data (followers count + current user's follow status)
-        const aId = (postData.user as any)?._id ?? (postData.user as any);
-        if (aId) {
-          this.authorId.set(aId.toString());
-          this.fetchAuthorFollowData(aId.toString());
-        }
-
-        this.addView(postData);
-        this.loadComments(postId);
-        this.loadRelatedAndAuthorPosts(postData);
-        this.updateMetaTags(postData);
-        this.calculateReadingTime(postData);
-
-        if (isPlatformBrowser(this.platformId)) {
-          setTimeout(() => {
-            this.contentEl = this.elementRef.nativeElement.querySelector('.blog-content');
-            this.generateTableOfContents();
-            this.addHeadingIds();
-          }, 300);
-        }
+        // Bootstrap only if cache miss — already done above for cache hit
+        if (!cached) this._bootstrapPost(postData, postId);
       },
-      error: () => this.router.navigate(['/welcome']),
+      error: () => { if (!cached) this.router.navigate(['/welcome']); },
     });
   }
 
-  /* One API call — populates related posts AND all author posts with zero duplication */
+  /** Side-effects that run once post data is available (cache or network). */
+  private _bootstrapPost(postData: Post, postId: string): void {
+    const aId = (postData.user as any)?._id ?? (postData.user as any);
+    if (aId) {
+      this.authorId.set(aId.toString());
+      this.fetchAuthorFollowData(aId.toString());
+    }
+    this.addView(postData);
+    this.loadComments(postId);
+    this.loadRelatedAndAuthorPosts(postData);
+    this.updateMetaTags(postData);
+    this.calculateReadingTime(postData);
+
+    if (isPlatformBrowser(this.platformId)) {
+      setTimeout(() => {
+        this.contentEl = this.elementRef.nativeElement.querySelector('.blog-content');
+        this.generateTableOfContents();
+        this.addHeadingIds();
+      }, 300);
+    }
+  }
+
+  /* Populate related posts + all author posts — cache-first, no extra HTTP when warm */
   private loadRelatedAndAuthorPosts(currentPost: Post): void {
-    // Use limit=500 to capture enough posts for any category (including niche ones like 'village')
-    this.postService.getAllPost(1, 500).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (res) => {
-        const allPosts: Post[] = res.data ?? [];
-        const authorId = (currentPost.user as any)?._id ?? currentPost.user;
+    const cached = this.postCache.get();
+    if (cached?.length) {
+      // Instant — zero HTTP cost
+      this._processRelatedAndAuthor(currentPost, cached as unknown as Post[]);
+    } else {
+      // Cold start — fetch with a reasonable limit (100 covers 99% of deployments)
+      this.postService.getAllPost(1, 100).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+        next: (res) => this._processRelatedAndAuthor(currentPost, res.data ?? []),
+        error: ()  => this.relatedPosts.set([]),
+      });
+    }
+  }
 
-        /* Author posts (newest first, current article excluded) */
-        const authorPosts = allPosts
-          .filter(p => {
-            const pid = (p.user as any)?._id ?? p.user;
-            return pid?.toString() === authorId?.toString()
-              && (p.status === 'published' || p.status === 'draft')
-              && p._id !== currentPost._id;
-          })
-          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  private _processRelatedAndAuthor(currentPost: Post, allPosts: Post[]): void {
+    const authorId = (currentPost.user as any)?._id ?? currentPost.user;
 
-        this.allAuthorPostsData.set(authorPosts);
-        this.authorTotalPosts.set(authorPosts.length + 1); /* +1 for the current post */
+    const authorPosts = allPosts
+      .filter(p => {
+        const pid = (p.user as any)?._id ?? p.user;
+        return pid?.toString() === authorId?.toString()
+          && (p.status === 'published' || p.status === 'draft')
+          && p._id !== currentPost._id;
+      })
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
-        /* Related posts — case-insensitive category matching */
-        if (!currentPost.categories?.length) { this.relatedPosts.set([]); return; }
+    this.allAuthorPostsData.set(authorPosts);
+    this.authorTotalPosts.set(authorPosts.length + 1);
 
-        const currentCatsLower = currentPost.categories.map(c => c.toLowerCase());
+    if (!currentPost.categories?.length) { this.relatedPosts.set([]); return; }
 
-        const related = allPosts
-          .filter(p =>
-            p._id !== currentPost._id &&
-            (p.status === 'published' || p.status === 'draft') &&
-            Array.isArray(p.categories) &&
-            p.categories.some(c => currentCatsLower.includes(c.toLowerCase()))
-          )
-          .sort((a, b) => {
-            const aM = a.categories.filter(c => currentCatsLower.includes(c.toLowerCase())).length;
-            const bM = b.categories.filter(c => currentCatsLower.includes(c.toLowerCase())).length;
-            return bM !== aM ? bM - aM : new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-          });
-        this.relatedPosts.set(related.slice(0, 4));
-      },
-      error: () => this.relatedPosts.set([])
-    });
+    const catsLower = currentPost.categories.map(c => c.toLowerCase());
+
+    const related = allPosts
+      .filter(p =>
+        p._id !== currentPost._id &&
+        (p.status === 'published' || p.status === 'draft') &&
+        Array.isArray(p.categories) &&
+        p.categories.some(c => catsLower.includes(c.toLowerCase()))
+      )
+      .sort((a, b) => {
+        const aM = a.categories.filter(c => catsLower.includes(c.toLowerCase())).length;
+        const bM = b.categories.filter(c => catsLower.includes(c.toLowerCase())).length;
+        return bM !== aM ? bM - aM : new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      });
+
+    this.relatedPosts.set(related.slice(0, 4));
   }
 
   private loadComments(postId: string): void {
