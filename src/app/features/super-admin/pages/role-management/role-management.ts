@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AdminService } from '../../../admin/services/admin-service';
@@ -12,6 +12,7 @@ type Role = 'user' | 'admin' | 'super_admin';
   imports: [CommonModule, FormsModule],
   templateUrl: './role-management.html',
   styleUrl: './role-management.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RoleManagement implements OnInit {
   private adminService = inject(AdminService);

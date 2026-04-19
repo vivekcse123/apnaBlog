@@ -84,82 +84,107 @@
         </thead>
         <tbody>
 
-          @for (blog of paginatedBlogs(); track blog._id) {
-            <tr>
-              <td>
-                <div class="blog-title">{{ blog.title }}</div>
-                <div class="blog-sub">{{ blog.description }}</div>
-              </td>
-              <td>
-                <div class="category-list">
-                  @for (category of blog.categories.slice(0, 2); track category) {
-                    <span class="category-badge" style="margin: 2px;" [ngClass]="category.toLowerCase()">
-                      {{ category }}
-                    </span>
-                  }
-                </div>
-              </td>
-              <td>
-                <span class="status-badge"
-                  [class.status-published]="blog.status === 'published'"
-                  [class.status-draft]="blog.status === 'draft'"
-                  [class.status-pending]="blog.status === 'pending'"
-                >
-                  @if (blog.status === 'pending') { Pending Review }
-                  @else { {{ blog.status | titlecase }} }
-                </span>
-              </td>
-              <td>
-                <div class="stat-cell">
-                  <svg width="13" height="13" viewBox="0 0 22 22" fill="none">
-                    <ellipse cx="11" cy="11" rx="8" ry="5" stroke="#7F77DD" stroke-width="2" fill="none"/>
-                    <circle cx="11" cy="11" r="2.5" fill="#7F77DD"/>
-                  </svg>
-                  {{ blog.views | number }}
-                </div>
-              </td>
-              <td>
-                <div class="stat-cell">
-                  <svg width="13" height="13" viewBox="0 0 22 22" fill="none">
-                    <path d="M11 18s-7-4.5-7-9a4 4 0 018 0 4 4 0 018 0c0 4.5-7 9-7 9z"
-                      stroke="#d9534f" stroke-width="2" fill="none" stroke-linejoin="round"/>
-                  </svg>
-                  {{ blog.likesCount | number }}
-                </div>
-              </td>
-              <td>{{ blog.createdAt | date: 'mediumDate' }}</td>
-              <td>{{ blog.updatedAt | date: 'mediumDate' }}</td>
-              <td>
-                <div class="action-buttons">
-                  <button class="edit" (click)="viewPost(blog._id)"><i class="bi bi-eye"></i></button>
-                  <button class="delete" (click)="confirmDelete(blog._id, blog.title)"><i class="bi bi-trash3"></i></button>
-                </div>
-              </td>
-            </tr>
+          @if (isLoading()) {
+            @for (_ of skeletonRows; track $index) {
+              <tr class="sk-row">
+                <td>
+                  <div class="sk-cell" style="width:140px;height:15px;"></div>
+                  <div class="sk-cell" style="width:90px;height:11px;margin-top:5px;"></div>
+                </td>
+                <td><div class="sk-cell" style="width:76px;height:22px;border-radius:20px;"></div></td>
+                <td><div class="sk-cell" style="width:72px;height:22px;border-radius:20px;"></div></td>
+                <td><div class="sk-cell" style="width:38px;"></div></td>
+                <td><div class="sk-cell" style="width:38px;"></div></td>
+                <td><div class="sk-cell" style="width:80px;"></div></td>
+                <td><div class="sk-cell" style="width:80px;"></div></td>
+                <td>
+                  <div style="display:flex;gap:6px;">
+                    <div class="sk-cell" style="width:34px;height:30px;border-radius:6px;"></div>
+                    <div class="sk-cell" style="width:34px;height:30px;border-radius:6px;"></div>
+                  </div>
+                </td>
+              </tr>
+            }
           }
 
-         @if (filteredBlogs().length === 0) {
-  <tr>
-    <td colspan="8" class="empty-row">
-      <div class="empty-state">
-        <svg width="40" height="40" viewBox="0 0 24 24" fill="none"
-             stroke="#ccc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-          <line x1="16" y1="2" x2="16" y2="6"/>
-          <line x1="8" y1="2" x2="8" y2="6"/>
-          <line x1="3" y1="10" x2="21" y2="10"/>
-        </svg>
-        @if (showTodayOnly()) {
-          <p>No blogs posted today</p>
-          <span>There are no posts published on today's date.</span>
-        } @else {
-          <p>No blogs found</p>
-          <span>Try adjusting your search or filters.</span>
-        }
-      </div>
-    </td>
-  </tr>
-}
+          @if (!isLoading()) {
+            @for (blog of paginatedBlogs(); track blog._id) {
+              <tr>
+                <td>
+                  <div class="blog-title">{{ blog.title }}</div>
+                  <div class="blog-sub">{{ blog.description }}</div>
+                </td>
+                <td>
+                  <div class="category-list">
+                    @for (category of blog.categories.slice(0, 2); track category) {
+                      <span class="category-badge" style="margin: 2px;" [ngClass]="category.toLowerCase()">
+                        {{ category }}
+                      </span>
+                    }
+                  </div>
+                </td>
+                <td>
+                  <span class="status-badge"
+                    [class.status-published]="blog.status === 'published'"
+                    [class.status-draft]="blog.status === 'draft'"
+                    [class.status-pending]="blog.status === 'pending'"
+                  >
+                    @if (blog.status === 'pending') { Pending Review }
+                    @else { {{ blog.status | titlecase }} }
+                  </span>
+                </td>
+                <td>
+                  <div class="stat-cell">
+                    <svg width="13" height="13" viewBox="0 0 22 22" fill="none">
+                      <ellipse cx="11" cy="11" rx="8" ry="5" stroke="#7F77DD" stroke-width="2" fill="none"/>
+                      <circle cx="11" cy="11" r="2.5" fill="#7F77DD"/>
+                    </svg>
+                    {{ blog.views | number }}
+                  </div>
+                </td>
+                <td>
+                  <div class="stat-cell">
+                    <svg width="13" height="13" viewBox="0 0 22 22" fill="none">
+                      <path d="M11 18s-7-4.5-7-9a4 4 0 018 0 4 4 0 018 0c0 4.5-7 9-7 9z"
+                        stroke="#d9534f" stroke-width="2" fill="none" stroke-linejoin="round"/>
+                    </svg>
+                    {{ blog.likesCount | number }}
+                  </div>
+                </td>
+                <td>{{ blog.createdAt | date: 'mediumDate' }}</td>
+                <td>{{ blog.updatedAt | date: 'mediumDate' }}</td>
+                <td>
+                  <div class="action-buttons">
+                    <button class="edit" (click)="viewPost(blog._id)"><i class="bi bi-eye"></i></button>
+                    <button class="delete" (click)="confirmDelete(blog._id, blog.title)"><i class="bi bi-trash3"></i></button>
+                  </div>
+                </td>
+              </tr>
+            }
+
+            @if (filteredBlogs().length === 0) {
+              <tr>
+                <td colspan="8" class="empty-row">
+                  <div class="empty-state">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none"
+                         stroke="#ccc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                      <line x1="16" y1="2" x2="16" y2="6"/>
+                      <line x1="8" y1="2" x2="8" y2="6"/>
+                      <line x1="3" y1="10" x2="21" y2="10"/>
+                    </svg>
+                    @if (showTodayOnly()) {
+                      <p>No blogs posted today</p>
+                      <span>There are no posts published on today's date.</span>
+                    } @else {
+                      <p>No blogs found</p>
+                      <span>Try adjusting your search or filters.</span>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          }
 
         </tbody>
       </table>

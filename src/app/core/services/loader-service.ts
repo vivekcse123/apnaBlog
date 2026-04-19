@@ -10,7 +10,10 @@ export class LoaderService {
   type          = signal<LoaderType>('overlay');
   skeletonCount = signal(4);
 
+  private _count = 0;
+
   show(type: LoaderType = 'overlay', size: LoaderSize = 'md', skeletonCount = 4): void {
+    this._count++;
     this.type.set(type);
     this.size.set(size);
     this.skeletonCount.set(skeletonCount);
@@ -18,6 +21,13 @@ export class LoaderService {
   }
 
   hide(): void {
+    this._count = Math.max(0, this._count - 1);
+    if (this._count === 0) this.loading.set(false);
+  }
+
+  /** Force-hide regardless of in-flight count — use on component destroy. */
+  forceHide(): void {
+    this._count = 0;
     this.loading.set(false);
   }
 }

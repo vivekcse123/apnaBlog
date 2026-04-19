@@ -313,6 +313,29 @@ tbody > tr:hover td {
 .action-buttons .unfreeze       { background-color: var(--success); }
 .action-buttons .unfreeze:hover { background-color: var(--success-hover); }
 
+/* ── Inline skeleton rows ── */
+.sk-row td { pointer-events: none; border-bottom: 1px solid var(--border); }
+.sk-row:last-child td { border-bottom: none; }
+
+.sk-cell {
+  display: inline-block;
+  height: 14px;
+  border-radius: 6px;
+  background: linear-gradient(
+    90deg,
+    var(--bg-surface-alt, #f3f4f6) 25%,
+    var(--border, #e5e7eb)         50%,
+    var(--bg-surface-alt, #f3f4f6) 75%
+  );
+  background-size: 200% 100%;
+  animation: sk-shimmer 1.4s infinite;
+}
+
+@keyframes sk-shimmer {
+  from { background-position:  200% 0; }
+  to   { background-position: -200% 0; }
+}
+
 /* ── Pagination ── */
 .pagination {
   display: flex;

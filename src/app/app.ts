@@ -14,28 +14,30 @@ import { AliveService } from './core/services/alive-server/alive-service';
 })
 export class App implements OnInit, OnDestroy {
   loaderService = inject(LoaderService);
-  loaderSize: 'sm' | 'md' | 'lg' = 'md';
 
   private routerSub!: Subscription;
   private aliveService = inject(AliveService);
+  private aliveStarted = false;
 
   constructor(private router: Router) {}
 
   ngOnInit(): void {
     this.routerSub = this.router.events.subscribe(event => {
       if (event instanceof NavigationStart) {
-        this.loaderService.show();
-      }
-
-      if (
+        this.loaderService.show('overlay', 'sm');
+      } else if (
         event instanceof NavigationEnd ||
         event instanceof NavigationCancel ||
         event instanceof NavigationError
       ) {
         this.loaderService.hide();
-      }
 
-      this.aliveService.start();
+        // Start alive-service only once after first successful navigation
+        if (!this.aliveStarted) {
+          this.aliveStarted = true;
+          this.aliveService.start();
+        }
+      }
     });
   }
 

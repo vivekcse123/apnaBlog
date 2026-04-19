@@ -47,74 +47,101 @@
         </thead>
         <tbody>
 
-          @for (user of paginatedUsers(); track user._id) {
-            <tr [appDisabled]="user.status === 'inactive'">
-
-              <td>
-                <div class="user-cell">
-                  <div class="user-avatar">
-                    @if (user.avatar) {
-                      <img [src]="user.avatar" class="user-avatar-img" [alt]="user.name" />
-                    } @else {
-                      {{ user.name.charAt(0) | uppercase }}
-                    }
+          @if (isLoading()) {
+            @for (_ of skeletonRows; track $index) {
+              <tr class="sk-row">
+                <td>
+                  <div style="display:flex;align-items:center;gap:10px;">
+                    <div class="sk-cell" style="width:34px;height:34px;border-radius:50%;flex-shrink:0;"></div>
+                    <div class="sk-cell" style="width:110px;"></div>
                   </div>
-                  <span>{{ user.name | titlecase }}</span>
-                </div>
-              </td>
-
-              <td class="email-cell">{{ user.email }}</td>
-
-              <td>
-                <span class="role-badge"
-                  [class.admin]="user.role === 'admin'"
-                  [class.super-admin]="user.role === 'super_admin'">
-                  {{ user.role === 'super_admin' ? 'Super Admin' : (user.role | titlecase) }}
-                </span>
-              </td>
-
-              <td>
-                <span class="status-badge"
-                  [class.status-active]="user.status === 'active'"
-                  [class.status-inactive]="user.status === 'inactive'"
-                  [class.status-pending]="user.status === 'pending_deletion'"
-                >
-                  {{ user.status === 'pending_deletion' ? 'Pending Deletion' : (user.status | titlecase) }}
-                </span>
-              </td>
-
-              <td>{{ user.createdAt | date: 'mediumDate' }}</td>
-              <td>{{ user.updatedAt | date: 'mediumDate' }}</td>
-              <td>
-                <div class="action-buttons">
-                  <button class="view"   (click)="getUserDetails(user._id)"   title="View details"><i class="bi bi-eye"></i></button>
-                  <button class="delete" (click)="deleteUser(user)"           title="Delete user"><i class="bi bi-trash3"></i></button>
-                  <button
-                    [class.freeze]="user.status === 'active'"
-                    [class.unfreeze]="user.status !== 'active'"
-                    (click)="toggleUserStatus(user)"
-                    [title]="user.status === 'active' ? 'Freeze user' : 'Unfreeze user'"
-                  >
-                    <i class="bi" [ngClass]="user.status === 'active' ? 'bi-lock-fill' : 'bi-unlock-fill'"></i>
-                  </button>
-                </div>
-              </td>
-
-            </tr>
+                </td>
+                <td><div class="sk-cell" style="width:160px;"></div></td>
+                <td><div class="sk-cell" style="width:64px;height:22px;border-radius:20px;"></div></td>
+                <td><div class="sk-cell" style="width:56px;height:22px;border-radius:999px;"></div></td>
+                <td><div class="sk-cell" style="width:80px;"></div></td>
+                <td><div class="sk-cell" style="width:80px;"></div></td>
+                <td>
+                  <div style="display:flex;gap:6px;">
+                    <div class="sk-cell" style="width:34px;height:30px;border-radius:6px;"></div>
+                    <div class="sk-cell" style="width:34px;height:30px;border-radius:6px;"></div>
+                    <div class="sk-cell" style="width:34px;height:30px;border-radius:6px;"></div>
+                  </div>
+                </td>
+              </tr>
+            }
           }
 
-          @if (paginatedUsers().length === 0) {
-            <tr>
-              <td colspan="7" class="empty-row">
-                <div class="empty-state">
-                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
-                    <circle cx="12" cy="8" r="4" stroke="#ddd" stroke-width="2" fill="none"/>
-                    <path d="M4 20c0-4.418 3.582-7 8-7s8 2.582 8 7" stroke="#ddd" stroke-width="2" stroke-linecap="round" fill="none"/>
-                  </svg>
-                  <p>No users found</p>
-                </div>
-              </td>
-            </tr>
+          @if (!isLoading()) {
+            @for (user of paginatedUsers(); track user._id) {
+              <tr [appDisabled]="user.status === 'inactive'">
+
+                <td>
+                  <div class="user-cell">
+                    <div class="user-avatar">
+                      @if (user.avatar) {
+                        <img [src]="user.avatar" class="user-avatar-img" [alt]="user.name" />
+                      } @else {
+                        {{ user.name.charAt(0) | uppercase }}
+                      }
+                    </div>
+                    <span>{{ user.name | titlecase }}</span>
+                  </div>
+                </td>
+
+                <td class="email-cell">{{ user.email }}</td>
+
+                <td>
+                  <span class="role-badge"
+                    [class.admin]="user.role === 'admin'"
+                    [class.super-admin]="user.role === 'super_admin'">
+                    {{ user.role === 'super_admin' ? 'Super Admin' : (user.role | titlecase) }}
+                  </span>
+                </td>
+
+                <td>
+                  <span class="status-badge"
+                    [class.status-active]="user.status === 'active'"
+                    [class.status-inactive]="user.status === 'inactive'"
+                    [class.status-pending]="user.status === 'pending_deletion'"
+                  >
+                    {{ user.status === 'pending_deletion' ? 'Pending Deletion' : (user.status | titlecase) }}
+                  </span>
+                </td>
+
+                <td>{{ user.createdAt | date: 'mediumDate' }}</td>
+                <td>{{ user.updatedAt | date: 'mediumDate' }}</td>
+                <td>
+                  <div class="action-buttons">
+                    <button class="view"   (click)="getUserDetails(user._id)"   title="View details"><i class="bi bi-eye"></i></button>
+                    <button class="delete" (click)="deleteUser(user)"           title="Delete user"><i class="bi bi-trash3"></i></button>
+                    <button
+                      [class.freeze]="user.status === 'active'"
+                      [class.unfreeze]="user.status !== 'active'"
+                      (click)="toggleUserStatus(user)"
+                      [title]="user.status === 'active' ? 'Freeze user' : 'Unfreeze user'"
+                    >
+                      <i class="bi" [ngClass]="user.status === 'active' ? 'bi-lock-fill' : 'bi-unlock-fill'"></i>
+                    </button>
+                  </div>
+                </td>
+
+              </tr>
+            }
+
+            @if (paginatedUsers().length === 0) {
+              <tr>
+                <td colspan="7" class="empty-row">
+                  <div class="empty-state">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+                      <circle cx="12" cy="8" r="4" stroke="#ddd" stroke-width="2" fill="none"/>
+                      <path d="M4 20c0-4.418 3.582-7 8-7s8 2.582 8 7" stroke="#ddd" stroke-width="2" stroke-linecap="round" fill="none"/>
+                    </svg>
+                    <p>No users found</p>
+                  </div>
+                </td>
+              </tr>
+            }
           }
 
         </tbody>
