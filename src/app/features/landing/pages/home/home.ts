@@ -385,12 +385,19 @@ export class Home implements OnInit, OnDestroy {
   private commitPosts(raw: Post[]): void {
     const seen    = new Set<string>();
     const visible: PostWithTs[] = [];
+    const current = new Map(this.allPosts().map(p => [p._id, p]));
 
     for (const p of raw) {
       if (p.status !== 'published' && p.status !== 'draft') continue;
-      if (seen.has(p._id)) continue;   // guard against duplicate pages
+      if (seen.has(p._id)) continue;
       seen.add(p._id);
-      visible.push({ ...p, _ts: new Date(p.createdAt).getTime() });
+      const local = current.get(p._id);
+      visible.push({
+        ...p,
+        _ts: new Date(p.createdAt).getTime(),
+        views:      Math.max(p.views      ?? 0, local?.views      ?? 0),
+        likesCount: Math.max(p.likesCount ?? 0, local?.likesCount ?? 0),
+      });
     }
 
     this.allPosts.set(visible);
