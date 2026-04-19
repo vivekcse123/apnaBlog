@@ -61,6 +61,7 @@ export class ViewPost implements OnInit, OnDestroy {
   @ViewChild('contentEditor') contentEditorRef!: ElementRef<HTMLDivElement>;
 
   categoryOptions = [
+    'Update', 'News',
     'Sports', 'Technology', 'Lifestyle', 'Education',
     'Health', 'Business', 'Entertainment', 'Social',
     'Village', 'Cooking', 'Quotes', 'Exercise'
@@ -68,7 +69,7 @@ export class ViewPost implements OnInit, OnDestroy {
 
   tagOptions = [
     'Trending', 'Motivation', 'Tips',
-    'News', 'Opinion', 'Guide', 'Update'
+    'Opinion', 'Guide'
   ];
 
   ngOnInit(): void { this.loadPost(); }

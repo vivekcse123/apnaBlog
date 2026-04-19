@@ -181,9 +181,17 @@
         <button
           class="cat-tag"
           [class.active]="selectedCategory() === cat"
+          [class.cat-update]="cat === 'Update'"
+          [class.cat-news]="cat === 'News'"
           (click)="selectCategory(cat)"
           [attr.aria-pressed]="selectedCategory() === cat"
           [attr.aria-label]="'Browse ' + cat + ' stories' + (getCatCount(cat) > 0 ? ', ' + getCatCount(cat) + ' stories' : '')">
+          @if (cat === 'Update') {
+            <span class="live-dot live-dot--green" aria-hidden="true"></span>
+          }
+          @if (cat === 'News') {
+            <span class="live-dot live-dot--red" aria-hidden="true"></span>
+          }
           <span class="cat-emoji" aria-hidden="true">{{ categoryEmojis[cat] }}</span> {{ cat }}
           @if (getCatCount(cat) > 0) {
             <span class="cat-pill-count" aria-hidden="true">{{ getCatCount(cat) }}</span>

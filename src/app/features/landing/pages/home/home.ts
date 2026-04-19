@@ -107,12 +107,14 @@ export class Home implements OnInit, OnDestroy {
   readonly skeletonItems: null[] = new Array(8).fill(null);
 
   readonly categories: string[] = [
+    'Update', 'News',
     'Sports', 'Entertainment', 'Health', 'Technology', 'Business',
     'Lifestyle', 'Education', 'Exercise', 'Cooking',
     'Social', 'Quotes', 'Village',
   ];
 
   readonly categoryEmojis: Record<string, string> = {
+    Update: '📢', News: '📰',
     Sports: '🏏', Entertainment: '🎬', Health: '🏥', Technology: '💻', Business: '💼',
     Lifestyle: '🌿', Education: '🎓', Exercise: '🏋️', Cooking: '🍳',
     Social: '🤝', Quotes: '💬', Village: '🌾',
@@ -518,10 +520,7 @@ export class Home implements OnInit, OnDestroy {
     const next = this.selectedCategory() === cat ? '' : cat;
     this.selectedCategory.set(next);
     if (isPlatformBrowser(this.platformId)) {
-      setTimeout(() => {
-        const el = this.document.querySelector('.filter-wrap') as HTMLElement | null;
-        el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 60);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
 
