@@ -5,12 +5,17 @@
       <div class="header-info">
         <div class="post-icon">✍️</div>
         <div>
-          <h4>{{ isEditing() ? 'Edit Post' : post()?.title }}</h4>
-          <p>{{ post()?.status | titlecase }} &middot; {{ post()?.createdAt | date:'mediumDate' }}</p>
+          @if (isLoading()) {
+            <div class="sk-line" style="width:180px;height:14px;margin-bottom:6px;border-radius:6px;"></div>
+            <div class="sk-line" style="width:120px;height:11px;border-radius:6px;"></div>
+          } @else {
+            <h4>{{ isEditing() ? 'Edit Post' : post()?.title }}</h4>
+            <p>{{ post()?.status | titlecase }} &middot; {{ post()?.createdAt | date:'mediumDate' }}</p>
+          }
         </div>
       </div>
       <div class="header-actions">
-        @if (!isEditing()) {
+        @if (!isEditing() && !isLoading()) {
           <span class="status-badge"
             [class.status-published]="post()?.status === 'published'"
             [class.status-draft]="post()?.status === 'draft'"
@@ -22,6 +27,15 @@
         <button class="close-btn" (click)="closeModal()">&times;</button>
       </div>
     </div>
+
+    @if (isLoading()) {
+      <div class="post-modal-loading">
+        <div class="post-loading-spinner"></div>
+        <p>Loading post details…</p>
+      </div>
+    }
+
+    @if (!isLoading()) {
 
     @if (!isEditing()) {
       <div class="post-stats">
@@ -460,9 +474,6 @@
     @if (message()) {
       <div class="success-message"><span>✓</span> {{ message() }}</div>
     }
-    @if (successMessage()) {
-      <div class="success-message"><span>✓</span> {{ successMessage() }}</div>
-    }
     @if (errorMessage()) {
       <div class="error-message"><span>✕</span> {{ errorMessage() }}</div>
     }
@@ -477,8 +488,10 @@
         <button class="btn-edit" (click)="startEdit()"><i class="bi bi-pencil-fill"></i></button>
       } @else {
         <button class="btn-cancel" (click)="cancelEdit()">Discard</button>
-        <button class="btn-save" (click)="savePost()" [disabled]="editForm.invalid || hasUploadingImages()">
-          @if (hasUploadingImages()) {
+        <button class="btn-save" (click)="savePost()" [disabled]="editForm.invalid || hasUploadingImages() || isSaving()">
+          @if (isSaving()) {
+            Saving…
+          } @else if (hasUploadingImages()) {
             Uploading…
           } @else {
             Save Changes
@@ -486,6 +499,8 @@
         </button>
       }
     </div>
+
+    } <!-- end @if (!isLoading()) -->
 
   </div>
 </div>

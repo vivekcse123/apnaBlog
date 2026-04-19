@@ -1,0 +1,16 @@
+<div class="toast-container">
+  @for (toast of toastService.toasts(); track toast.id) {
+    <div class="toast" [class]="toast.type" [class.dismissing]="toast.dismissing">
+      <span class="toast-icon">
+        @switch (toast.type) {
+          @case ('success') { <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg> }
+          @case ('error')   { <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> }
+          @case ('warning') { <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> }
+          @default           { <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> }
+        }
+      </span>
+      <span class="toast-message">{{ toast.message }}</span>
+      <button class="toast-close" (click)="toastService.dismiss(toast.id)" aria-label="Close">&times;</button>
+    </div>
+  }
+</div>

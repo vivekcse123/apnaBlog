@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Auth } from '../../../../core/services/auth';
+import { ToastService } from '../../../../core/services/toast.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
@@ -13,18 +14,18 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
   styleUrl: './login.css',
 })
 export class Login implements OnInit {
-  private fb          = inject(FormBuilder);
-  private authService = inject(Auth);
-  private router      = inject(Router);
-  private route       = inject(ActivatedRoute);
-  private destroyRef  = inject(DestroyRef);
+  private fb           = inject(FormBuilder);
+  private authService  = inject(Auth);
+  private router       = inject(Router);
+  private route        = inject(ActivatedRoute);
+  private destroyRef   = inject(DestroyRef);
+  private toastService = inject(ToastService);
 
   loginForm: FormGroup = new FormGroup({});
 
-  isSubmitted    = signal(false);
-  isLoading      = signal(false);
-  errorMessage   = signal('');
-  successMessage = signal('');
+  isSubmitted  = signal(false);
+  isLoading    = signal(false);
+  errorMessage = signal('');
   showPassword   = false;
 
   ngOnInit(): void {
@@ -47,7 +48,6 @@ export class Login implements OnInit {
   login() {
     this.isSubmitted.set(true);
     this.errorMessage.set('');
-    this.successMessage.set('');
 
     if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();
@@ -66,23 +66,21 @@ export class Login implements OnInit {
           const userId = data?._id;
           const role   = data?.role;
           const token  = data?.token;
-          
+
           if (!userId || !role || !token) {
             this.errorMessage.set('Login failed. Please try again.');
             return;
           }
 
-          this.successMessage.set('Logged in successfully!');
+          this.toastService.show('Welcome to ApnaInsights!', 'success');
 
-          setTimeout(() => {
-            if (role === 'super_admin') {
-              this.router.navigate(['/super-admin', userId]);
-            } else if (role === 'admin') {
-              this.router.navigate(['/admin', userId]);
-            } else {
-              this.router.navigate(['/user', userId]);
-            }
-          }, 300);
+          if (role === 'super_admin') {
+            this.router.navigate(['/super-admin', userId]);
+          } else if (role === 'admin') {
+            this.router.navigate(['/admin', userId]);
+          } else {
+            this.router.navigate(['/user', userId]);
+          }
         },
         error: (err) => {
           this.isLoading.set(false);

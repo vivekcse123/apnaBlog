@@ -6,17 +6,17 @@ import { ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
 import { ViewUser } from '../../../../shared/view-user/view-user';
-import { MessageModal } from '../../../../shared/message-modal/message-modal';
 import { DisabledDirective } from '../../../../shared/directives/highlight';
 import { CreateUser } from '../create-user/create-user';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NotificationNavEvent, NotificationNavigationService, USER_NOTIFICATION_TYPES } from '../../../../core/services/open-notification/notification-navigation';
 import { Auth } from '../../../../core/services/auth';
+import { ToastService } from '../../../../core/services/toast.service';
 
 @Component({
   selector: 'app-manage-users',
   standalone: true,
-  imports: [CommonModule, FormsModule, ViewUser, MessageModal, DisabledDirective, CreateUser],
+  imports: [CommonModule, FormsModule, ViewUser, DisabledDirective, CreateUser],
   templateUrl: './manage-users.html',
   styleUrls: ['./manage-users.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -27,6 +27,7 @@ export class ManageUsers implements OnInit {
   private destroyRef   = inject(DestroyRef);
   private navSvc       = inject(NotificationNavigationService);
   private authService  = inject(Auth);
+  private toastService = inject(ToastService);
 
   allUsers  = signal<User[]>([]);
   isLoading = signal(true);
@@ -63,18 +64,12 @@ export class ManageUsers implements OnInit {
 
   isProfileOpened  = signal(false);
   selectedUserId   = signal<string>('');
-  successMessage   = signal<string>('');
   showCreateModal  = signal(false);
   showConfirm      = signal(false);
   pendingUser      = signal<any>(null);
   showDeleteConfirm  = signal(false);
   pendingDeleteUser  = signal<any>(null);
-  showMessage  = signal(false);
-  modalType    = signal<'success' | 'error'>('success');
-  modalTitle   = signal('');
-  modalMessage = signal('');
   userId       = signal<string>('');
-  errorMessage = signal('');
 
 ngOnInit(): void {
   this.route.parent?.paramMap
@@ -120,7 +115,6 @@ loadUsers(): void {
   nextPage():          void { if (this.currentPage() < this.totalPages()) this.currentPage.set(this.currentPage() + 1); }
 
   getUserDetails(userId: string): void {
-    this.successMessage.set('');
     this.selectedUserId.set(userId);
     this.isProfileOpened.set(true);
   }
@@ -132,8 +126,7 @@ loadUsers(): void {
 
   onUserUpdated(updatedUser: any): void {
     this.allUsers.update(list => list.map(u => u._id === updatedUser._id ? updatedUser : u));
-    this.successMessage.set('User updated successfully!');
-    setTimeout(() => this.closeProfile(), 1000);
+    this.closeProfile();
   }
 
   toggleUserStatus(user: any): void { this.pendingUser.set(user); this.showConfirm.set(true); }
@@ -151,17 +144,14 @@ loadUsers(): void {
     req.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         user.status = isActive ? 'inactive' : 'active';
-        this.modalType.set('success');
-        this.modalTitle.set(isActive ? 'User Frozen' : 'User Unfrozen');
-        this.modalMessage.set(isActive ? `${user.name} has been frozen.` : `${user.name} has been unfrozen.`);
-        this.showMessage.set(true);
+        this.toastService.show(
+          isActive ? `${user.name} has been frozen.` : `${user.name} has been unfrozen.`,
+          'success'
+        );
         this.pendingUser.set(null);
       },
       error: err => {
-        this.modalType.set('error');
-        this.modalTitle.set('Action Failed');
-        this.modalMessage.set(err.message || 'Something went wrong.');
-        this.showMessage.set(true);
+        this.toastService.show(err?.error?.message || 'Something went wrong.', 'error');
         this.pendingUser.set(null);
       },
     });
@@ -181,17 +171,11 @@ loadUsers(): void {
       .subscribe({
         next: () => {
           this.allUsers.update(list => list.filter(u => u._id !== user._id));
-          this.modalType.set('success');
-          this.modalTitle.set('User Deleted');
-          this.modalMessage.set(`${user.name} has been deleted successfully.`);
-          this.showMessage.set(true);
+          this.toastService.show(`${user.name} has been deleted successfully.`, 'success');
           this.pendingDeleteUser.set(null);
         },
         error: err => {
-          this.modalType.set('error');
-          this.modalTitle.set('Delete Failed');
-          this.modalMessage.set(err?.error?.message || 'Something went wrong.');
-          this.showMessage.set(true);
+          this.toastService.show(err?.error?.message || 'Something went wrong.', 'error');
           this.pendingDeleteUser.set(null);
         },
       });

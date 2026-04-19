@@ -4,11 +4,12 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil, finalize } from 'rxjs';
 import { PostService } from '../../features/post/services/post-service';
 import { UploadService } from '../../features/post/services/upload-service';
 import { Auth } from '../../core/services/auth';
 import { Post } from '../../core/models/post.model';
+import { ToastService } from '../../core/services/toast.service';
 
 interface ImageItem {
   url: string;
@@ -28,6 +29,7 @@ export class ViewPost implements OnInit, OnDestroy {
   private postService   = inject(PostService);
   private uploadService = inject(UploadService);
   private authService   = inject(Auth);
+  private toastService  = inject(ToastService);
   private destroy$      = new Subject<void>();
 
   isAdmin = computed(() => this.authService.getCurrentUser()?.role?.toLowerCase() === 'admin');
@@ -41,7 +43,9 @@ export class ViewPost implements OnInit, OnDestroy {
   postUpdated = output<Post>();
 
   post           = signal<Post | null>(null);
+  isLoading      = signal(false);
   isEditing      = signal(false);
+  isSaving       = signal(false);
   successMessage = signal('');
   errorMessage   = signal('');
   showComments   = signal(false);
@@ -80,11 +84,12 @@ export class ViewPost implements OnInit, OnDestroy {
   }
 
   loadPost(): void {
+    this.isLoading.set(true);
     this.postService.getPostById(this.postId())
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntil(this.destroy$), finalize(() => this.isLoading.set(false)))
       .subscribe({
         next: (res) => this.post.set(res.data),
-        error: (err) => console.error(err)
+        error: () => this.toastService.show('Failed to load post details.', 'error'),
       });
   }
 
@@ -121,15 +126,13 @@ export class ViewPost implements OnInit, OnDestroy {
           this.isDeletingComment.set(false);
           this.showDeleteConfirm.set(false);
           this.pendingDeleteCommentId.set('');
-          this.successMessage.set('Comment deleted successfully.');
-          setTimeout(() => this.successMessage.set(''), 3000);
+          this.toastService.show('Comment deleted successfully.', 'success');
         },
         error: (err) => {
           this.isDeletingComment.set(false);
           this.showDeleteConfirm.set(false);
           this.pendingDeleteCommentId.set('');
-          this.errorMessage.set(err?.error?.message ?? 'Failed to delete comment.');
-          setTimeout(() => this.errorMessage.set(''), 3000);
+          this.toastService.show(err?.error?.message ?? 'Failed to delete comment.', 'error');
         }
       });
   }
@@ -289,23 +292,20 @@ export class ViewPost implements OnInit, OnDestroy {
       return;
     }
 
-    this.successMessage.set('');
+    this.isSaving.set(true);
     this.errorMessage.set('');
 
     this.postService.updatePost(this.post()?._id ?? '', this.editForm.value)
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntil(this.destroy$), finalize(() => this.isSaving.set(false)))
       .subscribe({
         next: (res) => {
           const updated = res.data ?? { ...this.post(), ...this.editForm.value };
           this.post.set(updated);
           this.isEditing.set(false);
           this.imageGallery.set([]);
-          this.successMessage.set('Post updated successfully!');
-          setTimeout(() => {
-            this.successMessage.set('');
-            this.postUpdated.emit(updated);
-            this.closeModal();
-          }, 1500);
+          this.toastService.show('Post edited successfully', 'success');
+          this.postUpdated.emit(updated);
+          this.closeModal();
         },
         error: (err) => {
           this.errorMessage.set(err?.error?.message ?? 'Something went wrong. Please try again.');

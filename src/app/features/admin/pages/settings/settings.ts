@@ -9,6 +9,7 @@ import { ThemeService, Language } from '../../../../core/services/theme-service'
 import { User } from '../../../user/models/user.mode';
 import { AdminService } from '../../services/admin-service';
 import { MessageModal } from '../../../../shared/message-modal/message-modal';
+import { ToastService } from '../../../../core/services/toast.service';
 import { switchMap } from 'rxjs';
 
 type NotifKey = 'newPosts' | 'comments' | 'likes' | 'newUsers' | 'weeklyDigest' | 'security';
@@ -40,6 +41,7 @@ export class Settings implements OnInit {
   private destroyRef   = inject(DestroyRef);
   private route        = inject(ActivatedRoute);
   private router       = inject(Router);
+  private toastService = inject(ToastService);
   themeService         = inject(ThemeService);
 
   activeSection = signal<string>('profile');
@@ -271,13 +273,11 @@ export class Settings implements OnInit {
           this.user.set(res.data);
           this.isSaving.set(false);
           this.isEditing.set(false);
-          this.saveSuccess.set(true);
-          const t = setTimeout(() => this.saveSuccess.set(false), 3000);
-          this.destroyRef.onDestroy(() => clearTimeout(t));
+          this.toastService.show('Settings have been changed successfully', 'success');
         },
         error: (err) => {
           this.isSaving.set(false);
-          this.saveError.set(err?.error?.message ?? 'Failed to save. Try again.');
+          this.toastService.show(err?.error?.message ?? 'Failed to save. Try again.', 'error');
         },
       });
   }

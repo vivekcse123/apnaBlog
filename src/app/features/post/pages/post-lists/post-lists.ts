@@ -9,15 +9,14 @@ import { Post } from '../../../../core/models/post.model';
 import { CreatePost } from '../create-post/create-post';
 import { PostService } from '../../services/post-service';
 import { ViewPost } from '../../../../shared/view-post/view-post';
-import { MessageModal } from '../../../../shared/message-modal/message-modal';
 import { Auth } from '../../../../core/services/auth';
-import { LoaderService } from '../../../../core/services/loader-service';
+import { ToastService } from '../../../../core/services/toast.service';
 import { NotificationNavigationService, POST_NOTIFICATION_TYPES } from '../../../../core/services/open-notification/notification-navigation';
 
 @Component({
   selector: 'app-post-lists',
   standalone: true,
-  imports: [CommonModule, FormsModule, CreatePost, ViewPost, MessageModal],
+  imports: [CommonModule, FormsModule, CreatePost, ViewPost],
   templateUrl: './post-lists.html',
   styleUrl: './post-lists.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -28,8 +27,8 @@ export class PostLists implements OnInit {
   private postService  = inject(PostService);
   private destroyRef   = inject(DestroyRef);
   private authService  = inject(Auth);
-  private loader       = inject(LoaderService);
-  private navSvc       = inject(NotificationNavigationService); // ✅
+  private toastService = inject(ToastService);
+  private navSvc       = inject(NotificationNavigationService);
 
   allBlogs       = signal<Post[]>([]);
   isLoading      = signal(true);
@@ -170,31 +169,17 @@ loadPosts(userId?: string): void {
     if (!id) return;
 
     this.showConfirm.set(false);
-    this.loader.show('overlay', 'md');
 
-    this.postService.deletePost(id).pipe(
-      finalize(() => this.loader.hide())
-    ).subscribe({
+    this.postService.deletePost(id).subscribe({
       next: () => {
-        this.modalType.set('success');
-        this.modalTitle.set('Post Deleted');
-        this.modalMessage.set('The post has been deleted successfully.');
-        this.showMessage.set(true);
+        this.toastService.show('Post deleted successfully.', 'success');
         this.loadPosts();
       },
       error: err => {
-        this.modalType.set('error');
-        this.modalTitle.set('Delete Failed');
-        this.modalMessage.set(err?.error?.message ?? 'Failed to delete post.');
-        this.showMessage.set(true);
+        this.toastService.show(err?.error?.message ?? 'Failed to delete post.', 'error');
       },
     });
   }
-
-  showMessage  = signal(false);
-  modalType    = signal<'success' | 'error'>('success');
-  modalTitle   = signal('');
-  modalMessage = signal('');
 
   isPostViewed   = signal(false);
   selectedPostId = signal<string>('');
