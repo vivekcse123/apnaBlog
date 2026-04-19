@@ -42,17 +42,18 @@ export class NotificationNavigationService {
                              event.resourceId !== 'undefined';
     if (!hasValidResource) return;
 
-    const isAdmin = this.authService.isAdmin();
+    const isAdmin      = this.authService.isAdmin();
+    const isSuperAdmin = this.authService.isSuperAdmin();
 
     if (isAdmin) {
-      const adminId = this.authService.getCurrentUser()?.id
-                   ?? this.authService.getCurrentUser()?.id;
+      const adminId = this.authService.getCurrentUser()?.id;
       if (!adminId) return;
 
+      const prefix = isSuperAdmin ? 'super-admin' : 'admin';
       const targetPath = POST_NOTIFICATION_TYPES.includes(event.type)
-        ? ['admin', adminId, 'manage-blogs']
+        ? [prefix, adminId, 'manage-blogs']
         : USER_NOTIFICATION_TYPES.includes(event.type)
-          ? ['admin', adminId, 'manage-users']
+          ? [prefix, adminId, 'manage-users']
           : null;
 
       if (!targetPath) return;

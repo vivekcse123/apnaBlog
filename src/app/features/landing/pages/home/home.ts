@@ -21,7 +21,7 @@ import { User } from '../../../user/models/user.mode';
 import { VisitorService } from '../../../../core/services/visitor';
 import { WelcomeModal } from '../welcome.modal';
 import { FormatCountPipe } from '../../../../shared/pipes/format-count-pipe';
-import { PostCache } from '../../../post/services/post-cache';
+import { PostCache, PostWithTs } from '../../../post/services/post-cache';
 
 interface DrawerComment {
   _id?: string;
@@ -30,8 +30,6 @@ interface DrawerComment {
   user: string | null;
   createdAt: string;
 }
-
-interface PostWithTs extends Post { _ts: number; }
 
 const PAGE_SIZE         = 8;
 const COMMENT_PAGE_SIZE = 5;
@@ -285,7 +283,7 @@ export class Home implements OnInit, OnDestroy {
 
   // ── Core loading ──────────────────────────────────────────────────────────
 
-  private readonly STALE_THRESHOLD_MS = 60_000;
+  private readonly STALE_THRESHOLD_MS = 2 * 60_000; // 2 min — cache is valid for 5 min total
 
   private loadInitialData(): void {
     const cached = this.postCache.get();
