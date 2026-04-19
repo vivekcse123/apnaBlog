@@ -10,13 +10,14 @@ import { roleGuard } from './core/guards/role-guard';
 export const routes: Routes = [
     {
         path: '',
-        redirectTo: 'welcome',
-        pathMatch: 'full',
-    },
-    {
-        path: 'welcome',
         loadChildren: () => import('./features/landing/landing-module').then(m => m.LandingModule),
         title: 'ApnaInsights'
+    },
+    {
+        // Backward-compat: old bookmarks / indexed /welcome URLs → home
+        path: 'welcome',
+        redirectTo: '',
+        pathMatch: 'full',
     },
      {
         path: 'about',
