@@ -1,7 +1,8 @@
-import { Component, inject, signal, computed, OnInit, DestroyRef } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, DestroyRef, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { finalize } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { Post } from '../../../../core/models/post.model';
@@ -19,6 +20,7 @@ import { NotificationNavigationService, POST_NOTIFICATION_TYPES } from '../../..
   imports: [CommonModule, FormsModule, CreatePost, ViewPost, MessageModal],
   templateUrl: './post-lists.html',
   styleUrl: './post-lists.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PostLists implements OnInit {
 
@@ -30,9 +32,12 @@ export class PostLists implements OnInit {
   private navSvc       = inject(NotificationNavigationService); // ✅
 
   allBlogs       = signal<Post[]>([]);
+  isLoading      = signal(true);
   userId         = signal<string | null>(null);
   role           = signal<string>('');
   showCreateBlog = signal(false);
+
+  readonly skeletonRows = Array(6).fill(null);
 
   searchTitle      = '';
   debounceValue    = signal<string>('');
@@ -101,7 +106,6 @@ export class PostLists implements OnInit {
     });
 }
 
-// ✅ Remove onComplete callback — no longer needed
 loadPosts(userId?: string): void {
   const id = userId ?? this.userId();
   if (!id) return;
@@ -114,19 +118,16 @@ loadPosts(userId?: string): void {
     ? this.postService.getAllPostAdmin(1, 1000)
     : this.postService.getPostByUserId(id, 1, 1000);
 
-  this.loader.show('skeleton', 'md', this.itemsPerPage());
+  this.isLoading.set(true);
 
   posts$
-    .pipe(takeUntilDestroyed(this.destroyRef))
+    .pipe(
+      takeUntilDestroyed(this.destroyRef),
+      finalize(() => this.isLoading.set(false))
+    )
     .subscribe({
-      next: res => {
-        this.allBlogs.set(res.data || []);
-        this.loader.hide();
-      },
-      error: err => {
-        console.error(err?.error?.message);
-        this.loader.hide();
-      },
+      next: res => this.allBlogs.set(res.data || []),
+      error: err => console.error(err?.error?.message),
     });
 }
 
@@ -171,9 +172,10 @@ loadPosts(userId?: string): void {
     this.showConfirm.set(false);
     this.loader.show('overlay', 'md');
 
-    this.postService.deletePost(id).subscribe({
+    this.postService.deletePost(id).pipe(
+      finalize(() => this.loader.hide())
+    ).subscribe({
       next: () => {
-        this.loader.hide();
         this.modalType.set('success');
         this.modalTitle.set('Post Deleted');
         this.modalMessage.set('The post has been deleted successfully.');
@@ -181,7 +183,6 @@ loadPosts(userId?: string): void {
         this.loadPosts();
       },
       error: err => {
-        this.loader.hide();
         this.modalType.set('error');
         this.modalTitle.set('Delete Failed');
         this.modalMessage.set(err?.error?.message ?? 'Failed to delete post.');

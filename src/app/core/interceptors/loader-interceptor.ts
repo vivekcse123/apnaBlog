@@ -1,14 +1,5 @@
 import { HttpInterceptorFn } from '@angular/common/http';
-import { inject } from '@angular/core';
-import { finalize } from 'rxjs';
-import { LoaderService } from '../services/loader-service';
 
-export const loaderInterceptor: HttpInterceptorFn = (req, next) => {
-  const loader = inject(LoaderService);
-
-  loader.show();
-
-  return next(req).pipe(
-    finalize(() => loader.hide())
-  );
-};
+// Global HTTP loader removed — components manage their own loading states.
+// Keeping this file to avoid breaking the import in app.config.ts.
+export const loaderInterceptor: HttpInterceptorFn = (req, next) => next(req);

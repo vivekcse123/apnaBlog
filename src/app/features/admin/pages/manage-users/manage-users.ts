@@ -1,9 +1,10 @@
-import { Component, computed, inject, OnInit, DestroyRef, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, DestroyRef, signal, ChangeDetectionStrategy } from '@angular/core';
 import { AdminService } from '../../services/admin-service';
 import { User } from '../../../user/models/user.mode';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { finalize } from 'rxjs';
 import { ViewUser } from '../../../../shared/view-user/view-user';
 import { MessageModal } from '../../../../shared/message-modal/message-modal';
 import { DisabledDirective } from '../../../../shared/directives/highlight';
@@ -18,6 +19,7 @@ import { Auth } from '../../../../core/services/auth';
   imports: [CommonModule, FormsModule, ViewUser, MessageModal, DisabledDirective, CreateUser],
   templateUrl: './manage-users.html',
   styleUrls: ['./manage-users.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ManageUsers implements OnInit {
   private adminService = inject(AdminService);
@@ -26,7 +28,10 @@ export class ManageUsers implements OnInit {
   private navSvc       = inject(NotificationNavigationService);
   private authService  = inject(Auth);
 
-  allUsers = signal<User[]>([]);
+  allUsers  = signal<User[]>([]);
+  isLoading = signal(true);
+
+  readonly skeletonRows = Array(6).fill(null);
 
   currentPage = signal(1);
   limit       = signal(6);
@@ -94,7 +99,12 @@ loadUsers(): void {
     ? this.adminService.getAllUsersRaw(1, 1000)
     : this.adminService.getAllUsers(1, 100);
 
-  loader.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+  this.isLoading.set(true);
+
+  loader.pipe(
+    takeUntilDestroyed(this.destroyRef),
+    finalize(() => this.isLoading.set(false))
+  ).subscribe({
     next:  res => this.allUsers.set(res.data || []),
     error: err => console.error(err?.error?.message),
   });
