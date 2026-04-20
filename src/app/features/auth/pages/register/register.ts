@@ -57,11 +57,12 @@ export class Register implements OnInit{
     .subscribe({
       next: (res) =>{
         this.isLoading.set(false);
-        this.successMessage.set("User registered successfully...!");
+        const email = this.registerForm.get('email')?.value ?? 'your inbox';
+        this.successMessage.set(`Account created! A welcome email has been sent to ${email}. Redirecting to login…`);
         this.errorMessage.set('');
         setTimeout(() =>{
           this.router.navigate(['/auth/login']);
-        }, 300);
+        }, 3000);
       },
       error: (err) =>{
         this.isLoading.set(false);
