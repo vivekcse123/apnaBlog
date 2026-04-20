@@ -132,6 +132,7 @@ export class About implements OnInit, OnDestroy {
   }
 
   private injectJsonLd(): void {
+    if (this.document.querySelector('script[data-apna-schema]')) return;
 
     const schemas = [
 
