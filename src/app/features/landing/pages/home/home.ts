@@ -34,11 +34,6 @@ interface DrawerComment {
 const PAGE_SIZE         = 8;
 const COMMENT_PAGE_SIZE = 5;
 
-/**
- * How many posts to fetch per HTTP request.
- * Must be ≤ the backend's limit cap (raise cap to 100 in post.router.js —
- * see comment in loadFresh below).
- */
 const FETCH_LIMIT = 100;
 
 @Component({
@@ -120,7 +115,6 @@ export class Home implements OnInit, OnDestroy {
 
   private readingTimeCache = new Map<string, number>();
 
-  // ── Sorted pools ──────────────────────────────────────────────────────────
   private byLikes = computed(() =>
     [...this.allPosts()].sort((a, b) => b.likesCount - a.likesCount)
   );
@@ -212,7 +206,6 @@ export class Home implements OnInit, OnDestroy {
     this.commentFetchedCount() < this.totalCommentsCount()
   );
 
-  // ── Keyboard shortcuts ────────────────────────────────────────────────────
   @HostListener('document:keydown', ['$event'])
   onKeydown(event: KeyboardEvent): void {
     const tag = (event.target as Element).tagName;
@@ -234,7 +227,6 @@ export class Home implements OnInit, OnDestroy {
     }
   }
 
-  // ── Lifecycle ─────────────────────────────────────────────────────────────
   ngOnInit(): void {
     this.standalone = this.route.snapshot.data['standalone'] ?? this.standalone;
     this.setMetaTags();
@@ -281,9 +273,8 @@ export class Home implements OnInit, OnDestroy {
     scripts.forEach(s => s.remove());
   }
 
-  // ── Core loading ──────────────────────────────────────────────────────────
 
-  private readonly STALE_THRESHOLD_MS = 2 * 60_000; // 2 min — cache is valid for 5 min total
+  private readonly STALE_THRESHOLD_MS = 2 * 60_000;
 
   private loadInitialData(): void {
     const cached = this.postCache.get();
@@ -303,22 +294,6 @@ export class Home implements OnInit, OnDestroy {
     this.fetchCurrentUser();
   }
 
-  /**
-   * ── Fetch ALL published posts, no matter how many exist ──────────────────
-   *
-   * IMPORTANT — also make this one-line change in post.router.js:
-   *   const limit = Math.max(1, Math.min(parseInt(req.query.limit) || 10, 100));
-   *                                                                        ^^^
-   *   Change 50 → 100  so FETCH_LIMIT=100 actually works server-side.
-   *
-   * How it works:
-   *   Step 1 — Fetch page 1. The response includes `totalPages`.
-   *   Step 2 — If totalPages > 1, fire all remaining pages in parallel (forkJoin).
-   *   Step 3 — Merge all batches, filter to published, commit to signal.
-   *
-   * With 64 posts and FETCH_LIMIT=100 → only 1 HTTP request is needed (fits
-   * in a single page). If posts grow to 250 → 3 parallel requests. Automatic.
-   */
   private loadFresh(showLoader: boolean): void {
     if (showLoader) this.isLoading.set(true);
 
@@ -337,14 +312,12 @@ export class Home implements OnInit, OnDestroy {
         const firstBatch: Post[] = firstRes.data       ?? [];
         const totalPages: number = firstRes.totalPages ?? 1;
 
-        // ── All posts fit in one page — done ────────────────────────────────
         if (totalPages <= 1) {
           this.commitPosts(firstBatch);
           this.isLoading.set(false);
           return;
         }
 
-        // ── More pages exist — fetch them all in parallel ───────────────────
         const pageNums = Array.from({ length: totalPages - 1 }, (_, i) => i + 2);
 
         forkJoin(
@@ -352,7 +325,6 @@ export class Home implements OnInit, OnDestroy {
             this.postService.getAllPost(page, FETCH_LIMIT).pipe(
               catchError(err => {
                 console.error(`[Home] page ${page} failed:`, err);
-                // Return empty shell — forkJoin won't abort on one failed page
                 return of({
                   data: [] as Post[],
                   totalPages,
@@ -378,10 +350,6 @@ export class Home implements OnInit, OnDestroy {
       });
   }
 
-  /**
-   * Dedup by _id, filter to published + legacy-draft, stamp _ts, write to signal + cache.
-   * 'draft' = posts created before the pending-review workflow; they must remain visible.
-   */
   private commitPosts(raw: Post[]): void {
     const seen    = new Set<string>();
     const visible: PostWithTs[] = [];
@@ -416,8 +384,6 @@ export class Home implements OnInit, OnDestroy {
       )
       .subscribe(res => this.currentUserData.set(res.data ?? null));
   }
-
-  // ── Meta / SEO ────────────────────────────────────────────────────────────
 
   private setMetaTags(): void {
     this.titleService.setTitle('ApnaInsights — Community Stories from Every Corner of India');
@@ -490,8 +456,6 @@ export class Home implements OnInit, OnDestroy {
     } catch { /* non-critical */ }
   }
 
-  // ── Welcome modal ─────────────────────────────────────────────────────────
-
   dismissWelcomeModal(): void {
     this.showWelcomeModal.set(false);
     if (isPlatformBrowser(this.platformId)) {
@@ -499,13 +463,9 @@ export class Home implements OnInit, OnDestroy {
     }
   }
 
-  // ── Search ────────────────────────────────────────────────────────────────
-
   onSearchInput(value: string): void {
     this.searchInput$.next(value);
   }
-
-  // ── Helpers ───────────────────────────────────────────────────────────────
 
   isNew(post: Post): boolean {
     return (Date.now() - new Date(post.createdAt).getTime()) < 48 * 60 * 60 * 1000;
@@ -550,8 +510,6 @@ export class Home implements OnInit, OnDestroy {
     this.postService.addView(post._id).subscribe();
   }
 
-  // ── Likes ─────────────────────────────────────────────────────────────────
-
   private restoreLikedIds(): void {
     try {
       const stored = localStorage.getItem('apna_liked_posts');
@@ -591,8 +549,6 @@ export class Home implements OnInit, OnDestroy {
     }
   }
 
-  // ── Bookmarks ─────────────────────────────────────────────────────────────
-
   private restoreBookmarkedIds(): void {
     try {
       const stored = localStorage.getItem('apna_bookmarked_posts');
@@ -614,8 +570,6 @@ export class Home implements OnInit, OnDestroy {
     this.bookmarkedPostIds.set(newSet);
     this.persistBookmarkedIds(newSet);
   }
-
-  // ── Comment drawer ────────────────────────────────────────────────────────
 
   openCommentDrawer(post: Post, event: Event): void {
     event.stopPropagation();
@@ -647,7 +601,6 @@ export class Home implements OnInit, OnDestroy {
       next: (res) => {
         const incoming: DrawerComment[] = (res.comments ?? []) as DrawerComment[];
 
-        // ✅ backend returns `totalComments` — not `total` or `totalCount`
         const total: number = res.totalComments ?? incoming.length;
 
         this.drawerComments.set(
@@ -673,13 +626,10 @@ export class Home implements OnInit, OnDestroy {
     this.loadComments(postId, this.commentFetchedCount());
   }
 
-  // ── Auth helpers ──────────────────────────────────────────────────────────
-
   get currentUser(): User | null { return this.currentUserData(); }
   get isLoggedIn(): boolean      { return this.auth.isAuthorized() && !!this.currentUserData(); }
   get loggedInUserName(): string { return this.currentUserData()?.name ?? 'Anonymous'; }
 
-  // ── Submit comment ────────────────────────────────────────────────────────
 
   submitComment(): void {
     const text = this.commentText().trim();
@@ -755,8 +705,6 @@ export class Home implements OnInit, OnDestroy {
       },
     });
   }
-
-  // ── Utility ───────────────────────────────────────────────────────────────
 
   private patchPost(postId: string, updates: Partial<Post>): void {
     this.allPosts.set(
