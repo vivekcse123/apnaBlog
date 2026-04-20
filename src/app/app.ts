@@ -26,9 +26,6 @@ export class App implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.routerSub = this.router.events.subscribe(event => {
       if (event instanceof NavigationStart) {
-        // Skip overlay on the initial page load — prevents the fixed overlay
-        // from blocking AdSense / crawlers before Angular finishes mounting.
-        // Each component owns its own skeleton loader for first-render feedback.
         if (!this.isFirstNav) {
           this.loaderService.show('overlay', 'sm');
         }
