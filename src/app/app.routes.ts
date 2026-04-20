@@ -14,7 +14,6 @@ export const routes: Routes = [
         title: 'ApnaInsights'
     },
     {
-        // Backward-compat: old bookmarks / indexed /welcome URLs → home
         path: 'welcome',
         redirectTo: '',
         pathMatch: 'full',
