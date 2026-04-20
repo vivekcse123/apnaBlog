@@ -2,6 +2,7 @@ import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Meta } from '@angular/platform-browser';
 import { Auth } from '../../../../core/services/auth';
 import { ToastService } from '../../../../core/services/toast.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -20,6 +21,7 @@ export class Login implements OnInit {
   private route        = inject(ActivatedRoute);
   private destroyRef   = inject(DestroyRef);
   private toastService = inject(ToastService);
+  private meta         = inject(Meta);
 
   loginForm: FormGroup = new FormGroup({});
 
@@ -29,6 +31,8 @@ export class Login implements OnInit {
   showPassword   = false;
 
   ngOnInit(): void {
+    this.meta.updateTag({ name: 'robots', content: 'noindex, nofollow' });
+
     this.loginForm = this.fb.group({
       email:   new FormControl('', [
         Validators.required,

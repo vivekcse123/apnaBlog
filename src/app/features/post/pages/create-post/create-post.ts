@@ -41,9 +41,10 @@ export class CreatePost {
   uploadMode       = signal<'url' | 'file'>('url');
 
   // ── Role-based flag ──────────────────────────────────────
-  isAdmin = computed(() =>
-    this.authService.getCurrentUser()?.role?.toLowerCase() === 'admin'
-  );
+  isAdmin = computed(() => {
+    const role = this.authService.getCurrentUser()?.role?.toLowerCase();
+    return role === 'admin' || role === 'super_admin';
+  });
 
   categoryOptions = [
     'Update', 'News',
