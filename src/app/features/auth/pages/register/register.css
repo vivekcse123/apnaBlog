@@ -420,6 +420,7 @@ form input::placeholder { color: var(--text-muted); }
   display: flex;
   align-items: center;
   gap: 8px;
+  margin-top: 10px;
 }
 
 .show-password-row input[type="checkbox"] {
