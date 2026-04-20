@@ -2,6 +2,7 @@ import { Component, DestroyRef, inject, OnDestroy, OnInit, signal } from '@angul
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Meta } from '@angular/platform-browser';
 import { Auth } from '../../../../core/services/auth';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
@@ -17,10 +18,13 @@ export class Register implements OnInit{
   private authService = inject(Auth);
   private router = inject(Router);
   private destroyRef = inject(DestroyRef);
+  private meta = inject(Meta);
 
   registerForm: FormGroup = new FormGroup({});
 
   ngOnInit(): void {
+    this.meta.updateTag({ name: 'robots', content: 'noindex, nofollow' });
+
     this.registerForm = this.fb.group({
       name: new FormControl('', [Validators.required, Validators.pattern(/^[a-zA-Z ]+$/), Validators.minLength(5), Validators.maxLength(15)]),
       email: new FormControl('', [Validators.required, Validators.pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)]),
