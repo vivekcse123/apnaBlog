@@ -42,17 +42,30 @@ module.exports = async function handler(req, res) {
 
     // Static routes
     const staticLinks = [
-      { url: '/',       changefreq: 'daily',   priority: 1.0 },
-      { url: '/about',  changefreq: 'monthly',  priority: 0.8 },
+      { url: '/',      changefreq: 'daily',   priority: 1.0, lastmod: new Date().toISOString() },
+      { url: '/about', changefreq: 'monthly', priority: 0.8, lastmod: '2026-01-01T00:00:00.000Z' },
     ];
 
-    // Dynamic blog routes
-    const postLinks = allPosts.map(post => ({
-      url: `/blog/${post._id}`,
-      changefreq: 'weekly',
-      priority: 0.7,
-      lastmod: post.updatedAt || new Date().toISOString()
-    }));
+    // Dynamic blog routes — published posts only; drafts are legacy visible posts
+    // but excluding them keeps the sitemap focused on canonically published content
+    const publishedPosts = allPosts.filter(post => post.status === 'published' && post.title);
+
+    const postLinks = publishedPosts.map(post => {
+      const entry = {
+        url: `/blog/${post._id}`,
+        changefreq: 'weekly',
+        priority: 0.7,
+        lastmod: post.updatedAt || post.createdAt || new Date().toISOString(),
+      };
+      if (post.featuredImage) {
+        entry.img = [{
+          url: post.featuredImage,
+          title: post.title,
+          caption: post.description || post.title,
+        }];
+      }
+      return entry;
+    });
 
     const stream = new SitemapStream({
       hostname: 'https://apnainsights.com'

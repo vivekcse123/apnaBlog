@@ -1,4 +1,5 @@
 import { CommonModule, isPlatformBrowser, DOCUMENT } from '@angular/common';
+import { Meta } from '@angular/platform-browser';
 import {
   Component, DestroyRef, inject, OnInit, OnDestroy,
   AfterViewInit, ViewChild, ElementRef, signal, computed, PLATFORM_ID
@@ -40,6 +41,7 @@ export class UserHome implements OnInit, AfterViewInit, OnDestroy {
   private platformId     = inject(PLATFORM_ID);
   private document       = inject(DOCUMENT);
   private dashboardCache = inject(DashboardCache);
+  private meta           = inject(Meta);
 
   currentDate = new Date();
   selectedRange: '7d' | '14d' | '30d' = '14d';
@@ -85,6 +87,7 @@ export class UserHome implements OnInit, AfterViewInit, OnDestroy {
   private allPosts: any[] = [];
 
   ngOnInit(): void {
+    this.meta.updateTag({ name: 'robots', content: 'noindex, nofollow' });
     const uid = this.route.snapshot.params['id'];
     this.userId.set(uid);
     if (!uid) return;

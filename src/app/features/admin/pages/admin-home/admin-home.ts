@@ -4,6 +4,7 @@ import {
   AfterViewInit, ViewChild, ElementRef, signal
 } from '@angular/core';
 import { RouterModule } from '@angular/router';
+import { Meta } from '@angular/platform-browser';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { Chart, registerables } from 'chart.js';
@@ -43,6 +44,7 @@ export class AdminHome implements OnInit, AfterViewInit, OnDestroy {
   private destroyRef      = inject(DestroyRef);
   private authService     = inject(Auth);
   private dashboardCache  = inject(DashboardCache);
+  private meta            = inject(Meta);
 
   readonly currentUser = this.authService.getCurrentUser();
   readonly userId      = this.currentUser?.id ?? '';
@@ -87,6 +89,7 @@ export class AdminHome implements OnInit, AfterViewInit, OnDestroy {
 
   // ── Lifecycle ─────────────────────────────────────────────
   ngOnInit(): void {
+    this.meta.updateTag({ name: 'robots', content: 'noindex, nofollow' });
     this.loadDashboardData();
   }
 
