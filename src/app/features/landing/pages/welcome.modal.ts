@@ -29,7 +29,7 @@ interface Feature {
         <!-- Always-visible header — X button never scrolls away -->
         <div class="wm-head">
           <a class="app-logo" routerLink="/" (click)="close.emit()">
-            <img class="app-logo-img" src="/logo.png" alt="ApnaInsights" />
+            <img class="app-logo-img" src="/logo-96.png" alt="ApnaInsights" />
             <span class="app-logo-text">ApnaInsights</span>
           </a>
           <button class="wm-x-btn" (click)="close.emit()" aria-label="Close welcome modal">✕</button>

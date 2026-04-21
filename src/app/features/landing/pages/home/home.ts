@@ -396,15 +396,15 @@ export class Home implements OnInit, OnDestroy {
     this.meta.updateTag({ property: 'og:description',  content: 'Discover real stories from real people across India. 10K+ blogs on Technology, Lifestyle, Health, Business, Village Life and more. Free to read, free to write.' });
     this.meta.updateTag({ property: 'og:url',          content: 'https://apnainsights.com/' });
     this.meta.updateTag({ property: 'og:site_name',    content: 'ApnaInsights' });
-    this.meta.updateTag({ property: 'og:image',        content: 'https://apnainsights.com/logo.png' });
-    this.meta.updateTag({ property: 'og:image:width',  content: '1024' });
-    this.meta.updateTag({ property: 'og:image:height', content: '1024' });
+    this.meta.updateTag({ property: 'og:image',        content: 'https://apnainsights.com/og-image.png' });
+    this.meta.updateTag({ property: 'og:image:width',  content: '1200' });
+    this.meta.updateTag({ property: 'og:image:height', content: '630' });
     this.meta.updateTag({ property: 'og:image:alt',    content: 'ApnaInsights — Community Stories from Every Corner of India' });
     this.meta.updateTag({ property: 'og:locale',       content: 'en_IN' });
     this.meta.updateTag({ name: 'twitter:card',        content: 'summary_large_image' });
     this.meta.updateTag({ name: 'twitter:title',       content: 'ApnaInsights — Community Stories from India' });
     this.meta.updateTag({ name: 'twitter:description', content: 'Real stories from real people. 10K+ blogs on technology, lifestyle, health, village life. Free community platform.' });
-    this.meta.updateTag({ name: 'twitter:image',       content: 'https://apnainsights.com/logo.png' });
+    this.meta.updateTag({ name: 'twitter:image',       content: 'https://apnainsights.com/og-image.png' });
     this.meta.updateTag({ name: 'twitter:site',        content: '@apnainsights' });
 
     let canonical = this.document.querySelector('link[rel="canonical"]') as HTMLLinkElement;

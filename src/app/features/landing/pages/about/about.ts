@@ -109,16 +109,16 @@ export class About implements OnInit, OnDestroy {
     this.meta.updateTag({ property: 'og:description', content: 'ApnaInsights is India\'s community-first blogging platform where real people share real experiences. 10K+ stories, 5K+ active writers, 50K+ monthly readers.' });
     this.meta.updateTag({ property: 'og:url', content: 'https://apnainsights.com/about' });
     this.meta.updateTag({ property: 'og:site_name', content: 'ApnaInsights' });
-    this.meta.updateTag({ property: 'og:image', content: 'https://apnainsights.com/logo.png' });
-    this.meta.updateTag({ property: 'og:image:width', content: '1024' });
-    this.meta.updateTag({ property: 'og:image:height', content: '1024' });
+    this.meta.updateTag({ property: 'og:image', content: 'https://apnainsights.com/og-image.png' });
+    this.meta.updateTag({ property: 'og:image:width', content: '1200' });
+    this.meta.updateTag({ property: 'og:image:height', content: '630' });
     this.meta.updateTag({ property: 'og:image:alt', content: 'ApnaInsights - Community Blogging Platform for India' });
     this.meta.updateTag({ property: 'og:locale', content: 'en_IN' });
 
     this.meta.updateTag({ name: 'twitter:card', content: 'summary_large_image' });
     this.meta.updateTag({ name: 'twitter:title', content: 'About ApnaInsights | Community Blogging Platform' });
     this.meta.updateTag({ name: 'twitter:description', content: 'India\'s community-first blogging platform. Write, share, and connect. 10K+ stories published. Free to join.' });
-    this.meta.updateTag({ name: 'twitter:image', content: 'https://apnainsights.com/logo.png' });
+    this.meta.updateTag({ name: 'twitter:image', content: 'https://apnainsights.com/og-image.png' });
     this.meta.updateTag({ name: 'twitter:site', content: '@apnainsights' });
     this.meta.updateTag({ name: 'twitter:creator', content: '@apnainsights' });
 

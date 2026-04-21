@@ -399,42 +399,96 @@ export class BlogDetail implements OnInit, AfterViewInit {
     this.meta.updateTag({ name: 'twitter:title',       content: post.title });
     this.meta.updateTag({ name: 'twitter:description', content: post.description || post.title });
     if (post.featuredImage) {
-      this.meta.updateTag({ property: 'og:image',  content: post.featuredImage });
-      this.meta.updateTag({ name: 'twitter:image', content: post.featuredImage });
+      this.meta.updateTag({ property: 'og:image',     content: post.featuredImage });
+      this.meta.updateTag({ property: 'og:image:alt', content: post.title });
+      this.meta.updateTag({ name: 'twitter:image',     content: post.featuredImage });
+      this.meta.updateTag({ name: 'twitter:image:alt', content: post.title });
     }
-    if (isPlatformBrowser(this.platformId)) {
-      let canonical = this.document.querySelector("link[rel='canonical']") as HTMLLinkElement;
-      if (!canonical) {
-        canonical = this.document.createElement('link') as HTMLLinkElement;
-        canonical.rel = 'canonical';
-        this.document.head.appendChild(canonical);
+    // Article-specific Open Graph tags — help Facebook, LinkedIn, and content aggregators
+    // understand this is a time-stamped article with category context
+    this.meta.updateTag({ property: 'article:published_time', content: new Date(post.createdAt).toISOString() });
+    this.meta.updateTag({ property: 'article:modified_time',  content: new Date(post.updatedAt ?? post.createdAt).toISOString() });
+    if (post.categories?.length) {
+      this.meta.updateTag({ property: 'article:section', content: post.categories[0] });
+      // Remove stale article:tag elements before adding new ones — addTag() appends
+      // rather than replaces, so navigating blog→blog would accumulate duplicate tags
+      let stale: HTMLMetaElement | null;
+      while ((stale = this.meta.getTag('property="article:tag"'))) {
+        this.meta.removeTagElement(stale);
       }
-      canonical.href = canonicalUrl;
-      if (post.featuredImage) {
-        const already = this.document.querySelector(`link[rel='preload'][href='${post.featuredImage}']`);
-        if (!already) {
-          const preload = this.document.createElement('link') as HTMLLinkElement;
-          preload.rel = 'preload'; preload.as = 'image'; preload.href = post.featuredImage;
-          this.document.head.appendChild(preload);
-        }
+      post.categories.forEach(cat => this.meta.addTag({ property: 'article:tag', content: cat }));
+    }
+    if ((post.user as any)?.name) {
+      this.meta.updateTag({ property: 'article:author', content: (post.user as any).name });
+    }
+    // Canonical must be set in both SSR and browser so Google sees it in the initial HTML
+    let canonical = this.document.querySelector("link[rel='canonical']") as HTMLLinkElement;
+    if (!canonical) {
+      canonical = this.document.createElement('link') as HTMLLinkElement;
+      canonical.rel = 'canonical';
+      this.document.head.appendChild(canonical);
+    }
+    canonical.href = canonicalUrl;
+    // Preload hint is browser-only (no benefit during SSR)
+    if (isPlatformBrowser(this.platformId) && post.featuredImage) {
+      const already = this.document.querySelector(`link[rel='preload'][href='${post.featuredImage}']`);
+      if (!already) {
+        const preload = this.document.createElement('link') as HTMLLinkElement;
+        preload.rel = 'preload'; preload.as = 'image'; preload.href = post.featuredImage;
+        this.document.head.appendChild(preload);
       }
     }
     this.injectArticleSchema(post);
   }
 
   private injectArticleSchema(post: Post): void {
-    if (!isPlatformBrowser(this.platformId)) return;
-    const schema = {
-      '@context': 'https://schema.org', '@type': 'Article',
-      'headline': post.title, 'description': post.description,
-      'image': post.featuredImage, 'datePublished': post.createdAt, 'dateModified': post.updatedAt ?? post.createdAt,
-      'author': { '@type': 'Person', 'name': (post.user as any)?.name ?? 'Anonymous Author' },
-      'publisher': {
-        '@type': 'Organization', 'name': 'ApnaInsights',
-        'logo': { '@type': 'ImageObject', 'url': 'https://apnainsights.com/logo.png', 'width': 1024, 'height': 1024 }
+    // Run in both SSR and browser so JSON-LD is present in the server-rendered HTML Google crawls
+    const postUrl = `https://apnainsights.com/blog/${post._id}`;
+    const authorName = (post.user as any)?.name ?? 'Anonymous Author';
+
+    // Breadcrumb: Home → Category (if any) → Article
+    const breadcrumbItems: any[] = [
+      { '@type': 'ListItem', 'position': 1, 'name': 'Home', 'item': 'https://apnainsights.com' },
+    ];
+    if (post.categories?.length) {
+      breadcrumbItems.push({
+        '@type': 'ListItem', 'position': 2,
+        'name': post.categories[0],
+        'item': `https://apnainsights.com/?category=${encodeURIComponent(post.categories[0])}`,
+      });
+      breadcrumbItems.push({ '@type': 'ListItem', 'position': 3, 'name': post.title, 'item': postUrl });
+    } else {
+      breadcrumbItems.push({ '@type': 'ListItem', 'position': 2, 'name': post.title, 'item': postUrl });
+    }
+
+    const schemas: any[] = [
+      {
+        '@context': 'https://schema.org',
+        '@type': 'Article',
+        'headline': post.title,
+        'description': post.description || post.title,
+        // Google requires ImageObject (not a plain string) for Article rich results eligibility
+        'image': post.featuredImage
+          ? { '@type': 'ImageObject', 'url': post.featuredImage, 'caption': post.title }
+          : { '@type': 'ImageObject', 'url': 'https://apnainsights.com/og-image.png', 'width': 1200, 'height': 630 },
+        'datePublished': new Date(post.createdAt).toISOString(),
+        'dateModified':  new Date(post.updatedAt ?? post.createdAt).toISOString(),
+        'author': { '@type': 'Person', 'name': authorName },
+        'keywords': post.categories?.join(', ') || undefined,
+        'articleSection': post.categories?.[0] || undefined,
+        'publisher': {
+          '@type': 'Organization', 'name': 'ApnaInsights',
+          'logo': { '@type': 'ImageObject', 'url': 'https://apnainsights.com/logo.png', 'width': 1024, 'height': 1024 }
+        },
+        'mainEntityOfPage': { '@type': 'WebPage', '@id': postUrl },
       },
-      'mainEntityOfPage': `https://apnainsights.com/blog/${post._id}`
-    };
+      {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        'itemListElement': breadcrumbItems,
+      },
+    ];
+
     let el = this.document.getElementById('article-schema');
     if (!el) {
       el = this.document.createElement('script');
@@ -442,7 +496,7 @@ export class BlogDetail implements OnInit, AfterViewInit {
       (el as HTMLScriptElement).type = 'application/ld+json';
       this.document.head.appendChild(el);
     }
-    el.textContent = JSON.stringify(schema);
+    el.textContent = JSON.stringify(schemas);
   }
 
   addView(post: Post): void {
