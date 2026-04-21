@@ -754,68 +754,6 @@
     </div>
   </section>
 
-  <section class="legal-section" id="legal" aria-labelledby="legal-heading">
-    <div class="section-inner">
-      <h2 id="legal-heading" class="visually-hidden">Legal Information</h2>
-      <div class="legal-grid">
-
-        <div class="legal-card" id="privacy">
-          <div class="legal-card-header">
-            <div class="legal-icon" aria-hidden="true">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="#43cea2" stroke-width="2" stroke-linejoin="round"/>
-              </svg>
-            </div>
-            <h3>Privacy Policy</h3>
-            <time class="legal-date" datetime="2025-01">Effective: January 2025</time>
-          </div>
-          <div class="legal-points" role="list">
-            <div class="legal-point" role="listitem">
-              <span class="point-dot" aria-hidden="true"></span>
-              <p>We collect only the information necessary to provide our services — your name, email, and content you publish. We never sell your personal data to third parties under any circumstances.</p>
-            </div>
-            <div class="legal-point" role="listitem">
-              <span class="point-dot" aria-hidden="true"></span>
-              <p>Your data is stored securely using industry-standard encryption. You have the right to request deletion of your account and all associated data at any time by contacting our support team.</p>
-            </div>
-            <div class="legal-point" role="listitem">
-              <span class="point-dot" aria-hidden="true"></span>
-              <p>We use cookies solely to maintain your session and improve your experience. No third-party tracking or advertising cookies are used on ApnaInsights.</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="legal-card" id="terms">
-          <div class="legal-card-header">
-            <div class="legal-icon legal-icon-alt" aria-hidden="true">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="#185a9d" stroke-width="2" stroke-linejoin="round"/>
-                <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" stroke="#185a9d" stroke-width="2" stroke-linecap="round"/>
-              </svg>
-            </div>
-            <h3>Terms of Service</h3>
-            <time class="legal-date" datetime="2025-01">Effective: January 2025</time>
-          </div>
-          <div class="legal-points" role="list">
-            <div class="legal-point" role="listitem">
-              <span class="point-dot point-dot-alt" aria-hidden="true"></span>
-              <p>By using ApnaInsights, you agree to publish only original content that does not violate copyright, spread misinformation, or promote hate speech. Violations may result in account suspension.</p>
-            </div>
-            <div class="legal-point" role="listitem">
-              <span class="point-dot point-dot-alt" aria-hidden="true"></span>
-              <p>All content published on ApnaInsights remains the intellectual property of its respective authors. ApnaInsights holds a non-exclusive license to display your content on the platform.</p>
-            </div>
-            <div class="legal-point" role="listitem">
-              <span class="point-dot point-dot-alt" aria-hidden="true"></span>
-              <p>ApnaInsights reserves the right to remove content or suspend accounts that violate our community guidelines. We are not liable for user-generated content published on the platform.</p>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
   <footer class="about-footer" role="contentinfo">
     <div class="footer-inner">
       <div class="footer-logo">
@@ -826,9 +764,9 @@
       </div>
       <p class="footer-tagline">Every story matters. Every voice belongs.</p>
       <nav class="footer-links" aria-label="Footer navigation">
-        <a (click)="scrollTo('privacy')" class="footer-link" role="button" tabindex="0" aria-label="Read our Privacy Policy">Privacy Policy</a>
+        <a routerLink="/privacy-policy" class="footer-link" aria-label="Read our Privacy Policy">Privacy Policy</a>
         <span class="dot" aria-hidden="true">·</span>
-        <a (click)="scrollTo('terms')" class="footer-link" role="button" tabindex="0" aria-label="Read our Terms of Service">Terms of Service</a>
+        <a routerLink="/terms" class="footer-link" aria-label="Read our Terms of Service">Terms of Service</a>
         <span class="dot" aria-hidden="true">·</span>
         <a (click)="scrollToContact()" class="footer-link" role="button" tabindex="0" aria-label="Contact Us">Contact Us</a>
         <span class="dot" aria-hidden="true">·</span>

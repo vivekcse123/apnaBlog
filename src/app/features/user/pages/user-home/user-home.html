@@ -602,7 +602,7 @@
                       <span>💬 {{ blog.commentsCount ?? 0 }}</span>
                     </div>
                   </div>
-                  <button class="blog-modal-view-btn" (click)="openBlog(blog._id)"
+                  <button class="blog-modal-view-btn" (click)="openBlog(blog.slug || blog._id)"
                     type="button">
                     View →
                   </button>

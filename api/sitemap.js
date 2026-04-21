@@ -42,8 +42,10 @@ module.exports = async function handler(req, res) {
 
     // Static routes
     const staticLinks = [
-      { url: '/',      changefreq: 'daily',   priority: 1.0, lastmod: new Date().toISOString() },
-      { url: '/about', changefreq: 'monthly', priority: 0.8, lastmod: '2026-01-01T00:00:00.000Z' },
+      { url: '/',               changefreq: 'daily',   priority: 1.0, lastmod: new Date().toISOString() },
+      { url: '/about',          changefreq: 'monthly', priority: 0.8, lastmod: '2026-01-01T00:00:00.000Z' },
+      { url: '/privacy-policy', changefreq: 'yearly',  priority: 0.3, lastmod: '2026-04-01T00:00:00.000Z' },
+      { url: '/terms',          changefreq: 'yearly',  priority: 0.3, lastmod: '2026-04-01T00:00:00.000Z' },
     ];
 
     // Dynamic blog routes — published posts only; drafts are legacy visible posts
@@ -52,7 +54,7 @@ module.exports = async function handler(req, res) {
 
     const postLinks = publishedPosts.map(post => {
       const entry = {
-        url: `/blog/${post._id}`,
+        url: `/blog/${post.slug || post._id}`,
         changefreq: 'weekly',
         priority: 0.7,
         lastmod: post.updatedAt || post.createdAt || new Date().toISOString(),

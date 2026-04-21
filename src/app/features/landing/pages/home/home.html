@@ -361,7 +361,7 @@
       <meta itemprop="headline"       [attr.content]="blog.title" />
       <meta itemprop="description"    [attr.content]="blog.description" />
       <meta itemprop="datePublished"  [attr.content]="blog.createdAt" />
-      <meta itemprop="url"            [attr.content]="'https://apnainsights.com/blog/' + blog._id" />
+      <meta itemprop="url"            [attr.content]="'https://apnainsights.com/blog/' + (blog.slug || blog._id)" />
       @if (blog.categories?.[0]) {
         <meta itemprop="articleSection" [attr.content]="blog.categories[0]" />
       }
@@ -384,7 +384,7 @@
         <meta itemprop="userInteractionCount" [attr.content]="blog.views" />
       </div>
 
-      <div class="card-img-wrap" (click)="readBlog(blog._id)">
+      <div class="card-img-wrap" (click)="readBlog(blog.slug || blog._id)">
         @if (blog.featuredImage) {
           <img
             itemprop="image"
@@ -407,7 +407,7 @@
         }
       </div>
 
-      <div class="card-body" (click)="readBlog(blog._id)">
+      <div class="card-body" (click)="readBlog(blog.slug || blog._id)">
         <h3 itemprop="name">{{ blog.title }}</h3>
         <p itemprop="abstract">{{ blog.description }}</p>
         <div class="card-author-row">
@@ -462,8 +462,8 @@
           </button>
           
           <a class="read-btn"
-             [attr.href]="'/blog/' + blog._id"
-             (click)="$event.preventDefault(); readBlog(blog._id)"
+             [attr.href]="'/blog/' + (blog.slug || blog._id)"
+             (click)="$event.preventDefault(); readBlog(blog.slug || blog._id)"
              [attr.aria-label]="'Read story: ' + blog.title"
              itemprop="url">
             Read →
@@ -685,6 +685,10 @@
       <a (click)="selectedCategory.set('Health')" class="footer-link" role="button" tabindex="0">Health Stories</a>
       <span class="footer-dot" aria-hidden="true">·</span>
       <a (click)="selectedCategory.set('Village')" class="footer-link" role="button" tabindex="0">Village Life</a>
+      <span class="footer-dot" aria-hidden="true">·</span>
+      <a routerLink="/privacy-policy" class="footer-link">Privacy Policy</a>
+      <span class="footer-dot" aria-hidden="true">·</span>
+      <a routerLink="/terms" class="footer-link">Terms of Service</a>
     </nav>
 
     <p class="footer-seo-copy">

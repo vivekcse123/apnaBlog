@@ -8,7 +8,7 @@ Disallow: /user/
 Disallow: /admin/
 Disallow: /super-admin/
 
-# ── Google AdSense & Ads crawlers (must be explicitly allowed) ────────────────
+# ── Google AdSense &amp; Ads crawlers (must be explicitly allowed) ────────────────
 # Mediapartners-Google: crawls pages to select relevant ads
 User-agent: Mediapartners-Google
 Allow: /
