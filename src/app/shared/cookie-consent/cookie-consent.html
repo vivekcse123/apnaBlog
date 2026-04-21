@@ -1,0 +1,26 @@
+@if (visible()) {
+  <div class="cookie-bar" role="dialog" aria-live="polite" aria-label="Cookie consent">
+    <div class="cookie-bar-inner">
+
+      <div class="cookie-icon" aria-hidden="true">🍪</div>
+
+      <div class="cookie-text">
+        <p>
+          We use cookies to improve your experience and serve relevant ads via
+          <strong>Google AdSense</strong>. By continuing, you accept our use of cookies.
+          <a routerLink="/privacy-policy" class="cookie-link">Privacy Policy</a>
+        </p>
+      </div>
+
+      <div class="cookie-actions">
+        <button class="cookie-btn cookie-decline" (click)="decline()" type="button" aria-label="Decline cookies">
+          Decline
+        </button>
+        <button class="cookie-btn cookie-accept" (click)="accept()" type="button" aria-label="Accept cookies">
+          Accept All
+        </button>
+      </div>
+
+    </div>
+  </div>
+}

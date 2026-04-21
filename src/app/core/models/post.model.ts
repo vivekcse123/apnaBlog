@@ -18,6 +18,7 @@ export interface EditHistoryEntry {
 
 export interface Post {
   _id: string;
+  slug?: string;
   user: User;
   title: string;
   description: string;

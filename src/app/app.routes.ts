@@ -24,6 +24,16 @@ export const routes: Routes = [
         title: 'ApnaInsights - About'
     },
     {
+        path: 'privacy-policy',
+        loadComponent: () => import('./features/landing/pages/privacy-policy/privacy-policy').then(m => m.PrivacyPolicy),
+        title: 'Privacy Policy | ApnaInsights'
+    },
+    {
+        path: 'terms',
+        loadComponent: () => import('./features/landing/pages/terms/terms').then(m => m.Terms),
+        title: 'Terms of Service | ApnaInsights'
+    },
+    {
         path: 'blog/:id',
         loadComponent: () => import('./features/landing/pages/blog-detail/blog-detail').then(m => m.BlogDetail),
         data: {

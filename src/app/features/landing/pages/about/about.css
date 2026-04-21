@@ -1387,74 +1387,6 @@ a.contact-info-value:hover { color: var(--accent-text); }
 .success-message { font-size: 13px; color: #22c55e; font-weight: 500; display: block; margin-top: 8px; }
 .error-message { font-size: 13px; color: #ef4444; font-weight: 500; display: block; margin-top: 8px; }
 
-/* ═══ LEGAL ═══ */
-.legal-section { background: var(--bg-base); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-
-.legal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
-
-.legal-card {
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 28px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  transition: box-shadow 0.3s ease;
-}
-
-.legal-card:hover { box-shadow: var(--card-shadow-lg); }
-
-.legal-card-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--border);
-  flex-wrap: wrap;
-}
-
-.legal-icon {
-  width: 40px; height: 40px;
-  border-radius: 10px;
-  background: rgba(67, 206, 162, 0.12);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.legal-icon-alt { background: rgba(24, 90, 157, 0.12); }
-
-.legal-card-header h3 { font-size: 16px; font-weight: 700; color: var(--text-primary); flex: 1; }
-
-.legal-date {
-  font-size: 11px;
-  color: var(--text-muted);
-  font-weight: 500;
-  background: var(--bg-base);
-  border: 1px solid var(--border);
-  padding: 3px 10px;
-  border-radius: 99px;
-  white-space: nowrap;
-}
-
-.legal-points { display: flex; flex-direction: column; gap: 14px; }
-
-.legal-point { display: flex; gap: 12px; align-items: flex-start; }
-
-.point-dot {
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  background: #43cea2;
-  flex-shrink: 0;
-  margin-top: 6px;
-}
-
-.point-dot-alt { background: #185a9d; }
-
-.legal-point p { font-size: 13px; color: var(--text-secondary); line-height: 1.7; }
-
 /* ═══ FOOTER ═══ */
 .about-footer {
   background: var(--bg-surface);
@@ -1591,7 +1523,6 @@ a.contact-info-value:hover { color: var(--accent-text); }
   .mission-grid { grid-template-columns: 1fr; }
   .stack-grid   { grid-template-columns: repeat(2, 1fr); }
   .features-grid { grid-template-columns: 1fr; }
-  .legal-grid   { grid-template-columns: 1fr; }
   .testimonials-grid { grid-template-columns: 1fr; }
   .team-card    { padding: 24px; }
   .avatar-lg    { width: 60px; height: 60px; font-size: 18px; }
@@ -1620,7 +1551,6 @@ a.contact-info-value:hover { color: var(--accent-text); }
   .stat-num      { font-size: 22px; }
   .footer-links  { flex-wrap: wrap; justify-content: center; }
   .form-row      { grid-template-columns: 1fr; }
-  .legal-card    { padding: 20px; }
   .back-label    { display: none; }
   .back-btn      { padding: 8px 10px; }
 

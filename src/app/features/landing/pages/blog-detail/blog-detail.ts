@@ -68,6 +68,7 @@ export class BlogDetail implements OnInit, AfterViewInit {
   post         = signal<Post | null>(null);
   isLoading    = signal(true);
   relatedPosts = signal<Post[]>([]);
+  currentYear  = new Date().getFullYear();
 
   safeContent = computed<SafeHtml>(() =>
     this.sanitizer.bypassSecurityTrustHtml(this.post()?.content ?? '')
@@ -388,7 +389,7 @@ export class BlogDetail implements OnInit, AfterViewInit {
   }
 
   private updateMetaTags(post: Post): void {
-    const canonicalUrl = `https://apnainsights.com/blog/${post._id}`;
+    const canonicalUrl = `https://apnainsights.com/blog/${post.slug || post._id}`;
     this.titleService.setTitle(`${post.title} | ApnaInsights`);
     this.meta.updateTag({ name: 'description',        content: post.description || post.title });
     this.meta.updateTag({ property: 'og:title',       content: post.title });
@@ -443,7 +444,7 @@ export class BlogDetail implements OnInit, AfterViewInit {
 
   private injectArticleSchema(post: Post): void {
     // Run in both SSR and browser so JSON-LD is present in the server-rendered HTML Google crawls
-    const postUrl = `https://apnainsights.com/blog/${post._id}`;
+    const postUrl = `https://apnainsights.com/blog/${post.slug || post._id}`;
     const authorName = (post.user as any)?.name ?? 'Anonymous Author';
 
     // Breadcrumb: Home → Category (if any) → Article
@@ -578,7 +579,7 @@ export class BlogDetail implements OnInit, AfterViewInit {
 
   private shareUrl(): string {
     const p = this.post();
-    return p ? `https://apnainsights.com/blog/${p._id}` : '';
+    return p ? `https://apnainsights.com/blog/${p.slug || p._id}` : '';
   }
 
   private loadShareCount(postId: string): void {

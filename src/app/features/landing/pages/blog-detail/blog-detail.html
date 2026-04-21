@@ -373,7 +373,7 @@
         <h2 class="related-title"><span class="related-icon">✨</span> Related Stories</h2>
         <div class="related-grid">
           @for (rp of relatedPosts(); track rp._id) {
-            <article class="related-card" (click)="navigateToBlog(rp._id)">
+            <article class="related-card" (click)="navigateToBlog(rp.slug || rp._id)">
               @if (rp.featuredImage) {
                 <img [src]="rp.featuredImage" [alt]="rp.title"
                   class="related-img" loading="lazy" width="280" height="160"/>
@@ -522,7 +522,7 @@
           } @else {
             <div class="apos-list">
               @for (ap of displayedAuthorPosts(); track ap._id) {
-                <button class="apos-item" type="button" (click)="navigateFromAuthorModal(ap._id)">
+                <button class="apos-item" type="button" (click)="navigateFromAuthorModal(ap.slug || ap._id)">
                   <div class="apos-thumb">
                     @if (ap.featuredImage) {
                       <img [src]="ap.featuredImage" [alt]="ap.title" loading="lazy"/>
@@ -561,5 +561,24 @@
       </div>
     </div>
   }
+
+<footer class="blog-detail-footer">
+  <div class="blog-detail-footer-inner">
+    <a routerLink="/" class="bdf-logo" aria-label="ApnaInsights homepage">
+      <img src="/logo-96.png" alt="ApnaInsights" width="22" height="22" loading="lazy" />
+      <span>ApnaInsights</span>
+    </a>
+    <nav class="bdf-links" aria-label="Footer links">
+      <a routerLink="/" class="bdf-link">Home</a>
+      <span aria-hidden="true">·</span>
+      <a routerLink="/about" class="bdf-link">About</a>
+      <span aria-hidden="true">·</span>
+      <a routerLink="/privacy-policy" class="bdf-link">Privacy Policy</a>
+      <span aria-hidden="true">·</span>
+      <a routerLink="/terms" class="bdf-link">Terms of Service</a>
+    </nav>
+    <p class="bdf-copy">© {{ currentYear }} ApnaInsights · Made with ❤️ in India</p>
+  </div>
+</footer>
 
 }

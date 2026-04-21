@@ -3,13 +3,14 @@ import { RouterOutlet, Router, NavigationStart, NavigationEnd, NavigationCancel,
 import { Subscription } from 'rxjs';
 import { Loader } from './shared/loader/loader';
 import { Toast } from './shared/toast/toast';
+import { CookieConsent } from './shared/cookie-consent/cookie-consent';
 import { LoaderService } from './core/services/loader-service';
 import { AliveService } from './core/services/alive-server/alive-service';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, Loader, Toast],
+  imports: [RouterOutlet, Loader, Toast, CookieConsent],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
