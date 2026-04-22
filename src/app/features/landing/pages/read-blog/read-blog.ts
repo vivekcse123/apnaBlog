@@ -3,9 +3,11 @@ import {
   inject,
   input,
   signal,
+  computed,
   output,
   HostListener,
   OnInit,
+  OnDestroy,
   DestroyRef,
 } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
@@ -19,8 +21,7 @@ import { Post } from '../../../../core/models/post.model';
   templateUrl: './read-blog.html',
   styleUrl: './read-blog.css',
 })
-
-export class ReadBlog implements OnInit {
+export class ReadBlog implements OnInit, OnDestroy {
   private postService = inject(PostService);
   private destroyRef  = inject(DestroyRef);
 
@@ -31,6 +32,20 @@ export class ReadBlog implements OnInit {
 
   close = output<void>();
 
+  // ── Carousel ────────────────────────────────────────────────────────────────
+  currentSlide = signal(0);
+  private carouselTimer: ReturnType<typeof setInterval> | null = null;
+
+  carouselImages = computed(() => {
+    const p = this.post();
+    if (!p) return [];
+    const imgs: string[] = [];
+    if (p.featuredImage) imgs.push(p.featuredImage);
+    if (p.images?.length) imgs.push(...p.images);
+    return imgs;
+  });
+
+  // ── Lifecycle ────────────────────────────────────────────────────────────────
   ngOnInit(): void {
     setTimeout(() => this.isVisible.set(true), 10);
 
@@ -40,6 +55,9 @@ export class ReadBlog implements OnInit {
         next: (res) => {
           this.post.set(res.data);
           this.isLoading.set(false);
+          if (this.carouselImages().length > 1) {
+            this.startCarousel();
+          }
         },
         error: (err) => {
           console.error(err);
@@ -48,6 +66,46 @@ export class ReadBlog implements OnInit {
       });
   }
 
+  ngOnDestroy(): void {
+    this.stopCarousel();
+  }
+
+  // ── Carousel controls ─────────────────────────────────────────────────────
+  private startCarousel(): void {
+    this.carouselTimer = setInterval(() => {
+      const total = this.carouselImages().length;
+      this.currentSlide.update(i => (i + 1) % total);
+    }, 3500);
+  }
+
+  private stopCarousel(): void {
+    if (this.carouselTimer) {
+      clearInterval(this.carouselTimer);
+      this.carouselTimer = null;
+    }
+  }
+
+  goToSlide(index: number): void {
+    this.currentSlide.set(index);
+    this.stopCarousel();
+    this.startCarousel();
+  }
+
+  prevSlide(): void {
+    const total = this.carouselImages().length;
+    this.currentSlide.update(i => (i - 1 + total) % total);
+    this.stopCarousel();
+    this.startCarousel();
+  }
+
+  nextSlide(): void {
+    const total = this.carouselImages().length;
+    this.currentSlide.update(i => (i + 1) % total);
+    this.stopCarousel();
+    this.startCarousel();
+  }
+
+  // ── Modal controls ────────────────────────────────────────────────────────
   closeModal(): void {
     this.isVisible.set(false);
     setTimeout(() => this.close.emit(), 300);
@@ -69,5 +127,4 @@ export class ReadBlog implements OnInit {
     const words = content.trim().split(/\s+/).length;
     return Math.max(1, Math.ceil(words / 200));
   }
-  
 }

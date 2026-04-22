@@ -20,9 +20,10 @@
 
     @if (!isLoading() && post(); as p) {
 
-      @if (p.featuredImage) {
+      @if (carouselImages().length === 1) {
+        <!-- Single image — plain hero -->
         <div class="hero-wrap">
-          <img [src]="p.featuredImage || '/images/village.png'" [alt]="p.title" class="hero-img"/>
+          <img [src]="carouselImages()[0]" [alt]="p.title" class="hero-img"/>
           <div class="hero-fade"></div>
           <button class="close-btn close-over-image" (click)="closeModal()" aria-label="Close">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
@@ -32,13 +33,58 @@
         </div>
       }
 
-      <header class="modal-header" [class.no-image]="!p.featuredImage">
+      @if (carouselImages().length > 1) {
+        <!-- Multi-image carousel with auto-scroll -->
+        <div class="carousel-wrap">
+
+          <!-- Slides -->
+          <div class="carousel-track">
+            @for (img of carouselImages(); track img; let i = $index) {
+              <div class="carousel-slide" [class.active]="i === currentSlide()">
+                <img [src]="img" [alt]="p.title + ' image ' + (i + 1)" class="hero-img" />
+                <div class="hero-fade"></div>
+              </div>
+            }
+          </div>
+
+          <!-- Prev / Next arrows -->
+          <button class="carousel-arrow carousel-arrow-prev" (click)="prevSlide()" aria-label="Previous image">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6"/>
+            </svg>
+          </button>
+          <button class="carousel-arrow carousel-arrow-next" (click)="nextSlide()" aria-label="Next image">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </button>
+
+          <!-- Close button -->
+          <button class="close-btn close-over-image" (click)="closeModal()" aria-label="Close">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+
+          <!-- Dot indicators -->
+          <div class="carousel-dots">
+            @for (img of carouselImages(); track img; let i = $index) {
+              <button class="carousel-dot" [class.active]="i === currentSlide()"
+                (click)="goToSlide(i)" [attr.aria-label]="'Go to image ' + (i + 1)">
+              </button>
+            }
+          </div>
+
+        </div>
+      }
+
+      <header class="modal-header" [class.no-image]="carouselImages().length === 0">
         <div class="categories-row">
           @for (cat of p.categories; track cat) {
             <span class="cat-pill">{{ cat }}</span>
           }
         </div>
-        @if (!p.featuredImage) {
+        @if (carouselImages().length === 0) {
           <button class="close-btn" (click)="closeModal()" aria-label="Close">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
               <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>

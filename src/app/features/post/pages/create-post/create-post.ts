@@ -40,6 +40,11 @@ export class CreatePost {
   imagePreviewUrl  = signal('');
   uploadMode       = signal<'url' | 'file'>('url');
 
+  // Additional images (max 4, since featured image = 1 → total max 5)
+  additionalImages        = signal<{ url: string; publicId: string }[]>([]);
+  additionalImagesUploading = signal(false);
+  additionalImagesError   = signal('');
+
   // ── Role-based flag ──────────────────────────────────────
   isAdmin = computed(() => {
     const role = this.authService.getCurrentUser()?.role?.toLowerCase();
@@ -275,6 +280,52 @@ export class CreatePost {
     });
   }
 
+  onAdditionalImagesChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const files  = Array.from(input.files ?? []);
+    if (!files.length) return;
+
+    const currentCount = this.additionalImages().length;
+    const slotsLeft    = 4 - currentCount;  // featured takes 1 of the 5 slots
+    if (slotsLeft <= 0) {
+      this.additionalImagesError.set('Maximum 4 additional images allowed (5 total including featured).');
+      input.value = '';
+      return;
+    }
+
+    const allowed  = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    const valid    = files.filter(f => allowed.includes(f.type) && f.size <= 5 * 1024 * 1024);
+    const toUpload = valid.slice(0, slotsLeft);
+
+    if (toUpload.length < files.length) {
+      this.additionalImagesError.set('Some files were skipped (wrong type, too large, or limit reached).');
+    } else {
+      this.additionalImagesError.set('');
+    }
+
+    if (!toUpload.length) { input.value = ''; return; }
+
+    this.additionalImagesUploading.set(true);
+    this.uploadService.uploadImages(toUpload).subscribe({
+      next: (res) => {
+        this.additionalImagesUploading.set(false);
+        if (res.success && res.images?.length) {
+          this.additionalImages.update(prev => [...prev, ...res.images]);
+        }
+        input.value = '';
+      },
+      error: (err) => {
+        this.additionalImagesUploading.set(false);
+        this.additionalImagesError.set(err.error?.message ?? 'Upload failed. Please try again.');
+        input.value = '';
+      },
+    });
+  }
+
+  removeAdditionalImage(index: number): void {
+    this.additionalImages.update(imgs => imgs.filter((_, i) => i !== index));
+  }
+
   removeImage(fileInput: HTMLInputElement): void {
     this.imagePreviewUrl.set('');
     this.imageUploadError.set('');
@@ -291,7 +342,7 @@ export class CreatePost {
     this.errorMessage.set('');
     this.successMessage.set('');
 
-    if (this.imageUploading()) {
+    if (this.imageUploading() || this.additionalImagesUploading()) {
       this.errorMessage.set('Please wait — image is still uploading.');
       return;
     }
@@ -324,7 +375,8 @@ export class CreatePost {
       categories:    selectedCategories,
       tags:          selectedTags,
       featuredImage: this.createBlogForm.value.featuredImage ?? '',
-      status:        this.createBlogForm.value.status, 
+      images:        this.additionalImages().map(img => img.url),
+      status:        this.createBlogForm.value.status,
       comments:      this.createBlogForm.value.comments,
       user:          userId,
     };
@@ -341,6 +393,8 @@ export class CreatePost {
           this.postCreated.emit(res.data);
           this.successMessage.set('');
           this.imagePreviewUrl.set('');
+          this.additionalImages.set([]);
+          this.additionalImagesError.set('');
           this.createBlogForm.reset();
           this.createBlogForm.get('status')?.setValidators(Validators.required);
           this.createBlogForm.get('status')?.updateValueAndValidity();

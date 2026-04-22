@@ -8,6 +8,7 @@ export interface UploadResponse {
   message:  string;
   url:      string;
   publicId: string;
+  images:   { url: string; publicId: string }[];
 }
 
 @Injectable({ providedIn: 'root' })
@@ -17,7 +18,13 @@ export class UploadService {
 
   uploadImage(file: File): Observable<UploadResponse> {
     const formData = new FormData();
-    formData.append('image', file);
+    formData.append('images', file);
+    return this.http.post<UploadResponse>(this.uploadEndpoint, formData);
+  }
+
+  uploadImages(files: File[]): Observable<UploadResponse> {
+    const formData = new FormData();
+    files.forEach(file => formData.append('images', file));
     return this.http.post<UploadResponse>(this.uploadEndpoint, formData);
   }
 

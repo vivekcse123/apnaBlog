@@ -26,6 +26,7 @@ export interface Post {
   categories: string[];
   tags: string[];
   featuredImage: string;
+  images?: string[];
   likesCount: number;
   commentsCount: number;
   comments: Comment[];   // ← fixed from string[]
