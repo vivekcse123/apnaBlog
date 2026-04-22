@@ -75,7 +75,7 @@ export class ReadBlog implements OnInit, OnDestroy {
     this.carouselTimer = setInterval(() => {
       const total = this.carouselImages().length;
       this.currentSlide.update(i => (i + 1) % total);
-    }, 3500);
+    }, 1000);
   }
 
   private stopCarousel(): void {

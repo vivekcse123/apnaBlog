@@ -518,32 +518,43 @@
 .carousel-arrow-prev { left: 12px; }
 .carousel-arrow-next { right: 12px; }
 
-/* Dot indicators */
-.carousel-dots {
+/* Thumbnail strip — shows all images at once */
+.carousel-thumb-strip {
   position: absolute;
-  bottom: 12px;
+  bottom: 10px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 10;
   display: flex;
   gap: 6px;
   align-items: center;
+  max-width: calc(100% - 100px);
 }
 
-.carousel-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  border: none;
-  background: rgba(255,255,255,0.45);
+.carousel-thumb {
+  flex-shrink: 0;
+  width: 44px;
+  height: 30px;
+  border-radius: 5px;
+  border: 2px solid rgba(255,255,255,0.4);
+  overflow: hidden;
   cursor: pointer;
   padding: 0;
-  transition: background 0.25s ease, transform 0.25s ease;
+  opacity: 0.6;
+  transition: opacity 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
 }
 
-.carousel-dot.active {
-  background: #fff;
-  transform: scale(1.3);
+.carousel-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.carousel-thumb.active {
+  border-color: #fff;
+  opacity: 1;
+  transform: scale(1.1);
 }
 
 @media (max-width: 600px) {

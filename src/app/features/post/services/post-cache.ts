@@ -35,10 +35,10 @@ export class PostCache {
     return posts;
   }
 
-  /** O(n) lookup by post _id — used by blog-detail for instant render. */
+  /** O(n) lookup by _id or slug — used by blog-detail for instant render. */
   getById(id: string): PostWithTs | null {
     const posts = this.get();
-    return posts?.find(p => p._id === id) ?? null;
+    return posts?.find(p => p._id === id || p.slug === id) ?? null;
   }
 
   /** Milliseconds since last set(), or null. */

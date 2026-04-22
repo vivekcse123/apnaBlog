@@ -84,10 +84,42 @@
 
   <article class="blog-detail-container">
 
-    @if (post()!.featuredImage) {
+    @if (carouselImages().length === 1) {
       <div class="featured-image-wrap">
-        <img [src]="post()!.featuredImage" [alt]="post()!.title"
+        <img [src]="carouselImages()[0]" [alt]="post()!.title"
           class="featured-image" width="800" height="450" fetchpriority="high"/>
+      </div>
+    }
+
+    @if (carouselImages().length > 1) {
+      <div class="carousel-wrap">
+        <div class="carousel-track">
+          @for (img of carouselImages(); track img; let i = $index) {
+            <div class="carousel-slide" [class.active]="i === currentSlide()">
+              <img [src]="img" [alt]="post()!.title + ' image ' + (i + 1)" class="featured-image" />
+            </div>
+          }
+        </div>
+
+        <button class="carousel-arrow carousel-arrow-prev" (click)="prevSlide()" aria-label="Previous image">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+        </button>
+        <button class="carousel-arrow carousel-arrow-next" (click)="nextSlide()" aria-label="Next image">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </button>
+
+        <div class="carousel-thumb-strip">
+          @for (img of carouselImages(); track img; let i = $index) {
+            <button class="carousel-thumb" [class.active]="i === currentSlide()"
+              (click)="goToSlide(i)" [attr.aria-label]="'Go to image ' + (i + 1)">
+              <img [src]="img" [alt]="'Thumbnail ' + (i + 1)" />
+            </button>
+          }
+        </div>
       </div>
     }
 

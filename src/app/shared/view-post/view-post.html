@@ -161,6 +161,17 @@
           </div>
         }
 
+        @if (post()?.images?.length) {
+          <div class="detail-block full">
+            <span class="detail-label">Additional Images ({{ post()?.images?.length }})</span>
+            <div class="additional-images-grid">
+              @for (img of post()?.images ?? []; track img; let i = $index) {
+                <img class="additional-img" [src]="img" [alt]="'Additional image ' + (i + 1)" />
+              }
+            </div>
+          </div>
+        }
+
       </div>
     }
 

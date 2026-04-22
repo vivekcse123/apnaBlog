@@ -29,23 +29,21 @@ export class CreatePost {
   close       = output<void>();
   postCreated = output<Post>();
 
-  isSubmitted      = signal(false);
-  errorMessage     = signal('');
-  successMessage   = signal('');
-  activeFormats    = signal<Set<string>>(new Set());
-  activeBlock      = signal<string>('');
+  isSubmitted    = signal(false);
+  isSubmitting   = signal(false);
+  errorMessage   = signal('');
+  successMessage = signal('');
+  activeFormats  = signal<Set<string>>(new Set());
+  activeBlock    = signal<string>('');
 
-  imageUploading   = signal(false);
-  imageUploadError = signal('');
-  imagePreviewUrl  = signal('');
-  uploadMode       = signal<'url' | 'file'>('url');
+  // ── Unified blog images (up to 5 total) ─────────────────────────────────────
+  // First entry = featuredImage, rest = images[]
+  blogImages     = signal<{ url: string; publicId?: string }[]>([]);
+  imageUploading = signal(false);
+  imageUrlInput  = signal('');
+  imageError     = signal('');
 
-  // Additional images (max 4, since featured image = 1 → total max 5)
-  additionalImages        = signal<{ url: string; publicId: string }[]>([]);
-  additionalImagesUploading = signal(false);
-  additionalImagesError   = signal('');
-
-  // ── Role-based flag ──────────────────────────────────────
+  // ── Role-based flag ──────────────────────────────────────────────────────────
   isAdmin = computed(() => {
     const role = this.authService.getCurrentUser()?.role?.toLowerCase();
     return role === 'admin' || role === 'super_admin';
@@ -62,15 +60,13 @@ export class CreatePost {
   ];
 
   createBlogForm: FormGroup = this.fb.group({
-    title:         ['', [Validators.required, Validators.minLength(5), Validators.maxLength(100)]],
-    description:   ['', [Validators.required, Validators.minLength(10)]],
-    content:       ['', [Validators.required, Validators.minLength(20)]],
-    categories:    this.fb.array(this.categoryOptions.map(() => this.fb.control(false))),
-    tags:          this.fb.array(this.tagOptions.map(() => this.fb.control(false))),
-    comments:      [''],
-    featuredImage: [''],
-    // Status is required only for admins; non-admins always submit as 'draft'
-    status:        ['', Validators.required],
+    title:       ['', [Validators.required, Validators.minLength(5), Validators.maxLength(100)]],
+    description: ['', [Validators.required, Validators.minLength(10)]],
+    content:     ['', [Validators.required, Validators.minLength(20)]],
+    categories:  this.fb.array(this.categoryOptions.map(() => this.fb.control(false))),
+    tags:        this.fb.array(this.tagOptions.map(() => this.fb.control(false))),
+    comments:    [''],
+    status:      ['', Validators.required],
   });
 
   get categoriesArray(): FormArray {
@@ -86,6 +82,7 @@ export class CreatePost {
     return arr.controls.some((c: AbstractControl) => c.value === true);
   }
 
+  // ── Rich-text editor ─────────────────────────────────────────────────────────
   onEditorInput(): void {
     const html    = this.editorRef.nativeElement.innerHTML;
     const isEmpty = html === '' || html === '<br>';
@@ -230,66 +227,32 @@ export class CreatePost {
     return this.activeFormats().has(command);
   }
 
-  onUrlInput(value: string): void {
-    this.uploadMode.set('url');
-    this.imageUploadError.set('');
-    this.imagePreviewUrl.set(value.trim());
-    this.createBlogForm.patchValue({ featuredImage: value.trim() });
-  }
+  // ── Unified image upload ─────────────────────────────────────────────────────
 
-  onFileChange(event: Event): void {
-    const file = (event.target as HTMLInputElement).files?.[0];
-    if (!file) return;
-
-    const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-    if (!allowed.includes(file.type)) {
-      this.imageUploadError.set('Only JPG, PNG, WEBP or GIF images are allowed.');
+  addImageByUrl(): void {
+    const url = this.imageUrlInput().trim();
+    if (!url) return;
+    if (this.blogImages().length >= 5) {
+      this.imageError.set('Maximum 5 images allowed.');
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      this.imageUploadError.set('Image must be smaller than 5 MB.');
+    try { new URL(url); } catch {
+      this.imageError.set('Please enter a valid image URL.');
       return;
     }
-
-    this.uploadMode.set('file');
-    this.imageUploading.set(true);
-    this.imageUploadError.set('');
-    this.imagePreviewUrl.set('');
-    this.createBlogForm.patchValue({ featuredImage: '' });
-
-    const reader = new FileReader();
-    reader.onload = e => this.imagePreviewUrl.set(e.target?.result as string);
-    reader.readAsDataURL(file);
-
-    this.uploadService.uploadImage(file).subscribe({
-      next: (res) => {
-        this.imageUploading.set(false);
-        if (res.success) {
-          this.imagePreviewUrl.set(res.url);
-          this.createBlogForm.patchValue({ featuredImage: res.url });
-        } else {
-          this.imageUploadError.set(res.message ?? 'Upload failed.');
-          this.imagePreviewUrl.set('');
-        }
-      },
-      error: (err) => {
-        this.imageUploading.set(false);
-        this.imageUploadError.set(err.error?.message ?? 'Upload failed. Please try again.');
-        this.imagePreviewUrl.set('');
-      },
-    });
+    this.imageError.set('');
+    this.blogImages.update(imgs => [...imgs, { url }]);
+    this.imageUrlInput.set('');
   }
 
-  onAdditionalImagesChange(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const files  = Array.from(input.files ?? []);
+  onImageFilesChange(event: Event, fileInput: HTMLInputElement): void {
+    const files = Array.from((event.target as HTMLInputElement).files ?? []);
     if (!files.length) return;
 
-    const currentCount = this.additionalImages().length;
-    const slotsLeft    = 4 - currentCount;  // featured takes 1 of the 5 slots
+    const slotsLeft = 5 - this.blogImages().length;
     if (slotsLeft <= 0) {
-      this.additionalImagesError.set('Maximum 4 additional images allowed (5 total including featured).');
-      input.value = '';
+      this.imageError.set('Maximum 5 images allowed.');
+      fileInput.value = '';
       return;
     }
 
@@ -297,52 +260,51 @@ export class CreatePost {
     const valid    = files.filter(f => allowed.includes(f.type) && f.size <= 5 * 1024 * 1024);
     const toUpload = valid.slice(0, slotsLeft);
 
-    if (toUpload.length < files.length) {
-      this.additionalImagesError.set('Some files were skipped (wrong type, too large, or limit reached).');
-    } else {
-      this.additionalImagesError.set('');
+    if (!toUpload.length) {
+      this.imageError.set('No valid files selected (must be JPG/PNG/WEBP/GIF under 5 MB).');
+      fileInput.value = '';
+      return;
     }
 
-    if (!toUpload.length) { input.value = ''; return; }
+    if (toUpload.length < files.length) {
+      this.imageError.set('Some files were skipped (wrong type, too large, or limit reached).');
+    } else {
+      this.imageError.set('');
+    }
 
-    this.additionalImagesUploading.set(true);
+    this.imageUploading.set(true);
+
     this.uploadService.uploadImages(toUpload).subscribe({
       next: (res) => {
-        this.additionalImagesUploading.set(false);
+        this.imageUploading.set(false);
         if (res.success && res.images?.length) {
-          this.additionalImages.update(prev => [...prev, ...res.images]);
+          this.blogImages.update(imgs => [...imgs, ...res.images.map(img => ({ url: img.url, publicId: img.publicId }))]);
+        } else if (res.success && res.url) {
+          this.blogImages.update(imgs => [...imgs, { url: res.url, publicId: res.publicId }]);
+        } else {
+          this.imageError.set(res.message ?? 'Upload failed.');
         }
-        input.value = '';
+        fileInput.value = '';
       },
       error: (err) => {
-        this.additionalImagesUploading.set(false);
-        this.additionalImagesError.set(err.error?.message ?? 'Upload failed. Please try again.');
-        input.value = '';
+        this.imageUploading.set(false);
+        this.imageError.set(err.error?.message ?? 'Upload failed. Please try again.');
+        fileInput.value = '';
       },
     });
   }
 
-  removeAdditionalImage(index: number): void {
-    this.additionalImages.update(imgs => imgs.filter((_, i) => i !== index));
+  removeImage(index: number): void {
+    this.blogImages.update(imgs => imgs.filter((_, i) => i !== index));
   }
 
-  removeImage(fileInput: HTMLInputElement): void {
-    this.imagePreviewUrl.set('');
-    this.imageUploadError.set('');
-    this.uploadMode.set('url');
-    this.createBlogForm.patchValue({ featuredImage: '' });
-    fileInput.value = '';
-
-    const urlInput = document.querySelector('input[data-url-input]') as HTMLInputElement | null;
-    if (urlInput) urlInput.value = '';
-  }
-
+  // ── Submit ───────────────────────────────────────────────────────────────────
   createBlog(): void {
     this.isSubmitted.set(true);
     this.errorMessage.set('');
     this.successMessage.set('');
 
-    if (this.imageUploading() || this.additionalImagesUploading()) {
+    if (this.imageUploading()) {
       this.errorMessage.set('Please wait — image is still uploading.');
       return;
     }
@@ -368,21 +330,28 @@ export class CreatePost {
     const selectedCategories = this.categoryOptions.filter((_, i) => this.categoriesArray.at(i).value);
     const selectedTags       = this.tagOptions.filter((_, i) => this.tagsArray.at(i).value);
 
+    const allImages    = this.blogImages();
+    const featuredImage = allImages[0]?.url ?? '';
+    const extraImages   = allImages.slice(1).map(img => img.url);
+
     const payload: Omit<Post, '_id' | 'user' | 'userId' | 'likesCount' | 'commentsCount' | 'views' | 'createdAt' | 'updatedAt'> & { user: string } = {
       title:         this.createBlogForm.value.title,
       description:   this.createBlogForm.value.description,
       content:       this.createBlogForm.value.content,
       categories:    selectedCategories,
       tags:          selectedTags,
-      featuredImage: this.createBlogForm.value.featuredImage ?? '',
-      images:        this.additionalImages().map(img => img.url),
+      featuredImage,
+      images:        extraImages,
       status:        this.createBlogForm.value.status,
       comments:      this.createBlogForm.value.comments,
       user:          userId,
     };
 
+    this.isSubmitting.set(true);
+
     this.postService.createBlog(payload).subscribe({
       next: (res) => {
+        this.isSubmitting.set(false);
         this.successMessage.set(
           this.isAdmin()
             ? 'Post published successfully!'
@@ -392,9 +361,9 @@ export class CreatePost {
         setTimeout(() => {
           this.postCreated.emit(res.data);
           this.successMessage.set('');
-          this.imagePreviewUrl.set('');
-          this.additionalImages.set([]);
-          this.additionalImagesError.set('');
+          this.blogImages.set([]);
+          this.imageError.set('');
+          this.imageUrlInput.set('');
           this.createBlogForm.reset();
           this.createBlogForm.get('status')?.setValidators(Validators.required);
           this.createBlogForm.get('status')?.updateValueAndValidity();
@@ -403,6 +372,7 @@ export class CreatePost {
         }, 1000);
       },
       error: (err) => {
+        this.isSubmitting.set(false);
         this.errorMessage.set(err.error?.message ?? 'Something went wrong. Please try again.');
       },
     });

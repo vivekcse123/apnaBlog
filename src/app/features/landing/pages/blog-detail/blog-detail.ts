@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit, DestroyRef, PLATFORM_ID, computed, AfterViewInit, ElementRef } from '@angular/core';
+import { Component, inject, signal, OnInit, OnDestroy, DestroyRef, PLATFORM_ID, computed, AfterViewInit, ElementRef } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule, isPlatformBrowser, DOCUMENT } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -49,7 +49,7 @@ const AUTHOR_POSTS_PER_PAGE = 10;
   templateUrl: './blog-detail.html',
   styleUrl: './blog-detail.css',
 })
-export class BlogDetail implements OnInit, AfterViewInit {
+export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   private postService    = inject(PostService);
   private postCache      = inject(PostCache);
   private destroyRef     = inject(DestroyRef);
@@ -68,6 +68,19 @@ export class BlogDetail implements OnInit, AfterViewInit {
   post         = signal<Post | null>(null);
   isLoading    = signal(true);
   relatedPosts = signal<Post[]>([]);
+
+  // ── Carousel ────────────────────────────────────────────────────────────────
+  currentSlide = signal(0);
+  private carouselTimer: ReturnType<typeof setInterval> | null = null;
+
+  carouselImages = computed(() => {
+    const p = this.post();
+    if (!p) return [];
+    const imgs: string[] = [];
+    if (p.featuredImage) imgs.push(p.featuredImage);
+    if (p.images?.length) imgs.push(...p.images);
+    return imgs;
+  });
   currentYear  = new Date().getFullYear();
 
   safeContent = computed<SafeHtml>(() =>
@@ -226,6 +239,8 @@ export class BlogDetail implements OnInit, AfterViewInit {
       this.authorId.set(null);
       this.contentEl = null;
       this.lockScroll(false);
+      this.stopCarousel();
+      this.currentSlide.set(0);
 
       this.loadPost(postId);
       this.loadShareCount(postId);
@@ -255,7 +270,46 @@ export class BlogDetail implements OnInit, AfterViewInit {
     }
   }
 
+  ngOnDestroy(): void {
+    this.stopCarousel();
+  }
+
   ngAfterViewInit(): void {}
+
+  // ── Carousel controls ─────────────────────────────────────────────────────
+  private startCarousel(): void {
+    this.carouselTimer = setInterval(() => {
+      const total = this.carouselImages().length;
+      this.currentSlide.update(i => (i + 1) % total);
+    }, 1000);
+  }
+
+  private stopCarousel(): void {
+    if (this.carouselTimer) {
+      clearInterval(this.carouselTimer);
+      this.carouselTimer = null;
+    }
+  }
+
+  goToSlide(index: number): void {
+    this.currentSlide.set(index);
+    this.stopCarousel();
+    this.startCarousel();
+  }
+
+  prevSlide(): void {
+    const total = this.carouselImages().length;
+    this.currentSlide.update(i => (i - 1 + total) % total);
+    this.stopCarousel();
+    this.startCarousel();
+  }
+
+  nextSlide(): void {
+    const total = this.carouselImages().length;
+    this.currentSlide.update(i => (i + 1) % total);
+    this.stopCarousel();
+    this.startCarousel();
+  }
 
   private loadPost(postId: string): void {
     // ── Cache-first: render instantly if post is already in cache ─────────────
@@ -287,16 +341,25 @@ export class BlogDetail implements OnInit, AfterViewInit {
 
   /** Side-effects that run once post data is available (cache or network). */
   private _bootstrapPost(postData: Post, postId: string): void {
-    const aId = (postData.user as any)?._id ?? (postData.user as any);
-    if (aId) {
-      this.authorId.set(aId.toString());
-      this.fetchAuthorFollowData(aId.toString());
-    }
-    this.addView(postData);
-    this.loadComments(postId);
-    this.loadRelatedAndAuthorPosts(postData);
+    // Synchronous — needed for immediate render
     this.updateMetaTags(postData);
     this.calculateReadingTime(postData);
+
+    if (this.carouselImages().length > 1) {
+      this.startCarousel();
+    }
+
+    // Defer secondary work one tick so the post content paints first
+    setTimeout(() => {
+      const aId = (postData.user as any)?._id ?? (postData.user as any);
+      if (aId) {
+        this.authorId.set(aId.toString());
+        this.fetchAuthorFollowData(aId.toString());
+      }
+      this.addView(postData);
+      this.loadComments(postId);
+      this.loadRelatedAndAuthorPosts(postData);
+    }, 0);
 
     if (isPlatformBrowser(this.platformId)) {
       setTimeout(() => {

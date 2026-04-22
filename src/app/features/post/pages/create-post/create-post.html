@@ -227,79 +227,41 @@
         </div>
       </div>
 
-      <div class="image-section">
-        <label class="field-label">Featured Image</label>
-
-        <input
-          type="text"
-          placeholder="Paste an image URL…"
-          data-url-input
-          [value]="uploadMode() === 'url' ? (createBlogForm.get('featuredImage')?.value ?? '') : ''"
-          (input)="onUrlInput($any($event.target).value)"
-          [disabled]="imageUploading()"
-        />
-
-        <div class="or-divider">OR</div>
-
-        <label class="file-upload-label" [class.uploading]="imageUploading()" #fileLabel>
-          <input
-            #fileInput
-            type="file"
-            accept="image/jpeg,image/png,image/webp,image/gif"
-            class="file-input-hidden"
-            (change)="onFileChange($event)"
-            [disabled]="imageUploading()"
-          />
-          @if (imageUploading()) {
-            <span class="upload-spinner"></span>
-            <span>Uploading…</span>
-          } @else {
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-              <polyline points="17 8 12 3 7 8"/>
-              <line x1="12" y1="3" x2="12" y2="15"/>
-            </svg>
-            <span>Upload from device</span>
-          }
-        </label>
-
-        @if (imageUploadError()) {
-          <small class="error">{{ imageUploadError() }}</small>
-        }
-
-        @if (imagePreviewUrl()) {
-          <div class="image-preview-wrap">
-            <img [src]="imagePreviewUrl()" alt="Preview" class="image-preview" />
-            @if (imageUploading()) {
-              <div class="preview-overlay">
-                <span class="upload-spinner large"></span>
-              </div>
-            } @else {
-              <button type="button" class="remove-image-btn"
-                (click)="removeImage(fileInput)" title="Remove image">✕</button>
-            }
-          </div>
-        }
-      </div>
-
-      <!-- ── Additional Images (up to 4 more, max 5 total) ── -->
+      <!-- ── Blog Images (unified, up to 5) ── -->
       <div class="image-section">
         <label class="field-label">
-          Additional Images
-          <span class="field-hint">({{ additionalImages().length }}/4 · up to 5 total including featured)</span>
+          Blog Images
+          <span class="field-hint">({{ blogImages().length }}/5)</span>
         </label>
 
-        @if (additionalImages().length < 4) {
-          <label class="file-upload-label" [class.uploading]="additionalImagesUploading()">
+        @if (blogImages().length < 5) {
+          <!-- URL input row -->
+          <div class="url-add-row">
             <input
+              type="text"
+              placeholder="Paste an image URL…"
+              [value]="imageUrlInput()"
+              (input)="imageUrlInput.set($any($event.target).value)"
+              [disabled]="imageUploading()"
+              (keydown.enter)="$event.preventDefault(); addImageByUrl()"
+            />
+            <button type="button" class="url-add-btn" (click)="addImageByUrl()" [disabled]="imageUploading()">Add</button>
+          </div>
+
+          <div class="or-divider">OR</div>
+
+          <!-- File upload -->
+          <label class="file-upload-label" [class.uploading]="imageUploading()">
+            <input
+              #fileInput
               type="file"
               accept="image/jpeg,image/png,image/webp,image/gif"
               multiple
               class="file-input-hidden"
-              (change)="onAdditionalImagesChange($event)"
-              [disabled]="additionalImagesUploading()"
+              (change)="onImageFilesChange($event, fileInput)"
+              [disabled]="imageUploading()"
             />
-            @if (additionalImagesUploading()) {
+            @if (imageUploading()) {
               <span class="upload-spinner"></span>
               <span>Uploading…</span>
             } @else {
@@ -308,21 +270,25 @@
                 <polyline points="17 8 12 3 7 8"/>
                 <line x1="12" y1="3" x2="12" y2="15"/>
               </svg>
-              <span>Upload up to {{ 4 - additionalImages().length }} more image(s)</span>
+              <span>Upload from device (select up to {{ 5 - blogImages().length }})</span>
             }
           </label>
         }
 
-        @if (additionalImagesError()) {
-          <small class="error">{{ additionalImagesError() }}</small>
+        @if (imageError()) {
+          <small class="error" style="top:0;margin-top:6px;display:block;">{{ imageError() }}</small>
         }
 
-        @if (additionalImages().length > 0) {
-          <div class="additional-images-grid">
-            @for (img of additionalImages(); track img.url; let i = $index) {
-              <div class="additional-img-thumb">
-                <img [src]="img.url" alt="Additional image {{ i + 1 }}" />
-                <button type="button" class="remove-image-btn" (click)="removeAdditionalImage(i)" title="Remove">✕</button>
+        <!-- Thumbnail grid for all images -->
+        @if (blogImages().length > 0) {
+          <div class="blog-images-grid">
+            @for (img of blogImages(); track img.url; let i = $index) {
+              <div class="blog-img-thumb" [class.featured]="i === 0">
+                <img [src]="img.url" [alt]="'Image ' + (i + 1)" />
+                @if (i === 0) {
+                  <span class="featured-badge">Cover</span>
+                }
+                <button type="button" class="remove-image-btn" (click)="removeImage(i)" title="Remove">✕</button>
               </div>
             }
           </div>
@@ -355,10 +321,14 @@
       }
 
       <div class="actions">
-        <button type="button" class="cancel-btn" (click)="closeModal()">Cancel</button>
-        <button type="submit" class="submit-btn" [disabled]="imageUploading()">
+        <button type="button" class="cancel-btn" (click)="closeModal()" [disabled]="isSubmitting()">Cancel</button>
+        <button type="submit" class="submit-btn" [disabled]="imageUploading() || isSubmitting()">
           @if (imageUploading()) {
-            Uploading Image…
+            <span class="upload-spinner btn-spinner"></span>
+            Uploading…
+          } @else if (isSubmitting()) {
+            <span class="upload-spinner btn-spinner"></span>
+            {{ isAdmin() ? 'Publishing…' : 'Submitting for Review…' }}
           } @else if (isAdmin()) {
             Publish Post
           } @else {

@@ -23,7 +23,7 @@
   border-radius: 18px;
   padding: 48px 40px 40px;
   width: 90%;
-  max-width: 560px;
+  max-width: 860px;
   max-height: 92vh;
   overflow-y: auto;
   box-shadow:
@@ -738,4 +738,113 @@ form input[type="file"]::file-selector-button:hover {
   height: 20px;
   font-size: 10px;
   padding: 0;
+}
+
+/* ── URL add row ── */
+.url-add-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.url-add-row input {
+  flex: 1;
+  margin: 0;
+}
+
+.url-add-btn {
+  flex-shrink: 0;
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.url-add-btn:hover:not(:disabled) {
+  background: var(--bg-elevated, var(--border));
+}
+
+.url-add-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Blog images thumbnail grid ── */
+.blog-images-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.blog-img-thumb {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  aspect-ratio: 1;
+  border: 2px solid var(--border);
+  transition: border-color 0.15s ease;
+}
+
+.blog-img-thumb.featured {
+  border-color: #43cea2;
+}
+
+.blog-img-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.featured-badge {
+  position: absolute;
+  bottom: 4px;
+  left: 4px;
+  background: #43cea2;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 99px;
+  pointer-events: none;
+}
+
+.blog-img-thumb .remove-image-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 20px;
+  height: 20px;
+  font-size: 10px;
+  padding: 0;
+  line-height: 1;
+}
+
+/* ── Spinner inside submit button ── */
+.btn-spinner {
+  width: 13px;
+  height: 13px;
+  border-width: 2px;
+  border-color: rgba(255,255,255,0.35);
+  border-top-color: #fff;
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+
+.submit-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
 }
