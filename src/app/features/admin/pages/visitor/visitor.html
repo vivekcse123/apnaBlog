@@ -139,7 +139,7 @@
           <canvas #doughnutChartRef></canvas>
         </div>
         <div class="source-legend">
-          <div class="legend-item" *ngFor="let s of sourceStats; let i = index">
+          <div class="legend-item" *ngFor="let s of sourceStats; let i = index; trackBy: trackByIndex">
             <span class="legend-dot"
               [style.background]="['#6C63FF','#43C6AC','#FF6B6B','#FFB347'][i]">
             </span>

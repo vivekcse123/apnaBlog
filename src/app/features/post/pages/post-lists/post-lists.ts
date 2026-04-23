@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, OnInit, DestroyRef, ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, OnDestroy, DestroyRef, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -21,7 +21,7 @@ import { NotificationNavigationService, POST_NOTIFICATION_TYPES } from '../../..
   styleUrl: './post-lists.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PostLists implements OnInit {
+export class PostLists implements OnInit, OnDestroy {
 
   private route        = inject(ActivatedRoute);
   private postService  = inject(PostService);
@@ -126,7 +126,7 @@ loadPosts(userId?: string): void {
     )
     .subscribe({
       next: res => this.allBlogs.set(res.data || []),
-      error: err => console.error(err?.error?.message),
+      error: () => {},
     });
 }
 
@@ -192,6 +192,10 @@ loadPosts(userId?: string): void {
   closeModal(): void {
     this.isPostViewed.set(false);
     this.selectedPostId.set('');
+  }
+
+  ngOnDestroy(): void {
+    clearTimeout(this.debounceTimer);
   }
 
   onPostUpdated(updatedPost: Post): void {

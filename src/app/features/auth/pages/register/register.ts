@@ -29,7 +29,7 @@ export class Register implements OnInit{
       name: new FormControl('', [Validators.required, Validators.pattern(/^[a-zA-Z ]+$/), Validators.minLength(5), Validators.maxLength(15)]),
       email: new FormControl('', [Validators.required, Validators.pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)]),
       dob: new FormControl('', [Validators.required]),
-      password: new FormControl('', [Validators.required, Validators.minLength(5), Validators.maxLength(15)]),
+      password: new FormControl('', [Validators.required, Validators.minLength(8), Validators.maxLength(30)]),
       role: new FormControl('user'),
     });
 

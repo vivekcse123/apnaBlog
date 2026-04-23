@@ -96,7 +96,7 @@
         <div class="carousel-track">
           @for (img of carouselImages(); track img; let i = $index) {
             <div class="carousel-slide" [class.active]="i === currentSlide()">
-              <img [src]="img" [alt]="post()!.title + ' image ' + (i + 1)" class="featured-image" />
+              <img [src]="img" [alt]="post()!.title + ' image ' + (i + 1)" class="featured-image" width="800" height="450" loading="lazy" />
             </div>
           }
         </div>
@@ -251,7 +251,7 @@
             [ngModel]="commentText()" (ngModelChange)="commentText.set($event)"
             (keydown.enter)="$any($event).ctrlKey && submitComment()" maxlength="500">
           </textarea>
-          <span class="char-count" [class.warn]="commentText().length > 450">
+          <span class="char-count" [class.warn]="commentText().length > 450" aria-live="polite" aria-atomic="true">
             {{ commentText().length }}/500
           </span>
         </div>
@@ -274,8 +274,17 @@
 
       <div class="comments-list">
         @if (commentsLoading()) {
-          <div class="comments-loading">
-            <div class="loading-dots"><span></span><span></span><span></span></div>
+          <div class="comments-loading" role="status" aria-label="Loading comments">
+            @for (_ of [1,2,3]; track $index) {
+              <div class="comment-skeleton">
+                <div class="skeleton-avatar"></div>
+                <div class="skeleton-lines">
+                  <div class="skeleton-line short"></div>
+                  <div class="skeleton-line long"></div>
+                  <div class="skeleton-line medium"></div>
+                </div>
+              </div>
+            }
           </div>
         } @else if (comments().length === 0) {
           <div class="no-comments">
@@ -328,7 +337,7 @@
                         (keydown.enter)="$any($event).ctrlKey && submitReply(c._id!)">
                       </textarea>
                       <div class="reply-form-actions">
-                        <span class="char-count" [class.warn]="replyText().length > 450">
+                        <span class="char-count" [class.warn]="replyText().length > 450" aria-live="polite" aria-atomic="true">
                           {{ replyText().length }}/500
                         </span>
                         @if (replyFeedback()) {
@@ -597,7 +606,7 @@
 <footer class="blog-detail-footer">
   <div class="blog-detail-footer-inner">
     <a routerLink="/" class="bdf-logo" aria-label="ApnaInsights homepage">
-      <img src="/logo-96.png" alt="ApnaInsights" width="22" height="22" loading="lazy" />
+      <img src="/logo-96.png" alt="ApnaInsights" width="28" height="28" loading="lazy" />
       <span>ApnaInsights</span>
     </a>
     <nav class="bdf-links" aria-label="Footer links">

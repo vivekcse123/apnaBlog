@@ -1,6 +1,6 @@
 <div class="login-page">
 
-  <div class="login-bg">
+  <div class="login-bg" aria-hidden="true">
     <div class="orb orb-1"></div>
     <div class="orb orb-2"></div>
     <div class="grid-overlay"></div>
@@ -155,7 +155,7 @@
                 <small class="error">Password is required</small>
               }
               @if(registerForm.get('password')?.errors?.['minlength'] || registerForm.get('password')?.errors?.['maxlength']){
-                <small class="error">5-15 characters long</small>
+                <small class="error">8-30 characters long</small>
               }
             }
           </div>

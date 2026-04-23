@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit, OnDestroy, DestroyRef, PLATFORM_ID, computed, AfterViewInit, ElementRef } from '@angular/core';
+import { Component, inject, signal, OnInit, OnDestroy, DestroyRef, PLATFORM_ID, computed, AfterViewInit, ElementRef, SecurityContext } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule, isPlatformBrowser, DOCUMENT } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -83,9 +83,11 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   });
   currentYear  = new Date().getFullYear();
 
-  safeContent = computed<SafeHtml>(() =>
-    this.sanitizer.bypassSecurityTrustHtml(this.post()?.content ?? '')
-  );
+  safeContent = computed<SafeHtml>(() => {
+    const raw = this.post()?.content ?? '';
+    const sanitized = this.sanitizer.sanitize(SecurityContext.HTML, raw) ?? '';
+    return this.sanitizer.bypassSecurityTrustHtml(sanitized);
+  });
 
   likedPostIds      = signal<Set<string>>(new Set());
   bookmarkedPostIds = signal<Set<string>>(new Set());
@@ -564,9 +566,12 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   }
 
   addView(post: Post): void {
+    if (!isPlatformBrowser(this.platformId)) return;
     const key = `viewed_${post._id}`;
-    if (sessionStorage.getItem(key)) return;
-    sessionStorage.setItem(key, '1');
+    try {
+      if (sessionStorage.getItem(key)) return;
+      sessionStorage.setItem(key, '1');
+    } catch { return; }
     this.postService.addView(post._id).subscribe();
     this.post.set({ ...post, views: post.views + 1 });
   }
@@ -602,12 +607,14 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
 
   private updateReadingProgress(): void {
     if (!this.contentEl || !isPlatformBrowser(this.platformId)) return;
-    const el = this.contentEl as HTMLElement;
+    const el = this.contentEl;
     const scrollTop = window.scrollY, winH = window.innerHeight;
     const top = el.offsetTop, bottom = top + el.offsetHeight;
     if (scrollTop < top)            { this.readingProgress.set(0);   return; }
     if (scrollTop + winH >= bottom) { this.readingProgress.set(100); return; }
-    const pct = ((scrollTop - top) / (el.offsetHeight - winH)) * 100;
+    const denominator = el.offsetHeight - winH;
+    if (denominator <= 0) { this.readingProgress.set(100); return; }
+    const pct = ((scrollTop - top) / denominator) * 100;
     this.readingProgress.set(Math.min(Math.max(pct, 0), 100));
   }
 
@@ -622,6 +629,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private restoreBookmarkedIds(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
     try {
       const s = localStorage.getItem('apna_bookmarked_posts');
       if (s) this.bookmarkedPostIds.set(new Set(JSON.parse(s)));
@@ -629,6 +637,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private persistBookmarkedIds(ids: Set<string>): void {
+    if (!isPlatformBrowser(this.platformId)) return;
     try { localStorage.setItem('apna_bookmarked_posts', JSON.stringify([...ids])); } catch { }
   }
 
@@ -646,6 +655,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private loadShareCount(postId: string): void {
+    if (!isPlatformBrowser(this.platformId)) return;
     try {
       const v = localStorage.getItem(`share_count_${postId}`);
       this.shareCount.set(v ? parseInt(v) : 0);
@@ -656,35 +666,38 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     const p = this.post(); if (!p) return;
     const n = this.shareCount() + 1;
     this.shareCount.set(n);
+    if (!isPlatformBrowser(this.platformId)) return;
     try { localStorage.setItem(`share_count_${p._id}`, String(n)); } catch { }
   }
 
   toggleShareMenu(): void { this.shareMenuOpen.set(!this.shareMenuOpen()); }
 
   shareOnTwitter(): void {
-    const p = this.post(); if (!p) return;
+    const p = this.post(); if (!p || !isPlatformBrowser(this.platformId)) return;
     window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(this.shareUrl())}&text=${encodeURIComponent(p.title)}`, '_blank');
     this.incrementShareCount(); this.shareMenuOpen.set(false);
   }
 
   shareOnFacebook(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
     window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(this.shareUrl())}`, '_blank');
     this.incrementShareCount(); this.shareMenuOpen.set(false);
   }
 
   shareOnLinkedIn(): void {
-    const p = this.post(); if (!p) return;
+    const p = this.post(); if (!p || !isPlatformBrowser(this.platformId)) return;
     window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(this.shareUrl())}&title=${encodeURIComponent(p.title)}`, '_blank');
     this.incrementShareCount(); this.shareMenuOpen.set(false);
   }
 
   shareOnWhatsApp(): void {
-    const p = this.post(); if (!p) return;
+    const p = this.post(); if (!p || !isPlatformBrowser(this.platformId)) return;
     window.open(`https://wa.me/?text=${encodeURIComponent(p.title + ' - ' + this.shareUrl())}`, '_blank');
     this.incrementShareCount(); this.shareMenuOpen.set(false);
   }
 
   async copyLink(): Promise<void> {
+    if (!isPlatformBrowser(this.platformId)) return;
     try {
       await navigator.clipboard.writeText(this.shareUrl());
       this.copyLinkSuccess.set(true);
@@ -698,6 +711,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private restoreLikedIds(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
     try {
       const s = localStorage.getItem('apna_liked_posts');
       if (s) this.likedPostIds.set(new Set(JSON.parse(s)));
@@ -705,6 +719,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private persistLikedIds(ids: Set<string>): void {
+    if (!isPlatformBrowser(this.platformId)) return;
     try { localStorage.setItem('apna_liked_posts', JSON.stringify([...ids])); } catch { }
   }
 

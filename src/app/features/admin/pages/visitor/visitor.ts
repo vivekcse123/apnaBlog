@@ -374,4 +374,6 @@ export class Visitor implements OnInit, AfterViewInit, OnDestroy {
   initLineChart()       { this.buildOrUpdateLineChart();     }
   initBarChart()        { this.buildOrUpdateBarChart();      }
   initDoughnutChart()   { this.buildOrUpdateDoughnutChart(); }
+
+  trackByIndex(index: number): number { return index; }
 }

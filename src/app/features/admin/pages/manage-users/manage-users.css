@@ -377,6 +377,11 @@ tbody > tr:hover td {
   cursor: not-allowed;
 }
 
+.pagination button:focus-visible {
+  outline: 2px solid #43cea2;
+  outline-offset: 2px;
+}
+
 /* ── Modal Overlay ── */
 .modal-overlay {
   position: fixed;
@@ -387,7 +392,7 @@ tbody > tr:hover td {
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
+  z-index: 1100;
   animation: fadeIn 0.2s ease;
 }
 

@@ -1,4 +1,5 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environments.prod';
 
@@ -8,6 +9,7 @@ import { environment } from '../../../environments/environments.prod';
 export class VisitorService {
 
   private readonly API = `${environment.apiUrl}/visitor`;
+  private platformId   = inject(PLATFORM_ID);
 
   private readonly TRACKED_PAGES = [
     '/welcome',
@@ -18,11 +20,7 @@ export class VisitorService {
 
   private normalizePath(rawPath: string): string {
     let path = rawPath.split('?')[0].replace(/\/+$/, '') || '/';
-
-    if (!path.startsWith('/')) {
-      path = '/' + path;
-    }
-
+    if (!path.startsWith('/')) path = '/' + path;
     return path;
   }
 
@@ -31,31 +29,22 @@ export class VisitorService {
   }
 
   private isDuplicate(path: string): boolean {
-    const lastTracked = sessionStorage.getItem('lastTrackedPage');
-    if (lastTracked === path) return true;
-
-    sessionStorage.setItem('lastTrackedPage', path);
+    try {
+      const lastTracked = sessionStorage.getItem('lastTrackedPage');
+      if (lastTracked === path) return true;
+      sessionStorage.setItem('lastTrackedPage', path);
+    } catch { return false; }
     return false;
   }
 
   trackVisit(rawPath: string): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+
     const path = this.normalizePath(rawPath);
 
-    console.log('[VisitorService] Path:', path);
+    if (!this.isTrackedPage(path)) return;
+    if (this.isDuplicate(path)) return;
 
-    if (!this.isTrackedPage(path)) {
-      console.log('[VisitorService] Not tracked page:', path);
-      return;
-    }
-
-    if (this.isDuplicate(path)) {
-      console.log('[VisitorService] Duplicate skipped:', path);
-      return;
-    }
-
-    this.http.post(`${this.API}/track`, { page: path }).subscribe({
-      next: () => console.log('[VisitorService] Tracked:', path),
-      error: (err) => console.warn('[VisitorService] Tracking failed:', err?.message || err)
-    });
+    this.http.post(`${this.API}/track`, { page: path }).subscribe({ error: () => {} });
   }
 }

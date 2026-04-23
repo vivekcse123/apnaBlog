@@ -1,5 +1,5 @@
-import { Component, inject, signal, computed, OnInit, DestroyRef, ViewChild, ElementRef } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
+import { Component, inject, signal, computed, OnInit, DestroyRef, ViewChild, ElementRef, PLATFORM_ID } from '@angular/core';
+import { CommonModule, DatePipe, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -42,6 +42,7 @@ export class Settings implements OnInit {
   private route        = inject(ActivatedRoute);
   private router       = inject(Router);
   private toastService = inject(ToastService);
+  private platformId   = inject(PLATFORM_ID);
   themeService         = inject(ThemeService);
 
   activeSection = signal<string>('profile');
@@ -175,8 +176,7 @@ export class Settings implements OnInit {
           this.role = (res.data?.role?.toLowerCase() as Role) ?? 'user';
           this.isLoading.set(false);
         },
-        error: (err) => {
-          console.error('Failed to load user:', err);
+        error: () => {
           this.isLoading.set(false);
         },
       });
@@ -263,8 +263,6 @@ export class Settings implements OnInit {
       role:     this.editForm.role?.toLowerCase(),
       bio:      this.editForm.bio
     };
-
-    console.log(payload);
 
     this.userService.updateUser(id, payload)
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -382,6 +380,7 @@ export class Settings implements OnInit {
   }
 
   exportAllData(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
     const id = this.userId();
     if (!id) return;
     this.adminService.exportAllData(id)

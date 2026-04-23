@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, DestroyRef, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, computed, inject, OnInit, OnDestroy, DestroyRef, signal, ChangeDetectionStrategy } from '@angular/core';
 import { AdminService } from '../../services/admin-service';
 import { User } from '../../../user/models/user.mode';
 import { CommonModule } from '@angular/common';
@@ -21,7 +21,7 @@ import { ToastService } from '../../../../core/services/toast.service';
   styleUrls: ['./manage-users.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ManageUsers implements OnInit {
+export class ManageUsers implements OnInit, OnDestroy {
   private adminService = inject(AdminService);
   private route        = inject(ActivatedRoute);
   private destroyRef   = inject(DestroyRef);
@@ -101,7 +101,7 @@ loadUsers(): void {
     finalize(() => this.isLoading.set(false))
   ).subscribe({
     next:  res => this.allUsers.set(res.data || []),
-    error: err => console.error(err?.error?.message),
+    error: () => {},
   });
 }
 
@@ -182,4 +182,8 @@ loadUsers(): void {
   }
 
   cancelDelete(): void { this.showDeleteConfirm.set(false); this.pendingDeleteUser.set(null); }
+
+  ngOnDestroy(): void {
+    clearTimeout(this.timer);
+  }
 }

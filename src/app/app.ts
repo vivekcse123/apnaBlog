@@ -51,5 +51,6 @@ export class App implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.routerSub.unsubscribe();
+    this.aliveService.stop();
   }
 }

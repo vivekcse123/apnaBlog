@@ -1,27 +1,36 @@
 {
   "outputDirectory": "dist/blog-app/browser",
-  "routes": [
+  "headers": [
     {
-      "src": "/sitemap.xml",
-      "headers": { "Content-Type": "application/xml", "Cache-Control": "public, max-age=3600" },
-      "dest": "/api/sitemap"
+      "source": "/ads.txt",
+      "headers": [
+        { "key": "Content-Type", "value": "text/plain; charset=utf-8" },
+        { "key": "Cache-Control", "value": "public, max-age=86400" }
+      ]
     },
     {
-      "src": "/robots.txt",
-      "headers": { "Content-Type": "text/plain", "Cache-Control": "public, max-age=86400" },
-      "dest": "/robots.txt"
+      "source": "/robots.txt",
+      "headers": [
+        { "key": "Content-Type", "value": "text/plain" },
+        { "key": "Cache-Control", "value": "public, max-age=86400" }
+      ]
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/welcome",
+      "destination": "/",
+      "permanent": true
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/sitemap.xml",
+      "destination": "/api/sitemap"
     },
     {
-      "src": "/ads.txt",
-      "headers": { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "public, max-age=86400" },
-      "dest": "/ads.txt"
-    },
-    {
-      "src": "^/welcome/?$",
-      "status": 301,
-      "headers": { "Location": "/" }
-    },
-    { "handle": "filesystem" },
-    { "src": "/(.*)", "dest": "/index.csr.html" }
+      "source": "/((?!ads\\.txt|robots\\.txt|sitemap\\.xml|api/).*)",
+      "destination": "/index.csr.html"
+    }
   ]
 }

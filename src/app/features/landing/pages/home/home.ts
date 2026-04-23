@@ -503,14 +503,18 @@ export class Home implements OnInit, OnDestroy {
   }
 
   addView(post: Post): void {
+    if (!isPlatformBrowser(this.platformId)) return;
     const key = `viewed_${post._id}`;
-    if (sessionStorage.getItem(key)) return;
-    sessionStorage.setItem(key, '1');
+    try {
+      if (sessionStorage.getItem(key)) return;
+      sessionStorage.setItem(key, '1');
+    } catch { return; }
     this.patchPost(post._id, { views: post.views + 1 });
     this.postService.addView(post._id).subscribe();
   }
 
   private restoreLikedIds(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
     try {
       const stored = localStorage.getItem('apna_liked_posts');
       if (stored) this.likedPostIds.set(new Set(JSON.parse(stored)));
@@ -518,6 +522,7 @@ export class Home implements OnInit, OnDestroy {
   }
 
   private persistLikedIds(ids: Set<string>): void {
+    if (!isPlatformBrowser(this.platformId)) return;
     try { localStorage.setItem('apna_liked_posts', JSON.stringify([...ids])); } catch { }
   }
 
@@ -550,6 +555,7 @@ export class Home implements OnInit, OnDestroy {
   }
 
   private restoreBookmarkedIds(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
     try {
       const stored = localStorage.getItem('apna_bookmarked_posts');
       if (stored) this.bookmarkedPostIds.set(new Set(JSON.parse(stored)));
@@ -557,6 +563,7 @@ export class Home implements OnInit, OnDestroy {
   }
 
   private persistBookmarkedIds(ids: Set<string>): void {
+    if (!isPlatformBrowser(this.platformId)) return;
     try { localStorage.setItem('apna_bookmarked_posts', JSON.stringify([...ids])); } catch { }
   }
 
