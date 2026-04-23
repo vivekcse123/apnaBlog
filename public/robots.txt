@@ -3,8 +3,7 @@
 # ── General crawlers ──────────────────────────────────────────────────────────
 User-agent: *
 Allow: /
-Disallow: /auth/
-Disallow: /user/
+
 Disallow: /admin/
 Disallow: /super-admin/
 
