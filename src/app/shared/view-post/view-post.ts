@@ -55,8 +55,9 @@ export class ViewPost implements OnInit, OnDestroy {
   pendingDeleteCommentId = signal<string>('');
   isDeletingComment      = signal(false);
 
-  activeFormats = signal<Set<string>>(new Set());
-  activeBlock   = signal<string>('');
+  activeFormats  = signal<Set<string>>(new Set());
+  activeBlock    = signal<string>('');
+  isCodeActive   = signal(false);
 
   // Image gallery management
   imageGallery = signal<ImageItem[]>([]);
@@ -322,17 +323,26 @@ export class ViewPost implements OnInit, OnDestroy {
 
   onContentPaste(event: ClipboardEvent): void {
     event.preventDefault();
-    
+
     const clipboardData = event.clipboardData;
     if (!clipboardData) return;
 
     const text = clipboardData.getData('text/plain');
-    let html = clipboardData.getData('text/html');
-    
+    let html   = clipboardData.getData('text/html');
+
     if (html) {
       html = this.cleanPastedHTML(html);
+    } else if (this.looksLikeCode(text)) {
+      const lang = this.detectLanguage(text);
+      const pre  = document.createElement('pre');
+      if (lang) pre.setAttribute('data-language', lang);
+      const code = document.createElement('code');
+      code.textContent = text;
+      pre.appendChild(code);
+      html = pre.outerHTML + '<p><br></p>';
     } else {
-      html = text.replace(/\n/g, '<br>');
+      html = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                 .replace(/\n/g, '<br>');
     }
 
     const selection = window.getSelection();
@@ -340,10 +350,8 @@ export class ViewPost implements OnInit, OnDestroy {
 
     const range = selection.getRangeAt(0);
     range.deleteContents();
-
     const fragment = range.createContextualFragment(html);
     range.insertNode(fragment);
-
     range.collapse(false);
     selection.removeAllRanges();
     selection.addRange(range);
@@ -369,44 +377,46 @@ export class ViewPost implements OnInit, OnDestroy {
 
   private cleanElement(element: Element): void {
     const allowedAttrs: { [key: string]: string[] } = {
-      'a': ['href', 'title'],
-      'img': ['src', 'alt', 'width', 'height'],
+      'a':     ['href', 'title'],
+      'img':   ['src', 'alt', 'width', 'height'],
+      'pre':   ['data-language'],
       'table': ['border', 'cellpadding', 'cellspacing'],
-      'td': ['colspan', 'rowspan'],
-      'th': ['colspan', 'rowspan'],
+      'td':    ['colspan', 'rowspan'],
+      'th':    ['colspan', 'rowspan'],
     };
 
     Array.from(element.childNodes).forEach(node => {
-      if (node.nodeType === Node.ELEMENT_NODE) {
-        const el = node as Element;
-        const tagName = el.tagName.toLowerCase();
+      if (node.nodeType !== Node.ELEMENT_NODE) return;
+      const el      = node as Element;
+      const tagName = el.tagName.toLowerCase();
 
-        const attrs = Array.from(el.attributes);
-        attrs.forEach(attr => {
-          const attrName = attr.name.toLowerCase();
-          const allowed = allowedAttrs[tagName] || [];
-          
-          if (!allowed.includes(attrName) || 
-              attrName.startsWith('data-') || 
-              attrName === 'style' || 
-              attrName === 'class' || 
-              attrName === 'id') {
-            el.removeAttribute(attr.name);
-          }
+      if (tagName === 'pre' || tagName === 'code') {
+        const allowed = allowedAttrs[tagName] ?? [];
+        Array.from(el.attributes).forEach(attr => {
+          if (!allowed.includes(attr.name.toLowerCase())) el.removeAttribute(attr.name);
         });
+        return;
+      }
 
-        this.cleanElement(el);
+      const attrs   = Array.from(el.attributes);
+      const allowed = allowedAttrs[tagName] ?? [];
+      attrs.forEach(attr => {
+        const attrName = attr.name.toLowerCase();
+        const keep = allowed.includes(attrName) && !attrName.startsWith('on');
+        if (!keep || attrName === 'style' || attrName === 'class' || attrName === 'id') {
+          el.removeAttribute(attr.name);
+        }
+      });
 
-        if (['span', 'font', 'div'].includes(tagName)) {
-          if (el.querySelector('p, h1, h2, h3, h4, ul, ol, table')) {
-            const wrapper = document.createElement('div');
-            while (el.firstChild) {
-              wrapper.appendChild(el.firstChild);
-            }
-            el.replaceWith(...Array.from(wrapper.childNodes));
-          } else {
-            el.replaceWith(...Array.from(el.childNodes));
-          }
+      this.cleanElement(el);
+
+      if (['span', 'font', 'div'].includes(tagName)) {
+        if (el.querySelector('p, h1, h2, h3, h4, ul, ol, table, pre')) {
+          const wrapper = document.createElement('div');
+          while (el.firstChild) wrapper.appendChild(el.firstChild);
+          el.replaceWith(...Array.from(wrapper.childNodes));
+        } else {
+          el.replaceWith(...Array.from(el.childNodes));
         }
       }
     });
@@ -427,18 +437,198 @@ export class ViewPost implements OnInit, OnDestroy {
     const selection = window.getSelection();
     if (selection && selection.rangeCount > 0) {
       let node: Node | null = selection.getRangeAt(0).commonAncestorContainer;
+      let foundBlock = false;
+      let inCode = false;
       while (node && node !== this.contentEditorRef?.nativeElement) {
         if (node.nodeType === Node.ELEMENT_NODE) {
           const tag = (node as Element).tagName.toLowerCase();
-          if (['h1', 'h2', 'h3', 'h4', 'p'].includes(tag)) {
+          if (tag === 'pre' || tag === 'code') inCode = true;
+          if (!foundBlock && ['h1', 'h2', 'h3', 'h4', 'p'].includes(tag)) {
             this.activeBlock.set(tag);
-            return;
+            foundBlock = true;
           }
         }
         node = node.parentNode;
       }
+      this.isCodeActive.set(inCode);
+      if (!foundBlock) this.activeBlock.set('');
+      return;
     }
+    this.isCodeActive.set(false);
     this.activeBlock.set('');
+  }
+
+  isInCode(): boolean {
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) return false;
+    let node: Node | null = selection.getRangeAt(0).commonAncestorContainer;
+    while (node && node !== this.contentEditorRef?.nativeElement) {
+      if (node.nodeType === Node.ELEMENT_NODE) {
+        const tag = (node as Element).tagName.toLowerCase();
+        if (tag === 'code' || tag === 'pre') return true;
+      }
+      node = node.parentNode;
+    }
+    return false;
+  }
+
+  private unwrapCode(): void {
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) return;
+    let node: Node | null = selection.getRangeAt(0).commonAncestorContainer;
+    while (node && node !== this.contentEditorRef?.nativeElement) {
+      if (node.nodeType === Node.ELEMENT_NODE) {
+        const el  = node as Element;
+        const tag = el.tagName.toLowerCase();
+        if (tag === 'pre') {
+          const p = document.createElement('p');
+          p.textContent = el.textContent ?? '';
+          el.replaceWith(p);
+          const html = this.contentEditorRef.nativeElement.innerHTML;
+          this.editForm.patchValue({ content: html }, { emitEvent: false });
+          this.updateEditorFormats();
+          return;
+        }
+        if (tag === 'code' && el.parentElement?.tagName.toLowerCase() !== 'pre') {
+          el.replaceWith(...Array.from(el.childNodes));
+          const html = this.contentEditorRef.nativeElement.innerHTML;
+          this.editForm.patchValue({ content: html }, { emitEvent: false });
+          this.updateEditorFormats();
+          return;
+        }
+      }
+      node = node.parentNode;
+    }
+  }
+
+  insertCode(): void {
+    this.contentEditorRef.nativeElement.focus();
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) return;
+
+    if (this.isInCode()) { this.unwrapCode(); return; }
+
+    const range    = selection.getRangeAt(0);
+    const rawText  = this.extractPlainText(range.cloneContents());
+    const codeText = this.normalizeCodeText(rawText);
+
+    const pre  = document.createElement('pre');
+    const lang = codeText.trim() ? this.detectLanguage(codeText) : '';
+    if (lang) pre.setAttribute('data-language', lang);
+    const code = document.createElement('code');
+    code.textContent = codeText || '';
+    pre.appendChild(code);
+
+    range.deleteContents();
+    this.cleanEmptyAncestor(range);
+    range.insertNode(pre);
+
+    if (!pre.nextElementSibling) {
+      const p = document.createElement('p'); p.innerHTML = '<br>';
+      pre.after(p);
+    }
+
+    const cursor = document.createRange();
+    if (codeText.trim()) {
+      cursor.setStartAfter(pre);
+    } else {
+      cursor.setStart(code, 0);
+    }
+    cursor.collapse(true);
+    selection.removeAllRanges();
+    selection.addRange(cursor);
+
+    const html = this.contentEditorRef.nativeElement.innerHTML;
+    this.editForm.patchValue({ content: html }, { emitEvent: false });
+    this.updateEditorFormats();
+  }
+
+  private extractPlainText(node: Node): string {
+    if (node.nodeType === Node.TEXT_NODE) return node.textContent ?? '';
+
+    const tag = node.nodeType === Node.ELEMENT_NODE
+      ? (node as Element).tagName.toLowerCase() : '';
+
+    if (tag === 'br') return '\n';
+    if (tag === 'pre') {
+      const t = (node as Element).textContent ?? '';
+      return t + (t.endsWith('\n') ? '' : '\n');
+    }
+
+    let result = '';
+    node.childNodes.forEach(child => { result += this.extractPlainText(child); });
+
+    const blockTags = ['p','div','h1','h2','h3','h4','h5','h6','li','blockquote','tr'];
+    if (blockTags.includes(tag) && result.length > 0 && !result.endsWith('\n')) {
+      result += '\n';
+    }
+    return result;
+  }
+
+  private normalizeCodeText(text: string): string {
+    const lines = text.split('\n');
+    while (lines.length > 0 && lines[0].trim() === '')            lines.shift();
+    while (lines.length > 0 && lines[lines.length - 1].trim() === '') lines.pop();
+    if (lines.length === 0) return '';
+
+    const nonEmpty  = lines.filter(l => l.trim().length > 0);
+    const minIndent = nonEmpty.reduce((m, l) => {
+      const spaces = l.match(/^([ \t]*)/)?.[1].length ?? 0;
+      return Math.min(m, spaces);
+    }, Infinity);
+
+    return (minIndent > 0 && minIndent !== Infinity
+      ? lines.map(l => l.slice(minIndent))
+      : lines
+    ).join('\n');
+  }
+
+  private cleanEmptyAncestor(range: Range): void {
+    let node: Node | null = range.commonAncestorContainer;
+    while (node && node !== this.contentEditorRef.nativeElement) {
+      if (node.nodeType === Node.ELEMENT_NODE) {
+        const el = node as Element;
+        if (el.innerHTML === '' || el.innerHTML === '<br>') {
+          const parent = el.parentNode;
+          if (parent) {
+            range.setStartBefore(el);
+            range.collapse(true);
+            parent.removeChild(el);
+            return;
+          }
+        }
+      }
+      node = node.parentNode;
+    }
+  }
+
+  looksLikeCode(text: string): boolean {
+    if (text.split('\n').length < 2) return false;
+    const codePatterns = [
+      /^\s*(function|const|let|var|class|import|export|return|if|for|while)\b/m,
+      /[{};]\s*$/m,
+      /=>/,
+      /\bdef\s+\w+\s*\(/m,
+      /\bpublic\s+(static\s+)?(void|int|String)\b/m,
+      /#include\s*</m,
+      /::\w+/,
+    ];
+    return codePatterns.some(re => re.test(text));
+  }
+
+  detectLanguage(code: string): string {
+    if (/#include\s*<|int\s+main\s*\(/.test(code))             return 'cpp';
+    if (/\bimport\s+\w|def\s+\w+\s*\(|print\s*\(/.test(code)) return 'python';
+    if (/\bpublic\s+class\b|\bSystem\.out\.print/.test(code))  return 'java';
+    if (/<\/?[a-z][\w-]*[\s>]/i.test(code))                   return 'html';
+    if (/^\s*[\.\#][\w-]+\s*\{/m.test(code))                  return 'css';
+    if (/\bconst\b|\blet\b|\b=>\b|\bconsole\./.test(code))    return 'javascript';
+    if (/\binterface\b|\btype\s+\w+\s*=|\bas\s+\w/.test(code)) return 'typescript';
+    if (/\$\w+\s*=|echo\s|<?php/.test(code))                  return 'php';
+    if (/^\s*(SELECT|INSERT|UPDATE|DELETE|CREATE)\b/im.test(code)) return 'sql';
+    if (/\bfn\s+\w+|let\s+mut\b|::/.test(code))               return 'rust';
+    if (/\bfunc\s+\w+|:=|fmt\./.test(code))                   return 'go';
+    return '';
   }
 
   execFormat(command: string): void {

@@ -970,6 +970,74 @@
 .editor-content ol { padding-left: 22px; margin: 4px 0; }
 .editor-content li { margin: 2px 0; }
 
+.editor-content pre {
+  background: var(--code-bg);
+  color: var(--code-text);
+  border: 1px solid var(--code-block-border);
+  border-radius: 8px;
+  padding: 42px 16px 14px;
+  margin: 10px 0;
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+  position: relative;
+  -webkit-overflow-scrolling: touch;
+}
+
+.editor-content pre::before {
+  content: attr(data-language);
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 34px;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  background: var(--code-header-bg);
+  border-bottom: 1px solid var(--code-block-border);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--code-header-text);
+  border-radius: 7px 7px 0 0;
+  pointer-events: none;
+  z-index: 1;
+  box-sizing: border-box;
+}
+
+.editor-content pre:not([data-language])::before,
+.editor-content pre[data-language=""]::before {
+  content: 'Code';
+}
+
+.editor-content pre code {
+  display: block;
+  background: none;
+  padding: 0;
+  border-radius: 0;
+  font-size: inherit;
+  color: inherit;
+  white-space: inherit;
+}
+
+.editor-content code {
+  background: var(--code-bg);
+  color: var(--code-text);
+  border: 1px solid var(--code-block-border);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Courier New', monospace;
+  font-size: 12.5px;
+}
+
+.code-btn svg { stroke: currentColor; }
+
 /* ── Image Gallery ── */
 .file-input-hidden {
   display: none;

@@ -59,8 +59,11 @@
   --sk-base:        #e5e7eb;
   --sk-shine:       #f3f4f6;
 
-  --code-bg:        #f1f5f9;
+  --code-bg:        #f8fafc;
   --code-text:      #334155;
+  --code-header-bg: #eef2f7;
+  --code-header-text: #475569;
+  --code-block-border: #dde3ec;
 }
 
 [data-theme="dark"] {
@@ -104,8 +107,11 @@
   --toggle-on:      #6366f1;
   --sk-base:        #1e2235;
   --sk-shine:       #252a3d;
-  --code-bg:        #0f172a;
-  --code-text:      #94a3b8;
+  --code-bg:        #0d1117;
+  --code-text:      #c9d1d9;
+  --code-header-bg: #161b22;
+  --code-header-text: #6e7681;
+  --code-block-border: #30363d;
 }
 
 *,
@@ -381,4 +387,74 @@ html, body { height: 100%; }
   text-align: center;
   align-items: center;
   flex-direction: column;
+}
+
+/* ═══════════════════════════════════════════════════
+   REUSABLE CODE BLOCK  (.code-block)
+   Used in blog detail (DOM-injected) and editor (via CSS)
+   ═══════════════════════════════════════════════════ */
+
+.code-block {
+  margin: 28px 0;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--code-block-border);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08), 0 2px 12px rgba(0, 0, 0, 0.06);
+  font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Courier New', monospace;
+}
+
+.code-block-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 16px;
+  background: var(--code-header-bg);
+  border-bottom: 1px solid var(--code-block-border);
+  user-select: none;
+  min-height: 38px;
+}
+
+.code-block-lang {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--code-header-text);
+  font-family: 'DM Sans', sans-serif;
+}
+
+.code-block-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border: 1px solid var(--code-block-border);
+  border-radius: 5px;
+  background: transparent;
+  color: var(--code-header-text);
+  font-size: 11px;
+  font-weight: 500;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.code-block-copy:hover {
+  background: rgba(67, 206, 162, 0.1);
+  color: #43cea2;
+  border-color: rgba(67, 206, 162, 0.35);
+}
+
+.code-block-copy.copied {
+  color: #43cea2;
+  border-color: rgba(67, 206, 162, 0.35);
+  background: rgba(67, 206, 162, 0.08);
+}
+
+.code-block-copy svg {
+  display: block;
+  pointer-events: none;
+  flex-shrink: 0;
 }

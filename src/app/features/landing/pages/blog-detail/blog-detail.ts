@@ -368,8 +368,59 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
         this.contentEl = this.elementRef.nativeElement.querySelector('.blog-content');
         this.generateTableOfContents();
         this.addHeadingIds();
+        this.addCodeCopyButtons();
       }, 300);
     }
+  }
+
+  private addCodeCopyButtons(): void {
+    const container: HTMLElement | null = this.elementRef.nativeElement.querySelector('.blog-content');
+    if (!container) return;
+
+    container.querySelectorAll('pre').forEach((pre: HTMLElement) => {
+      // Skip if already wrapped
+      if (pre.closest('.code-block')) return;
+
+      const lang = pre.getAttribute('data-language') ?? '';
+      const langLabel = lang || 'Code';
+
+      // ── Header bar ──────────────────────────────────────────────────────────
+      const header = document.createElement('div');
+      header.className = 'code-block-header';
+
+      const langSpan = document.createElement('span');
+      langSpan.className = 'code-block-lang';
+      langSpan.textContent = langLabel;
+
+      const copyBtn = document.createElement('button');
+      copyBtn.className = 'code-block-copy';
+      copyBtn.setAttribute('aria-label', 'Copy code');
+      copyBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy`;
+
+      copyBtn.addEventListener('click', () => {
+        const codeEl = pre.querySelector('code');
+        const text   = (codeEl ?? pre).innerText ?? '';
+        navigator.clipboard.writeText(text).then(() => {
+          copyBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Copied!`;
+          copyBtn.classList.add('copied');
+          setTimeout(() => {
+            copyBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy`;
+            copyBtn.classList.remove('copied');
+          }, 2000);
+        }).catch(() => {});
+      });
+
+      header.appendChild(langSpan);
+      header.appendChild(copyBtn);
+
+      // ── Wrapper ─────────────────────────────────────────────────────────────
+      const wrapper = document.createElement('div');
+      wrapper.className = 'code-block';
+
+      pre.parentNode?.insertBefore(wrapper, pre);
+      wrapper.appendChild(header);
+      wrapper.appendChild(pre);
+    });
   }
 
   /* Populate related posts + all author posts — cache-first, no extra HTTP when warm */
