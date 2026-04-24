@@ -847,6 +847,7 @@ body {
 .comment-item:hover .comment-delete-btn { opacity: 1; }
 .comment-delete-btn:hover { background: rgba(239,68,68,0.1); }
 .comment-delete-btn.deleting { opacity: 1; cursor: not-allowed; }
+@media (hover: none) { .comment-delete-btn { opacity: 1; } }
 
 .scroll-top-fab {
   position: fixed; bottom: 28px; right: 28px; z-index: 900;

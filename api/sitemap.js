@@ -46,6 +46,21 @@ module.exports = async function handler(req, res) {
       { url: '/about',          changefreq: 'monthly', priority: 0.8, lastmod: '2026-01-01T00:00:00.000Z' },
       { url: '/privacy-policy', changefreq: 'yearly',  priority: 0.3, lastmod: '2026-04-01T00:00:00.000Z' },
       { url: '/terms',          changefreq: 'yearly',  priority: 0.3, lastmod: '2026-04-01T00:00:00.000Z' },
+      { url: '/disclaimer',     changefreq: 'yearly',  priority: 0.3, lastmod: '2026-04-24T00:00:00.000Z' },
+      { url: '/category/update',        changefreq: 'daily',  priority: 0.6, lastmod: new Date().toISOString() },
+      { url: '/category/news',          changefreq: 'daily',  priority: 0.6, lastmod: new Date().toISOString() },
+      { url: '/category/sports',        changefreq: 'weekly', priority: 0.6, lastmod: new Date().toISOString() },
+      { url: '/category/entertainment', changefreq: 'weekly', priority: 0.6, lastmod: new Date().toISOString() },
+      { url: '/category/health',        changefreq: 'weekly', priority: 0.6, lastmod: new Date().toISOString() },
+      { url: '/category/technology',    changefreq: 'weekly', priority: 0.6, lastmod: new Date().toISOString() },
+      { url: '/category/business',      changefreq: 'weekly', priority: 0.6, lastmod: new Date().toISOString() },
+      { url: '/category/lifestyle',     changefreq: 'weekly', priority: 0.6, lastmod: new Date().toISOString() },
+      { url: '/category/education',     changefreq: 'weekly', priority: 0.6, lastmod: new Date().toISOString() },
+      { url: '/category/exercise',      changefreq: 'weekly', priority: 0.6, lastmod: new Date().toISOString() },
+      { url: '/category/cooking',       changefreq: 'weekly', priority: 0.6, lastmod: new Date().toISOString() },
+      { url: '/category/social',        changefreq: 'weekly', priority: 0.6, lastmod: new Date().toISOString() },
+      { url: '/category/quotes',        changefreq: 'weekly', priority: 0.6, lastmod: new Date().toISOString() },
+      { url: '/category/village',       changefreq: 'weekly', priority: 0.6, lastmod: new Date().toISOString() },
     ];
 
     // Dynamic blog routes — published posts only; drafts are legacy visible posts

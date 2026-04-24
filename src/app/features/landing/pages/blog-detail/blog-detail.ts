@@ -1,6 +1,6 @@
 import { Component, inject, signal, OnInit, OnDestroy, DestroyRef, PLATFORM_ID, computed, AfterViewInit, ElementRef, SecurityContext } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { CommonModule, isPlatformBrowser, DOCUMENT } from '@angular/common';
+import { CommonModule, isPlatformBrowser, DOCUMENT, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { finalize, fromEvent } from 'rxjs';
 import { throttleTime } from 'rxjs/operators';
@@ -55,6 +55,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   private destroyRef     = inject(DestroyRef);
   private route          = inject(ActivatedRoute);
   private router         = inject(Router);
+  private location       = inject(Location);
   private auth           = inject(Auth);
   private userService    = inject(UserService);
   private platformId     = inject(PLATFORM_ID);
@@ -125,6 +126,9 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   shareCount      = signal(0);
   shareMenuOpen   = signal(false);
   copyLinkSuccess = signal(false);
+
+  headerHidden    = signal(false);
+  private lastScrollY = 0;
 
   /* ── Reply state ── */
   replyingToId      = signal<string | null>(null);
@@ -258,6 +262,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
         .subscribe(() => {
           this.updateReadingProgress();
           this.updateActiveHeading();
+          this.updateHeaderVisibility();
         });
 
       fromEvent<KeyboardEvent>(this.document, 'keydown')
@@ -276,14 +281,23 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     this.stopCarousel();
   }
 
-  ngAfterViewInit(): void {}
+  ngAfterViewInit(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      try {
+        const ads: any = (window as any).adsbygoogle || [];
+        (window as any).adsbygoogle = ads;
+        ads.push({});
+        ads.push({});
+      } catch (_) {}
+    }
+  }
 
   // ── Carousel controls ─────────────────────────────────────────────────────
   private startCarousel(): void {
     this.carouselTimer = setInterval(() => {
       const total = this.carouselImages().length;
       this.currentSlide.update(i => (i + 1) % total);
-    }, 1000);
+    }, 5000);
   }
 
   private stopCarousel(): void {
@@ -343,6 +357,11 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
 
   /** Side-effects that run once post data is available (cache or network). */
   private _bootstrapPost(postData: Post, postId: string): void {
+    // If the URL still uses the old MongoDB _id, silently replace with slug
+    if (isPlatformBrowser(this.platformId) && postData.slug && postId !== postData.slug) {
+      this.router.navigate(['/blog', postData.slug], { replaceUrl: true });
+    }
+
     // Synchronous — needed for immediate render
     this.updateMetaTags(postData);
     this.calculateReadingTime(postData);
@@ -377,45 +396,71 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     const container: HTMLElement | null = this.elementRef.nativeElement.querySelector('.blog-content');
     if (!container) return;
 
+    const SVG_COPY    = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
+    const SVG_CHECK   = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+
     container.querySelectorAll('pre').forEach((pre: HTMLElement) => {
-      // Skip if already wrapped
       if (pre.closest('.code-block')) return;
 
-      const lang = pre.getAttribute('data-language') ?? '';
-      const langLabel = lang || 'Code';
+      // Detect language: data-language attr → <code class="language-*"> → fallback
+      const codeEl    = pre.querySelector('code');
+      const classLang = Array.from(codeEl?.classList ?? [])
+        .find(c => c.startsWith('language-'))?.replace('language-', '') ?? '';
+      const attrLang  = pre.getAttribute('data-language') ?? pre.getAttribute('data-lang') ?? '';
+      const rawLang   = (attrLang || classLang).toLowerCase();
+      const langLabel = rawLang || 'code';
+
+      // Language display name mapping
+      const LANG_NAMES: Record<string, string> = {
+        js: 'JavaScript', javascript: 'JavaScript', ts: 'TypeScript', typescript: 'TypeScript',
+        py: 'Python', python: 'Python', java: 'Java', cpp: 'C++', c: 'C', cs: 'C#',
+        html: 'HTML', css: 'CSS', scss: 'SCSS', json: 'JSON', xml: 'XML',
+        bash: 'Bash', sh: 'Shell', shell: 'Shell', sql: 'SQL',
+        go: 'Go', rust: 'Rust', php: 'PHP', ruby: 'Ruby', swift: 'Swift',
+        kt: 'Kotlin', kotlin: 'Kotlin', dart: 'Dart', yaml: 'YAML', yml: 'YAML',
+        md: 'Markdown', jsx: 'JSX', tsx: 'TSX', vue: 'Vue', graphql: 'GraphQL',
+      };
+      const displayLang = LANG_NAMES[langLabel] ?? langLabel.toUpperCase();
+
+      // ── Terminal dots ───────────────────────────────────────────────────────
+      const dots = document.createElement('div');
+      dots.className = 'code-block-dots';
+      dots.innerHTML = `<span class="code-dot code-dot--red"></span><span class="code-dot code-dot--yellow"></span><span class="code-dot code-dot--green"></span>`;
+
+      // ── Language label ──────────────────────────────────────────────────────
+      const langSpan = document.createElement('span');
+      langSpan.className = 'code-block-lang';
+      langSpan.textContent = displayLang;
+
+      // ── Copy button ─────────────────────────────────────────────────────────
+      const copyBtn = document.createElement('button');
+      copyBtn.className = 'code-block-copy';
+      copyBtn.setAttribute('aria-label', 'Copy code to clipboard');
+      copyBtn.innerHTML = `${SVG_COPY} <span>Copy</span>`;
+
+      copyBtn.addEventListener('click', () => {
+        const text = (codeEl ?? pre).innerText ?? '';
+        navigator.clipboard.writeText(text).then(() => {
+          copyBtn.innerHTML = `${SVG_CHECK} <span>Copied!</span>`;
+          copyBtn.classList.add('copied');
+          setTimeout(() => {
+            copyBtn.innerHTML = `${SVG_COPY} <span>Copy</span>`;
+            copyBtn.classList.remove('copied');
+          }, 2200);
+        }).catch(() => {});
+      });
 
       // ── Header bar ──────────────────────────────────────────────────────────
       const header = document.createElement('div');
       header.className = 'code-block-header';
-
-      const langSpan = document.createElement('span');
-      langSpan.className = 'code-block-lang';
-      langSpan.textContent = langLabel;
-
-      const copyBtn = document.createElement('button');
-      copyBtn.className = 'code-block-copy';
-      copyBtn.setAttribute('aria-label', 'Copy code');
-      copyBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy`;
-
-      copyBtn.addEventListener('click', () => {
-        const codeEl = pre.querySelector('code');
-        const text   = (codeEl ?? pre).innerText ?? '';
-        navigator.clipboard.writeText(text).then(() => {
-          copyBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Copied!`;
-          copyBtn.classList.add('copied');
-          setTimeout(() => {
-            copyBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy`;
-            copyBtn.classList.remove('copied');
-          }, 2000);
-        }).catch(() => {});
-      });
-
+      header.appendChild(dots);
       header.appendChild(langSpan);
       header.appendChild(copyBtn);
 
       // ── Wrapper ─────────────────────────────────────────────────────────────
       const wrapper = document.createElement('div');
       wrapper.className = 'code-block';
+      if (rawLang) wrapper.setAttribute('data-lang', rawLang);
 
       pre.parentNode?.insertBefore(wrapper, pre);
       wrapper.appendChild(header);
@@ -513,22 +558,28 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private updateMetaTags(post: Post): void {
-    const canonicalUrl = `https://apnainsights.com/blog/${post.slug || post._id}`;
+    const canonicalUrl  = `https://apnainsights.com/blog/${post.slug || post._id}`;
+    const desc          = post.description || post.title;
+    const image         = post.featuredImage || 'https://apnainsights.com/og-image.png';
     this.titleService.setTitle(`${post.title} | ApnaInsights`);
-    this.meta.updateTag({ name: 'description',        content: post.description || post.title });
+    this.meta.updateTag({ name: 'description',        content: desc });
+    this.meta.updateTag({ name: 'robots',             content: 'index, follow, max-image-preview:large, max-snippet:-1' });
+    this.meta.updateTag({ property: 'og:site_name',   content: 'ApnaInsights' });
     this.meta.updateTag({ property: 'og:title',       content: post.title });
-    this.meta.updateTag({ property: 'og:description', content: post.description || post.title });
+    this.meta.updateTag({ property: 'og:description', content: desc });
     this.meta.updateTag({ property: 'og:type',        content: 'article' });
     this.meta.updateTag({ property: 'og:url',         content: canonicalUrl });
+    this.meta.updateTag({ property: 'og:locale',      content: 'en_IN' });
+    this.meta.updateTag({ property: 'og:image',       content: image });
+    this.meta.updateTag({ property: 'og:image:alt',   content: post.title });
+    this.meta.updateTag({ property: 'og:image:width',  content: '1200' });
+    this.meta.updateTag({ property: 'og:image:height', content: '630' });
     this.meta.updateTag({ name: 'twitter:card',        content: 'summary_large_image' });
+    this.meta.updateTag({ name: 'twitter:site',        content: '@apnainsights' });
     this.meta.updateTag({ name: 'twitter:title',       content: post.title });
-    this.meta.updateTag({ name: 'twitter:description', content: post.description || post.title });
-    if (post.featuredImage) {
-      this.meta.updateTag({ property: 'og:image',     content: post.featuredImage });
-      this.meta.updateTag({ property: 'og:image:alt', content: post.title });
-      this.meta.updateTag({ name: 'twitter:image',     content: post.featuredImage });
-      this.meta.updateTag({ name: 'twitter:image:alt', content: post.title });
-    }
+    this.meta.updateTag({ name: 'twitter:description', content: desc });
+    this.meta.updateTag({ name: 'twitter:image',       content: image });
+    this.meta.updateTag({ name: 'twitter:image:alt',   content: post.title });
     // Article-specific Open Graph tags — help Facebook, LinkedIn, and content aggregators
     // understand this is a time-stamped article with category context
     this.meta.updateTag({ property: 'article:published_time', content: new Date(post.createdAt).toISOString() });
@@ -579,7 +630,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
       breadcrumbItems.push({
         '@type': 'ListItem', 'position': 2,
         'name': post.categories[0],
-        'item': `https://apnainsights.com/?category=${encodeURIComponent(post.categories[0])}`,
+        'item': `https://apnainsights.com/category/${post.categories[0].toLowerCase()}`,
       });
       breadcrumbItems.push({ '@type': 'ListItem', 'position': 3, 'name': post.title, 'item': postUrl });
     } else {
@@ -685,6 +736,25 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
       if (rect.top <= 150 && rect.top >= -100) active = h.id;
     });
     this.activeHeadingId.set(active);
+  }
+
+  private updateHeaderVisibility(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    const y = window.scrollY;
+    // Only auto-hide on mobile viewports
+    if (window.innerWidth >= 768) {
+      this.headerHidden.set(false);
+      this.lastScrollY = y;
+      return;
+    }
+    if (y < 80) {
+      this.headerHidden.set(false);
+    } else if (y > this.lastScrollY + 8) {
+      this.headerHidden.set(true);
+    } else if (y < this.lastScrollY - 4) {
+      this.headerHidden.set(false);
+    }
+    this.lastScrollY = y;
   }
 
   private restoreBookmarkedIds(): void {
@@ -984,7 +1054,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  goBack(): void { this.router.navigate(['/welcome']); }
+  goBack(): void { this.location.back(); }
 
   navigateToBlog(postId: string): void {
     this.router.navigate(['/blog', postId]);
@@ -992,6 +1062,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   }
 
   filterByTag(tag: string): void {
-    this.router.navigate(['/welcome'], { queryParams: { category: tag } });
+    this.router.navigate(['/category', tag.toLowerCase()]);
+    if (isPlatformBrowser(this.platformId)) window.scrollTo({ top: 0, behavior: 'instant' });
   }
 }

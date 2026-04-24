@@ -21,12 +21,21 @@
       "source": "/welcome",
       "destination": "/",
       "permanent": true
+    },
+    {
+      "source": "/contact",
+      "destination": "/about",
+      "permanent": true
     }
   ],
   "rewrites": [
     {
       "source": "/sitemap.xml",
       "destination": "/api/sitemap"
+    },
+    {
+      "source": "/blog/:path*",
+      "destination": "/api/ssr"
     },
     {
       "source": "/((?!ads\\.txt|robots\\.txt|sitemap\\.xml|api/).*)",

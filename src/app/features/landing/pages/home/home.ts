@@ -250,8 +250,7 @@ export class Home implements OnInit, OnDestroy {
     this.route.queryParamMap
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(params => {
-        const cat = params.get('category');
-        if (cat) this.selectedCategory.set(cat);
+        this.selectedCategory.set(params.get('category') ?? '');
       });
 
     this.searchInput$.pipe(
@@ -484,6 +483,11 @@ export class Home implements OnInit, OnDestroy {
   selectCategory(cat: string): void {
     const next = this.selectedCategory() === cat ? '' : cat;
     this.selectedCategory.set(next);
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: next ? { category: next } : {},
+      replaceUrl: true,
+    });
     if (isPlatformBrowser(this.platformId)) {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }

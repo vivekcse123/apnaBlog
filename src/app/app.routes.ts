@@ -34,6 +34,21 @@ export const routes: Routes = [
         title: 'Terms of Service | ApnaInsights'
     },
     {
+        path: 'disclaimer',
+        loadComponent: () => import('./features/landing/pages/disclaimer/disclaimer').then(m => m.Disclaimer),
+        title: 'Disclaimer | ApnaInsights'
+    },
+    {
+        path: 'category/:category',
+        loadComponent: () => import('./features/landing/pages/category-page/category-page').then(m => m.CategoryPage),
+        title: 'Category | ApnaInsights'
+    },
+    {
+        path: 'contact',
+        redirectTo: 'about',
+        pathMatch: 'full'
+    },
+    {
         path: 'blog/:id',
         loadComponent: () => import('./features/landing/pages/blog-detail/blog-detail').then(m => m.BlogDetail),
         data: {

@@ -680,15 +680,17 @@
       <span class="footer-dot" aria-hidden="true">·</span>
       <a routerLink="/auth/login" class="footer-link">Sign In</a>
       <span class="footer-dot" aria-hidden="true">·</span>
-      <a (click)="selectedCategory.set('Technology')" class="footer-link" role="button" tabindex="0">Technology Blogs</a>
+      <a routerLink="/category/technology" class="footer-link">Technology Blogs</a>
       <span class="footer-dot" aria-hidden="true">·</span>
-      <a (click)="selectedCategory.set('Health')" class="footer-link" role="button" tabindex="0">Health Stories</a>
+      <a routerLink="/category/health" class="footer-link">Health Stories</a>
       <span class="footer-dot" aria-hidden="true">·</span>
-      <a (click)="selectedCategory.set('Village')" class="footer-link" role="button" tabindex="0">Village Life</a>
+      <a routerLink="/category/village" class="footer-link">Village Life</a>
       <span class="footer-dot" aria-hidden="true">·</span>
       <a routerLink="/privacy-policy" class="footer-link">Privacy Policy</a>
       <span class="footer-dot" aria-hidden="true">·</span>
       <a routerLink="/terms" class="footer-link">Terms of Service</a>
+      <span class="footer-dot" aria-hidden="true">·</span>
+      <a routerLink="/disclaimer" class="footer-link">Disclaimer</a>
     </nav>
 
     <p class="footer-seo-copy">
@@ -698,7 +700,7 @@
     </p>
 
     <p class="footer-copy">
-      © {{ isLoading() ? '' : (allPosts().length > 0 ? allPosts().length + ' stories · ' : '') }}ApnaInsights {{ (isLoading() ? '' : '') | date:'yyyy' }}
+      © {{ isLoading() ? '' : (allPosts().length > 0 ? allPosts().length + ' stories · ' : '') }}ApnaInsights 2026
       &nbsp;·&nbsp; Made with ❤️ in India
     </p>
 

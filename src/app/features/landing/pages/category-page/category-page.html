@@ -1,0 +1,120 @@
+<div class="cat-page">
+
+  <!-- NAV -->
+  <header class="cat-nav">
+    <a routerLink="/" class="cat-nav-logo" aria-label="ApnaInsights">
+      <img src="/logo-96.png" alt="ApnaInsights" width="30" height="30" loading="eager" />
+      <span class="cat-nav-name">ApnaInsights</span>
+    </a>
+    <a routerLink="/" class="cat-back-btn">← Back Home</a>
+  </header>
+
+  <!-- BREADCRUMB -->
+  <nav class="cat-breadcrumb" aria-label="Breadcrumb">
+    <ol class="cat-breadcrumb-list" itemscope itemtype="https://schema.org/BreadcrumbList">
+      <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a routerLink="/" itemprop="item"><span itemprop="name">Home</span></a>
+        <meta itemprop="position" content="1" />
+      </li>
+      <span class="bc-sep" aria-hidden="true">›</span>
+      <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <span itemprop="name" aria-current="page">{{ categoryName() }}</span>
+        <meta itemprop="position" content="2" />
+      </li>
+    </ol>
+  </nav>
+
+  <!-- HERO -->
+  <section class="cat-hero">
+    <h1 class="cat-title">{{ categoryName() }}</h1>
+    <p class="cat-subtitle">
+      @if (!isLoading()) {
+        {{ posts().length }} article{{ posts().length === 1 ? '' : 's' }} in this category
+      } @else {
+        Exploring stories…
+      }
+    </p>
+  </section>
+
+  <!-- GRID -->
+  <main class="cat-main" id="main-content">
+
+    @if (isLoading()) {
+      <div class="cat-skeleton-grid">
+        @for (_ of [1,2,3,4,5,6]; track $index) {
+          <div class="cat-skeleton-card">
+            <div class="skel skel-img"></div>
+            <div class="skel skel-line skel-title"></div>
+            <div class="skel skel-line skel-desc"></div>
+            <div class="skel skel-line skel-meta"></div>
+          </div>
+        }
+      </div>
+
+    } @else if (posts().length === 0) {
+      <div class="cat-empty">
+        <span class="cat-empty-icon">📭</span>
+        <h2>No articles found</h2>
+        <p>No published articles in the <strong>{{ categoryName() }}</strong> category yet.</p>
+        <a routerLink="/" class="cat-empty-btn">Browse all stories</a>
+      </div>
+
+    } @else {
+      <div class="cat-grid">
+        @for (post of posts(); track post._id) {
+          <article class="cat-card" (click)="navigateToBlog(post)" role="button" tabindex="0"
+            [attr.aria-label]="post.title"
+            (keydown.enter)="navigateToBlog(post)">
+
+            <div class="cat-card-img-wrap">
+              @if (post.featuredImage) {
+                <img [src]="post.featuredImage" [alt]="post.title"
+                  class="cat-card-img" loading="lazy" width="400" height="225" />
+              } @else {
+                <div class="cat-card-no-img">
+                  <span class="cat-card-letter">{{ post.title.charAt(0).toUpperCase() }}</span>
+                </div>
+              }
+            </div>
+
+            <div class="cat-card-body">
+              <span class="cat-card-category">{{ post.categories[0] }}</span>
+              <h2 class="cat-card-title">{{ post.title }}</h2>
+              <p class="cat-card-desc">{{ post.description }}</p>
+              <div class="cat-card-meta">
+                <span>{{ getAuthorName(post) }}</span>
+                <span class="meta-dot" aria-hidden="true">·</span>
+                <time [dateTime]="post.createdAt | date:'yyyy-MM-dd'">{{ post.createdAt | date:'MMM d, y' }}</time>
+                <span class="meta-dot" aria-hidden="true">·</span>
+                <span>{{ readingTime(post.content) }} min read</span>
+              </div>
+            </div>
+
+          </article>
+        }
+      </div>
+    }
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="cat-footer">
+    <div class="cat-footer-inner">
+      <a routerLink="/" class="cat-footer-logo">
+        <img src="/logo-96.png" alt="ApnaInsights" width="22" height="22" loading="lazy" />
+        <span>ApnaInsights</span>
+      </a>
+      <nav class="cat-footer-links" aria-label="Footer links">
+        <a routerLink="/">Home</a>
+        <span aria-hidden="true">·</span>
+        <a routerLink="/about">About</a>
+        <span aria-hidden="true">·</span>
+        <a routerLink="/privacy-policy">Privacy Policy</a>
+        <span aria-hidden="true">·</span>
+        <a routerLink="/disclaimer">Disclaimer</a>
+      </nav>
+      <p class="cat-footer-copy">© {{ currentYear }} ApnaInsights · Made with ❤️ in India</p>
+    </div>
+  </footer>
+
+</div>

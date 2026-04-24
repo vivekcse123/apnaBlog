@@ -1,15 +1,17 @@
-<header class="header">
+<header class="header" [class.header--hidden]="headerHidden()">
   <div class="header-left">
-    <a class="app-logo" routerLink="/">
+    <a class="app-logo" routerLink="/" aria-label="ApnaInsights — homepage">
       <img class="app-logo-img" src="/logo-96.png" alt="ApnaInsights" width="32" height="32"/>
       <span class="app-logo-text">ApnaInsights</span>
     </a>
   </div>
   <div class="header-right">
-    <button class="theme-toggle" (click)="themeService.toggleTheme()">
-      <span class="theme-icon">{{ themeService.theme() === 'dark' ? '☀' : '☾' }}</span>
+    <button class="theme-toggle"
+            (click)="themeService.toggleTheme()"
+            [attr.aria-label]="themeService.theme() === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'">
+      <span class="theme-icon" aria-hidden="true">{{ themeService.theme() === 'dark' ? '☀' : '☾' }}</span>
     </button>
-    <button class="back-btn" (click)="goBack()">← Back Home</button>
+    <button class="back-btn" (click)="goBack()" aria-label="Go back">← Back</button>
   </div>
 </header>
 
@@ -81,6 +83,30 @@
     </div>
     <div class="toc-backdrop" (click)="showToc.set(false)"></div>
   }
+
+  <!-- Visual breadcrumb — matches JSON-LD BreadcrumbList for structured-data consistency -->
+  <nav class="blog-breadcrumb" aria-label="Breadcrumb">
+    <ol class="blog-breadcrumb-list" itemscope itemtype="https://schema.org/BreadcrumbList">
+      <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a routerLink="/" itemprop="item" class="breadcrumb-home"><span itemprop="name">Home</span></a>
+        <meta itemprop="position" content="1" />
+      </li>
+      @if (post()!.categories.length) {
+        <span class="breadcrumb-sep" aria-hidden="true">›</span>
+        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+          <a [routerLink]="['/category', post()!.categories[0].toLowerCase()]" itemprop="item">
+            <span itemprop="name">{{ post()!.categories[0] }}</span>
+          </a>
+          <meta itemprop="position" content="2" />
+        </li>
+      }
+      <span class="breadcrumb-sep" aria-hidden="true">›</span>
+      <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <span itemprop="name" class="breadcrumb-current" aria-current="page">{{ post()!.title }}</span>
+        <meta [attr.content]="post()!.categories.length ? '3' : '2'" itemprop="position" />
+      </li>
+    </ol>
+  </nav>
 
   <article class="blog-detail-container">
 
@@ -168,6 +194,16 @@
     </header>
 
     <div class="blog-content" [innerHTML]="safeContent()"></div>
+
+    <!-- AdSense — mid-content unit -->
+    <div class="ad-unit-wrap">
+      <ins class="adsbygoogle"
+        style="display:block"
+        data-ad-client="ca-pub-6477809641944524"
+        data-ad-slot="3641187135"
+        data-ad-format="auto"
+        data-full-width-responsive="true"></ins>
+    </div>
 
     @if (post()!.categories.length) {
       <div class="tags-section">
@@ -409,6 +445,16 @@
       </div>
     </section>
 
+    <!-- AdSense — below-comments unit -->
+    <div class="ad-unit-wrap">
+      <ins class="adsbygoogle"
+        style="display:block"
+        data-ad-client="ca-pub-6477809641944524"
+        data-ad-slot="3641187135"
+        data-ad-format="auto"
+        data-full-width-responsive="true"></ins>
+    </div>
+
     @if (relatedPosts().length > 0) {
       <section class="related-section">
         <h2 class="related-title"><span class="related-icon">✨</span> Related Stories</h2>
@@ -617,6 +663,10 @@
       <a routerLink="/privacy-policy" class="bdf-link">Privacy Policy</a>
       <span aria-hidden="true">·</span>
       <a routerLink="/terms" class="bdf-link">Terms of Service</a>
+      <span aria-hidden="true">·</span>
+      <a routerLink="/disclaimer" class="bdf-link">Disclaimer</a>
+      <span aria-hidden="true">·</span>
+      <a routerLink="/about" class="bdf-link">Contact</a>
     </nav>
     <p class="bdf-copy">© {{ currentYear }} ApnaInsights · Made with ❤️ in India</p>
   </div>
