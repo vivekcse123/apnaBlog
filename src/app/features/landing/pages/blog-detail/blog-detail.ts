@@ -427,15 +427,23 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   private loadRelatedAndAuthorPosts(currentPost: Post): void {
     const cached = this.postCache.get();
     if (cached?.length) {
-      // Instant — zero HTTP cost
       this._processRelatedAndAuthor(currentPost, cached as unknown as Post[]);
-    } else {
-      // Cold start — fetch with a reasonable limit (100 covers 99% of deployments)
-      this.postService.getAllPost(1, 100).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-        next: (res) => this._processRelatedAndAuthor(currentPost, res.data ?? []),
-        error: ()  => this.relatedPosts.set([]),
-      });
+      return;
     }
+
+    // Cold start: fetch a lightweight batch (30) and seed the cache so the
+    // next blog navigation is instant. Related results may be smaller but
+    // page load is far faster than fetching 100 posts upfront.
+    this.postService.getAllPost(1, 30).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (res) => {
+        const posts = res.data ?? [];
+        if (posts.length) {
+          this.postCache.set(posts.map(p => ({ ...p, _ts: Date.now() })));
+        }
+        this._processRelatedAndAuthor(currentPost, posts);
+      },
+      error: () => this.relatedPosts.set([]),
+    });
   }
 
   private _processRelatedAndAuthor(currentPost: Post, allPosts: Post[]): void {
@@ -969,6 +977,8 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
         this.authorFollowersCount.set(res.data.followersCount);
         this.isFollowingAuthor.set(res.data.isFollowing);
         this.followLoading.set(false);
+        // Bust stale follow-count from cache so next open reflects new count
+        this.userService.invalidate(aId);
       },
       error: () => this.followLoading.set(false),
     });

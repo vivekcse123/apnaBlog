@@ -81,7 +81,9 @@ export class PostService {
 
   getComments(postId: string, skip = 0, limit = 10): Observable<CommentsResponse> {
     const params = new HttpParams().set('skip', skip).set('limit', limit);
-    return this.http.get<CommentsResponse>(`${this.endPoint}/${postId}/comments`, { params });
+    return this.dedupe(`comments_${postId}_${skip}_${limit}`,
+      () => this.http.get<CommentsResponse>(`${this.endPoint}/${postId}/comments`, { params })
+    );
   }
 
   // ── Write (never deduped — each is a distinct mutation) ───────────────────

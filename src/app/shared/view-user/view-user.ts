@@ -96,10 +96,12 @@ export class ViewUser implements OnDestroy {
     this.isSaving.set(true);
     this.errorMessage.set('');
 
-    this.adminService.updateUser(this.user()?._id, this.editForm.value)
+    const uid = this.user()?._id;
+    this.adminService.updateUser(uid, this.editForm.value)
       .pipe(takeUntil(this.destroy$), finalize(() => this.isSaving.set(false)))
       .subscribe({
         next: (res) => {
+          if (uid) this.userService.invalidate(uid);
           const updated = res.data ?? { ...this.user(), ...this.editForm.value };
           this.user.set(updated);
           this.isEditing.set(false);
