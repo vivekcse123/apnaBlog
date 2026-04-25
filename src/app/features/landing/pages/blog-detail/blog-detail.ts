@@ -391,9 +391,12 @@ private loadPost(postId: string): void {
       const postData = res.data;
       if (!postData || (postData.status !== 'published' && postData.status !== 'draft')) {
         console.error('Invalid post data:', postData);
-        this.post.set(null);
-        this.isLoading.set(false);
-        if (isBrowser) this.loadError.set(true);
+        // Only replace a cached render with an error if we have no fallback to show.
+        if (!cached) {
+          this.post.set(null);
+          this.isLoading.set(false);
+          if (isBrowser) this.loadError.set(true);
+        }
         return;
       }
       this.post.set(postData);
@@ -415,11 +418,14 @@ private loadPost(postId: string): void {
     },
     error: (err) => {
       console.error('Post load failed:', err);
-      this.post.set(null);
       if (isBrowser) {
-        // Client-side failure: show the error state instead of a blank page.
         this.isLoading.set(false);
-        this.loadError.set(true);
+        // Only show the error screen if there is no cached post to fall back to.
+        // A background refresh failure should not wipe out content that already rendered.
+        if (!cached) {
+          this.post.set(null);
+          this.loadError.set(true);
+        }
       }
       // SSR failure/timeout: intentionally leave isLoading=true so the server
       // renders the loading-spinner state. The client hydrates cleanly against
