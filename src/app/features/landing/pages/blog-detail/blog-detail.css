@@ -1645,6 +1645,15 @@ body {
 .breadcrumb-current { font-size: 13px; color: var(--text-muted, #888); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 320px; display: inline-block; vertical-align: middle; }
 
 /* ── AdSense Ad Unit ───────────────────────────────────────────────────────── */
-.ad-unit-wrap { margin: 32px 0; overflow: hidden; }
-/* Collapse margins when AdSense doesn't fill the slot (ins stays at height 0) */
-.ad-unit-wrap:has(ins[style*="height: 0"]) { margin: 0; }
+/* No margin/space by default — only grow when Google confirms a filled slot.  */
+/* This eliminates the gap between blog content and Tags when no ad loads.     */
+.ad-unit-wrap {
+  overflow: hidden;
+}
+.ad-unit-wrap:has(ins[data-ad-status="filled"]) {
+  margin: 32px 0;
+}
+.ad-unit-wrap:has(ins[data-ad-status="unfilled"]),
+.ad-unit-wrap:has(ins[style*="height: 0"]) {
+  display: none;
+}

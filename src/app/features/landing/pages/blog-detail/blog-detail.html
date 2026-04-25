@@ -26,7 +26,7 @@
 } @else if (loadError()) {
   <div class="error-container">
     <div class="error-icon">⚠️</div>
-    <h2 class="error-title">Couldn't load this article</h2>
+    <h2 class="error-title">Couldn't load this blog</h2>
     <p class="error-msg">The server may be starting up or temporarily unavailable. Please try again.</p>
     <div class="error-actions">
       <button class="error-retry-btn" (click)="retryLoad()">Try again</button>
@@ -598,7 +598,7 @@
             </div>
             <div>
               <h2 class="apos-title">{{ authorName }}</h2>
-              <span class="apos-subtitle">{{ authorTotalPosts() }} article{{ authorTotalPosts() === 1 ? '' : 's' }} published</span>
+              <span class="apos-subtitle">{{ authorTotalPosts() }} blog{{ authorTotalPosts() === 1 ? '' : 's' }} published</span>
             </div>
           </div>
           <button class="modal-close-btn" (click)="closeAuthorPostsModal()" aria-label="Close">✕</button>
@@ -641,7 +641,7 @@
             @if (hasMoreAuthorPosts()) {
               <div class="apos-load-more">
                 <button class="load-more-btn" type="button" (click)="loadMoreAuthorPosts()">
-                  Load {{ remainingAuthorCount() }} more article{{ remainingAuthorCount() === 1 ? '' : 's' }}
+                  Load {{ remainingAuthorCount() }} more blog{{ remainingAuthorCount() === 1 ? '' : 's' }}
                 </button>
               </div>
             } @else if (authorTotalPosts() > 1) {

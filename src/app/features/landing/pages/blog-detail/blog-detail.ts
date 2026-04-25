@@ -103,10 +103,15 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     return imgs;
   });
 
-  // ── Safe HTML ─────────────────────────────────────────────────────────────
+  // Holds only the raw HTML string for the blog body. Kept separate from post()
+  // so that like/view/comment mutations — which replace the post signal with a
+  // new object but don't touch content — do NOT cause [innerHTML] to re-render
+  // and destroy the imperatively injected code-block wrappers.
+  private readonly _contentHtml = signal<string>('');
+
   // bypassSecurityTrustHtml is intentional — content is authored/trusted DB content.
   safeContent = computed<SafeHtml>(() =>
-    this.sanitizer.bypassSecurityTrustHtml(this.post()?.content ?? '')
+    this.sanitizer.bypassSecurityTrustHtml(this._contentHtml())
   );
 
   // ── Likes / Bookmarks ─────────────────────────────────────────────────────
@@ -275,6 +280,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
         this.isLoading.set(true);
         this.loadError.set(false);
         this.post.set(null);
+        this._contentHtml.set('');
         this.allComments.set([]);
         this.comments.set([]);
         this.commentsPage.set(1);
@@ -306,9 +312,9 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
           const ssrPost = this.transferState.get<Post | null>(POST_STATE_KEY, null);
           if (ssrPost) {
             this.transferState.remove(POST_STATE_KEY);
-            this.post.set(ssrPost);
+            this._applyPost(ssrPost);
             this.isLoading.set(false);
-            this._bootstrapPost(ssrPost, postId);
+            this._bootstrapPost(ssrPost);
           }
         }
 
@@ -412,9 +418,9 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     // Serve cached data instantly while fresh data loads in the background
     const cached = this.postCache.getById(postId);
     if (cached) {
-      this.post.set(cached as unknown as Post);
+      this._applyPost(cached as unknown as Post);
       this.isLoading.set(false);
-      this._bootstrapPost(cached as unknown as Post, postId);
+      this._bootstrapPost(cached as unknown as Post);
     }
 
     // On SSR: cap at 8 s so a cold API never hangs the server response.
@@ -447,12 +453,12 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
             this.transferState.set(POST_STATE_KEY, postData);
           }
 
-          this.post.set(postData);
+          this._applyPost(postData);
           this.isLoading.set(false);
           this.loadError.set(false);
 
           if (!cached) {
-            this._bootstrapPost(postData, postId);
+            this._bootstrapPost(postData);
           } else if (isBrowser) {
             // Fresh data updated the signal → [innerHTML] re-renders and
             // destroys injected code-block wrappers. Re-inject after tick.
@@ -485,7 +491,16 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
    *  • setInterval (carousel) → browser only (Zone.js hangs SSR).
    *  • setTimeout / DOM work → browser only.
    */
-  private _bootstrapPost(postData: Post, postId: string): void {
+  // Set full post data including content. Always go through here — never call
+  // this.post.set() directly with a full post object — so _contentHtml stays in sync.
+  private _applyPost(postData: Post): void {
+    if (postData.content !== this._contentHtml()) {
+      this._contentHtml.set(postData.content ?? '');
+    }
+    this.post.set(postData);
+  }
+
+  private _bootstrapPost(postData: Post): void {
     this.updateMetaTags(postData);
     this.calculateReadingTime(postData);
 
@@ -504,7 +519,9 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
         this.fetchAuthorFollowData(aId.toString());
       }
       this.addView(postData);
-      this.loadComments(postId);
+      // Use the MongoDB ObjectId (_id) — not the URL slug — so the comments
+      // endpoint receives the correct identifier and doesn't return 400.
+      this.loadComments(postData._id);
       this.loadRelatedAndAuthorPosts(postData);
     }, 0);
 

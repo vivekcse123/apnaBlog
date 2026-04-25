@@ -12,6 +12,23 @@ const browserDistFolder = join(import.meta.dirname, '../browser');
 const app = express();
 const angularApp = new AngularNodeAppEngine();
 
+// Angular SSR's SSRF guard blocks any request whose Host is "localhost" or a
+// private IP.  In production Render forwards the real domain name, so no
+// rewrite is needed there.  For local dev (and as a safety net) we override
+// the Host header to the public origin whenever the incoming host looks like
+// a loopback address.
+const PUBLIC_HOST = (() => {
+  const origin = process.env['APP_ORIGIN'] ?? 'https://apnainsights.com';
+  try { return new URL(origin).host; } catch { return 'apnainsights.com'; }
+})();
+
+const isLoopback = (host: string) =>
+  host === 'localhost' ||
+  host.startsWith('localhost:') ||
+  host === '127.0.0.1' ||
+  host.startsWith('127.0.0.1:') ||
+  host === '::1';
+
 /**
  * Example Express Rest API endpoints can be defined here.
  * Uncomment and define endpoints as necessary.
@@ -39,11 +56,27 @@ app.use(
  * Handle all other requests by rendering the Angular application.
  */
 app.use((req, res, next) => {
+  // Rewrite loopback Host headers so Angular SSR's SSRF guard allows the
+  // request. Production requests (Host: apnainsights.com) pass through as-is.
+  if (isLoopback(req.headers['host'] ?? '')) {
+    req.headers['host'] = PUBLIC_HOST;
+  }
+
   angularApp
     .handle(req)
-    .then((response) =>
-      response ? writeResponseToNodeResponse(response, res) : next(),
-    )
+    .then((response) => {
+      if (!response) {
+        // RenderMode.Client route — Angular returns null, serve the SPA shell
+        return res.sendFile(join(browserDistFolder, 'index.html'));
+      }
+      // If Angular SSR itself produced a 5xx (e.g. API timeout during render),
+      // fall back to the client shell so the browser can bootstrap normally.
+      if (response.status >= 500) {
+        console.warn(`SSR returned ${response.status} for ${req.url} — falling back to client shell`);
+        return res.status(200).sendFile(join(browserDistFolder, 'index.html'));
+      }
+      return writeResponseToNodeResponse(response, res);
+    })
     .catch(next);
 });
 
