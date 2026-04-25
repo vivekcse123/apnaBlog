@@ -1,12 +1,15 @@
-import { Component, inject, signal, OnInit, OnDestroy, DestroyRef,
-  PLATFORM_ID, computed, AfterViewInit, ElementRef } from '@angular/core';
+import {
+  Component, inject, signal, OnInit, OnDestroy, DestroyRef,
+  PLATFORM_ID, computed, AfterViewInit, ElementRef,
+} from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule, isPlatformBrowser, DOCUMENT, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { fromEvent, timeout } from 'rxjs';
-import { throttleTime } from 'rxjs/operators';
+import { fromEvent } from 'rxjs';
+import { throttleTime, timeout } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Meta, Title, DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { TransferState, makeStateKey } from '@angular/core';
 
 import { PostService } from '../../../post/services/post-service';
 import { PostCache } from '../../../post/services/post-cache';
@@ -15,6 +18,9 @@ import { ThemeService } from '../../../../core/services/theme-service';
 import { Auth } from '../../../../core/services/auth';
 import { UserService } from '../../../user/services/user-service';
 import { User } from '../../../user/models/user.mode';
+
+// ── Transfer-state key: SSR writes the post here; browser reads it instantly ──
+const POST_STATE_KEY = makeStateKey<Post | null>('blogDetailPost');
 
 interface DrawerReply {
   _id?:       string;
@@ -43,40 +49,48 @@ interface TableOfContentsItem {
 const COMMENTS_PAGE_SIZE    = 5;
 const AUTHOR_POSTS_PER_PAGE = 10;
 
+// Valid display statuses — 'pending' posts are only visible to their owner/admin
+// via direct URL but we still render them (no 404); they just won't be indexed.
+const VISIBLE_STATUSES = new Set(['published', 'draft', 'pending']);
+
 @Component({
   selector:    'app-blog-detail',
   standalone:  true,
   imports:     [RouterLink, CommonModule, FormsModule],
   templateUrl: './blog-detail.html',
   styleUrl:    './blog-detail.css',
+  // ngSkipHydration prevents DOM reconciliation mismatches caused by the
+  // imperative mutations in addCodeCopyButtons() / addHeadingIds().
+  host: { ngSkipHydration: 'true' },
 })
 export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
 
-  // ── Services ────────────────────────────────────────────────────────────────
-  private postService  = inject(PostService);
-  private postCache    = inject(PostCache);
-  private destroyRef   = inject(DestroyRef);
-  private route        = inject(ActivatedRoute);
-  private router       = inject(Router);
-  private location     = inject(Location);
-  private auth         = inject(Auth);
-  private userService  = inject(UserService);
-  private platformId   = inject(PLATFORM_ID);
-  private meta         = inject(Meta);
-  private titleService = inject(Title);
-  private elementRef   = inject(ElementRef);
-  private document     = inject(DOCUMENT);
-  private sanitizer    = inject(DomSanitizer);
-  themeService         = inject(ThemeService);
+  // ── Services ─────────────────────────────────────────────────────────────
+  private postService   = inject(PostService);
+  private postCache     = inject(PostCache);
+  private destroyRef    = inject(DestroyRef);
+  private route         = inject(ActivatedRoute);
+  private router        = inject(Router);
+  private location      = inject(Location);
+  private auth          = inject(Auth);
+  private userService   = inject(UserService);
+  private platformId    = inject(PLATFORM_ID);
+  private meta          = inject(Meta);
+  private titleService  = inject(Title);
+  private elementRef    = inject(ElementRef);
+  private document      = inject(DOCUMENT);
+  private sanitizer     = inject(DomSanitizer);
+  private transferState = inject(TransferState);
+  themeService          = inject(ThemeService);
 
-  // ── Post state ──────────────────────────────────────────────────────────────
+  // ── Post state ────────────────────────────────────────────────────────────
   post         = signal<Post | null>(null);
   isLoading    = signal(true);
   loadError    = signal(false);
   relatedPosts = signal<Post[]>([]);
   currentYear  = new Date().getFullYear();
 
-  // ── Carousel ─────────────────────────────────────────────────────────────
+  // ── Carousel ──────────────────────────────────────────────────────────────
   currentSlide = signal(0);
   private carouselTimer: ReturnType<typeof setInterval> | null = null;
 
@@ -89,28 +103,17 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     return imgs;
   });
 
-  // ── Safe HTML content — SSR-safe with fallback ───────────────────────────
-  // safeContent = computed<SafeHtml>(() => {
-  //   const raw = this.post()?.content ?? '';
-  //   try {
-  //     const sanitized = this.sanitizer.sanitize(SecurityContext.HTML, raw) ?? '';
-  //     return this.sanitizer.bypassSecurityTrustHtml(sanitized);
-  //   } catch {
-  //     // Domino (SSR) can struggle with complex HTML — return empty and let
-  //     // browser re-hydrate with the full content
-  //     return this.sanitizer.bypassSecurityTrustHtml('');
-  //   }
-  // });
+  // ── Safe HTML ─────────────────────────────────────────────────────────────
+  // bypassSecurityTrustHtml is intentional — content is authored/trusted DB content.
+  safeContent = computed<SafeHtml>(() =>
+    this.sanitizer.bypassSecurityTrustHtml(this.post()?.content ?? '')
+  );
 
-  safeContent = computed<SafeHtml>(() => {
-    return this.sanitizer.bypassSecurityTrustHtml(this.post()?.content ?? '');
-  });
-
-  // ── Likes / Bookmarks ────────────────────────────────────────────────────
+  // ── Likes / Bookmarks ─────────────────────────────────────────────────────
   likedPostIds      = signal<Set<string>>(new Set());
   bookmarkedPostIds = signal<Set<string>>(new Set());
 
-  // ── Comments ─────────────────────────────────────────────────────────────
+  // ── Comments ──────────────────────────────────────────────────────────────
   commentText       = signal('');
   commentSubmitting = signal(false);
   commentFeedback   = signal<{ type: 'success' | 'error'; msg: string } | null>(null);
@@ -133,7 +136,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     )
   );
 
-  // ── Current user ─────────────────────────────────────────────────────────
+  // ── Current user ──────────────────────────────────────────────────────────
   private currentUserData = signal<User | null>(null);
 
   // ── Reading / ToC ─────────────────────────────────────────────────────────
@@ -190,6 +193,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   );
 
   private contentEl: HTMLElement | null = null;
+  private adsInitialised = false;
 
   // ── Computed helpers ──────────────────────────────────────────────────────
   isPostOwner = computed(() => {
@@ -199,6 +203,18 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     const ownerId = (postData.user as any)?._id ?? (postData.user as any);
     return ownerId?.toString() === userId.toString();
   });
+
+  isCommentOwner(comment: DrawerComment): boolean {
+    const userId = this.currentUserData()?._id;
+    if (!userId) return false;
+    return comment.user?.toString() === userId.toString();
+  }
+
+  isReplyOwner(reply: DrawerReply): boolean {
+    const userId = this.currentUserData()?._id;
+    if (!userId) return false;
+    return reply.user?.toString() === userId.toString();
+  }
 
   isBookmarked = computed(() => {
     const p = this.post();
@@ -255,10 +271,10 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
         const postId = params.get('id');
         if (!postId) { this.router.navigate(['/welcome']); return; }
 
-        // Reset all state on route change
+        // ── Reset all state on route change ───────────────────────────────
         this.isLoading.set(true);
-        this.post.set(null);
         this.loadError.set(false);
+        this.post.set(null);
         this.allComments.set([]);
         this.comments.set([]);
         this.commentsPage.set(1);
@@ -281,6 +297,20 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
         this.lockScroll(false);
         this.stopCarousel();
         this.currentSlide.set(0);
+
+        // ── FIX: Rehydrate from TransferState on browser to prevent flash ─
+        // SSR writes the fetched post into TransferState; on the first browser
+        // render we read it back so the page is instantly populated without
+        // waiting for a second HTTP round-trip.
+        if (isPlatformBrowser(this.platformId)) {
+          const ssrPost = this.transferState.get<Post | null>(POST_STATE_KEY, null);
+          if (ssrPost) {
+            this.transferState.remove(POST_STATE_KEY);
+            this.post.set(ssrPost);
+            this.isLoading.set(false);
+            this._bootstrapPost(ssrPost, postId);
+          }
+        }
 
         this.loadPost(postId);
         this.loadShareCount(postId);
@@ -312,18 +342,23 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  ngAfterViewInit(): void { /* AdSense is pushed in _bootstrapPost after post renders */ }
+  ngAfterViewInit(): void {
+    // On browser, if the post was already populated from TransferState or
+    // cache before this hook fires, run DOM enrichment now.
+    if (isPlatformBrowser(this.platformId) && this.post() && !this.contentEl) {
+      this._enrichDom();
+    }
+  }
 
   ngOnDestroy(): void {
     this.stopCarousel();
+    this.lockScroll(false);
   }
 
   // ══════════════════════════════════════════════════════════════════════════
   // Carousel
   // ══════════════════════════════════════════════════════════════════════════
 
-  /** Only run setInterval in the browser — Zone.js tracks timers in SSR and
-   *  will keep the server response open indefinitely if they are not cleared. */
   private startCarousel(): void {
     if (!isPlatformBrowser(this.platformId)) return;
     this.carouselTimer = setInterval(() => {
@@ -363,143 +398,170 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   // Post loading
   // ══════════════════════════════════════════════════════════════════════════
 
-private loadPost(postId: string): void {
-  // NOTE: We intentionally do NOT redirect 24-hex ObjectIds here.
-  // Posts with no slug (e.g. Hindi-title posts) only have an _id URL, and the
-  // SSR layer (api/ssr.js) already handles the canonical 301 for migrated posts.
+  private loadPost(postId: string): void {
+    const isBrowser = isPlatformBrowser(this.platformId);
 
-  const isBrowser = isPlatformBrowser(this.platformId);
-
-  const cached = this.postCache.getById(postId);
-  if (cached) {
-    this.post.set(cached as unknown as Post);
-    this.isLoading.set(false);
-    this._bootstrapPost(cached as unknown as Post, postId);
-  }
-
-  // On SSR, cap the wait at 8 s so a sleeping API doesn't hang the server response.
-  // If it times out, the server renders the loading-spinner HTML and the client
-  // fetches the post fresh — avoiding a hydration mismatch.
-  const request$ = isBrowser
-    ? this.postService.getPostById(postId)
-    : this.postService.getPostById(postId).pipe(timeout(8000));
-
-  request$.pipe(
-    takeUntilDestroyed(this.destroyRef),
-  ).subscribe({
-    next: (res) => {
-      const postData = res.data;
-      if (!postData || (postData.status !== 'published' && postData.status !== 'draft')) {
-        console.error('Invalid post data:', postData);
-        // Only replace a cached render with an error if we have no fallback to show.
-        if (!cached) {
-          this.post.set(null);
-          this.isLoading.set(false);
-          if (isBrowser) this.loadError.set(true);
-        }
-        return;
-      }
-      this.post.set(postData);
-      this.isLoading.set(false);
-
-      if (!cached) {
-        this._bootstrapPost(postData, postId);
-      } else if (isBrowser) {
-        // Fresh data just updated the signal → Angular re-renders [innerHTML], which
-        // destroys any code-block wrappers injected earlier by addCodeCopyButtons().
-        // Re-inject all DOM enhancements after the current render cycle settles.
-        setTimeout(() => {
-          this.contentEl = this.elementRef.nativeElement.querySelector('.blog-content');
-          this.generateTableOfContents();
-          this.addHeadingIds();
-          this.addCodeCopyButtons();
-        }, 50);
-      }
-    },
-    error: (err) => {
-      console.error('Post load failed:', err);
-      if (isBrowser) {
-        this.isLoading.set(false);
-        // Only show the error screen if there is no cached post to fall back to.
-        // A background refresh failure should not wipe out content that already rendered.
-        if (!cached) {
-          this.post.set(null);
-          this.loadError.set(true);
-        }
-      }
-      // SSR failure/timeout: intentionally leave isLoading=true so the server
-      // renders the loading-spinner state. The client hydrates cleanly against
-      // that same state and then fetches the post itself.
+    // ── FIX: If TransferState already populated the post, skip the network
+    // request entirely — it was just made by SSR milliseconds ago.
+    if (isBrowser && this.post()) {
+      // Still kick off background refreshables (comments, related, follow)
+      // but the post content is already on screen, no loading state needed.
+      return;
     }
-  });
-}
+
+    // Serve cached data instantly while fresh data loads in the background
+    const cached = this.postCache.getById(postId);
+    if (cached) {
+      this.post.set(cached as unknown as Post);
+      this.isLoading.set(false);
+      this._bootstrapPost(cached as unknown as Post, postId);
+    }
+
+    // On SSR: cap at 8 s so a cold API never hangs the server response.
+    // On browser: no timeout — let the user's connection decide.
+    const request$ = isBrowser
+      ? this.postService.getPostById(postId)
+      : this.postService.getPostById(postId).pipe(timeout(8000));
+
+    request$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          const postData = res.data;
+
+          // ── FIX: Accept all non-null posts with a recognisable status.
+          // The old guard blocked 'pending' posts, causing the error screen
+          // to flash for post owners who navigate directly via URL.
+          if (!postData || !VISIBLE_STATUSES.has(postData.status)) {
+            // If SSR already rendered something, don't wipe the screen.
+            if (!cached && !this.post()) {
+              this.isLoading.set(false);
+              if (isBrowser) this.loadError.set(true);
+            }
+            return;
+          }
+
+          // ── FIX: Write to TransferState on SSR so the browser can rehydrate
+          // without a second round-trip (eliminates the "loading flash" on refresh).
+          if (!isBrowser) {
+            this.transferState.set(POST_STATE_KEY, postData);
+          }
+
+          this.post.set(postData);
+          this.isLoading.set(false);
+          this.loadError.set(false);
+
+          if (!cached) {
+            this._bootstrapPost(postData, postId);
+          } else if (isBrowser) {
+            // Fresh data updated the signal → [innerHTML] re-renders and
+            // destroys injected code-block wrappers. Re-inject after tick.
+            setTimeout(() => this._enrichDom(), 50);
+          }
+        },
+
+        error: (err) => {
+          console.error('Post load failed:', err);
+          if (isBrowser) {
+            this.isLoading.set(false);
+            // Only show error when there is genuinely nothing displayed.
+            // If TransferState or cache already populated the view, swallow
+            // the background-refresh error silently.
+            if (!cached && !this.post()) {
+              this.loadError.set(true);
+            }
+          }
+          // SSR timeout: leave isLoading=true — the server sends the spinner
+          // HTML and the browser re-fetches cleanly on the client side.
+        },
+      });
+  }
 
   /**
-   * Side-effects that run once post data is available.
+   * Side-effects once post data is available.
    *
-   * SSR safety rules applied here:
-   *  • Meta tags + schema → run in BOTH SSR and browser (Google crawls SSR HTML).
-   *  • setInterval (carousel) → browser only (Zone.js hangs SSR on open timers).
-   *  • setTimeout blocks → browser only (DOM queries + user-specific HTTP calls).
-   *  • DOM manipulation (ToC, code buttons) → browser only.
+   * SSR safety:
+   *  • Meta tags + schema → both SSR and browser (crawlers index SSR HTML).
+   *  • setInterval (carousel) → browser only (Zone.js hangs SSR).
+   *  • setTimeout / DOM work → browser only.
    */
- private _bootstrapPost(postData: Post, postId: string): void {
-  this.updateMetaTags(postData);
-  this.calculateReadingTime(postData);
+  private _bootstrapPost(postData: Post, postId: string): void {
+    this.updateMetaTags(postData);
+    this.calculateReadingTime(postData);
 
-  if (this.carouselImages().length > 1) {
-    this.startCarousel();
+    if (this.carouselImages().length > 1) {
+      this.startCarousel();
+    }
+
+    if (!isPlatformBrowser(this.platformId)) return;
+
+    // Defer side-effects that hit the network or DOM until after Angular
+    // has painted the initial view (avoids ExpressionChangedAfterChecked).
+    setTimeout(() => {
+      const aId = (postData.user as any)?._id ?? (postData.user as any);
+      if (aId) {
+        this.authorId.set(aId.toString());
+        this.fetchAuthorFollowData(aId.toString());
+      }
+      this.addView(postData);
+      this.loadComments(postId);
+      this.loadRelatedAndAuthorPosts(postData);
+    }, 0);
+
+    // ── FIX: Use requestAnimationFrame instead of an arbitrary 300 ms timeout
+    // so DOM enrichment runs exactly when the browser has finished painting.
+    // Falls back to setTimeout(0) on environments without rAF.
+    this._scheduleEnrichDom();
   }
 
-  if (!isPlatformBrowser(this.platformId)) return;
-
-  // ✅ REMOVE THIS BLOCK — no longer needed after slug migration
-  // if (postData.slug && postId !== postData.slug) {
-  //   this.router.navigate(['/blog', postData.slug], { replaceUrl: true });
-  // }
-
-  setTimeout(() => {
-    const aId = (postData.user as any)?._id ?? (postData.user as any);
-    if (aId) {
-      this.authorId.set(aId.toString());
-      this.fetchAuthorFollowData(aId.toString());
+  // ── Schedule DOM enrichment after next paint ───────────────────────────────
+  private _scheduleEnrichDom(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    const run = () => {
+      // Double-rAF ensures we run after the layout pass that renders [innerHTML]
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => this._enrichDom());
+      });
+    };
+    // If document is already interactive/complete, schedule immediately;
+    // otherwise wait for DOMContentLoaded (covers hard-refresh edge case).
+    if (this.document.readyState !== 'loading') {
+      run();
+    } else {
+      this.document.addEventListener('DOMContentLoaded', run, { once: true });
     }
-    this.addView(postData);
-    this.loadComments(postId);
-    this.loadRelatedAndAuthorPosts(postData);
-  }, 0);
+  }
 
-  setTimeout(() => {
+  // ── Enrich DOM (headings, code buttons, ToC, AdSense) ─────────────────────
+  private _enrichDom(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
     this.contentEl = this.elementRef.nativeElement.querySelector('.blog-content');
+    if (!this.contentEl) return;
     this.generateTableOfContents();
     this.addHeadingIds();
     this.addCodeCopyButtons();
     this.pushAdSense();
-  }, 300);
-}
+  }
 
-private adsInitialised = false;
-
-private pushAdSense(): void {
-  if (!isPlatformBrowser(this.platformId) || this.adsInitialised) return;
-  this.adsInitialised = true;
-  try {
-    const ads: any[] = (window as any).adsbygoogle ?? [];
-    (window as any).adsbygoogle = ads;
-    ads.push({});
-  } catch (_) { /* ignore */ }
-}
+  // ── AdSense ───────────────────────────────────────────────────────────────
+  private pushAdSense(): void {
+    if (!isPlatformBrowser(this.platformId) || this.adsInitialised) return;
+    this.adsInitialised = true;
+    try {
+      const ads: any[] = (window as any).adsbygoogle ?? [];
+      (window as any).adsbygoogle = ads;
+      ads.push({});
+    } catch (_) { /* ignore */ }
+  }
 
   // ══════════════════════════════════════════════════════════════════════════
-  // Code copy buttons (browser-only DOM enhancement)
+  // Code copy buttons
   // ══════════════════════════════════════════════════════════════════════════
 
   private addCodeCopyButtons(): void {
-    if (!isPlatformBrowser(this.platformId)) return;
+    if (!isPlatformBrowser(this.platformId) || !this.contentEl) return;
 
-    const container: HTMLElement | null =
-      this.elementRef.nativeElement.querySelector('.blog-content');
-    if (!container) return;
+    const container = this.contentEl;
 
     const SVG_COPY  = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
     const SVG_CHECK = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
@@ -527,7 +589,6 @@ private pushAdSense(): void {
       const langLabel = rawLang || 'code';
       const displayLang = LANG_NAMES[langLabel] ?? langLabel.toUpperCase();
 
-      // ── Use injected DOCUMENT, not global document ───────────────────────
       const dots = this.document.createElement('div');
       dots.className = 'code-block-dots';
       dots.innerHTML = `
@@ -553,7 +614,7 @@ private pushAdSense(): void {
             copyBtn.innerHTML = `${SVG_COPY} <span>Copy</span>`;
             copyBtn.classList.remove('copied');
           }, 2200);
-        }).catch(() => { /* clipboard API not available */ });
+        }).catch(() => { /* clipboard API unavailable */ });
       });
 
       const header = this.document.createElement('div');
@@ -593,7 +654,7 @@ private pushAdSense(): void {
         next: (res) => {
           const posts = res.data ?? [];
           if (posts.length) {
-            this.postCache.set(posts.map(p => ({ ...p, _ts: Date.now() })));
+            this.postCache.set(posts.map((p: Post) => ({ ...p, _ts: Date.now() })));
           }
           this._processRelatedAndAuthor(currentPost, posts);
         },
@@ -819,147 +880,169 @@ private pushAdSense(): void {
   // Meta tags + Schema.org (SSR-safe)
   // ══════════════════════════════════════════════════════════════════════════
 
- // ADD this private helper above updateMetaTags
-private setMeta(attr: 'name' | 'property', key: string, content: string): void {
-  if (!this.meta.getTag(`${attr}="${key}"`)) {
-    this.meta.addTag({ [attr]: key, content });
-  } else {
-    this.meta.updateTag({ [attr]: key, content });
+  private setMeta(attr: 'name' | 'property', key: string, content: string): void {
+    if (!this.meta.getTag(`${attr}="${key}"`)) {
+      this.meta.addTag({ [attr]: key, content });
+    } else {
+      this.meta.updateTag({ [attr]: key, content });
+    }
   }
-}
 
-private updateMetaTags(post: Post): void {
-  const canonicalUrl = `https://apnainsights.com/blog/${post.slug || post._id}`;
-  const desc         = post.description || post.title;
-  const image        = post.featuredImage || 'https://apnainsights.com/og-image.png';
+  private updateMetaTags(post: Post): void {
+    const canonicalUrl = `https://apnainsights.com/blog/${post.slug || post._id}`;
+    const desc         = post.description || post.title;
+    const image        = post.featuredImage || 'https://apnainsights.com/og-image.png';
 
-  this.titleService.setTitle(`${post.title} | ApnaInsights`);
+    this.titleService.setTitle(`${post.title} | ApnaInsights`);
 
-  this.setMeta('name',     'description',              desc);
-  this.setMeta('name',     'author',                   (post.user as any)?.name ?? 'ApnaInsights');
-  this.setMeta('name',     'robots',                   'index, follow, max-image-preview:large, max-snippet:-1');
-  this.setMeta('property', 'og:site_name',             'ApnaInsights');
-  this.setMeta('property', 'og:title',                 post.title);
-  this.setMeta('property', 'og:description',           desc);
-  this.setMeta('property', 'og:type',                  'article');
-  this.setMeta('property', 'og:url',                   canonicalUrl);
-  this.setMeta('property', 'og:locale',                'en_IN');
-  this.setMeta('property', 'og:image',                 image);
-  this.setMeta('property', 'og:image:alt',             post.title);
-  this.setMeta('property', 'og:image:width',           '1200');
-  this.setMeta('property', 'og:image:height',          '630');
-  this.setMeta('name',     'twitter:card',             'summary_large_image');
-  this.setMeta('name',     'twitter:site',             '@apnainsights');
-  this.setMeta('name',     'twitter:title',            post.title);
-  this.setMeta('name',     'twitter:description',      desc);
-  this.setMeta('name',     'twitter:image',            image);
-  this.setMeta('name',     'twitter:image:alt',        post.title);
-  this.setMeta('property', 'article:published_time',   new Date(post.createdAt).toISOString());
-  this.setMeta('property', 'article:modified_time',    new Date(post.updatedAt ?? post.createdAt).toISOString());
+    // Pending and draft posts must not be indexed
+    const robotsValue = (post.status === 'published')
+      ? 'index, follow, max-image-preview:large, max-snippet:-1'
+      : 'noindex, nofollow';
 
-  if (post.categories?.length) {
-    this.setMeta('property', 'article:section', post.categories[0]);
+    this.setMeta('name',     'description',              desc);
+    this.setMeta('name',     'author',                   (post.user as any)?.name ?? 'ApnaInsights');
+    this.setMeta('name',     'robots',                   robotsValue);
+    this.setMeta('property', 'og:site_name',             'ApnaInsights');
+    this.setMeta('property', 'og:title',                 post.title);
+    this.setMeta('property', 'og:description',           desc);
+    this.setMeta('property', 'og:type',                  'article');
+    this.setMeta('property', 'og:url',                   canonicalUrl);
+    this.setMeta('property', 'og:locale',                'en_IN');
+    this.setMeta('property', 'og:image',                 image);
+    this.setMeta('property', 'og:image:alt',             post.title);
+    this.setMeta('property', 'og:image:width',           '1200');
+    this.setMeta('property', 'og:image:height',          '630');
+    this.setMeta('name',     'twitter:card',             'summary_large_image');
+    this.setMeta('name',     'twitter:site',             '@apnainsights');
+    this.setMeta('name',     'twitter:title',            post.title);
+    this.setMeta('name',     'twitter:description',      desc);
+    this.setMeta('name',     'twitter:image',            image);
+    this.setMeta('name',     'twitter:image:alt',        post.title);
+    this.setMeta('property', 'article:published_time',   new Date(post.createdAt).toISOString());
+    this.setMeta('property', 'article:modified_time',    new Date(post.updatedAt ?? post.createdAt).toISOString());
+
+    // Always clean up stale tags first to prevent accumulation across nav
     let stale: HTMLMetaElement | null;
     while ((stale = this.meta.getTag('property="article:tag"'))) {
       this.meta.removeTagElement(stale);
     }
-    post.categories.forEach(cat => this.meta.addTag({ property: 'article:tag', content: cat }));
-  }
-
-  if ((post.user as any)?.name) {
-    this.setMeta('property', 'article:author', (post.user as any).name);
-  }
-
-  // Canonical
-  try {
-    let canonical = this.document.querySelector("link[rel='canonical']") as HTMLLinkElement | null;
-    if (!canonical) {
-      canonical     = this.document.createElement('link') as HTMLLinkElement;
-      canonical.rel = 'canonical';
-      this.document.head?.appendChild(canonical);
+    if (post.categories?.length) {
+      this.setMeta('property', 'article:section', post.categories[0]);
+      post.categories.forEach(cat => this.meta.addTag({ property: 'article:tag', content: cat }));
     }
-    canonical.href = canonicalUrl;
-  } catch (_) {}
 
-  // Preload (browser only)
-  if (isPlatformBrowser(this.platformId) && post.featuredImage) {
+    if ((post.user as any)?.name) {
+      this.setMeta('property', 'article:author', (post.user as any).name);
+    }
+
+    // Canonical — update in place, never append duplicates
     try {
-      const already = this.document.querySelector(`link[rel='preload'][href='${post.featuredImage}']`);
-      if (!already) {
-        const preload = this.document.createElement('link') as HTMLLinkElement;
-        preload.rel   = 'preload';
-        preload.as    = 'image';
-        preload.href  = post.featuredImage;
-        this.document.head?.appendChild(preload);
+      let canonical = this.document.querySelector("link[rel='canonical']") as HTMLLinkElement | null;
+      if (!canonical) {
+        canonical     = this.document.createElement('link') as HTMLLinkElement;
+        canonical.rel = 'canonical';
+        this.document.head?.appendChild(canonical);
       }
+      canonical.href = canonicalUrl;
+    } catch (_) {}
+
+    // hreflang for en-IN targeting
+    try {
+      let hreflang = this.document.querySelector("link[rel='alternate'][hreflang]") as HTMLLinkElement | null;
+      if (!hreflang) {
+        hreflang = this.document.createElement('link') as HTMLLinkElement;
+        this.document.head?.appendChild(hreflang);
+      }
+      hreflang.setAttribute('rel', 'alternate');
+      hreflang.setAttribute('hreflang', 'en-IN');
+      hreflang.setAttribute('href', canonicalUrl);
+    } catch (_) {}
+
+    // Preload featured image (browser only) — update in place
+    if (isPlatformBrowser(this.platformId) && post.featuredImage) {
+      try {
+        let preload = this.document.querySelector("link[rel='preload'][as='image']") as HTMLLinkElement | null;
+        if (!preload) {
+          preload = this.document.createElement('link') as HTMLLinkElement;
+          preload.rel = 'preload';
+          preload.as  = 'image';
+          this.document.head?.appendChild(preload);
+        }
+        preload.href = post.featuredImage;
+      } catch (_) {}
+    }
+
+    this.injectArticleSchema(post);
+  }
+
+  private injectArticleSchema(post: Post): void {
+    try {
+      const postUrl    = `https://apnainsights.com/blog/${post.slug || post._id}`;
+      const authorName = (post.user as any)?.name ?? 'Anonymous Author';
+      const authorId   = (post.user as any)?._id ?? (post.user as any);
+      const wordCount  = (post.content ?? '').replace(/<[^>]*>/g, '').trim().split(/\s+/).length;
+
+      const breadcrumbItems: any[] = [
+        { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://apnainsights.com' },
+      ];
+      if (post.categories?.length) {
+        breadcrumbItems.push({
+          '@type': 'ListItem', position: 2,
+          name: post.categories[0],
+          item: `https://apnainsights.com/category/${post.categories[0].toLowerCase()}`,
+        });
+        breadcrumbItems.push({ '@type': 'ListItem', position: 3, name: post.title, item: postUrl });
+      } else {
+        breadcrumbItems.push({ '@type': 'ListItem', position: 2, name: post.title, item: postUrl });
+      }
+
+      const schemas: any[] = [
+        {
+          '@context':      'https://schema.org',
+          '@type':         'BlogPosting',
+          headline:        post.title,
+          description:     post.description || post.title,
+          inLanguage:      'en-IN',
+          wordCount,
+          commentCount:    post.commentsCount ?? 0,
+          timeRequired:    `PT${Math.ceil(wordCount / 200)}M`,
+          image: post.featuredImage
+            ? { '@type': 'ImageObject', url: post.featuredImage, caption: post.title, width: 1200, height: 630 }
+            : { '@type': 'ImageObject', url: 'https://apnainsights.com/og-image.png', width: 1200, height: 630 },
+          datePublished:   new Date(post.createdAt).toISOString(),
+          dateModified:    new Date(post.updatedAt ?? post.createdAt).toISOString(),
+          author: {
+            '@type': 'Person',
+            name:    authorName,
+            ...(authorId ? { url: `https://apnainsights.com/author/${authorId}` } : {}),
+          },
+          keywords:        post.categories?.join(', ') || undefined,
+          articleSection:  post.categories?.[0] || undefined,
+          publisher: {
+            '@type': 'Organization',
+            name:    'ApnaInsights',
+            logo:    { '@type': 'ImageObject', url: 'https://apnainsights.com/logo.png', width: 1024, height: 1024 },
+          },
+          mainEntityOfPage: { '@type': 'WebPage', '@id': postUrl },
+        },
+        {
+          '@context':      'https://schema.org',
+          '@type':         'BreadcrumbList',
+          itemListElement: breadcrumbItems,
+        },
+      ];
+
+      let el = this.document.getElementById('article-schema');
+      if (!el) {
+        el    = this.document.createElement('script');
+        el.id = 'article-schema';
+        (el as HTMLScriptElement).type = 'application/ld+json';
+        this.document.head?.appendChild(el);
+      }
+      el.textContent = JSON.stringify(schemas);
     } catch (_) {}
   }
-
-  this.injectArticleSchema(post);
-}
-
- private injectArticleSchema(post: Post): void {
-  try {
-    const postUrl    = `https://apnainsights.com/blog/${post.slug || post._id}`;
-    const authorName = (post.user as any)?.name ?? 'Anonymous Author';
-    const wordCount  = (post.content ?? '').replace(/<[^>]*>/g, '').trim().split(/\s+/).length;
-
-    const breadcrumbItems: any[] = [
-      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://apnainsights.com' },
-    ];
-    if (post.categories?.length) {
-      breadcrumbItems.push({
-        '@type': 'ListItem', position: 2,
-        name: post.categories[0],
-        item: `https://apnainsights.com/category/${post.categories[0].toLowerCase()}`,
-      });
-      breadcrumbItems.push({ '@type': 'ListItem', position: 3, name: post.title, item: postUrl });
-    } else {
-      breadcrumbItems.push({ '@type': 'ListItem', position: 2, name: post.title, item: postUrl });
-    }
-
-    const schemas: any[] = [
-      {
-        '@context':      'https://schema.org',
-        '@type':         'BlogPosting',          // ✅ was Article
-        headline:        post.title,
-        description:     post.description || post.title,
-        inLanguage:      'en-IN',                // ✅ new
-        wordCount,                               // ✅ new
-        commentCount:    post.commentsCount ?? 0,// ✅ new
-        timeRequired:    `PT${Math.ceil(wordCount / 200)}M`, // ✅ new
-        image: post.featuredImage
-          ? { '@type': 'ImageObject', url: post.featuredImage, caption: post.title, width: 1200, height: 630 }
-          : { '@type': 'ImageObject', url: 'https://apnainsights.com/og-image.png', width: 1200, height: 630 },
-        datePublished:   new Date(post.createdAt).toISOString(),
-        dateModified:    new Date(post.updatedAt ?? post.createdAt).toISOString(),
-        author:          { '@type': 'Person', name: authorName },
-        keywords:        post.categories?.join(', ') || undefined,
-        articleSection:  post.categories?.[0] || undefined,
-        publisher: {
-          '@type': 'Organization',
-          name:    'ApnaInsights',
-          logo:    { '@type': 'ImageObject', url: 'https://apnainsights.com/logo.png', width: 1024, height: 1024 },
-        },
-        mainEntityOfPage: { '@type': 'WebPage', '@id': postUrl },
-      },
-      {
-        '@context':      'https://schema.org',
-        '@type':         'BreadcrumbList',
-        itemListElement: breadcrumbItems,
-      },
-    ];
-
-    let el = this.document.getElementById('article-schema');
-    if (!el) {
-      el    = this.document.createElement('script');
-      el.id = 'article-schema';
-      (el as HTMLScriptElement).type = 'application/ld+json';
-      this.document.head?.appendChild(el);
-    }
-    el.textContent = JSON.stringify(schemas);
-  } catch (_) {}
-}
 
   // ══════════════════════════════════════════════════════════════════════════
   // Views
@@ -1253,7 +1336,7 @@ private updateMetaTags(post: Post): void {
           this.authorFollowersCount.set(res.followersCount ?? 0);
           this.isFollowingAuthor.set(res.isFollowing ?? false);
         },
-        error: () => { /* non-critical — silently ignore */ },
+        error: () => { /* non-critical */ },
       });
   }
 

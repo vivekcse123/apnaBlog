@@ -87,10 +87,10 @@ export class CategoryPage implements OnInit {
 
   private setMeta(name: string): void {
     const url = `https://apnainsights.com/category/${name.toLowerCase()}`;
-    this.titleSvc.setTitle(`${name} Stories & Articles | ApnaInsights`);
-    this.meta.updateTag({ name: 'description', content: `Read the latest ${name} stories, articles, and insights from real writers on ApnaInsights. Community-driven content on ${name}.` });
+    this.titleSvc.setTitle(`${name} Stories & Blogs | ApnaInsights`);
+    this.meta.updateTag({ name: 'description', content: `Read the latest ${name} stories, blogs, and insights from real writers on ApnaInsights. Community-driven content on ${name}.` });
     this.meta.updateTag({ name: 'robots', content: 'index, follow' });
-    this.meta.updateTag({ property: 'og:title',       content: `${name} Stories & Articles | ApnaInsights` });
+    this.meta.updateTag({ property: 'og:title',       content: `${name} Stories & Blogs | ApnaInsights` });
     this.meta.updateTag({ property: 'og:description', content: `Explore ${name} content written by real people on ApnaInsights.` });
     this.meta.updateTag({ property: 'og:url',         content: url });
     this.meta.updateTag({ property: 'og:type',        content: 'website' });
@@ -108,8 +108,8 @@ export class CategoryPage implements OnInit {
       {
         '@context': 'https://schema.org',
         '@type': 'CollectionPage',
-        'name': `${name} Stories & Articles`,
-        'description': `Read the latest ${name} stories and articles on ApnaInsights.`,
+        'name': `${name} Stories & Blogs`,
+        'description': `Read the latest ${name} stories and blogs on ApnaInsights.`,
         'url': url,
         'isPartOf': { '@type': 'WebSite', 'url': 'https://apnainsights.com', 'name': 'ApnaInsights' },
       },

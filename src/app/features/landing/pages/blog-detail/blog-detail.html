@@ -249,7 +249,7 @@
       <div class="author-card-right">
         <div class="author-card-stat">
           <span class="author-stat-value">{{ authorTotalPosts() }}</span>
-          <span class="author-stat-label">Articles</span>
+          <span class="author-stat-label">Blogs</span>
         </div>
         <div class="author-card-stat">
           <span class="author-stat-value">{{ authorFollowersCount() }}</span>
@@ -512,7 +512,7 @@
         <div class="apm-stats">
           <div class="apm-stat">
             <span class="apm-stat-val">{{ authorTotalPosts() }}</span>
-            <span class="apm-stat-lbl">Articles</span>
+            <span class="apm-stat-lbl">Blogs</span>
           </div>
           <div class="apm-stat-div"></div>
           <div class="apm-stat">
@@ -569,7 +569,7 @@
 
         <div class="apm-actions">
           <button class="apm-view-btn" (click)="openAuthorPostsModal()" type="button">
-            View all articles by {{ authorName }} →
+            View all blogs by {{ authorName }} →
           </button>
           <button class="apm-cancel-btn" (click)="closeAuthorModal()" type="button">Close</button>
         </div>
@@ -583,7 +583,7 @@
   ════════════════════════════════════ -->
   @if (showAuthorPostsModal()) {
     <div class="modal-backdrop" (click)="closeAuthorPostsModal()" role="dialog" aria-modal="true"
-      [attr.aria-label]="'All articles by ' + authorName">
+      [attr.aria-label]="'All blogs by ' + authorName">
       <div class="author-posts-modal" (click)="$event.stopPropagation()">
 
         <!-- Header -->
@@ -609,7 +609,7 @@
           @if (displayedAuthorPosts().length === 0) {
             <div class="apos-empty">
               <span class="apos-empty-icon">📭</span>
-              <p>No other articles found for this author.</p>
+              <p>No other blogs found for this author.</p>
             </div>
           } @else {
             <div class="apos-list">
@@ -645,7 +645,7 @@
                 </button>
               </div>
             } @else if (authorTotalPosts() > 1) {
-              <p class="apos-end-note">All articles loaded ✓</p>
+              <p class="apos-end-note">All blogs loaded ✓</p>
             }
           }
         </div>
