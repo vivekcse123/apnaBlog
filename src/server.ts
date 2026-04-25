@@ -29,6 +29,33 @@ const isLoopback = (host: string) =>
   host.startsWith('127.0.0.1:') ||
   host === '::1';
 
+// 301 redirect: /blog/:objectId  →  /blog/:slug
+// Prevents duplicate-content indexing of old MongoDB ObjectId URLs.
+const OBJECT_ID_RE = /^[0-9a-f]{24}$/i;
+const API_BASE = process.env['API_URL'] ?? 'https://apnablogserver.onrender.com/api';
+
+app.get('/blog/:id', async (req: Request, res: Response, next: NextFunction) => {
+  const id = String(req.params['id'] ?? '');
+  if (!OBJECT_ID_RE.test(id)) return next(); // already a slug — let SSR handle it
+
+  try {
+    const apiRes = await fetch(`${API_BASE}/post/${id}`, {
+      headers: { Accept: 'application/json' },
+      signal: AbortSignal.timeout(4000),
+    });
+    if (!apiRes.ok) return next();
+
+    const body = await apiRes.json() as { data?: { slug?: string } };
+    const slug = body?.data?.slug;
+    if (slug && slug !== id) {
+      return res.redirect(301, `/blog/${slug}`);
+    }
+  } catch {
+    // API down or timeout — fall through to SSR so the page still loads
+  }
+  return next();
+});
+
 /**
  * Example Express Rest API endpoints can be defined here.
  * Uncomment and define endpoints as necessary.
