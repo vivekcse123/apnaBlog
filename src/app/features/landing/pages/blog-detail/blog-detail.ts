@@ -3,7 +3,7 @@ import { Component, inject, signal, OnInit, OnDestroy, DestroyRef,
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule, isPlatformBrowser, DOCUMENT, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { finalize, fromEvent } from 'rxjs';
+import { fromEvent, timeout } from 'rxjs';
 import { throttleTime } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Meta, Title, DomSanitizer, SafeHtml } from '@angular/platform-browser';
@@ -72,6 +72,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   // ── Post state ──────────────────────────────────────────────────────────────
   post         = signal<Post | null>(null);
   isLoading    = signal(true);
+  loadError    = signal(false);
   relatedPosts = signal<Post[]>([]);
   currentYear  = new Date().getFullYear();
 
@@ -257,6 +258,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
         // Reset all state on route change
         this.isLoading.set(true);
         this.post.set(null);
+        this.loadError.set(false);
         this.allComments.set([]);
         this.comments.set([]);
         this.commentsPage.set(1);
@@ -275,6 +277,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
         this.isFollowingAuthor.set(false);
         this.authorId.set(null);
         this.contentEl = null;
+        this.adsInitialised = false;
         this.lockScroll(false);
         this.stopCarousel();
         this.currentSlide.set(0);
@@ -365,6 +368,8 @@ private loadPost(postId: string): void {
   // Posts with no slug (e.g. Hindi-title posts) only have an _id URL, and the
   // SSR layer (api/ssr.js) already handles the canonical 301 for migrated posts.
 
+  const isBrowser = isPlatformBrowser(this.platformId);
+
   const cached = this.postCache.getById(postId);
   if (cached) {
     this.post.set(cached as unknown as Post);
@@ -372,25 +377,31 @@ private loadPost(postId: string): void {
     this._bootstrapPost(cached as unknown as Post, postId);
   }
 
-  this.postService.getPostById(postId).pipe(
+  // On SSR, cap the wait at 8 s so a sleeping API doesn't hang the server response.
+  // If it times out, the server renders the loading-spinner HTML and the client
+  // fetches the post fresh — avoiding a hydration mismatch.
+  const request$ = isBrowser
+    ? this.postService.getPostById(postId)
+    : this.postService.getPostById(postId).pipe(timeout(8000));
+
+  request$.pipe(
     takeUntilDestroyed(this.destroyRef),
-    finalize(() => this.isLoading.set(false)),
   ).subscribe({
     next: (res) => {
       const postData = res.data;
       if (!postData || (postData.status !== 'published' && postData.status !== 'draft')) {
-        if (!cached) {
-          if (isPlatformBrowser(this.platformId)) {
-            this.router.navigate(['/welcome']);
-          }
-        }
+        console.error('Invalid post data:', postData);
+        this.post.set(null);
+        this.isLoading.set(false);
+        if (isBrowser) this.loadError.set(true);
         return;
       }
       this.post.set(postData);
+      this.isLoading.set(false);
 
       if (!cached) {
         this._bootstrapPost(postData, postId);
-      } else if (isPlatformBrowser(this.platformId)) {
+      } else if (isBrowser) {
         // Fresh data just updated the signal → Angular re-renders [innerHTML], which
         // destroys any code-block wrappers injected earlier by addCodeCopyButtons().
         // Re-inject all DOM enhancements after the current render cycle settles.
@@ -402,11 +413,18 @@ private loadPost(postId: string): void {
         }, 50);
       }
     },
-    error: () => {
-      if (isPlatformBrowser(this.platformId)) {
-        this.router.navigate(['/welcome']);
+    error: (err) => {
+      console.error('Post load failed:', err);
+      this.post.set(null);
+      if (isBrowser) {
+        // Client-side failure: show the error state instead of a blank page.
+        this.isLoading.set(false);
+        this.loadError.set(true);
       }
-    },
+      // SSR failure/timeout: intentionally leave isLoading=true so the server
+      // renders the loading-spinner state. The client hydrates cleanly against
+      // that same state and then fetches the post itself.
+    }
   });
 }
 
@@ -454,12 +472,14 @@ private loadPost(postId: string): void {
   }, 300);
 }
 
+private adsInitialised = false;
+
 private pushAdSense(): void {
-  if (!isPlatformBrowser(this.platformId)) return;
+  if (!isPlatformBrowser(this.platformId) || this.adsInitialised) return;
+  this.adsInitialised = true;
   try {
     const ads: any[] = (window as any).adsbygoogle ?? [];
     (window as any).adsbygoogle = ads;
-    ads.push({});
     ads.push({});
   } catch (_) { /* ignore */ }
 }
@@ -553,7 +573,11 @@ private pushAdSense(): void {
   private loadRelatedAndAuthorPosts(currentPost: Post): void {
     const cached = this.postCache.get();
     if (cached?.length) {
-      this._processRelatedAndAuthor(currentPost, cached as unknown as Post[]);
+      try {
+        this._processRelatedAndAuthor(currentPost, cached as unknown as Post[]);
+      } catch {
+        this.relatedPosts.set([]);
+      }
       return;
     }
 
@@ -578,7 +602,7 @@ private pushAdSense(): void {
       .filter(p => {
         const pid = (p.user as any)?._id ?? p.user;
         return pid?.toString() === authorId?.toString()
-          && (p.status === 'published' || p.status === 'draft')
+          && p.status === 'published'
           && p._id !== currentPost._id;
       })
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
@@ -593,7 +617,7 @@ private pushAdSense(): void {
     const related = allPosts
       .filter(p =>
         p._id !== currentPost._id &&
-        (p.status === 'published' || p.status === 'draft') &&
+        p.status === 'published' &&
         Array.isArray(p.categories) &&
         p.categories.some(c => catsLower.includes(c.toLowerCase()))
       )
@@ -752,6 +776,7 @@ private pushAdSense(): void {
           type: 'error',
           msg:  err?.error?.message ?? 'Failed to post reply.',
         });
+        setTimeout(() => this.replyFeedback.set(null), 3000);
       },
     });
   }
@@ -1167,6 +1192,14 @@ private updateMetaTags(post: Post): void {
       this.likedPostIds.set(newSet);
       this.persistLikedIds(newSet);
       this.post.set({ ...post, likesCount: Math.max(0, post.likesCount - 1) });
+      this.postService.unlikePost(post._id).subscribe({
+        error: () => {
+          newSet.add(post._id);
+          this.likedPostIds.set(new Set(newSet));
+          this.persistLikedIds(newSet);
+          this.post.set({ ...post, likesCount: post.likesCount });
+        },
+      });
     } else {
       newSet.add(post._id);
       this.likedPostIds.set(newSet);
@@ -1243,6 +1276,14 @@ private updateMetaTags(post: Post): void {
   // ══════════════════════════════════════════════════════════════════════════
 
   goBack(): void { this.location.back(); }
+
+  retryLoad(): void {
+    const postId = this.route.snapshot.paramMap.get('id');
+    if (!postId) { this.router.navigate(['/']); return; }
+    this.isLoading.set(true);
+    this.loadError.set(false);
+    this.loadPost(postId);
+  }
 
   navigateToBlog(postId: string): void {
     this.router.navigate(['/blog', postId]);

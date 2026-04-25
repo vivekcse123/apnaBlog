@@ -4,7 +4,7 @@ import {
   isMainModule,
   writeResponseToNodeResponse,
 } from '@angular/ssr/node';
-import express from 'express';
+import express, { NextFunction, Request, Response } from 'express';
 import { join } from 'node:path';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
@@ -45,6 +45,16 @@ app.use((req, res, next) => {
       response ? writeResponseToNodeResponse(response, res) : next(),
     )
     .catch(next);
+});
+
+/**
+ * When Angular SSR throws (e.g. API timeout during render), fall back to the
+ * client-side shell so the browser can bootstrap and fetch data itself.
+ * This prevents the hosting platform from showing its own "Something went wrong" error page.
+ */
+app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
+  console.error('SSR render error — falling back to client shell:', err);
+  res.status(200).sendFile(join(browserDistFolder, 'index.html'));
 });
 
 /**

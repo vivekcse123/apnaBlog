@@ -23,6 +23,17 @@
     <span>Loading story…</span>
   </div>
 
+} @else if (loadError()) {
+  <div class="error-container">
+    <div class="error-icon">⚠️</div>
+    <h2 class="error-title">Couldn't load this article</h2>
+    <p class="error-msg">The server may be starting up or temporarily unavailable. Please try again.</p>
+    <div class="error-actions">
+      <button class="error-retry-btn" (click)="retryLoad()">Try again</button>
+      <a class="error-home-btn" routerLink="/">Go to home</a>
+    </div>
+  </div>
+
 } @else if (post()) {
 
   <!-- Floating actions -->
@@ -447,15 +458,7 @@
       </div>
     </section>
 
-    <!-- AdSense — below-comments unit -->
-    <div class="ad-unit-wrap">
-      <ins class="adsbygoogle"
-        style="display:block"
-        data-ad-client="ca-pub-6477809641944524"
-        data-ad-slot="3641187135"
-        data-ad-format="auto"
-        data-full-width-responsive="true"></ins>
-    </div>
+    <!-- AdSense — below-comments unit (unique slot ID needed after approval) -->
 
     @if (relatedPosts().length > 0) {
       <section class="related-section">

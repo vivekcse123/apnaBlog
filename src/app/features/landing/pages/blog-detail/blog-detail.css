@@ -233,9 +233,32 @@ body {
 
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
+/* ── Error State ── */
+.error-container {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 12px; padding: 100px 24px; text-align: center;
+  animation: fadeIn 0.3s ease both;
+}
+.error-icon { font-size: 48px; }
+.error-title { font-size: 22px; font-weight: 700; color: var(--text-primary); }
+.error-msg { font-size: 14px; color: var(--text-muted); max-width: 400px; line-height: 1.6; }
+.error-actions { display: flex; gap: 12px; margin-top: 8px; flex-wrap: wrap; justify-content: center; }
+.error-retry-btn {
+  padding: 10px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;
+  background: linear-gradient(135deg, #43cea2, #185a9d); color: #fff; border: none;
+  transition: opacity 0.2s;
+}
+.error-retry-btn:hover { opacity: 0.85; }
+.error-home-btn {
+  padding: 10px 24px; border-radius: 8px; font-size: 14px; font-weight: 600;
+  border: 1px solid var(--border); color: var(--text-primary); text-decoration: none;
+  transition: background 0.2s;
+}
+.error-home-btn:hover { background: var(--bg-surface); }
+
 /* ── Article Container ── */
 .blog-detail-container {
-  max-width: 800px; margin: 0 auto; padding: 40px 24px;
+  max-width: 800px; margin: 0 auto; padding: 40px 24px 0;
   animation: fadeInUp 0.5s ease both;
 }
 
@@ -1621,3 +1644,5 @@ body {
 
 /* ── AdSense Ad Unit ───────────────────────────────────────────────────────── */
 .ad-unit-wrap { margin: 32px 0; overflow: hidden; }
+/* Collapse margins when AdSense doesn't fill the slot (ins stays at height 0) */
+.ad-unit-wrap:has(ins[style*="height: 0"]) { margin: 0; }

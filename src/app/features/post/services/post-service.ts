@@ -104,6 +104,10 @@ export class PostService {
     return this.http.post<apiResponse<Post>>(`${this.endPoint}/${postId}/like`, {});
   }
 
+  unlikePost(postId: string): Observable<apiResponse<Post>> {
+    return this.http.delete<apiResponse<Post>>(`${this.endPoint}/${postId}/like`);
+  }
+
   addView(postId: string): Observable<apiResponse<Post>> {
     return this.http.post<apiResponse<Post>>(`${this.endPoint}/${postId}/view`, {});
   }
