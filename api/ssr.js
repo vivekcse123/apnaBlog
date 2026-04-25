@@ -8,26 +8,31 @@
 const MONGO_ID_RE  = /^[0-9a-f]{24}$/i;
 const BACKEND_ROOT = 'https://apnablogserver.onrender.com/api';
 
-export default async function handler(req, res) {
-  const urlPath = req.url?.split('?')[0] ?? '';        // e.g. /blog/64a3f2b...
-  const segments = urlPath.split('/').filter(Boolean);  // ['blog', '64a3f2b...']
+// Cache the SSR handler across warm invocations — avoids re-importing on every request.
+let _reqHandler = null;
+async function getReqHandler() {
+  if (!_reqHandler) {
+    const mod = await import('../dist/blog-app/server/server.mjs');
+    _reqHandler = mod.reqHandler;
+  }
+  return _reqHandler;
+}
 
+export default async function handler(req, res) {
+  const urlPath = req.url?.split('?')[0] ?? '';
+  const segments = urlPath.split('/').filter(Boolean);
+
+  // ObjectId → slug permanent redirect (SEO: collapse old /blog/<id> URLs)
   if (segments[0] === 'blog' && segments[1] && MONGO_ID_RE.test(segments[1])) {
     const postId = segments[1];
-
     try {
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), 4000);
-
-      const apiRes = await fetch(`${BACKEND_ROOT}/post/${postId}`, {
-        signal: controller.signal,
-      });
+      const apiRes = await fetch(`${BACKEND_ROOT}/post/${postId}`, { signal: controller.signal });
       clearTimeout(timer);
-
       if (apiRes.ok) {
         const { data: post } = await apiRes.json();
         if (post?.slug && post.slug !== postId) {
-          // Permanent redirect — passes all link equity to the slug URL
           res.setHeader('Location', `/blog/${post.slug}`);
           res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
           res.status(301).end();
@@ -35,11 +40,22 @@ export default async function handler(req, res) {
         }
       }
     } catch {
-      // Backend unavailable or timeout — fall through to SSR so the page still loads
+      // Backend unavailable or timeout — fall through to SSR
     }
   }
 
-  // Default: let Angular SSR handle the request
-  const { reqHandler } = await import('../dist/blog-app/server/server.mjs');
-  return reqHandler(req, res);
+  // Angular SSR — wrapped in try/catch so a component crash returns a clean 500
+  // instead of leaving the Vercel function hanging or returning garbled output.
+  try {
+    const reqHandler = await getReqHandler();
+    return await reqHandler(req, res);
+  } catch (err) {
+    console.error('[SSR] reqHandler threw:', err);
+    if (!res.headersSent) {
+      res.status(500).send(
+        '<!doctype html><html><body><h1>Something went wrong.</h1>' +
+        '<p>Please try refreshing the page.</p></body></html>'
+      );
+    }
+  }
 }

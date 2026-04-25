@@ -309,18 +309,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  // ── Defer AdSense until after hydration — safe in both SSR and browser ────
-  ngAfterViewInit(): void {
-    if (!isPlatformBrowser(this.platformId)) return;
-    setTimeout(() => {
-      try {
-        const ads: any[] = (window as any).adsbygoogle ?? [];
-        (window as any).adsbygoogle = ads;
-        ads.push({});
-        ads.push({});
-      } catch (_) { /* ignore */ }
-    }, 0);
-  }
+  ngAfterViewInit(): void { /* AdSense is pushed in _bootstrapPost after post renders */ }
 
   ngOnDestroy(): void {
     this.stopCarousel();
@@ -372,13 +361,9 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   // ══════════════════════════════════════════════════════════════════════════
 
 private loadPost(postId: string): void {
-  // Detect if postId looks like a MongoDB ObjectId (24 hex chars)
-  // These are old URLs — redirect immediately in the browser
-  const isObjectId = /^[a-f0-9]{24}$/i.test(postId);
-  if (isObjectId && isPlatformBrowser(this.platformId)) {
-    this.router.navigate(['/'], { replaceUrl: true });
-    return;
-  }
+  // NOTE: We intentionally do NOT redirect 24-hex ObjectIds here.
+  // Posts with no slug (e.g. Hindi-title posts) only have an _id URL, and the
+  // SSR layer (api/ssr.js) already handles the canonical 301 for migrated posts.
 
   const cached = this.postCache.getById(postId);
   if (cached) {
@@ -395,7 +380,6 @@ private loadPost(postId: string): void {
       const postData = res.data;
       if (!postData || (postData.status !== 'published' && postData.status !== 'draft')) {
         if (!cached) {
-          // ✅ SSR-safe: only navigate in browser, let SSR render empty/loading state
           if (isPlatformBrowser(this.platformId)) {
             this.router.navigate(['/welcome']);
           }
@@ -403,14 +387,25 @@ private loadPost(postId: string): void {
         return;
       }
       this.post.set(postData);
-      if (!cached) this._bootstrapPost(postData, postId);
+
+      if (!cached) {
+        this._bootstrapPost(postData, postId);
+      } else if (isPlatformBrowser(this.platformId)) {
+        // Fresh data just updated the signal → Angular re-renders [innerHTML], which
+        // destroys any code-block wrappers injected earlier by addCodeCopyButtons().
+        // Re-inject all DOM enhancements after the current render cycle settles.
+        setTimeout(() => {
+          this.contentEl = this.elementRef.nativeElement.querySelector('.blog-content');
+          this.generateTableOfContents();
+          this.addHeadingIds();
+          this.addCodeCopyButtons();
+        }, 50);
+      }
     },
     error: () => {
-      // ✅ SSR-safe error handler — never call router.navigate in SSR
       if (isPlatformBrowser(this.platformId)) {
         this.router.navigate(['/welcome']);
       }
-      // SSR: isLoading already set to false by finalize(), renders empty state gracefully
     },
   });
 }
@@ -455,7 +450,18 @@ private loadPost(postId: string): void {
     this.generateTableOfContents();
     this.addHeadingIds();
     this.addCodeCopyButtons();
+    this.pushAdSense();
   }, 300);
+}
+
+private pushAdSense(): void {
+  if (!isPlatformBrowser(this.platformId)) return;
+  try {
+    const ads: any[] = (window as any).adsbygoogle ?? [];
+    (window as any).adsbygoogle = ads;
+    ads.push({});
+    ads.push({});
+  } catch (_) { /* ignore */ }
 }
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -865,7 +871,7 @@ private updateMetaTags(post: Post): void {
   try {
     const postUrl    = `https://apnainsights.com/blog/${post.slug || post._id}`;
     const authorName = (post.user as any)?.name ?? 'Anonymous Author';
-    const wordCount  = post.content.replace(/<[^>]*>/g, '').trim().split(/\s+/).length;
+    const wordCount  = (post.content ?? '').replace(/<[^>]*>/g, '').trim().split(/\s+/).length;
 
     const breadcrumbItems: any[] = [
       { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://apnainsights.com' },
@@ -944,8 +950,8 @@ private updateMetaTags(post: Post): void {
   // ══════════════════════════════════════════════════════════════════════════
 
   private calculateReadingTime(post: Post): void {
-    const text = post.content.replace(/<[^>]*>/g, '');
-    this.readingTime.set(Math.ceil(text.trim().split(/\s+/).length / 200));
+    const text = (post.content ?? '').replace(/<[^>]*>/g, '');
+    this.readingTime.set(Math.max(1, Math.ceil(text.trim().split(/\s+/).length / 200)));
   }
 
   private generateTableOfContents(): void {
@@ -969,6 +975,11 @@ private updateMetaTags(post: Post): void {
 
   scrollToHeading(id: string): void {
     this.document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  scrollToComments(): void {
+    this.document.getElementById('comments-section')
+      ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   toggleToc(): void { this.showToc.set(!this.showToc()); }

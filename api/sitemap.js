@@ -1,7 +1,7 @@
-const { SitemapStream, streamToPromise } = require('sitemap');
-const { Readable } = require('stream');
+import { SitemapStream, streamToPromise } from 'sitemap';
+import { Readable } from 'stream';
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   try {
     let allPosts = [];
 
@@ -63,8 +63,7 @@ module.exports = async function handler(req, res) {
       { url: '/category/village',       changefreq: 'weekly', priority: 0.6, lastmod: new Date().toISOString() },
     ];
 
-    // Dynamic blog routes — published posts only; drafts are legacy visible posts
-    // but excluding them keeps the sitemap focused on canonically published content
+    // Dynamic blog routes — published posts only
     const publishedPosts = allPosts.filter(post => post.status === 'published' && post.title);
 
     const postLinks = publishedPosts.map(post => {
@@ -100,7 +99,13 @@ module.exports = async function handler(req, res) {
   } catch (err) {
     console.error('Sitemap error:', err);
 
-    res.setHeader('Content-Type', 'text/plain');
-    res.status(500).send(`Sitemap error: ${err.message}`);
+    // Return a minimal valid sitemap so Google never gets an error page
+    const fallback = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://apnainsights.com/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>
+  <url><loc>https://apnainsights.com/about</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+</urlset>`;
+    res.setHeader('Content-Type', 'application/xml');
+    res.status(200).send(fallback);
   }
-};
+}

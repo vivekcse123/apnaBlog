@@ -12,8 +12,11 @@ export class VisitorService {
   private platformId   = inject(PLATFORM_ID);
 
   private readonly TRACKED_PAGES = [
-    '/welcome',
-    '/welcome/about'
+    '/',
+    '/about',
+    '/privacy-policy',
+    '/terms', 
+    '/disclaimer',
   ];
 
   constructor(private http: HttpClient) {}

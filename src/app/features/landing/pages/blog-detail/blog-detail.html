@@ -181,7 +181,9 @@
           <span class="meta-item"><span class="meta-icon">📅</span>{{ post()!.createdAt | date:'MMM d, y' }}</span>
           <span class="meta-item"><span class="meta-icon">⏱️</span>{{ readingTime() }} min read</span>
           <span class="meta-item"><span class="meta-icon">👁</span>{{ post()!.views }} views</span>
-          <span class="meta-item"><span class="meta-icon">💬</span>{{ post()!.commentsCount }} comments</span>
+          <button class="meta-item meta-comments-link" (click)="scrollToComments()" title="Jump to comments">
+            <span class="meta-icon">💬</span>{{ post()!.commentsCount }} comment{{ post()!.commentsCount === 1 ? '' : 's' }}
+          </button>
           @if (shareCount() > 0) {
             <span class="meta-item"><span class="meta-icon">↗</span>{{ shareCount() }} shares</span>
           }
@@ -260,7 +262,7 @@
     </div>
 
     <!-- Comments -->
-    <section class="comments-section">
+    <section class="comments-section" id="comments-section">
       <div class="comments-header">
         <h2 class="comments-title">
           <span class="comments-icon">💬</span> Comments
