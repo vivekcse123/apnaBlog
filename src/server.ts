@@ -187,6 +187,11 @@ app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
  * Start the server if this module is the main entry point, or it is ran via PM2.
  * The server listens on the port defined by the `PORT` environment variable, or defaults to 4000.
  */
+// Fire-and-forget warmup: when Vercel cold-starts this function module,
+// immediately kick a request to the Render backend so it starts waking up.
+// Doesn't guarantee SSR succeeds on this cold request, but the next one will.
+fetch(`${API_BASE}/post?page=1&limit=1`, { signal: AbortSignal.timeout(30000) }).catch(() => {});
+
 if (isMainModule(import.meta.url) || process.env['pm_id']) {
   const port = process.env['PORT'] || 4000;
   app.listen(port, (error) => {
@@ -194,16 +199,6 @@ if (isMainModule(import.meta.url) || process.env['pm_id']) {
       throw error;
     }
   });
-
-  // Keep the backend API warm so Render's free tier never cold-starts during SSR.
-  // Pings every 14 minutes (Render sleeps after 15 min of inactivity).
-  setInterval(async () => {
-    try {
-      await fetch(`${API_BASE}/post?page=1&limit=1`, { signal: AbortSignal.timeout(10000) });
-    } catch {
-      // ignore — best-effort ping
-    }
-  }, 14 * 60 * 1000);
 }
 
 /**
