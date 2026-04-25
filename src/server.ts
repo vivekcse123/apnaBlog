@@ -12,7 +12,12 @@ import { Readable } from 'node:stream';
 const browserDistFolder = join(import.meta.dirname, '../browser');
 
 const app = express();
-const angularApp = new AngularNodeAppEngine();
+const angularApp = new AngularNodeAppEngine({
+  allowedHosts: [
+    'apnainsights.com',
+    'www.apnainsights.com',
+  ],
+});
 
 // Angular SSR's SSRF guard blocks any request whose Host is "localhost" or a
 // private IP.  In production Render forwards the real domain name, so no
