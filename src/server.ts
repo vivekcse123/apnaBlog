@@ -107,7 +107,7 @@ app.get('/blog/:id', async (req: Request, res: Response, next: NextFunction) => 
   try {
     const apiRes = await fetch(`${API_BASE}/post/${id}`, {
       headers: { Accept: 'application/json' },
-      signal: AbortSignal.timeout(4000),
+      signal: AbortSignal.timeout(10000),
     });
     if (!apiRes.ok) return next();
 
@@ -193,8 +193,17 @@ if (isMainModule(import.meta.url) || process.env['pm_id']) {
     if (error) {
       throw error;
     }
-
   });
+
+  // Keep the backend API warm so Render's free tier never cold-starts during SSR.
+  // Pings every 14 minutes (Render sleeps after 15 min of inactivity).
+  setInterval(async () => {
+    try {
+      await fetch(`${API_BASE}/post?page=1&limit=1`, { signal: AbortSignal.timeout(10000) });
+    } catch {
+      // ignore — best-effort ping
+    }
+  }, 14 * 60 * 1000);
 }
 
 /**
