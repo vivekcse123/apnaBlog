@@ -6,6 +6,8 @@ import {
 } from '@angular/ssr/node';
 import express, { NextFunction, Request, Response } from 'express';
 import { join } from 'node:path';
+import { SitemapStream, streamToPromise } from 'sitemap';
+import { Readable } from 'node:stream';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
 
@@ -28,6 +30,70 @@ const isLoopback = (host: string) =>
   host === '127.0.0.1' ||
   host.startsWith('127.0.0.1:') ||
   host === '::1';
+
+// Dynamic sitemap — fetches all published posts and emits sitemap.xml.
+// Cached for 1 hour so the API isn't hit on every Googlebot request.
+const SITE_ORIGIN = 'https://apnainsights.com';
+let sitemapCache: Buffer | null = null;
+let sitemapCachedAt = 0;
+const SITEMAP_TTL = 60 * 60 * 1000; // 1 hour
+
+const STATIC_PAGES = [
+  { url: '/',               changefreq: 'daily',   priority: 1.0 },
+  { url: '/about',          changefreq: 'monthly',  priority: 0.7 },
+  { url: '/privacy-policy', changefreq: 'yearly',   priority: 0.3 },
+  { url: '/terms',          changefreq: 'yearly',   priority: 0.3 },
+  { url: '/disclaimer',     changefreq: 'yearly',   priority: 0.3 },
+];
+
+app.get('/sitemap.xml', async (_req: Request, res: Response) => {
+  try {
+    if (sitemapCache && Date.now() - sitemapCachedAt < SITEMAP_TTL) {
+      res.setHeader('Content-Type', 'application/xml');
+      res.setHeader('Cache-Control', 'public, max-age=3600');
+      return res.send(sitemapCache);
+    }
+
+    // Fetch all posts — paginate until exhausted
+    const posts: { slug?: string; _id?: string; updatedAt?: string }[] = [];
+    let page = 1;
+    while (true) {
+      const r = await fetch(`${API_BASE}/post?page=${page}&limit=100`, {
+        headers: { Accept: 'application/json' },
+        signal: AbortSignal.timeout(8000),
+      });
+      if (!r.ok) break;
+      const body = await r.json() as { data?: typeof posts; totalPages?: number };
+      const batch = body?.data ?? [];
+      posts.push(...batch);
+      if (page >= (body?.totalPages ?? 1) || batch.length === 0) break;
+      page++;
+    }
+
+    const links = [
+      ...STATIC_PAGES,
+      ...posts.map(p => ({
+        url:        `/blog/${p.slug || p._id}`,
+        lastmod:    p.updatedAt,
+        changefreq: 'weekly' as const,
+        priority:   0.8,
+      })),
+    ];
+
+    const stream = new SitemapStream({ hostname: SITE_ORIGIN });
+    const xml = await streamToPromise(Readable.from(links).pipe(stream));
+
+    sitemapCache   = xml;
+    sitemapCachedAt = Date.now();
+
+    res.setHeader('Content-Type', 'application/xml');
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    return res.send(xml);
+  } catch (err) {
+    console.error('Sitemap generation failed:', err);
+    return res.status(500).send('Sitemap unavailable');
+  }
+});
 
 // 301 redirect: /blog/:objectId  →  /blog/:slug
 // Prevents duplicate-content indexing of old MongoDB ObjectId URLs.
