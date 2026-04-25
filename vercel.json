@@ -1,5 +1,10 @@
 {
   "outputDirectory": "dist/blog-app/browser",
+  "functions": {
+    "api/ssr.js": {
+      "includeFiles": "dist/blog-app/**"
+    }
+  },
   "headers": [
     {
       "source": "/ads.txt",
