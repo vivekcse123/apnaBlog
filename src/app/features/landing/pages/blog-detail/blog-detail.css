@@ -454,18 +454,24 @@ body {
 /* ── Standalone pre fallback (no .code-block wrapper) ── */
 .blog-content pre {
   background: var(--code-bg);
-  padding: 20px 24px;
-  border-radius: 8px;
+  padding: 22px 28px;
+  border-radius: 12px;
   overflow-x: auto;
-  margin: 28px 0;
+  margin: 32px 0;
   border: 1px solid var(--code-block-border);
   white-space: pre;
   font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Courier New', monospace;
-  font-size: 13.5px;
-  line-height: 1.7;
+  font-size: 14px;
+  line-height: 1.75;
   color: var(--code-text);
   -webkit-overflow-scrolling: touch;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07), 0 8px 32px rgba(0, 0, 0, 0.05);
 }
+
+.blog-content pre::-webkit-scrollbar { height: 6px; }
+.blog-content pre::-webkit-scrollbar-track { background: transparent; }
+.blog-content pre::-webkit-scrollbar-thumb { background: var(--code-block-border); border-radius: 3px; }
+.blog-content pre::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
 .blog-content pre code {
   display: block;
@@ -484,17 +490,21 @@ body {
   margin: 0;
   border: none;
   border-radius: 0;
-  padding: 20px 24px;
+  padding: 22px 28px;
   background: var(--code-bg);
   font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Courier New', monospace;
-  font-size: 13.5px;
-  line-height: 1.7;
+  font-size: 14px;
+  line-height: 1.75;
   white-space: pre;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  /* disable the fade overlay that the standalone rule could leave */
   box-shadow: none;
 }
+
+.blog-content .code-block pre::-webkit-scrollbar { height: 6px; }
+.blog-content .code-block pre::-webkit-scrollbar-track { background: transparent; }
+.blog-content .code-block pre::-webkit-scrollbar-thumb { background: var(--code-block-border); border-radius: 3px; }
+.blog-content .code-block pre::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
 .blog-content .code-block pre::before,
 .blog-content .code-block pre::after {
@@ -1184,11 +1194,12 @@ body {
   /* Code blocks — scroll friendly on mobile */
   .blog-content pre, .blog-content .code-block pre {
     font-size: 13px;
-    padding: 16px;
+    padding: 16px 18px;
     -webkit-overflow-scrolling: touch;
     overflow-x: auto;
   }
-  .code-block-header { padding: 8px 12px; }
+  .code-block-header { padding: 9px 14px; min-height: 40px; }
+  .code-block-copy { padding: 4px 10px; font-size: 11px; }
   .code-block-copy span { display: none; } /* icon only on mobile */
 
   /* Breadcrumb */
