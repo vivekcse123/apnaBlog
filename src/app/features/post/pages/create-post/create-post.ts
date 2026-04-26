@@ -41,12 +41,13 @@ export class CreatePost implements OnInit, OnDestroy {
   isCodeActive   = signal(false);
 
   // ── Word count ───────────────────────────────────────────────────────────────
-  wordCount = computed(() => {
-    const html  = this.createBlogForm.get('content')?.value ?? '';
+  wordCount = signal(0);
+
+  private updateWordCount(html: string): void {
     const text  = html.replace(/<[^>]*>/g, ' ').replace(/&[a-z]+;/gi, ' ');
     const words = text.trim().split(/\s+/).filter((w: string) => w.length > 0);
-    return words.length;
-  });
+    this.wordCount.set(words.length);
+  }
 
   // ── Autosave ─────────────────────────────────────────────────────────────────
   private readonly AUTOSAVE_KEY = 'apna_blog_draft';
@@ -162,6 +163,7 @@ export class CreatePost implements OnInit, OnDestroy {
     const isEmpty = html === '' || html === '<br>';
     this.createBlogForm.get('content')?.setValue(isEmpty ? '' : html);
     this.createBlogForm.get('content')?.markAsTouched();
+    this.updateWordCount(isEmpty ? '' : html);
     this.updateActiveFormats();
     this.scheduleAutosave();
   }

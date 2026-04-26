@@ -827,12 +827,15 @@ form input[type="file"]::file-selector-button:hover {
 .url-add-row input {
   flex: 1;
   margin: 0;
+  align-self: center;
 }
 
 .url-add-btn {
   flex-shrink: 0;
-  height: 40px;
+  align-self: center;
+  height: 50px;
   padding: 0 16px;
+  margin-top: -18px;
   border-radius: 8px;
   border: 1px solid var(--border);
   background: var(--bg-surface);
