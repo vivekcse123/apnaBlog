@@ -124,7 +124,7 @@
     @if (carouselImages().length === 1) {
       <div class="featured-image-wrap">
         <img [src]="carouselImages()[0]" [alt]="post()!.title"
-          class="featured-image" width="800" height="450" fetchpriority="high"/>
+          class="featured-image" width="800" fetchpriority="high"/>
       </div>
     }
 
@@ -134,7 +134,7 @@
           <div class="carousel-track">
             @for (img of carouselImages(); track img; let i = $index) {
               <div class="carousel-slide" [class.active]="i === currentSlide()">
-                <img [src]="img" [alt]="post()!.title + ' image ' + (i + 1)" class="featured-image" width="800" height="450" loading="lazy" />
+                <img [src]="img" [alt]="post()!.title + ' image ' + (i + 1)" class="featured-image" width="800" loading="lazy" />
               </div>
             }
           </div>

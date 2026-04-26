@@ -1,9 +1,9 @@
 import {
-  Component, ElementRef, ViewChild,
+  Component, ElementRef, HostListener, ViewChild,
   inject, input, output, signal, computed,
   OnInit, OnDestroy, PLATFORM_ID,
 } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import { isPlatformBrowser, DecimalPipe } from '@angular/common';
 import {
   AbstractControl, FormArray, FormBuilder,
   FormGroup, ReactiveFormsModule, Validators,
@@ -16,7 +16,7 @@ import { UploadService } from '../../services/upload-service';
 @Component({
   selector: 'app-create-blog',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, DecimalPipe],
   templateUrl: './create-post.html',
   styleUrl: './create-post.css',
 })
@@ -27,7 +27,9 @@ export class CreatePost implements OnInit, OnDestroy {
   private uploadService = inject(UploadService);
   private platformId    = inject(PLATFORM_ID);
 
-  @ViewChild('editorRef') editorRef!: ElementRef<HTMLDivElement>;
+  @ViewChild('editorRef')    editorRef!: ElementRef<HTMLDivElement>;
+  @ViewChild('cropImageElC') cropImageElC!: ElementRef<HTMLImageElement>;
+  @ViewChild('cropFrameElC') cropFrameElC!: ElementRef<HTMLDivElement>;
 
   close       = output<void>();
   postCreated = output<Post>();
@@ -61,6 +63,31 @@ export class CreatePost implements OnInit, OnDestroy {
   imageUploading = signal(false);
   imageUrlInput  = signal('');
   imageError     = signal('');
+
+  // ── Image cropper ─────────────────────────────────────────────────────────────
+  showCropperC   = signal(false);
+  cropperSrcC    = signal('');
+  cropperFileC   = signal<File | null>(null);
+  cropAspectC    = signal<'16:9' | '4:3' | '1:1' | 'original'>('16:9');
+  cropZoomC      = signal(1);
+  cropOffsetXC   = signal(0);
+  cropOffsetYC   = signal(0);
+
+  cropImgTransformC = computed(() =>
+    `translate(calc(-50% + ${this.cropOffsetXC()}px), calc(-50% + ${this.cropOffsetYC()}px)) scale(${this.cropZoomC()})`
+  );
+
+  cropAspectCssC = computed(() => {
+    const map: Record<string, string> = { '16:9': '16/9', '4:3': '4/3', '1:1': '1/1', 'original': '16/9' };
+    return map[this.cropAspectC()] ?? '16/9';
+  });
+
+  private cropQueueC: Array<{file: File; src: string}> = [];
+  private cropDraggingC  = false;
+  private cropDragStartXC = 0;
+  private cropDragStartYC = 0;
+  private cropDragOffXC   = 0;
+  private cropDragOffYC   = 0;
 
   // ── Role-based flag ──────────────────────────────────────────────────────────
   isAdmin = computed(() => {
@@ -115,6 +142,8 @@ export class CreatePost implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     if (this.autosaveTimer) clearTimeout(this.autosaveTimer);
+    this.cropQueueC = [];
+    this.closeCropperC();
   }
 
   restoreDraft(): void {
@@ -517,49 +546,183 @@ export class CreatePost implements OnInit, OnDestroy {
 
   onImageFilesChange(event: Event, fileInput: HTMLInputElement): void {
     const files = Array.from((event.target as HTMLInputElement).files ?? []);
+    fileInput.value = '';
     if (!files.length) return;
 
     const slotsLeft = 5 - this.blogImages().length;
-    if (slotsLeft <= 0) {
-      this.imageError.set('Maximum 5 images allowed.');
-      fileInput.value = '';
+    if (slotsLeft <= 0) { this.imageError.set('Maximum 5 images allowed.'); return; }
+
+    const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    const valid   = files.filter(f => allowed.includes(f.type) && f.size <= 5 * 1024 * 1024);
+    const toProcess = valid.slice(0, slotsLeft);
+
+    if (!toProcess.length) {
+      this.imageError.set('No valid files selected (JPG/PNG/WEBP/GIF under 5 MB).');
       return;
     }
-
-    const allowed  = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-    const valid    = files.filter(f => allowed.includes(f.type) && f.size <= 5 * 1024 * 1024);
-    const toUpload = valid.slice(0, slotsLeft);
-
-    if (!toUpload.length) {
-      this.imageError.set('No valid files selected (must be JPG/PNG/WEBP/GIF under 5 MB).');
-      fileInput.value = '';
-      return;
-    }
-
-    if (toUpload.length < files.length) {
+    if (toProcess.length < files.length) {
       this.imageError.set('Some files were skipped (wrong type, too large, or limit reached).');
     } else {
       this.imageError.set('');
     }
 
-    this.imageUploading.set(true);
+    let loaded = 0;
+    const pending: Array<{file: File; src: string}> = [];
+    toProcess.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        pending.push({ file, src: e.target?.result as string });
+        if (++loaded === toProcess.length) {
+          this.cropQueueC = pending;
+          this.openNextCropC();
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  }
 
-    this.uploadService.uploadImages(toUpload).subscribe({
-      next: (res) => {
+  private openNextCropC(): void {
+    if (this.cropQueueC.length === 0) return;
+    const next = this.cropQueueC.shift()!;
+    this.openCropperC(next.file, next.src);
+  }
+
+  openCropperC(file: File, src: string): void {
+    this.cropperFileC.set(file);
+    this.cropperSrcC.set(src);
+    this.cropAspectC.set('16:9');
+    this.cropZoomC.set(1);
+    this.cropOffsetXC.set(0);
+    this.cropOffsetYC.set(0);
+    this.showCropperC.set(true);
+  }
+
+  closeCropperC(): void {
+    this.cropDraggingC = false;
+    this.showCropperC.set(false);
+    this.cropperSrcC.set('');
+    this.cropperFileC.set(null);
+  }
+
+  setCropAspectC(a: '16:9' | '4:3' | '1:1' | 'original'): void {
+    this.cropAspectC.set(a);
+    this.cropOffsetXC.set(0);
+    this.cropOffsetYC.set(0);
+  }
+
+  onCropZoomChangeC(e: Event): void {
+    this.cropZoomC.set(parseFloat((e.target as HTMLInputElement).value));
+    this.clampCropOffsetC();
+  }
+
+  onCropDragStartC(e: MouseEvent | TouchEvent): void {
+    this.cropDraggingC = true;
+    const pt = 'touches' in e ? e.touches[0] : e;
+    this.cropDragStartXC = pt.clientX;
+    this.cropDragStartYC = pt.clientY;
+    this.cropDragOffXC   = this.cropOffsetXC();
+    this.cropDragOffYC   = this.cropOffsetYC();
+    e.preventDefault();
+  }
+
+  @HostListener('document:mousemove', ['$event'])
+  @HostListener('document:touchmove', ['$event'])
+  onDocMoveC(e: MouseEvent | TouchEvent): void {
+    if (!this.cropDraggingC) return;
+    const pt  = 'touches' in e ? e.touches[0] : e;
+    const raw = {
+      x: this.cropDragOffXC + (pt.clientX - this.cropDragStartXC),
+      y: this.cropDragOffYC + (pt.clientY - this.cropDragStartYC),
+    };
+    const c = this.clampOffsetC(raw.x, raw.y);
+    this.cropOffsetXC.set(c.x);
+    this.cropOffsetYC.set(c.y);
+  }
+
+  @HostListener('document:mouseup')
+  @HostListener('document:touchend')
+  onDocUpC(): void { this.cropDraggingC = false; }
+
+  private clampOffsetC(x: number, y: number): {x: number; y: number} {
+    const frame = this.cropFrameElC?.nativeElement;
+    const img   = this.cropImageElC?.nativeElement;
+    if (!frame || !img || !img.naturalWidth) return { x, y };
+    const fw = frame.clientWidth, fh = frame.clientHeight;
+    const fit = Math.min(fw / img.naturalWidth, fh / img.naturalHeight);
+    const ts  = fit * this.cropZoomC();
+    const maxX = Math.max(0, (img.naturalWidth  * ts - fw) / 2);
+    const maxY = Math.max(0, (img.naturalHeight * ts - fh) / 2);
+    return { x: Math.max(-maxX, Math.min(maxX, x)), y: Math.max(-maxY, Math.min(maxY, y)) };
+  }
+
+  private clampCropOffsetC(): void {
+    const c = this.clampOffsetC(this.cropOffsetXC(), this.cropOffsetYC());
+    this.cropOffsetXC.set(c.x); this.cropOffsetYC.set(c.y);
+  }
+
+  skipCropC(): void {
+    const file = this.cropperFileC();
+    const src  = this.cropperSrcC();
+    this.closeCropperC();
+    if (file) this.doUploadC(file, src);
+    this.openNextCropC();
+  }
+
+  confirmCropC(): void {
+    if (this.cropAspectC() === 'original') { this.skipCropC(); return; }
+
+    const imgEl   = this.cropImageElC?.nativeElement;
+    const frameEl = this.cropFrameElC?.nativeElement;
+    if (!imgEl || !frameEl || !imgEl.naturalWidth) { this.skipCropC(); return; }
+
+    const fw = frameEl.clientWidth, fh = frameEl.clientHeight;
+    const nW = imgEl.naturalWidth,  nH = imgEl.naturalHeight;
+    const fitScale   = Math.min(fw / nW, fh / nH);
+    const totalScale = fitScale * this.cropZoomC();
+
+    let srcX = nW / 2 - (fw / 2 + this.cropOffsetXC()) / totalScale;
+    let srcY = nH / 2 - (fh / 2 + this.cropOffsetYC()) / totalScale;
+    let srcW = fw / totalScale;
+    let srcH = fh / totalScale;
+
+    srcX = Math.max(0, Math.min(srcX, nW));
+    srcY = Math.max(0, Math.min(srcY, nH));
+    srcW = Math.min(srcW, nW - srcX);
+    srcH = Math.min(srcH, nH - srcY);
+
+    const outW = Math.min(1200, Math.round(srcW));
+    const outH = Math.round(srcH * (outW / srcW));
+    const canvas = document.createElement('canvas');
+    canvas.width = outW; canvas.height = outH;
+    canvas.getContext('2d')!.drawImage(imgEl, srcX, srcY, srcW, srcH, 0, 0, outW, outH);
+
+    canvas.toBlob(blob => {
+      if (!blob) { this.skipCropC(); return; }
+      const orig    = this.cropperFileC()!;
+      const cropped = new File([blob], orig.name, { type: 'image/jpeg' });
+      const preview = URL.createObjectURL(blob);
+      this.closeCropperC();
+      this.doUploadC(cropped, preview);
+      this.openNextCropC();
+    }, 'image/jpeg', 0.92);
+  }
+
+  private doUploadC(file: File, previewUrl: string): void {
+    if (this.blogImages().length >= 5) { this.imageError.set('Maximum 5 images allowed.'); return; }
+
+    this.imageUploading.set(true);
+    this.uploadService.uploadImage(file).subscribe({
+      next: res => {
         this.imageUploading.set(false);
-        if (res.success && res.images?.length) {
-          this.blogImages.update(imgs => [...imgs, ...res.images.map(img => ({ url: img.url, publicId: img.publicId }))]);
-        } else if (res.success && res.url) {
+        if (res.success && res.url) {
           this.blogImages.update(imgs => [...imgs, { url: res.url, publicId: res.publicId }]);
         } else {
           this.imageError.set(res.message ?? 'Upload failed.');
         }
-        fileInput.value = '';
       },
-      error: (err) => {
+      error: err => {
         this.imageUploading.set(false);
         this.imageError.set(err.error?.message ?? 'Upload failed. Please try again.');
-        fileInput.value = '';
       },
     });
   }

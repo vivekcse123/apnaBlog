@@ -384,3 +384,61 @@
     </form>
   </div>
 </div>
+
+@if (showCropperC()) {
+  <div class="modal-backdrop cropper-layer" (click)="closeCropperC()">
+    <div class="cropper-dialog" (click)="$event.stopPropagation()">
+
+      <div class="cropper-header">
+        <h3>Adjust Image</h3>
+        <button class="close-btn" type="button" (click)="closeCropperC()">✕</button>
+      </div>
+
+      <div class="cropper-frame-wrap">
+        <div #cropFrameElC class="cropper-frame"
+             [style.aspectRatio]="cropAspectCssC()"
+             (mousedown)="onCropDragStartC($event)"
+             (touchstart)="onCropDragStartC($event)">
+          <img #cropImageElC [src]="cropperSrcC()" class="cropper-img"
+               [style.transform]="cropImgTransformC()"
+               draggable="false" alt="Crop preview" />
+          <div class="crop-rule-h1"></div>
+          <div class="crop-rule-h2"></div>
+          <div class="crop-rule-v1"></div>
+          <div class="crop-rule-v2"></div>
+          <div class="crop-corner tl"></div>
+          <div class="crop-corner tr"></div>
+          <div class="crop-corner bl"></div>
+          <div class="crop-corner br"></div>
+        </div>
+      </div>
+
+      <div class="cropper-controls">
+        <div class="crop-aspect-btns">
+          @for (a of [['16:9','16:9'],['4:3','4:3'],['1:1','1:1'],['original','Original']]; track a[0]) {
+            <button type="button" class="crop-aspect-btn"
+              [class.active]="cropAspectC() === a[0]"
+              (click)="setCropAspectC($any(a[0]))">{{ a[1] }}</button>
+          }
+        </div>
+        <div class="crop-zoom-row">
+          <span>🔍</span>
+          <input type="range" min="1" max="3" step="0.05"
+                 class="crop-zoom-slider"
+                 [value]="cropZoomC()"
+                 (input)="onCropZoomChangeC($event)" />
+          <span class="crop-zoom-val">{{ cropZoomC() * 100 | number:'1.0-0' }}%</span>
+        </div>
+        <p class="crop-hint">Drag image to reposition · Slide to zoom</p>
+      </div>
+
+      <div class="cropper-footer">
+        <button type="button" class="cancel-btn" (click)="skipCropC()">Use Original</button>
+        <button type="button" class="submit-btn crop-use-btn" (click)="confirmCropC()">
+          {{ cropAspectC() === 'original' ? 'Use Image' : 'Crop & Use' }}
+        </button>
+      </div>
+
+    </div>
+  </div>
+}

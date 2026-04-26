@@ -97,9 +97,13 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   carouselImages = computed(() => {
     const p = this.post();
     if (!p) return [];
+    const seen = new Set<string>();
     const imgs: string[] = [];
-    if (p.featuredImage)  imgs.push(p.featuredImage);
-    if (p.images?.length) imgs.push(...p.images);
+    const add = (url: string | undefined | null) => {
+      if (url && !seen.has(url)) { seen.add(url); imgs.push(url); }
+    };
+    add(p.featuredImage);
+    (p.images ?? []).forEach(add);
     return imgs;
   });
 
@@ -359,6 +363,11 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   ngOnDestroy(): void {
     this.stopCarousel();
     this.lockScroll(false);
+    // Remove the preload link so it doesn't linger with a stale href
+    // after SPA navigation to a page that has no featured image.
+    if (isPlatformBrowser(this.platformId)) {
+      this.document.querySelector('link[data-blog-preload]')?.remove();
+    }
   }
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -977,13 +986,14 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     } catch (_) {}
 
     // Preload featured image (browser only) — update in place
-    if (isPlatformBrowser(this.platformId) && post.featuredImage) {
+    if (isPlatformBrowser(this.platformId) && post.featuredImage?.trim()) {
       try {
-        let preload = this.document.querySelector("link[rel='preload'][as='image']") as HTMLLinkElement | null;
+        let preload = this.document.querySelector("link[rel='preload'][as='image'][data-blog-preload]") as HTMLLinkElement | null;
         if (!preload) {
           preload = this.document.createElement('link') as HTMLLinkElement;
           preload.rel = 'preload';
           preload.as  = 'image';
+          preload.setAttribute('data-blog-preload', '');
           this.document.head?.appendChild(preload);
         }
         preload.href = post.featuredImage;
@@ -1381,7 +1391,16 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   // Navigation helpers
   // ══════════════════════════════════════════════════════════════════════════
 
-  goBack(): void { this.location.back(); }
+  goBack(): void {
+    // If there is no previous in-app navigation (e.g. user arrived directly
+    // from an email link), go home instead of doing a no-op history.back().
+    const hasPreviousNav = this.router.lastSuccessfulNavigation?.previousNavigation != null;
+    if (hasPreviousNav) {
+      this.location.back();
+    } else {
+      this.router.navigate(['/']);
+    }
+  }
 
   retryLoad(): void {
     const postId = this.route.snapshot.paramMap.get('id');

@@ -1,5 +1,5 @@
 import {
-  Component, computed, ElementRef, inject, input,
+  Component, computed, ElementRef, HostListener, inject, input,
   OnDestroy, OnInit, output, signal, ViewChild
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -76,7 +76,34 @@ export class ViewPost implements OnInit, OnDestroy {
   uploadError   = signal('');
   imageUrlInput = signal('');
 
+  // Image cropper
+  showCropper   = signal(false);
+  cropperSrc    = signal('');
+  cropperFile   = signal<File | null>(null);
+  cropAspect    = signal<'16:9' | '4:3' | '1:1' | 'original'>('16:9');
+  cropZoom      = signal(1);
+  cropOffsetX   = signal(0);
+  cropOffsetY   = signal(0);
+
+  cropImgTransform = computed(() =>
+    `translate(calc(-50% + ${this.cropOffsetX()}px), calc(-50% + ${this.cropOffsetY()}px)) scale(${this.cropZoom()})`
+  );
+
+  cropAspectCss = computed(() => {
+    const map: Record<string, string> = { '16:9': '16/9', '4:3': '4/3', '1:1': '1/1', 'original': '16/9' };
+    return map[this.cropAspect()] ?? '16/9';
+  });
+
+  private cropQueue: Array<{file: File; src: string}> = [];
+  private cropDragging = false;
+  private cropDragStartX = 0;
+  private cropDragStartY = 0;
+  private cropDragStartOffX = 0;
+  private cropDragStartOffY = 0;
+
   @ViewChild('contentEditor') contentEditorRef!: ElementRef<HTMLDivElement>;
+  @ViewChild('cropImageEl')   cropImageEl!: ElementRef<HTMLImageElement>;
+  @ViewChild('cropFrameEl')   cropFrameEl!: ElementRef<HTMLDivElement>;
 
   categoryOptions = [
     'Update', 'News',
@@ -199,6 +226,8 @@ export class ViewPost implements OnInit, OnDestroy {
     this.activeFormats.set(new Set());
     this.activeBlock.set('');
     this.imageGallery.set([]);
+    this.cropQueue = [];
+    this.closeCropper();
     this.editForm.reset();
   }
 
@@ -225,74 +254,205 @@ export class ViewPost implements OnInit, OnDestroy {
     const input = event.target as HTMLInputElement;
     const files = input.files;
     if (!files || files.length === 0) return;
+    input.value = '';
 
     this.uploadError.set('');
-
     const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-    
-    Array.from(files).forEach(file => {
-      // Validate file type
+    const validFiles: File[] = [];
+
+    for (const file of Array.from(files)) {
       if (!allowed.includes(file.type)) {
-        this.uploadError.set('Only JPG, PNG, WEBP or GIF images are allowed.');
-        return;
+        this.uploadError.set('Only JPG, PNG, WEBP or GIF images are allowed.'); continue;
       }
-
-      // Validate file size
       if (file.size > 5 * 1024 * 1024) {
-        this.uploadError.set('Each image must be smaller than 5 MB.');
-        return;
+        this.uploadError.set('Each image must be smaller than 5 MB.'); continue;
       }
+      validFiles.push(file);
+    }
 
-      // Create preview immediately
+    const available = 5 - this.imageGallery().length;
+    const toProcess = validFiles.slice(0, available);
+    if (validFiles.length > available) {
+      this.uploadError.set(`Only ${available} more image(s) can be added.`);
+    }
+    if (toProcess.length === 0) return;
+
+    let loaded = 0;
+    const pending: Array<{file: File; src: string}> = [];
+    toProcess.forEach(file => {
       const reader = new FileReader();
-      reader.onload = (e) => {
-        const previewUrl = e.target?.result as string;
-        
-        // Add to gallery with uploading state
-        this.imageGallery.update(gallery => [
-          ...gallery,
-          { url: previewUrl, isUploading: true }
-        ]);
-
-        const currentIndex = this.imageGallery().length - 1;
-
-        // Upload the image
-        this.uploadService.uploadImage(file).subscribe({
-          next: (res) => {
-            if (res.success && res.url) {
-              // Update gallery with actual URL
-              this.imageGallery.update(gallery => {
-                const updated = [...gallery];
-                updated[currentIndex] = { url: res.url, isUploading: false };
-                return updated;
-              });
-
-              // Update form value with first image as featured
-              if (currentIndex === 0) {
-                this.editForm.patchValue({ featuredImage: res.url });
-              }
-            } else {
-              // Remove failed upload from gallery
-              this.imageGallery.update(gallery => 
-                gallery.filter((_, idx) => idx !== currentIndex)
-              );
-              this.uploadError.set(res.message ?? 'Upload failed.');
-            }
-          },
-          error: (err) => {
-            // Remove failed upload from gallery
-            this.imageGallery.update(gallery => 
-              gallery.filter((_, idx) => idx !== currentIndex)
-            );
-            this.uploadError.set(err?.error?.message ?? 'Upload failed.');
-          }
-        });
+      reader.onload = e => {
+        pending.push({ file, src: e.target?.result as string });
+        if (++loaded === toProcess.length) {
+          this.cropQueue = pending;
+          this.openNextCrop();
+        }
       };
       reader.readAsDataURL(file);
     });
+  }
 
-    // Clear input so same file can be uploaded again
-    input.value = '';
+  private openNextCrop(): void {
+    if (this.cropQueue.length === 0) return;
+    const next = this.cropQueue.shift()!;
+    this.openCropper(next.file, next.src);
+  }
+
+  openCropper(file: File, src: string): void {
+    this.cropperFile.set(file);
+    this.cropperSrc.set(src);
+    this.cropAspect.set('16:9');
+    this.cropZoom.set(1);
+    this.cropOffsetX.set(0);
+    this.cropOffsetY.set(0);
+    this.showCropper.set(true);
+  }
+
+  closeCropper(): void {
+    this.cropDragging = false;
+    this.showCropper.set(false);
+    this.cropperSrc.set('');
+    this.cropperFile.set(null);
+  }
+
+  setCropAspect(a: '16:9' | '4:3' | '1:1' | 'original'): void {
+    this.cropAspect.set(a);
+    this.cropOffsetX.set(0);
+    this.cropOffsetY.set(0);
+  }
+
+  onCropZoomChange(e: Event): void {
+    this.cropZoom.set(parseFloat((e.target as HTMLInputElement).value));
+    this.clampCropOffset();
+  }
+
+  onCropDragStart(e: MouseEvent | TouchEvent): void {
+    this.cropDragging = true;
+    const pt = 'touches' in e ? e.touches[0] : e;
+    this.cropDragStartX    = pt.clientX;
+    this.cropDragStartY    = pt.clientY;
+    this.cropDragStartOffX = this.cropOffsetX();
+    this.cropDragStartOffY = this.cropOffsetY();
+    e.preventDefault();
+  }
+
+  @HostListener('document:mousemove', ['$event'])
+  @HostListener('document:touchmove', ['$event'])
+  onDocMove(e: MouseEvent | TouchEvent): void {
+    if (!this.cropDragging) return;
+    const pt = 'touches' in e ? e.touches[0] : e;
+    const dx = pt.clientX - this.cropDragStartX;
+    const dy = pt.clientY - this.cropDragStartY;
+    const raw = { x: this.cropDragStartOffX + dx, y: this.cropDragStartOffY + dy };
+    const clamped = this.clampOffset(raw.x, raw.y);
+    this.cropOffsetX.set(clamped.x);
+    this.cropOffsetY.set(clamped.y);
+  }
+
+  @HostListener('document:mouseup')
+  @HostListener('document:touchend')
+  onDocUp(): void { this.cropDragging = false; }
+
+  private clampOffset(x: number, y: number): { x: number; y: number } {
+    const frame = this.cropFrameEl?.nativeElement;
+    const img   = this.cropImageEl?.nativeElement;
+    if (!frame || !img || !img.naturalWidth) return { x, y };
+    const fw = frame.clientWidth;
+    const fh = frame.clientHeight;
+    const fitScale  = Math.min(fw / img.naturalWidth, fh / img.naturalHeight);
+    const totalScale = fitScale * this.cropZoom();
+    const dispW = img.naturalWidth  * totalScale;
+    const dispH = img.naturalHeight * totalScale;
+    const maxX = Math.max(0, (dispW - fw) / 2);
+    const maxY = Math.max(0, (dispH - fh) / 2);
+    return {
+      x: Math.max(-maxX, Math.min(maxX, x)),
+      y: Math.max(-maxY, Math.min(maxY, y)),
+    };
+  }
+
+  private clampCropOffset(): void {
+    const c = this.clampOffset(this.cropOffsetX(), this.cropOffsetY());
+    this.cropOffsetX.set(c.x);
+    this.cropOffsetY.set(c.y);
+  }
+
+  skipCrop(): void {
+    const file = this.cropperFile();
+    const src  = this.cropperSrc();
+    this.closeCropper();
+    if (file) this.doUpload(file, src);
+    this.openNextCrop();
+  }
+
+  confirmCrop(): void {
+    if (this.cropAspect() === 'original') { this.skipCrop(); return; }
+
+    const imgEl   = this.cropImageEl?.nativeElement;
+    const frameEl = this.cropFrameEl?.nativeElement;
+    if (!imgEl || !frameEl || !imgEl.naturalWidth) { this.skipCrop(); return; }
+
+    const fw = frameEl.clientWidth;
+    const fh = frameEl.clientHeight;
+    const nW = imgEl.naturalWidth;
+    const nH = imgEl.naturalHeight;
+
+    const fitScale   = Math.min(fw / nW, fh / nH);
+    const totalScale = fitScale * this.cropZoom();
+    const offX       = this.cropOffsetX();
+    const offY       = this.cropOffsetY();
+
+    let srcX = nW / 2 - (fw / 2 + offX) / totalScale;
+    let srcY = nH / 2 - (fh / 2 + offY) / totalScale;
+    let srcW = fw / totalScale;
+    let srcH = fh / totalScale;
+
+    srcX = Math.max(0, Math.min(srcX, nW));
+    srcY = Math.max(0, Math.min(srcY, nH));
+    srcW = Math.min(srcW, nW - srcX);
+    srcH = Math.min(srcH, nH - srcY);
+
+    const outW = Math.min(1200, Math.round(srcW));
+    const outH = Math.round(srcH * (outW / srcW));
+    const canvas = document.createElement('canvas');
+    canvas.width = outW; canvas.height = outH;
+    canvas.getContext('2d')!.drawImage(imgEl, srcX, srcY, srcW, srcH, 0, 0, outW, outH);
+
+    canvas.toBlob(blob => {
+      if (!blob) { this.skipCrop(); return; }
+      const orig    = this.cropperFile()!;
+      const cropped = new File([blob], orig.name, { type: 'image/jpeg' });
+      const preview = URL.createObjectURL(blob);
+      this.closeCropper();
+      this.doUpload(cropped, preview);
+      this.openNextCrop();
+    }, 'image/jpeg', 0.92);
+  }
+
+  private doUpload(file: File, previewUrl: string): void {
+    if (this.imageGallery().length >= 5) {
+      this.uploadError.set('Maximum 5 images allowed.'); return;
+    }
+    this.imageGallery.update(g => [...g, { url: previewUrl, isUploading: true }]);
+    const idx = this.imageGallery().length - 1;
+
+    this.uploadService.uploadImage(file).subscribe({
+      next: res => {
+        if (res.success && res.url) {
+          this.imageGallery.update(g => {
+            const u = [...g]; u[idx] = { url: res.url, isUploading: false }; return u;
+          });
+          if (idx === 0) this.editForm.patchValue({ featuredImage: res.url });
+        } else {
+          this.imageGallery.update(g => g.filter((_, i) => i !== idx));
+          this.uploadError.set(res.message ?? 'Upload failed.');
+        }
+      },
+      error: err => {
+        this.imageGallery.update(g => g.filter((_, i) => i !== idx));
+        this.uploadError.set(err?.error?.message ?? 'Upload failed.');
+      },
+    });
   }
 
   removeImageFromGallery(index: number): void {

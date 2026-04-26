@@ -613,6 +613,64 @@
   </div>
 }
 
+@if (showCropper()) {
+  <div class="modal-overlay confirm-layer cropper-layer" (click)="closeCropper()">
+    <div class="cropper-dialog" (click)="$event.stopPropagation()">
+
+      <div class="cropper-header">
+        <h3>Adjust Image</h3>
+        <button class="close-btn" (click)="closeCropper()">✕</button>
+      </div>
+
+      <div class="cropper-frame-wrap">
+        <div #cropFrameEl class="cropper-frame"
+             [style.aspectRatio]="cropAspectCss()"
+             (mousedown)="onCropDragStart($event)"
+             (touchstart)="onCropDragStart($event)">
+          <img #cropImageEl [src]="cropperSrc()" class="cropper-img"
+               [style.transform]="cropImgTransform()"
+               draggable="false" alt="Crop preview" />
+          <div class="crop-rule-h1"></div>
+          <div class="crop-rule-h2"></div>
+          <div class="crop-rule-v1"></div>
+          <div class="crop-rule-v2"></div>
+          <div class="crop-corner tl"></div>
+          <div class="crop-corner tr"></div>
+          <div class="crop-corner bl"></div>
+          <div class="crop-corner br"></div>
+        </div>
+      </div>
+
+      <div class="cropper-controls">
+        <div class="crop-aspect-btns">
+          @for (a of [['16:9','16:9'],['4:3','4:3'],['1:1','1:1'],['original','Original']]; track a[0]) {
+            <button type="button" class="crop-aspect-btn"
+              [class.active]="cropAspect() === a[0]"
+              (click)="setCropAspect($any(a[0]))">{{ a[1] }}</button>
+          }
+        </div>
+        <div class="crop-zoom-row">
+          <span>🔍</span>
+          <input type="range" min="1" max="3" step="0.05"
+                 class="crop-zoom-slider"
+                 [value]="cropZoom()"
+                 (input)="onCropZoomChange($event)" />
+          <span class="crop-zoom-val">{{ cropZoom() * 100 | number:'1.0-0' }}%</span>
+        </div>
+        <p class="crop-hint">Drag image to reposition · Slide to zoom</p>
+      </div>
+
+      <div class="cropper-footer">
+        <button type="button" class="btn-cancel" (click)="skipCrop()">Use Original</button>
+        <button type="button" class="btn-save" (click)="confirmCrop()">
+          {{ cropAspect() === 'original' ? 'Use Image' : 'Crop & Use' }}
+        </button>
+      </div>
+
+    </div>
+  </div>
+}
+
 @if (showDeleteConfirm()) {
   <div class="modal-overlay confirm-layer" (click)="cancelDeleteComment()">
     <div class="confirm-box" (click)="$event.stopPropagation()">
