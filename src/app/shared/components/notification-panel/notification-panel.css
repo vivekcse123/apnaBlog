@@ -299,6 +299,24 @@
   line-height: 1.4;
 }
 
+.notif-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 3px;
+  flex-wrap: wrap;
+}
+
+.actor-chip {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--accent-subtle);
+  padding: 1px 6px;
+  border-radius: 99px;
+  letter-spacing: 0.02em;
+}
+
 .time {
   font-size: 11px;
   color: var(--text-muted);

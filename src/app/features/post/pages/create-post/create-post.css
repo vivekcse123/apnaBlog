@@ -925,3 +925,79 @@ form input[type="file"]::file-selector-button:hover {
   justify-content: center;
   gap: 6px;
 }
+
+/* ── Draft banner ── */
+.draft-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+  border-radius: 9px;
+  padding: 10px 14px;
+  margin-bottom: 18px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  flex-wrap: wrap;
+}
+
+.draft-banner svg { flex-shrink: 0; color: var(--accent); }
+
+.draft-banner span { flex: 1; min-width: 160px; }
+
+.draft-restore-btn,
+.draft-dismiss-btn {
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+}
+
+.draft-restore-btn {
+  background: var(--accent);
+  color: #fff;
+}
+
+.draft-restore-btn:hover { background: var(--accent-hover); }
+
+.draft-dismiss-btn {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+
+.draft-dismiss-btn:hover { background: var(--bg-hover); }
+
+/* ── Editor status bar ── */
+.editor-statusbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 10px 4px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-surface-alt);
+  border-radius: 0 0 8px 8px;
+}
+
+.word-count {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.autosave-indicator {
+  font-size: 11px;
+  color: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.autosave-indicator.visible { opacity: 1; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+.autosave-indicator .spin { animation: spin 0.9s linear infinite; }

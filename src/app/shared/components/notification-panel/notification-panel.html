@@ -105,7 +105,12 @@
               <div class="content">
                 <div class="title">{{ n.title || getMeta(n.type).label }}</div>
                 <div class="message">{{ n.message }}</div>
-                <div class="time">{{ timeAgo(n.createdAt) }}</div>
+                <div class="notif-meta">
+                  @if (getActorDisplay(n); as actor) {
+                    <span class="actor-chip">by {{ actor }}</span>
+                  }
+                  <span class="time">{{ timeAgo(n.createdAt) }}</span>
+                </div>
               </div>
 
               <!-- Unread indicator dot -->

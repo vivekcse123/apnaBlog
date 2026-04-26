@@ -1,7 +1,9 @@
 import {
   Component, ElementRef, ViewChild,
   inject, input, output, signal, computed,
+  OnInit, OnDestroy, PLATFORM_ID,
 } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import {
   AbstractControl, FormArray, FormBuilder,
   FormGroup, ReactiveFormsModule, Validators,
@@ -18,11 +20,12 @@ import { UploadService } from '../../services/upload-service';
   templateUrl: './create-post.html',
   styleUrl: './create-post.css',
 })
-export class CreatePost {
+export class CreatePost implements OnInit, OnDestroy {
   private fb            = inject(FormBuilder);
   private authService   = inject(Auth);
   private postService   = inject(PostService);
   private uploadService = inject(UploadService);
+  private platformId    = inject(PLATFORM_ID);
 
   @ViewChild('editorRef') editorRef!: ElementRef<HTMLDivElement>;
 
@@ -36,6 +39,20 @@ export class CreatePost {
   activeFormats  = signal<Set<string>>(new Set());
   activeBlock    = signal<string>('');
   isCodeActive   = signal(false);
+
+  // ── Word count ───────────────────────────────────────────────────────────────
+  wordCount = computed(() => {
+    const html  = this.createBlogForm.get('content')?.value ?? '';
+    const text  = html.replace(/<[^>]*>/g, ' ').replace(/&[a-z]+;/gi, ' ');
+    const words = text.trim().split(/\s+/).filter((w: string) => w.length > 0);
+    return words.length;
+  });
+
+  // ── Autosave ─────────────────────────────────────────────────────────────────
+  private readonly AUTOSAVE_KEY = 'apna_blog_draft';
+  private autosaveTimer: ReturnType<typeof setTimeout> | null = null;
+  autosaveStatus = signal<'' | 'saving' | 'saved'>('');
+  hasDraft       = signal(false);
 
   // ── Unified blog images (up to 5 total) ─────────────────────────────────────
   // First entry = featuredImage, rest = images[]
@@ -83,6 +100,62 @@ export class CreatePost {
     return arr.controls.some((c: AbstractControl) => c.value === true);
   }
 
+  // ── Lifecycle ────────────────────────────────────────────────────────────────
+  ngOnInit(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    try {
+      const raw = localStorage.getItem(this.AUTOSAVE_KEY);
+      if (raw) {
+        const d = JSON.parse(raw);
+        if (d.title || d.description || d.content) this.hasDraft.set(true);
+      }
+    } catch { /* ignore corrupt data */ }
+  }
+
+  ngOnDestroy(): void {
+    if (this.autosaveTimer) clearTimeout(this.autosaveTimer);
+  }
+
+  restoreDraft(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    try {
+      const raw = localStorage.getItem(this.AUTOSAVE_KEY);
+      if (!raw) return;
+      const d = JSON.parse(raw);
+      this.createBlogForm.patchValue({
+        title:       d.title       ?? '',
+        description: d.description ?? '',
+        content:     d.content     ?? '',
+      });
+      if (d.content && this.editorRef?.nativeElement) {
+        this.editorRef.nativeElement.innerHTML = d.content;
+      }
+    } catch { /* ignore */ }
+    this.hasDraft.set(false);
+  }
+
+  dismissDraft(): void {
+    this.hasDraft.set(false);
+    if (isPlatformBrowser(this.platformId)) localStorage.removeItem(this.AUTOSAVE_KEY);
+  }
+
+  private scheduleAutosave(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    if (this.autosaveTimer) clearTimeout(this.autosaveTimer);
+    this.autosaveStatus.set('saving');
+    this.autosaveTimer = setTimeout(() => {
+      const draft = {
+        title:       this.createBlogForm.get('title')?.value       ?? '',
+        description: this.createBlogForm.get('description')?.value ?? '',
+        content:     this.createBlogForm.get('content')?.value     ?? '',
+        savedAt:     new Date().toISOString(),
+      };
+      localStorage.setItem(this.AUTOSAVE_KEY, JSON.stringify(draft));
+      this.autosaveStatus.set('saved');
+      setTimeout(() => this.autosaveStatus.set(''), 2500);
+    }, 3000);
+  }
+
   // ── Rich-text editor ─────────────────────────────────────────────────────────
   onEditorInput(): void {
     const html    = this.editorRef.nativeElement.innerHTML;
@@ -90,6 +163,7 @@ export class CreatePost {
     this.createBlogForm.get('content')?.setValue(isEmpty ? '' : html);
     this.createBlogForm.get('content')?.markAsTouched();
     this.updateActiveFormats();
+    this.scheduleAutosave();
   }
 
   onEditorPaste(event: ClipboardEvent): void {
@@ -549,9 +623,11 @@ export class CreatePost {
         this.successMessage.set(
           this.isAdmin()
             ? 'Post published successfully!'
-            : 'Post submitted for review!'
+            : 'Post submitted for review. You\'ll be notified once approved!'
         );
         this.isSubmitted.set(false);
+        if (isPlatformBrowser(this.platformId)) localStorage.removeItem(this.AUTOSAVE_KEY);
+        this.hasDraft.set(false);
         setTimeout(() => {
           this.postCreated.emit(res.data);
           this.successMessage.set('');
@@ -563,7 +639,7 @@ export class CreatePost {
           this.createBlogForm.get('status')?.updateValueAndValidity();
           if (this.editorRef?.nativeElement) this.editorRef.nativeElement.innerHTML = '';
           this.closeModal();
-        }, 1000);
+        }, 1500);
       },
       error: (err) => {
         this.isSubmitting.set(false);

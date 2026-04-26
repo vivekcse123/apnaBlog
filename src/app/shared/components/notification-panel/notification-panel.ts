@@ -13,6 +13,15 @@ import { NotificationService } from '../../../core/services/notification-service
 import { NotificationNavigationService, NON_NAVIGABLE_TYPES } from '../../../core/services/open-notification/notification-navigation';
 import { MatIconModule } from '@angular/material/icon';
 
+// These notification types are only triggered by admin/super-admin actions.
+// Display the actor as "Admin" to avoid revealing names.
+const ADMIN_ONLY_TYPES = new Set<NotificationType>([
+  'POST_APPROVED',
+  'USER_FROZEN', 'USER_UNFROZEN',
+  'USER_DELETED', 'USER_UPDATED',
+  'USER_DELETION_REQUESTED', 'USER_DELETION_CANCELLED',
+]);
+
 @Component({
   selector: 'app-notification-panel',
   standalone: true,
@@ -129,6 +138,12 @@ export class NotificationPanel implements OnInit, OnDestroy {
     this.svc.loading$
       .pipe(filter(l => !l), take(1), takeUntil(this.destroy$))
       .subscribe(() => this.refreshing.set(false));
+  }
+
+  /** Returns actor display name, anonymizing admin actors as "Admin". */
+  getActorDisplay(n: Notification): string | null {
+    if (!n.actorName) return null;
+    return ADMIN_ONLY_TYPES.has(n.type) ? 'Admin' : n.actorName;
   }
 
   /** Human-readable relative time: "just now", "5m ago", "3h ago", "yesterday", etc. */
