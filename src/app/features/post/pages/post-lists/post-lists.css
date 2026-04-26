@@ -318,6 +318,11 @@ tbody > tr:hover td {
   color: var(--warn);
 }
 
+.status-rejected {
+  background: color-mix(in srgb, #ef4444 12%, transparent);
+  color: #dc2626;
+}
+
 .stat-cell {
   display: flex;
   align-items: center;

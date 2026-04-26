@@ -34,8 +34,13 @@ export class ViewPost implements OnInit, OnDestroy {
 
   isAdmin = computed(() => this.authService.getCurrentUser()?.role?.toLowerCase() === 'admin');
 
-  /** True when the post is pending AND the viewer is not admin — hides status controls */
-  isPendingForUser = computed(() => this.post()?.status === 'pending' && !this.isAdmin());
+  /** True when the post is pending/rejected AND the viewer is not admin — hides status controls */
+  isPendingForUser = computed(() =>
+    (this.post()?.status === 'pending' || this.post()?.status === 'rejected') && !this.isAdmin()
+  );
+
+  /** True when the post is rejected — shown to all viewers */
+  isRejected = computed(() => this.post()?.status === 'rejected');
 
   postId      = input<string>('');
   message     = input<string>('');
@@ -55,9 +60,16 @@ export class ViewPost implements OnInit, OnDestroy {
   pendingDeleteCommentId = signal<string>('');
   isDeletingComment      = signal(false);
 
+  wordCount      = signal(0);
+
   activeFormats  = signal<Set<string>>(new Set());
   activeBlock    = signal<string>('');
   isCodeActive   = signal(false);
+
+  // Reject modal state
+  showRejectModal = signal(false);
+  rejectReason    = signal('');
+  isRejecting     = signal(false);
 
   // Image gallery management
   imageGallery = signal<ImageItem[]>([]);
@@ -166,6 +178,7 @@ export class ViewPost implements OnInit, OnDestroy {
     setTimeout(() => {
       if (this.contentEditorRef?.nativeElement) {
         this.contentEditorRef.nativeElement.innerHTML = p?.content || '';
+        this.updateWordCount(p?.content || '');
       }
     }, 0);
   }
@@ -318,7 +331,46 @@ export class ViewPost implements OnInit, OnDestroy {
     const html    = (event.target as HTMLElement).innerHTML;
     const isEmpty = html === '' || html === '<br>';
     this.editForm.patchValue({ content: isEmpty ? '' : html }, { emitEvent: false });
+    this.updateWordCount(html);
     this.updateEditorFormats();
+  }
+
+  private updateWordCount(html: string): void {
+    const text  = html.replace(/<[^>]*>/g, ' ').replace(/&[a-z]+;/gi, ' ');
+    const words = text.trim().split(/\s+/).filter((w: string) => w.length > 0);
+    this.wordCount.set(words.length);
+  }
+
+  openRejectModal(): void {
+    this.rejectReason.set('');
+    this.showRejectModal.set(true);
+  }
+
+  cancelReject(): void {
+    this.showRejectModal.set(false);
+    this.rejectReason.set('');
+  }
+
+  confirmReject(): void {
+    const reason = this.rejectReason().trim();
+    if (!reason) return;
+
+    this.isRejecting.set(true);
+    this.postService.updatePost(this.post()?._id ?? '', { status: 'rejected', rejectionReason: reason })
+      .pipe(takeUntil(this.destroy$), finalize(() => this.isRejecting.set(false)))
+      .subscribe({
+        next: (res) => {
+          const updated = res.data ?? { ...this.post(), status: 'rejected', rejectionReason: reason };
+          this.post.set(updated);
+          this.showRejectModal.set(false);
+          this.rejectReason.set('');
+          this.toastService.show('Post rejected and author notified.', 'success');
+          this.postUpdated.emit(updated);
+        },
+        error: (err) => {
+          this.toastService.show(err?.error?.message ?? 'Failed to reject post.', 'error');
+        }
+      });
   }
 
   onContentPaste(event: ClipboardEvent): void {

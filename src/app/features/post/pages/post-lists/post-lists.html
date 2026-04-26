@@ -40,6 +40,7 @@
         <option value="published">Published</option>
         <option value="draft">Draft</option>
         <option value="pending">Pending Review</option>
+        <option value="rejected">Rejected</option>
       </select>
       <button
         class="today-btn"
@@ -128,8 +129,10 @@
                     [class.status-published]="blog.status === 'published'"
                     [class.status-draft]="blog.status === 'draft'"
                     [class.status-pending]="blog.status === 'pending'"
+                    [class.status-rejected]="blog.status === 'rejected'"
                   >
                     @if (blog.status === 'pending') { Pending Review }
+                    @else if (blog.status === 'rejected') { Rejected }
                     @else { {{ blog.status | titlecase }} }
                   </span>
                 </td>
