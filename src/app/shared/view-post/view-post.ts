@@ -94,6 +94,10 @@ export class ViewPost implements OnInit, OnDestroy {
     return map[this.cropAspect()] ?? '16/9';
   });
 
+  cropAspectOptions: Array<[string, string]> = [
+    ['16:9', '16:9'], ['4:3', '4:3'], ['1:1', '1:1'], ['original', 'Original']
+  ];
+
   private cropQueue: Array<{file: File; src: string}> = [];
   private cropDragging = false;
   private cropDragStartX = 0;

@@ -82,6 +82,10 @@ export class CreatePost implements OnInit, OnDestroy {
     return map[this.cropAspectC()] ?? '16/9';
   });
 
+  cropAspectOptionsC: Array<[string, string]> = [
+    ['16:9', '16:9'], ['4:3', '4:3'], ['1:1', '1:1'], ['original', 'Original']
+  ];
+
   private cropQueueC: Array<{file: File; src: string}> = [];
   private cropDraggingC  = false;
   private cropDragStartXC = 0;
