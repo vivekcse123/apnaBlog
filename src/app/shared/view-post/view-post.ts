@@ -72,8 +72,9 @@ export class ViewPost implements OnInit, OnDestroy {
   isRejecting     = signal(false);
 
   // Image gallery management
-  imageGallery = signal<ImageItem[]>([]);
-  uploadError  = signal('');
+  imageGallery  = signal<ImageItem[]>([]);
+  uploadError   = signal('');
+  imageUrlInput = signal('');
 
   @ViewChild('contentEditor') contentEditorRef!: ElementRef<HTMLDivElement>;
 
@@ -166,12 +167,18 @@ export class ViewPost implements OnInit, OnDestroy {
       status:        [p?.status || 'draft', this.isPendingForUser() ? [] : Validators.required],
     });
 
-    // Initialize image gallery with featured image if exists
+    // Build gallery: featured image first, then any additional images
+    const galleryItems: ImageItem[] = [];
     if (p?.featuredImage) {
-      this.imageGallery.set([{ url: p.featuredImage, isUploading: false }]);
-    } else {
-      this.imageGallery.set([]);
+      galleryItems.push({ url: p.featuredImage, isUploading: false });
     }
+    (p?.images ?? []).forEach(url => {
+      if (url && url !== p?.featuredImage) {
+        galleryItems.push({ url, isUploading: false });
+      }
+    });
+    this.imageGallery.set(galleryItems);
+    this.imageUrlInput.set('');
 
     this.isEditing.set(true);
 
@@ -188,10 +195,30 @@ export class ViewPost implements OnInit, OnDestroy {
     this.successMessage.set('');
     this.errorMessage.set('');
     this.uploadError.set('');
+    this.imageUrlInput.set('');
     this.activeFormats.set(new Set());
     this.activeBlock.set('');
     this.imageGallery.set([]);
     this.editForm.reset();
+  }
+
+  addImageByUrl(): void {
+    const url = this.imageUrlInput().trim();
+    if (!url) return;
+    if (this.imageGallery().length >= 5) {
+      this.uploadError.set('Maximum 5 images allowed.');
+      return;
+    }
+    try { new URL(url); } catch {
+      this.uploadError.set('Please enter a valid image URL.');
+      return;
+    }
+    this.uploadError.set('');
+    this.imageGallery.update(gallery => [...gallery, { url, isUploading: false }]);
+    if (this.imageGallery().length === 1) {
+      this.editForm.patchValue({ featuredImage: url });
+    }
+    this.imageUrlInput.set('');
   }
 
   onImageUpload(event: Event): void {
@@ -270,14 +297,9 @@ export class ViewPost implements OnInit, OnDestroy {
 
   removeImageFromGallery(index: number): void {
     this.imageGallery.update(gallery => gallery.filter((_, idx) => idx !== index));
-    
-    // Update featured image in form (use first image or empty)
-    const remainingImages = this.imageGallery();
-    if (remainingImages.length > 0) {
-      this.editForm.patchValue({ featuredImage: remainingImages[0].url });
-    } else {
-      this.editForm.patchValue({ featuredImage: '' });
-    }
+    this.uploadError.set('');
+    const remaining = this.imageGallery();
+    this.editForm.patchValue({ featuredImage: remaining[0]?.url ?? '' });
   }
 
   setAsFeatured(index: number): void {
@@ -309,7 +331,12 @@ export class ViewPost implements OnInit, OnDestroy {
     this.isSaving.set(true);
     this.errorMessage.set('');
 
-    this.postService.updatePost(this.post()?._id ?? '', this.editForm.value)
+    // Derive featuredImage and images[] from the gallery (source of truth)
+    const gallery       = this.imageGallery();
+    const featuredImage = gallery[0]?.url ?? '';
+    const images        = gallery.slice(1).map(img => img.url);
+
+    this.postService.updatePost(this.post()?._id ?? '', { ...this.editForm.value, featuredImage, images })
       .pipe(takeUntil(this.destroy$), finalize(() => this.isSaving.set(false)))
       .subscribe({
         next: (res) => {

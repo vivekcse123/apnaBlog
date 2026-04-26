@@ -446,24 +446,40 @@
 
           <!-- ── Image Gallery Section ── -->
           <div class="edit-field full">
-            <label>Images</label>
-            
-            <label class="file-upload-btn">
-              <input
-                #imageInput
-                type="file"
-                accept="image/jpeg,image/png,image/webp,image/gif"
-                multiple
-                class="file-input-hidden"
-                (change)="onImageUpload($event)"
-              />
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                <polyline points="17 8 12 3 7 8"/>
-                <line x1="12" y1="3" x2="12" y2="15"/>
-              </svg>
-              <span>Upload Images</span>
-            </label>
+            <label>Images <span class="img-count-hint">({{ imageGallery().length }}/5)</span></label>
+
+            @if (imageGallery().length < 5) {
+              <!-- URL input -->
+              <div class="url-add-row">
+                <input
+                  type="text"
+                  placeholder="Paste an image URL…"
+                  [value]="imageUrlInput()"
+                  (input)="imageUrlInput.set($any($event.target).value)"
+                  (keydown.enter)="$event.preventDefault(); addImageByUrl()"
+                />
+                <button type="button" class="url-add-btn" (click)="addImageByUrl()">Add</button>
+              </div>
+
+              <div class="or-divider">OR</div>
+
+              <label class="file-upload-btn">
+                <input
+                  #imageInput
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  multiple
+                  class="file-input-hidden"
+                  (change)="onImageUpload($event)"
+                />
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="17 8 12 3 7 8"/>
+                  <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                <span>Upload from device (up to {{ 5 - imageGallery().length }})</span>
+              </label>
+            }
 
             @if (uploadError()) {
               <small class="error">{{ uploadError() }}</small>

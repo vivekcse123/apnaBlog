@@ -65,6 +65,7 @@ export class Settings implements OnInit {
   // ── Avatar ──
   isUploadingAvatar = signal(false);
   avatarPreview     = signal<string | null>(null);
+  isRemovingAvatar  = signal(false);
 
   showModal    = signal(false);
   modalType    = signal<'success' | 'error'>('success');
@@ -193,6 +194,27 @@ export class Settings implements OnInit {
 
   triggerAvatarUpload(): void {
     this.avatarInput.nativeElement.click();
+  }
+
+  removeAvatar(): void {
+    const id = this.userId();
+    if (!id) return;
+
+    this.isRemovingAvatar.set(true);
+    this.userService.removeAvatar(id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          this.user.set(res.data);
+          this.avatarPreview.set(null);
+          this.isRemovingAvatar.set(false);
+          this.toastService.show('Profile photo removed.', 'success');
+        },
+        error: (err) => {
+          this.isRemovingAvatar.set(false);
+          this.openModal('error', 'Remove Failed', err?.error?.message ?? 'Could not remove avatar.');
+        },
+      });
   }
 
   onAvatarSelected(event: Event): void {

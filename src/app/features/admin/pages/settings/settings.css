@@ -99,6 +99,31 @@
   margin-top: 0.2rem;
 }
 
+.avatar-remove-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid color-mix(in srgb, #ef4444 40%, transparent);
+  border-radius: 6px;
+  background: color-mix(in srgb, #ef4444 8%, transparent);
+  color: #dc2626;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.avatar-remove-btn:hover:not(:disabled) {
+  background: color-mix(in srgb, #ef4444 16%, transparent);
+  border-color: #ef4444;
+}
+
+.avatar-remove-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .sidebar-brand {
   display: flex;
   align-items: center;

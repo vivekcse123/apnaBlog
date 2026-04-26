@@ -58,6 +58,13 @@ export class UserService {
     );
   }
 
+  removeAvatar(userId: string): Observable<apiResponse<User>> {
+    this.invalidate(userId);
+    return this.http.delete<apiResponse<User>>(`${this.endPoint}${userId}/avatar`).pipe(
+      tap(() => this.invalidate(userId))
+    );
+  }
+
   followUser(authorId: string): Observable<{ status: number; data: { followersCount: number; isFollowing: boolean } }> {
     return this.http.post<{ status: number; data: { followersCount: number; isFollowing: boolean } }>(
       `${this.endPoint}${authorId}/follow`, {}

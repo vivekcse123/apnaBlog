@@ -104,9 +104,15 @@
                 <span class="role-badge">{{ u.role }}</span>
                 <p class="joined-text">{{ u.email }}</p>
                 <button class="avatar-upload-btn" (click)="triggerAvatarUpload()"
-                  [disabled]="isUploadingAvatar()">
+                  [disabled]="isUploadingAvatar() || isRemovingAvatar()">
                   {{ isUploadingAvatar() ? 'Uploading…' : 'Change Photo' }}
                 </button>
+                @if (avatarUrl()) {
+                  <button class="avatar-remove-btn" (click)="removeAvatar()"
+                    [disabled]="isUploadingAvatar() || isRemovingAvatar()">
+                    {{ isRemovingAvatar() ? 'Removing…' : 'Remove Photo' }}
+                  </button>
+                }
                 <p class="avatar-hint">JPG, JPEG, PNG or WebP · Max 2MB</p>
               </div>
             </div>
