@@ -1,6 +1,6 @@
 import {
   Component, ElementRef, HostListener, ViewChild,
-  inject, input, output, signal, computed,
+  inject, input, output, signal, computed, NgZone,
   OnInit, OnDestroy, PLATFORM_ID,
 } from '@angular/core';
 import { isPlatformBrowser, DecimalPipe } from '@angular/common';
@@ -26,6 +26,7 @@ export class CreatePost implements OnInit, OnDestroy {
   private postService   = inject(PostService);
   private uploadService = inject(UploadService);
   private platformId    = inject(PLATFORM_ID);
+  private ngZone        = inject(NgZone);
 
   @ViewChild('editorRef')    editorRef!: ElementRef<HTMLDivElement>;
   @ViewChild('cropImageElC') cropImageElC!: ElementRef<HTMLImageElement>;
@@ -577,9 +578,14 @@ export class CreatePost implements OnInit, OnDestroy {
       reader.onload = e => {
         pending.push({ file, src: e.target?.result as string });
         if (++loaded === toProcess.length) {
-          this.cropQueueC = pending;
-          this.openNextCropC();
+          this.ngZone.run(() => {
+            this.cropQueueC = pending;
+            this.openNextCropC();
+          });
         }
+      };
+      reader.onerror = () => {
+        this.ngZone.run(() => this.imageError.set('Failed to read the image file.'));
       };
       reader.readAsDataURL(file);
     });

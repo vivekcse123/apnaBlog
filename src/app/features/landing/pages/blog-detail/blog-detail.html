@@ -194,7 +194,7 @@
           <span class="meta-item"><span class="meta-icon">📅</span>{{ post()!.createdAt | date:'MMM d, y' }}</span>
           <span class="meta-item"><span class="meta-icon">⏱️</span>{{ readingTime() }} min read</span>
           <span class="meta-item"><span class="meta-icon">👁</span>{{ post()!.views }} views</span>
-          <button class="meta-item meta-comments-link" (click)="scrollToComments()" title="Jump to comments">
+          <button class="meta-item meta-comments-link" (click)="openCommentDrawer()" title="Open comments">
             <span class="meta-icon">💬</span>{{ post()!.commentsCount }} comment{{ post()!.commentsCount === 1 ? '' : 's' }}
           </button>
           @if (shareCount() > 0) {
@@ -275,193 +275,6 @@
     </div>
 
     <!-- Comments -->
-    <section class="comments-section" id="comments-section">
-      <div class="comments-header">
-        <h2 class="comments-title">
-          <span class="comments-icon">💬</span> Comments
-          @if (allComments().length > 0) {
-            <span class="comments-count-badge">{{ allComments().length }}</span>
-          }
-        </h2>
-      </div>
-
-      <div class="comment-input-area">
-        <div class="user-identity-chip" [class.guest]="!isLoggedIn">
-          @if (isLoggedIn) {
-            <span class="identity-avatar">{{ loggedInUserName.charAt(0).toUpperCase() }}</span>
-            <span class="identity-label">Commenting as <strong>{{ loggedInUserName }}</strong></span>
-            <span class="identity-badge member">Member</span>
-          } @else {
-            <span class="identity-avatar guest-avatar">👤</span>
-            <span class="identity-label">Commenting as <strong>Anonymous</strong></span>
-            <span class="identity-badge guest-badge">Guest</span>
-          }
-        </div>
-        <div class="textarea-wrap">
-          <textarea class="comment-textarea" placeholder="Share your thoughts…" rows="4"
-            [ngModel]="commentText()" (ngModelChange)="commentText.set($event)"
-            (keydown.enter)="$any($event).ctrlKey && submitComment()" maxlength="500">
-          </textarea>
-          <span class="char-count" [class.warn]="commentText().length > 450" aria-live="polite" aria-atomic="true">
-            {{ commentText().length }}/500
-          </span>
-        </div>
-        @if (commentFeedback()) {
-          <div class="comment-feedback"
-            [class.success]="commentFeedback()!.type === 'success'"
-            [class.error]="commentFeedback()!.type === 'error'">
-            {{ commentFeedback()!.type === 'success' ? '✅' : '❌' }} {{ commentFeedback()!.msg }}
-          </div>
-        }
-        <div class="comment-actions">
-          <span class="ctrl-enter-hint">Ctrl + Enter to send</span>
-          <button class="submit-comment-btn"
-            [disabled]="!commentText().trim() || commentSubmitting()"
-            (click)="submitComment()">
-            @if (commentSubmitting()) { <span class="btn-spinner"></span> Posting… } @else { Post Comment ✦ }
-          </button>
-        </div>
-      </div>
-
-      <div class="comments-list">
-        @if (commentsLoading()) {
-          <div class="comments-loading" role="status" aria-label="Loading comments">
-            @for (_ of [1,2,3]; track $index) {
-              <div class="comment-skeleton">
-                <div class="skeleton-avatar"></div>
-                <div class="skeleton-lines">
-                  <div class="skeleton-line short"></div>
-                  <div class="skeleton-line long"></div>
-                  <div class="skeleton-line medium"></div>
-                </div>
-              </div>
-            }
-          </div>
-        } @else if (comments().length === 0) {
-          <div class="no-comments">
-            <span class="no-comments-icon">💭</span>
-            <p>No comments yet. Be the first!</p>
-          </div>
-        } @else {
-          @for (c of comments(); track c._id) {
-            <div class="comment-item">
-              <div class="comment-avatar">{{ c.name.charAt(0).toUpperCase() }}</div>
-              <div class="comment-content">
-                <div class="comment-meta">
-                  <span class="comment-author">{{ c.name }}</span>
-                  @if (c.createdAt) {
-                    <span class="comment-time">{{ c.createdAt | date:'MMM d, y' }}</span>
-                  }
-                </div>
-                <p class="comment-text">{{ c.comment }}</p>
-
-                <!-- Reply actions row -->
-                <div class="comment-footer">
-                  @if (c._id) {
-                    <button class="reply-toggle-btn"
-                      [class.active]="replyingToId() === c._id"
-                      (click)="startReply(c._id!)">
-                      ↩ {{ replyingToId() === c._id ? 'Cancel' : 'Reply' }}
-                    </button>
-                  }
-                  @if ((c.replies?.length ?? 0) > 0) {
-                    <button class="view-replies-btn" (click)="toggleReplies(c._id!)">
-                      {{ c.showReplies ? '▴ Hide' : '▾ Show' }}
-                      {{ c.replies!.length }} repl{{ c.replies!.length === 1 ? 'y' : 'ies' }}
-                    </button>
-                  }
-                </div>
-
-                <!-- Inline reply form -->
-                @if (replyingToId() === c._id) {
-                  <div class="reply-form">
-                    <div class="reply-form-avatar">
-                      {{ (isLoggedIn ? loggedInUserName : 'A').charAt(0).toUpperCase() }}
-                    </div>
-                    <div class="reply-form-body">
-                      <textarea class="reply-textarea"
-                        [ngModel]="replyText()"
-                        (ngModelChange)="replyText.set($event)"
-                        placeholder="Write a reply…"
-                        rows="2"
-                        maxlength="500"
-                        (keydown.enter)="$any($event).ctrlKey && submitReply(c._id!)">
-                      </textarea>
-                      <div class="reply-form-actions">
-                        <span class="char-count" [class.warn]="replyText().length > 450" aria-live="polite" aria-atomic="true">
-                          {{ replyText().length }}/500
-                        </span>
-                        @if (replyFeedback()) {
-                          <span class="reply-feedback" [class.error]="replyFeedback()!.type === 'error'">
-                            {{ replyFeedback()!.msg }}
-                          </span>
-                        }
-                        <div class="reply-btns">
-                          <button class="reply-cancel-btn" type="button" (click)="cancelReply()">Cancel</button>
-                          <button class="reply-submit-btn" type="button"
-                            [disabled]="!replyText().trim() || replySubmitting()"
-                            (click)="submitReply(c._id!)">
-                            @if (replySubmitting()) { <span class="btn-spinner"></span> } @else { Reply }
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                }
-
-                <!-- Replies thread -->
-                @if (c.showReplies && (c.replies?.length ?? 0) > 0) {
-                  <div class="replies-list">
-                    @for (r of c.replies!; track r._id) {
-                      <div class="reply-item">
-                        <div class="reply-avatar">{{ r.name.charAt(0).toUpperCase() }}</div>
-                        <div class="reply-content">
-                          <div class="comment-meta">
-                            <span class="comment-author">{{ r.name }}</span>
-                            @if (r.createdAt) {
-                              <span class="comment-time">{{ r.createdAt | date:'MMM d, y' }}</span>
-                            }
-                          </div>
-                          <p class="comment-text">{{ r.comment }}</p>
-                        </div>
-                        @if (isPostOwner() && r._id) {
-                          <button class="comment-delete-btn"
-                            [class.deleting]="deletingReplyId() === r._id"
-                            [disabled]="deletingReplyId() === r._id"
-                            (click)="deleteReply(c._id!, r._id!, $event)" aria-label="Delete reply">
-                            @if (deletingReplyId() === r._id) { <span class="btn-spinner"></span> } @else { 🗑 }
-                          </button>
-                        }
-                      </div>
-                    }
-                  </div>
-                }
-              </div>
-
-              @if (isPostOwner() && c._id) {
-                <button class="comment-delete-btn"
-                  [class.deleting]="deletingCommentId() === c._id"
-                  [disabled]="deletingCommentId() === c._id"
-                  (click)="deleteComment(c, $event)" aria-label="Delete comment">
-                  @if (deletingCommentId() === c._id) { <span class="btn-spinner"></span> } @else { 🗑 }
-                </button>
-              }
-            </div>
-          }
-          @if (hasMoreComments()) {
-            <div class="load-more-wrap">
-              <button class="load-more-btn" (click)="loadMoreComments()" [disabled]="loadingMore()">
-                @if (loadingMore()) { <span class="btn-spinner"></span> Loading… }
-                @else { Load {{ remainingCount() }} more comment{{ remainingCount() === 1 ? '' : 's' }} }
-              </button>
-            </div>
-          }
-        }
-      </div>
-    </section>
-
-    <!-- AdSense — below-comments unit (unique slot ID needed after approval) -->
-
     @if (relatedPosts().length > 0) {
       <section class="related-section">
         <h2 class="related-title"><span class="related-icon">✨</span> Related Stories</h2>
@@ -655,6 +468,199 @@
       </div>
     </div>
   }
+
+<!-- ── Comment Drawer (same pattern as home page) ── -->
+@if (commentDrawerOpen()) {
+  <div class="comment-backdrop" (click)="closeCommentDrawer()" role="presentation" aria-hidden="true"></div>
+}
+
+<div class="comment-drawer"
+     [class.open]="commentDrawerOpen()"
+     role="dialog" aria-modal="true"
+     aria-labelledby="bd-comment-drawer-title"
+     [attr.aria-hidden]="!commentDrawerOpen()">
+
+  <div class="drawer-header">
+    <div class="drawer-title-group">
+      <span class="drawer-icon" aria-hidden="true">💬</span>
+      <h2 class="drawer-title" id="bd-comment-drawer-title">Comments</h2>
+      @if (totalCommentsCount() > 0) {
+        <span class="drawer-count-badge">{{ totalCommentsCount() }}</span>
+      }
+    </div>
+    <button class="drawer-close-btn" (click)="closeCommentDrawer()" aria-label="Close comments">✕</button>
+  </div>
+
+  <div class="comment-input-area">
+    <div class="user-identity-chip" [class.guest]="!isLoggedIn">
+      @if (isLoggedIn) {
+        <span class="identity-avatar logged-in">{{ loggedInUserName.charAt(0).toUpperCase() }}</span>
+        <span class="identity-label">Commenting as <strong>{{ loggedInUserName }}</strong></span>
+        <span class="identity-badge member">Member</span>
+      } @else {
+        <span class="identity-avatar guest-avatar">👤</span>
+        <span class="identity-label">Commenting as <strong>Anonymous</strong></span>
+        <span class="identity-badge guest-badge">Guest</span>
+      }
+    </div>
+    <div class="textarea-wrap">
+      <label class="visually-hidden" for="bd-comment-textarea">Write a comment</label>
+      <textarea id="bd-comment-textarea" class="comment-textarea"
+        placeholder="Share your thoughts…" rows="3"
+        [ngModel]="commentText()" (ngModelChange)="commentText.set($event)"
+        (keydown.enter)="$any($event).ctrlKey && submitComment()"
+        maxlength="500"></textarea>
+      <span class="char-count" [class.warn]="commentText().length > 450" aria-live="polite">
+        {{ commentText().length }}/500
+      </span>
+    </div>
+    @if (commentFeedback()) {
+      <div class="comment-feedback" role="alert"
+        [class.success]="commentFeedback()!.type === 'success'"
+        [class.error]="commentFeedback()!.type === 'error'">
+        {{ commentFeedback()!.type === 'success' ? '✅' : '❌' }} {{ commentFeedback()!.msg }}
+      </div>
+    }
+    @if (commentLimitReached()) {
+      <div class="comment-limit-notice">
+        🚫 You've reached the 10-comment limit for this session.
+      </div>
+    } @else {
+      <div class="comment-actions">
+        <span class="ctrl-enter-hint">
+          @if (sessionCommentCount() > 0) {
+            {{ commentsRemaining() }} left this session
+          } @else { Ctrl + Enter to send }
+        </span>
+        <button class="submit-comment-btn"
+          [disabled]="!commentText().trim() || commentSubmitting()"
+          (click)="submitComment()">
+          @if (commentSubmitting()) { <span class="btn-spinner"></span> Posting… }
+          @else { Post Comment ✦ }
+        </button>
+      </div>
+    }
+  </div>
+
+  <div class="drawer-divider">
+    <span>{{ drawerComments().length }}
+      @if (hasMoreComments()) { of {{ totalCommentsCount() }} }
+      comment{{ totalCommentsCount() !== 1 ? 's' : '' }}
+    </span>
+  </div>
+
+  <div class="comments-list" role="list">
+    @if (drawerCommentsLoading()) {
+      <div class="comments-loading" role="status">
+        <div class="loading-dots"><span></span><span></span><span></span></div>
+      </div>
+    } @else if (drawerComments().length === 0) {
+      <div class="no-comments" role="status">
+        <span class="no-comments-icon">💭</span>
+        <p>No comments yet. Be the first!</p>
+      </div>
+    } @else {
+      @for (c of drawerComments(); track c._id ?? $index) {
+        <div class="comment-item" role="listitem">
+          <div class="comment-avatar">{{ c.name.charAt(0).toUpperCase() }}</div>
+          <div class="comment-content">
+            <div class="comment-meta">
+              <span class="comment-author">{{ c.name }}</span>
+              @if (c.createdAt) {
+                <time class="comment-time" [attr.datetime]="c.createdAt">{{ c.createdAt | date:'MMM d, y' }}</time>
+              }
+            </div>
+            <p class="comment-text">{{ c.comment }}</p>
+
+            <div class="comment-footer">
+              @if (c._id) {
+                <button class="reply-toggle-btn" [class.active]="replyingToId() === c._id"
+                  (click)="startReply(c._id!)">
+                  ↩ {{ replyingToId() === c._id ? 'Cancel' : 'Reply' }}
+                </button>
+              }
+              @if ((c.replies?.length ?? 0) > 0) {
+                <button class="view-replies-btn" (click)="toggleReplies(c._id!)">
+                  {{ c.showReplies ? '▴ Hide' : '▾ Show' }}
+                  {{ c.replies!.length }} repl{{ c.replies!.length === 1 ? 'y' : 'ies' }}
+                </button>
+              }
+            </div>
+
+            @if (replyingToId() === c._id) {
+              <div class="reply-form">
+                <div class="reply-form-avatar">{{ (isLoggedIn ? loggedInUserName : 'A').charAt(0).toUpperCase() }}</div>
+                <div class="reply-form-body">
+                  <textarea class="reply-textarea" [ngModel]="replyText()" (ngModelChange)="replyText.set($event)"
+                    placeholder="Write a reply…" rows="2" maxlength="500"
+                    (keydown.enter)="$any($event).ctrlKey && submitReply(c._id!)"></textarea>
+                  <div class="reply-form-actions">
+                    <span class="char-count" [class.warn]="replyText().length > 450">{{ replyText().length }}/500</span>
+                    @if (replyFeedback()) {
+                      <span class="reply-feedback" [class.error]="replyFeedback()!.type === 'error'">{{ replyFeedback()!.msg }}</span>
+                    }
+                    <div class="reply-btns">
+                      <button class="reply-cancel-btn" type="button" (click)="cancelReply()">Cancel</button>
+                      <button class="reply-submit-btn" type="button"
+                        [disabled]="!replyText().trim() || replySubmitting()"
+                        (click)="submitReply(c._id!)">
+                        @if (replySubmitting()) { <span class="btn-spinner"></span> } @else { Reply }
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            }
+
+            @if (c.showReplies && (c.replies?.length ?? 0) > 0) {
+              <div class="replies-list">
+                @for (r of c.replies!; track r._id) {
+                  <div class="reply-item">
+                    <div class="reply-avatar">{{ r.name.charAt(0).toUpperCase() }}</div>
+                    <div class="reply-content">
+                      <div class="comment-meta">
+                        <span class="comment-author">{{ r.name }}</span>
+                        @if (r.createdAt) { <time class="comment-time">{{ r.createdAt | date:'MMM d, y' }}</time> }
+                      </div>
+                      <p class="comment-text">{{ r.comment }}</p>
+                    </div>
+                    @if (isPostOwner() && r._id) {
+                      <button class="comment-delete-btn" [class.deleting]="deletingReplyId() === r._id"
+                        [disabled]="deletingReplyId() === r._id"
+                        (click)="deleteReply(c._id!, r._id!, $event)" aria-label="Delete reply">
+                        @if (deletingReplyId() === r._id) { <span class="btn-spinner"></span> } @else { 🗑 }
+                      </button>
+                    }
+                  </div>
+                }
+              </div>
+            }
+          </div>
+          @if (isPostOwner() && c._id) {
+            <button class="comment-delete-btn" [class.deleting]="deletingCommentId() === c._id"
+              [disabled]="deletingCommentId() === c._id"
+              (click)="deleteComment(c, $event)" aria-label="Delete comment">
+              @if (deletingCommentId() === c._id) { <span class="btn-spinner"></span> } @else { 🗑 }
+            </button>
+          }
+        </div>
+      }
+
+      @if (hasMoreComments()) {
+        <div class="load-more-wrap">
+          <button class="load-more-btn" [disabled]="loadingMoreComments()" (click)="loadMoreComments()">
+            @if (loadingMoreComments()) { <span class="btn-spinner"></span> Loading… }
+            @else {
+              Load more comments
+              <span class="load-more-count">({{ totalCommentsCount() - commentFetchedCount() }} remaining)</span>
+            }
+          </button>
+        </div>
+      }
+    }
+  </div>
+
+</div>
 
 <footer class="blog-detail-footer">
   <div class="blog-detail-footer-inner">

@@ -1,6 +1,6 @@
 import {
   Component, computed, ElementRef, HostListener, inject, input,
-  OnDestroy, OnInit, output, signal, ViewChild
+  NgZone, OnDestroy, OnInit, output, signal, ViewChild
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -30,6 +30,7 @@ export class ViewPost implements OnInit, OnDestroy {
   private uploadService = inject(UploadService);
   private authService   = inject(Auth);
   private toastService  = inject(ToastService);
+  private ngZone        = inject(NgZone);
   private destroy$      = new Subject<void>();
 
   isAdmin = computed(() => this.authService.getCurrentUser()?.role?.toLowerCase() === 'admin');
@@ -288,9 +289,14 @@ export class ViewPost implements OnInit, OnDestroy {
       reader.onload = e => {
         pending.push({ file, src: e.target?.result as string });
         if (++loaded === toProcess.length) {
-          this.cropQueue = pending;
-          this.openNextCrop();
+          this.ngZone.run(() => {
+            this.cropQueue = pending;
+            this.openNextCrop();
+          });
         }
+      };
+      reader.onerror = () => {
+        this.ngZone.run(() => this.uploadError.set('Failed to read the image file.'));
       };
       reader.readAsDataURL(file);
     });

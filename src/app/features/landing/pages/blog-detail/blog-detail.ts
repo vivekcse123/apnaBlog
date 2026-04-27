@@ -46,7 +46,8 @@ interface TableOfContentsItem {
   level: number;
 }
 
-const COMMENTS_PAGE_SIZE    = 5;
+const COMMENT_PAGE_SIZE     = 5;
+const SESSION_COMMENT_LIMIT = 10;
 const AUTHOR_POSTS_PER_PAGE = 10;
 
 // Valid display statuses — 'pending' posts are only visible to their owner/admin
@@ -123,26 +124,23 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   bookmarkedPostIds = signal<Set<string>>(new Set());
 
   // ── Comments ──────────────────────────────────────────────────────────────
-  commentText       = signal('');
-  commentSubmitting = signal(false);
-  commentFeedback   = signal<{ type: 'success' | 'error'; msg: string } | null>(null);
+  commentText           = signal('');
+  commentSubmitting     = signal(false);
+  commentFeedback       = signal<{ type: 'success' | 'error'; msg: string } | null>(null);
+  sessionCommentCount   = signal(0);
+  commentLimitReached   = computed(() => this.sessionCommentCount() >= SESSION_COMMENT_LIMIT);
+  commentsRemaining     = computed(() => SESSION_COMMENT_LIMIT - this.sessionCommentCount());
 
-  allComments        = signal<DrawerComment[]>([]);
-  comments           = signal<DrawerComment[]>([]);
-  commentsLoading    = signal(false);
-  loadingMore        = signal(false);
-  deletingCommentId  = signal<string | null>(null);
-  private commentsPage = signal(1);
+  commentDrawerOpen     = signal(false);
+  drawerComments        = signal<DrawerComment[]>([]);
+  drawerCommentsLoading = signal(false);
+  loadingMoreComments   = signal(false);
+  deletingCommentId     = signal<string | null>(null);
+  totalCommentsCount    = signal(0);
+  commentFetchedCount   = signal(0);
 
   hasMoreComments = computed(() =>
-    this.comments().length < this.allComments().length
-  );
-
-  remainingCount = computed(() =>
-    Math.min(
-      this.allComments().length - this.comments().length,
-      COMMENTS_PAGE_SIZE
-    )
+    this.commentFetchedCount() < this.totalCommentsCount()
   );
 
   // ── Current user ──────────────────────────────────────────────────────────
@@ -285,9 +283,10 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
         this.loadError.set(false);
         this.post.set(null);
         this._contentHtml.set('');
-        this.allComments.set([]);
-        this.comments.set([]);
-        this.commentsPage.set(1);
+        this.commentDrawerOpen.set(false);
+        this.drawerComments.set([]);
+        this.commentFetchedCount.set(0);
+        this.totalCommentsCount.set(0);
         this.relatedPosts.set([]);
         this.allAuthorPostsData.set([]);
         this.tableOfContents.set([]);
@@ -299,6 +298,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
         this.authorTotalPosts.set(0);
         this.replyingToId.set(null);
         this.replyText.set('');
+        this.sessionCommentCount.set(0);
         this.authorFollowersCount.set(0);
         this.isFollowingAuthor.set(false);
         this.authorId.set(null);
@@ -346,6 +346,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
           if (e.key !== 'Escape') return;
           if (this.showAuthorPostsModal()) { this.closeAuthorPostsModal(); return; }
           if (this.showAuthorModal())      { this.closeAuthorModal();      return; }
+          if (this.commentDrawerOpen())    { this.closeCommentDrawer();    return; }
           this.shareMenuOpen.set(false);
           this.showToc.set(false);
         });
@@ -519,6 +520,8 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
 
     if (!isPlatformBrowser(this.platformId)) return;
 
+    this.restoreSessionCommentCount(postData._id);
+
     // Defer side-effects that hit the network or DOM until after Angular
     // has painted the initial view (avoids ExpressionChangedAfterChecked).
     setTimeout(() => {
@@ -528,9 +531,6 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
         this.fetchAuthorFollowData(aId.toString());
       }
       this.addView(postData);
-      // Use the MongoDB ObjectId (_id) — not the URL slug — so the comments
-      // endpoint receives the correct identifier and doesn't return 400.
-      this.loadComments(postData._id);
       this.loadRelatedAndAuthorPosts(postData);
     }, 0);
 
@@ -729,34 +729,63 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   // Comments
   // ══════════════════════════════════════════════════════════════════════════
 
-  private loadComments(postId: string): void {
-    this.commentsLoading.set(true);
-    this.postService.getComments(postId).subscribe({
+  private restoreSessionCommentCount(postId: string): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    try {
+      const stored = sessionStorage.getItem(`comment_count_${postId}`);
+      this.sessionCommentCount.set(stored ? Math.min(parseInt(stored, 10) || 0, SESSION_COMMENT_LIMIT) : 0);
+    } catch { }
+  }
+
+  openCommentDrawer(): void {
+    this.commentText.set('');
+    this.commentFeedback.set(null);
+    this.drawerComments.set([]);
+    this.commentFetchedCount.set(0);
+    this.totalCommentsCount.set(this.post()?.commentsCount ?? 0);
+    this.commentDrawerOpen.set(true);
+    this.lockScroll(true);
+    const postId = this.post()?._id;
+    if (postId) this.loadComments(postId, 0);
+  }
+
+  closeCommentDrawer(): void {
+    this.commentDrawerOpen.set(false);
+    this.lockScroll(false);
+    this.commentText.set('');
+    this.commentFeedback.set(null);
+    this.replyingToId.set(null);
+    this.replyText.set('');
+  }
+
+  private loadComments(postId: string, skip: number): void {
+    const isFirst = skip === 0;
+    isFirst ? this.drawerCommentsLoading.set(true) : this.loadingMoreComments.set(true);
+
+    this.postService.getComments(postId, skip, COMMENT_PAGE_SIZE).subscribe({
       next: (res: any) => {
-        const raw = res.comments ?? [];
-        const all: DrawerComment[] = raw.map((c: any) => ({
+        const incoming: DrawerComment[] = (res.comments ?? []).map((c: any) => ({
           ...c,
           replies:     c.replies ?? [],
           showReplies: false,
         }));
-        this.allComments.set(all);
-        this.comments.set(all.slice(0, COMMENTS_PAGE_SIZE));
-        this.commentsPage.set(1);
-        this.commentsLoading.set(false);
+        const total: number = res.totalComments ?? (skip + incoming.length);
+        this.drawerComments.set(isFirst ? incoming : [...this.drawerComments(), ...incoming]);
+        this.commentFetchedCount.set(this.commentFetchedCount() + incoming.length);
+        this.totalCommentsCount.set(total);
+        isFirst ? this.drawerCommentsLoading.set(false) : this.loadingMoreComments.set(false);
       },
-      error: () => this.commentsLoading.set(false),
+      error: () => {
+        this.drawerCommentsLoading.set(false);
+        this.loadingMoreComments.set(false);
+      },
     });
   }
 
   loadMoreComments(): void {
-    if (this.loadingMore()) return;
-    this.loadingMore.set(true);
-    const nextPage = this.commentsPage() + 1;
-    setTimeout(() => {
-      this.comments.set(this.allComments().slice(0, nextPage * COMMENTS_PAGE_SIZE));
-      this.commentsPage.set(nextPage);
-      this.loadingMore.set(false);
-    }, 300);
+    const postId = this.post()?._id;
+    if (!postId || this.loadingMoreComments() || !this.hasMoreComments()) return;
+    this.loadComments(postId, this.commentFetchedCount());
   }
 
   submitComment(): void {
@@ -764,6 +793,10 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     const p    = this.post();
     if (!text) {
       this.commentFeedback.set({ type: 'error', msg: 'Please write something before posting.' });
+      return;
+    }
+    if (this.commentLimitReached()) {
+      this.commentFeedback.set({ type: 'error', msg: `You've reached the ${SESSION_COMMENT_LIMIT}-comment limit for this session.` });
       return;
     }
     if (!p || this.commentSubmitting()) return;
@@ -775,15 +808,23 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
         this.commentSubmitting.set(false);
         this.commentText.set('');
         this.commentFeedback.set({ type: 'success', msg: 'Comment posted!' });
+        const newCount = this.sessionCommentCount() + 1;
+        this.sessionCommentCount.set(newCount);
+        if (isPlatformBrowser(this.platformId)) {
+          try { sessionStorage.setItem(`comment_count_${p._id}`, String(newCount)); } catch { }
+        }
         const newComment: DrawerComment = {
           _id:       res.data?.comment?._id,
           name:      this.currentUserData()?.name ?? 'Anonymous',
           comment:   text,
           user:      this.currentUserData()?._id ?? null,
           createdAt: new Date().toISOString(),
+          replies:   [],
+          showReplies: false,
         };
-        this.allComments.set([newComment, ...this.allComments()]);
-        this.comments.set([newComment, ...this.comments()]);
+        this.drawerComments.set([newComment, ...this.drawerComments()]);
+        this.commentFetchedCount.set(this.commentFetchedCount() + 1);
+        this.totalCommentsCount.set(this.totalCommentsCount() + 1);
         this.post.set({ ...p, commentsCount: p.commentsCount + 1 });
         setTimeout(() => this.commentFeedback.set(null), 3000);
       },
@@ -806,8 +847,9 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
 
     this.postService.deleteComment(p._id, id).subscribe({
       next: () => {
-        this.allComments.set(this.allComments().filter(c => c._id !== id));
-        this.comments.set(this.comments().filter(c => c._id !== id));
+        this.drawerComments.set(this.drawerComments().filter(c => c._id !== id));
+        this.commentFetchedCount.set(Math.max(0, this.commentFetchedCount() - 1));
+        this.totalCommentsCount.set(Math.max(0, this.totalCommentsCount() - 1));
         this.post.set({ ...p, commentsCount: Math.max(0, p.commentsCount - 1) });
         this.deletingCommentId.set(null);
       },
@@ -855,13 +897,12 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
           user:      this.currentUserData()?._id ?? null,
           createdAt: new Date().toISOString(),
         };
-        const appendReply = (list: DrawerComment[]) =>
-          list.map(c => c._id === commentId
+        this.drawerComments.set(
+          this.drawerComments().map(c => c._id === commentId
             ? { ...c, replies: [...(c.replies ?? []), newReply], showReplies: true }
             : c
-          );
-        this.allComments.set(appendReply(this.allComments()));
-        this.comments.set(appendReply(this.comments()));
+          )
+        );
       },
       error: (err) => {
         this.replySubmitting.set(false);
@@ -882,13 +923,12 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
 
     this.postService.deleteReply(p._id, commentId, replyId).subscribe({
       next: () => {
-        const removeReply = (list: DrawerComment[]) =>
-          list.map(c => c._id === commentId
+        this.drawerComments.set(
+          this.drawerComments().map(c => c._id === commentId
             ? { ...c, replies: (c.replies ?? []).filter(r => r._id !== replyId) }
             : c
-          );
-        this.allComments.set(removeReply(this.allComments()));
-        this.comments.set(removeReply(this.comments()));
+          )
+        );
         this.deletingReplyId.set(null);
       },
       error: () => this.deletingReplyId.set(null),
@@ -896,10 +936,11 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   }
 
   toggleReplies(commentId: string): void {
-    const toggle = (list: DrawerComment[]) =>
-      list.map(c => c._id === commentId ? { ...c, showReplies: !c.showReplies } : c);
-    this.allComments.set(toggle(this.allComments()));
-    this.comments.set(toggle(this.comments()));
+    this.drawerComments.set(
+      this.drawerComments().map(c =>
+        c._id === commentId ? { ...c, showReplies: !c.showReplies } : c
+      )
+    );
   }
 
   // ══════════════════════════════════════════════════════════════════════════
