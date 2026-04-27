@@ -257,15 +257,15 @@ export class ViewPost implements OnInit, OnDestroy {
 
   onImageUpload(event: Event): void {
     const input = event.target as HTMLInputElement;
-    const files = input.files;
-    if (!files || files.length === 0) return;
+    const rawFiles = Array.from(input.files ?? []);
     input.value = '';
+    if (rawFiles.length === 0) return;
 
     this.uploadError.set('');
     const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
     const validFiles: File[] = [];
 
-    for (const file of Array.from(files)) {
+    for (const file of rawFiles) {
       if (!allowed.includes(file.type)) {
         this.uploadError.set('Only JPG, PNG, WEBP or GIF images are allowed.'); continue;
       }
