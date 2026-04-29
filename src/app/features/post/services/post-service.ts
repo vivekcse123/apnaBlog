@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { Observable, shareReplay, finalize } from 'rxjs';
+import { Observable, of, shareReplay, finalize, tap } from 'rxjs';
 import { apiResponse } from '../../../core/models/api-response.model';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Post } from '../../../core/models/post.model';
@@ -40,6 +40,10 @@ export class PostService {
   // In-flight request deduplication — concurrent callers share one HTTP request
   private readonly _inflight = new Map<string, Observable<any>>();
 
+  // Per-post TTL cache — makes every ViewPost re-open instant
+  private readonly _postCache = new Map<string, { res: apiResponse<Post>; ts: number }>();
+  private readonly POST_TTL   = 5 * 60 * 1_000; // 5 min
+
   private dedupe<T>(key: string, create: () => Observable<T>): Observable<T> {
     if (!this._inflight.has(key)) {
       this._inflight.set(
@@ -51,6 +55,12 @@ export class PostService {
       );
     }
     return this._inflight.get(key)!;
+  }
+
+  /** Drop the cached entry for one post (call after any mutation). */
+  invalidatePost(id: string): void {
+    this._postCache.delete(id);
+    this._inflight.delete(`post_${id}`);
   }
 
   // ── Read (deduped) ─────────────────────────────────────────────────────────
@@ -68,8 +78,14 @@ export class PostService {
   }
 
   getPostById(id: string): Observable<apiResponse<Post>> {
+    // Serve from TTL cache — makes repeated ViewPost opens instant
+    const hit = this._postCache.get(id);
+    if (hit && Date.now() - hit.ts < this.POST_TTL) return of(hit.res);
+
     return this.dedupe(`post_${id}`,
-      () => this.http.get<apiResponse<Post>>(`${this.endPoint}/${id}`)
+      () => this.http.get<apiResponse<Post>>(`${this.endPoint}/${id}`).pipe(
+        tap(res => this._postCache.set(id, { res, ts: Date.now() }))
+      )
     );
   }
 
@@ -97,10 +113,14 @@ export class PostService {
   }
 
   updatePost(id: string, postData: Partial<CreatePostPayload>): Observable<apiResponse<Post>> {
-    return this.http.patch<apiResponse<Post>>(`${this.endPoint}/${id}`, postData);
+    this.invalidatePost(id);
+    return this.http.patch<apiResponse<Post>>(`${this.endPoint}/${id}`, postData).pipe(
+      tap(res => { if (res.data) this._postCache.set(id, { res, ts: Date.now() }); })
+    );
   }
 
   resubmitPost(id: string): Observable<apiResponse<Post>> {
+    this.invalidatePost(id);
     return this.http.post<apiResponse<Post>>(`${this.endPoint}/${id}/resubmit`, {});
   }
 
@@ -110,6 +130,14 @@ export class PostService {
 
   cancelPostDeleteRequest(id: string): Observable<apiResponse<Post>> {
     return this.http.delete<apiResponse<Post>>(`${this.endPoint}/${id}/cancel-delete-request`);
+  }
+
+  approveDeleteRequest(id: string): Observable<apiResponse<null>> {
+    return this.http.patch<apiResponse<null>>(`${this.endPoint}/${id}/approve-delete-request`, {});
+  }
+
+  rejectDeleteRequest(id: string): Observable<apiResponse<Post>> {
+    return this.http.patch<apiResponse<Post>>(`${this.endPoint}/${id}/reject-delete-request`, {});
   }
 
   likePost(postId: string): Observable<apiResponse<Post>> {

@@ -13,10 +13,16 @@
 /* ── Page Header ── */
 .page-header {
   display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.page-header-top {
+  display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
+  gap: 12px;
   flex-wrap: wrap;
-  gap: 20px;
 }
 /* ── Today Button ── */
 .today-btn {
@@ -103,9 +109,10 @@
   font-weight: 600;
 }
 
-.stat-pill.total     { background: var(--bg-surface-alt); color: var(--text-muted); border: 1px solid var(--border); }
-.stat-pill.published { background: var(--success-bg); color: var(--success); }
-.stat-pill.pending   { background: color-mix(in srgb, #f59e0b 15%, transparent); color: #b45309; }
+.stat-pill.total       { background: var(--bg-surface-alt); color: var(--text-muted); border: 1px solid var(--border); }
+.stat-pill.published   { background: var(--success-bg); color: var(--success); }
+.stat-pill.pending     { background: color-mix(in srgb, #f59e0b 15%, transparent); color: #b45309; }
+.stat-pill.deletion-req { background: color-mix(in srgb, #ef4444 12%, transparent); color: #dc2626; }
 
 .page-header h2 {
   font-size: 24px;
@@ -120,16 +127,19 @@
   color: var(--text-muted);
 }
 
+/* Actions bar spans the full width of the page, matching the table below */
 .actions {
   display: flex;
   gap: 12px;
   align-items: center;
   flex-wrap: wrap;
+  width: 100%;
 }
 
-.actions input,
-.actions select {
-  display: inline-block;
+/* Search input grows to fill all remaining space */
+.actions input[type="text"] {
+  flex: 1;
+  min-width: 160px;
   padding: 10px 14px;
   border-radius: 8px;
   border: 1px solid var(--input-border);
@@ -141,18 +151,31 @@
   outline: none;
 }
 
-.actions input::placeholder {
+.actions input[type="text"]::placeholder {
   color: var(--text-muted);
 }
 
-.actions input:focus,
-.actions select:focus {
+.actions input[type="text"]:focus {
   border-color: #43cea2;
   box-shadow: 0 0 0 3px rgba(67, 206, 162, 0.15);
 }
 
-.actions input {
-  width: 220px;
+.actions select {
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--input-border);
+  font-size: 14px;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--text-primary);
+  background: var(--input-bg);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  outline: none;
+  white-space: nowrap;
+}
+
+.actions select:focus {
+  border-color: #43cea2;
+  box-shadow: 0 0 0 3px rgba(67, 206, 162, 0.15);
 }
 
 .add-btn {
@@ -361,6 +384,12 @@ tbody > tr:hover td {
 .action-buttons .delete       { background-color: var(--danger); }
 .action-buttons .delete:hover { background-color: var(--danger-hover); }
 
+.action-buttons .approve       { background-color: #16a34a; }
+.action-buttons .approve:hover { background-color: #15803d; }
+
+.action-buttons .reject-del       { background-color: #6b7280; }
+.action-buttons .reject-del:hover { background-color: #4b5563; }
+
 .empty-row {
   text-align: center;
   padding: 40px 0 !important;
@@ -546,19 +575,152 @@ tbody > tr:hover td {
 @media (max-width: 768px) {
   .user-page { padding: 20px; }
 
-  .page-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .actions { width: 100%; }
-  .actions input { width: 100%; }
-  .actions select { flex: 1; }
+  .actions { flex-wrap: wrap; }
+  .actions input[type="text"] { width: 100%; flex: 1 1 100%; }
+  .actions select { flex: 1; min-width: 120px; }
 
   .add-btn {
     width: 100%;
     text-align: center;
   }
+}
+
+/* ── Deletion-request filter button (red accent on active) ── */
+.del-req-btn { position: relative; }
+.del-req-btn.today-btn--active {
+  background: linear-gradient(135deg, #ef4444, #b91c1c);
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35);
+}
+.del-req-btn:hover:not(.today-btn--active) {
+  border-color: #ef4444;
+  color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
+}
+.del-req-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 99px;
+  font-size: 10px;
+  font-weight: 700;
+  background: #ef4444;
+  color: #fff;
+  margin-left: 4px;
+}
+.today-btn--active .del-req-count {
+  background: rgba(255,255,255,0.25);
+}
+
+/* ── Approve / Reject confirm modal icons ── */
+.approve-icon {
+  background: color-mix(in srgb, #16a34a 12%, transparent);
+  color: #16a34a;
+}
+.reject-icon {
+  background: color-mix(in srgb, #6b7280 12%, transparent);
+  color: #4b5563;
+}
+.approve-reason {
+  font-size: 12px;
+  color: var(--text-muted);
+  background: var(--bg-surface-alt);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin: -10px 0 16px;
+  text-align: left;
+  line-height: 1.5;
+}
+.btn-confirm.reject-confirm { background: #6b7280; }
+.btn-confirm.reject-confirm:hover { background: #4b5563; opacity: 1; }
+
+/* ── Delete-request badge (admin sees this on rows with pending delete) ── */
+.delete-req-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  background: color-mix(in srgb, #f59e0b 15%, transparent);
+  color: #b45309;
+  border: 1px solid color-mix(in srgb, #f59e0b 30%, transparent);
+  cursor: default;
+  white-space: nowrap;
+}
+
+/* ── Pending-delete button shown to user when request is already in flight ── */
+.delete-req-pending {
+  width: 76px;
+  padding: 6px 10px;
+  border: none;
+  border-radius: 6px;
+  background: color-mix(in srgb, #f59e0b 20%, transparent);
+  color: #b45309;
+  font-size: 13px;
+  cursor: not-allowed;
+  opacity: 0.75;
+  transition: none;
+}
+
+/* ── Delete-request modal icon (red/danger variant) ── */
+.delete-req-icon {
+  background: color-mix(in srgb, #ef4444 12%, transparent);
+  color: #dc2626;
+}
+
+/* ── Reason textarea inside the request-deletion modal ── */
+.delete-req-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--input-bg);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: 'DM Sans', sans-serif;
+  line-height: 1.5;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  box-sizing: border-box;
+}
+
+.delete-req-textarea::placeholder {
+  color: var(--text-muted);
+}
+
+.delete-req-textarea:focus {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
+}
+
+/* ── Character counter below the textarea ── */
+.delete-req-char {
+  margin: 4px 0 16px !important;
+  font-size: 11px !important;
+  color: var(--text-muted) !important;
+  text-align: right;
+}
+
+/* ── Spinner inside submit button ── */
+.btn-spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: btn-spin 0.7s linear infinite;
+  vertical-align: middle;
+}
+
+@keyframes btn-spin {
+  to { transform: rotate(360deg); }
 }
 
 @media (max-width: 480px) {
@@ -568,6 +730,12 @@ tbody > tr:hover td {
     width: 60px;
     font-size: 12px;
     padding: 5px 6px;
+  }
+
+  .delete-req-pending {
+    width: 60px;
+    padding: 5px 6px;
+    font-size: 12px;
   }
 
   .confirm-box {

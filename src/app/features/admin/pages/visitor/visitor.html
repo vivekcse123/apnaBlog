@@ -139,13 +139,15 @@
           <canvas #doughnutChartRef></canvas>
         </div>
         <div class="source-legend">
-          <div class="legend-item" *ngFor="let s of sourceStats; let i = index; trackBy: trackByIndex">
-            <span class="legend-dot"
-              [style.background]="['#6C63FF','#43C6AC','#FF6B6B','#FFB347'][i]">
-            </span>
-            <span class="legend-label">{{ s.source }}</span>
-            <span class="legend-val">{{ s.percent }}%</span>
-          </div>
+          @for (s of sourceStats; track s.source; let i = $index) {
+            <div class="legend-item">
+              <span class="legend-dot"
+                [style.background]="['#6C63FF','#43C6AC','#FF6B6B','#FFB347'][i]">
+              </span>
+              <span class="legend-label">{{ s.source }}</span>
+              <span class="legend-val">{{ s.percent }}%</span>
+            </div>
+          }
         </div>
       </div>
 

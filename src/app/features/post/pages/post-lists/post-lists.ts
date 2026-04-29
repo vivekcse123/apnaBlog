@@ -11,6 +11,7 @@ import { PostService } from '../../services/post-service';
 import { ViewPost } from '../../../../shared/view-post/view-post';
 import { Auth } from '../../../../core/services/auth';
 import { ToastService } from '../../../../core/services/toast.service';
+import { DashboardCache } from '../../../../core/services/dashboard-cache';
 import { NotificationNavigationService, POST_NOTIFICATION_TYPES } from '../../../../core/services/open-notification/notification-navigation';
 
 @Component({
@@ -23,12 +24,13 @@ import { NotificationNavigationService, POST_NOTIFICATION_TYPES } from '../../..
 })
 export class PostLists implements OnInit, OnDestroy {
 
-  private route        = inject(ActivatedRoute);
-  private postService  = inject(PostService);
-  private destroyRef   = inject(DestroyRef);
-  private authService  = inject(Auth);
-  private toastService = inject(ToastService);
-  private navSvc       = inject(NotificationNavigationService);
+  private route          = inject(ActivatedRoute);
+  private postService    = inject(PostService);
+  private destroyRef     = inject(DestroyRef);
+  private authService    = inject(Auth);
+  private toastService   = inject(ToastService);
+  private dashboardCache = inject(DashboardCache);
+  private navSvc         = inject(NotificationNavigationService);
 
   allBlogs       = signal<Post[]>([]);
   isLoading      = signal(true);
@@ -40,21 +42,26 @@ export class PostLists implements OnInit, OnDestroy {
 
   searchTitle      = '';
   debounceValue    = signal<string>('');
-  selectedCategory = signal<string>('');
-  selectedStatus   = signal<string>('');
-  showTodayOnly    = signal<boolean>(false);
+  selectedCategory        = signal<string>('');
+  selectedStatus          = signal<string>('');
+  showTodayOnly           = signal<boolean>(false);
+  showDeletionRequestOnly = signal<boolean>(false);
 
   private debounceTimer: any;
 
   currentPage  = signal<number>(1);
   itemsPerPage = signal<number>(6);
 
-  pendingCount  = computed(() => this.allBlogs().filter(p => p.status === 'pending').length);
-  publishedCount = computed(() => this.allBlogs().filter(p => p.status === 'published').length);
+  pendingCount         = computed(() => this.allBlogs().filter(p => p.status === 'pending').length);
+  publishedCount       = computed(() => this.allBlogs().filter(p => p.status === 'published').length);
+  deletionRequestCount = computed(() => this.allBlogs().filter(p => p.deleteRequested).length);
 
   filteredBlogs = computed(() => {
     let data = this.allBlogs();
 
+    if (this.showDeletionRequestOnly()) {
+      data = data.filter(p => p.deleteRequested);
+    }
     if (this.showTodayOnly()) {
       const today = new Date();
       data = data.filter(post => {
@@ -85,52 +92,116 @@ export class PostLists implements OnInit, OnDestroy {
   totalPages = computed(() => Math.ceil(this.filteredBlogs().length / this.itemsPerPage()));
   pages      = computed(() => Array.from({ length: this.totalPages() }, (_, i) => i + 1));
 
- ngOnInit(): void {
-  this.route?.parent?.params
-    .pipe(takeUntilDestroyed(this.destroyRef))
-    .subscribe(params => {
-      const id = params['id'];
-      if (!id) return;
-      this.userId.set(id);
-      this.loadPosts(id);
-    });
+  ngOnInit(): void {
+    this.route?.parent?.params
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(params => {
+        const id = params['id'];
+        if (!id) return;
+        this.userId.set(id);
+        this.loadPosts(id);
+      });
 
-  // ✅ Replaces consumePendingEvent — works whether component is new or already mounted
-  this.navSvc.openModal$
-    .pipe(takeUntilDestroyed(this.destroyRef))
-    .subscribe(event => {
-      if (POST_NOTIFICATION_TYPES.includes(event.type) && event.resourceId) {
-        this.viewPost(event.resourceId);
+    this.navSvc.openModal$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(event => {
+        if (POST_NOTIFICATION_TYPES.includes(event.type) && event.resourceId) {
+          this.viewPost(event.resourceId);
+        }
+      });
+
+    // Re-fetch when the browser tab regains focus and data is stale
+    document.addEventListener('visibilitychange', this._onVisibilityChange);
+  }
+
+  // Arrow function so `this` is stable when used as an event listener
+  private readonly _onVisibilityChange = (): void => {
+    if (document.hidden) return;
+    const id = this.userId();
+    if (!id) return;
+    const role = this.authService.getCurrentUser()?.role?.toLowerCase() ?? '';
+    const isAdmin = role === 'admin' || role === 'super_admin';
+    const stale = isAdmin
+      ? this.dashboardCache.isAdminPostsStale()
+      : this.dashboardCache.isUserDataStale(id);
+    if (stale) this.loadPosts();
+  };
+
+  loadPosts(userId?: string): void {
+    const id = userId ?? this.userId();
+    if (!id) return;
+
+    const currentUser = this.authService.getCurrentUser();
+    const role = currentUser?.role?.toLowerCase() ?? '';
+    this.role.set(role);
+
+    const isAdmin = role === 'admin' || role === 'super_admin';
+
+    // ── Fast path: serve from independent cache slot ──────────────────────────
+    if (isAdmin) {
+      const cached = this.dashboardCache.getAdminPosts();
+      if (cached) {
+        this.allBlogs.set(cached as Post[]);
+        this.isLoading.set(false);
+        if (this.dashboardCache.isAdminPostsStale()) this._fetchAdminPosts();
+        return;
       }
-    });
-}
+    } else {
+      const cached = this.dashboardCache.getUserPosts(id);
+      if (cached) {
+        this.allBlogs.set(cached as Post[]);
+        this.isLoading.set(false);
+        if (this.dashboardCache.isUserDataStale(id)) this._fetchUserPosts(id);
+        return;
+      }
+    }
 
-loadPosts(userId?: string): void {
-  const id = userId ?? this.userId();
-  if (!id) return;
+    // ── Cold path ─────────────────────────────────────────────────────────────
+    this.isLoading.set(true);
+    if (isAdmin) this._fetchAdminPosts(true);
+    else this._fetchUserPosts(id, true);
+  }
 
-  const currentUser = this.authService.getCurrentUser();
-  const role = currentUser?.role?.toLowerCase() ?? '';
-  this.role.set(role);
+  private _fetchAdminPosts(showLoader = false): void {
+    if (showLoader) this.isLoading.set(true);
+    this.postService.getAllPostAdmin(1, 1000)
+      .pipe(takeUntilDestroyed(this.destroyRef), finalize(() => this.isLoading.set(false)))
+      .subscribe({
+        next: res => {
+          const posts = res.data ?? [];
+          this.allBlogs.set(posts as Post[]);
+          this.dashboardCache.setAdminPosts(posts);   // ← only writes its own slot
+        },
+        error: () => {},
+      });
+  }
 
-  const posts$ = (role === 'admin' || role === 'super_admin')
-    ? this.postService.getAllPostAdmin(1, 1000)
-    : this.postService.getPostByUserId(id, 1, 1000);
-
-  this.isLoading.set(true);
-
-  posts$
-    .pipe(
-      takeUntilDestroyed(this.destroyRef),
-      finalize(() => this.isLoading.set(false))
-    )
+private _fetchUserPosts(uid: string, showLoader = false): void {
+  if (showLoader) this.isLoading.set(true);
+  this.postService.getPostByUserId(uid, 1, 1000)
+    .pipe(takeUntilDestroyed(this.destroyRef), finalize(() => this.isLoading.set(false)))
     .subscribe({
-      next: res => this.allBlogs.set(res.data || []),
+      next: res => {
+        const posts = res.data ?? [];
+        this.allBlogs.set(posts as Post[]);
+        this.dashboardCache.setUserPosts(uid, posts);
+      },
       error: () => {},
     });
 }
 
-  toggleTodayFilter(): void { this.showTodayOnly.update(v => !v); this.currentPage.set(1); }
+  toggleTodayFilter(): void {
+    this.showTodayOnly.update(v => !v);
+    if (this.showTodayOnly()) this.showDeletionRequestOnly.set(false);
+    this.currentPage.set(1);
+  }
+
+  toggleDeletionFilter(): void {
+    this.showDeletionRequestOnly.update(v => !v);
+    if (this.showDeletionRequestOnly()) this.showTodayOnly.set(false);
+    this.currentPage.set(1);
+  }
+
   onCategoryChange(v: string): void { this.selectedCategory.set(v); this.currentPage.set(1); }
   onStatusChange(v: string):   void { this.selectedStatus.set(v);   this.currentPage.set(1); }
 
@@ -146,7 +217,13 @@ loadPosts(userId?: string): void {
   nextPage():     void { if (this.currentPage() < this.totalPages()) this.currentPage.set(this.currentPage() + 1); }
   goToPage(p: number): void { if (p >= 1 && p <= this.totalPages()) this.currentPage.set(p); }
 
-  onPostCreated(): void { this.loadPosts(); this.currentPage.set(1); }
+  onPostCreated(): void {
+    this.dashboardCache.invalidateAdminPosts();
+    const uid = this.userId();
+    if (uid) this.dashboardCache.invalidateUser(uid);
+    this.loadPosts();
+    this.currentPage.set(1);
+  }
 
   // ── Admin: direct delete confirm ──────────────────────────────────────────
   showConfirm        = signal(false);
@@ -168,16 +245,97 @@ loadPosts(userId?: string): void {
   proceedDelete(): void {
     const id = this.pendingDeleteId();
     if (!id) return;
-
     this.showConfirm.set(false);
 
     this.postService.deletePost(id).subscribe({
       next: () => {
         this.toastService.show('Post deleted successfully.', 'success');
+        this.dashboardCache.invalidateAdminPosts();
         this.loadPosts();
       },
       error: err => {
         this.toastService.show(err?.error?.message ?? 'Failed to delete post.', 'error');
+      },
+    });
+  }
+
+  // ── Admin: approve deletion request ──────────────────────────────────────
+  showApproveConfirm   = signal(false);
+  pendingApproveId     = signal<string>('');
+  pendingApproveTitle  = signal<string>('');
+  pendingApproveReason = signal<string>('');
+
+  openApproveDelete(id: string, title: string, reason: string): void {
+    this.pendingApproveId.set(id);
+    this.pendingApproveTitle.set(title);
+    this.pendingApproveReason.set(reason || '');
+    this.showApproveConfirm.set(true);
+  }
+
+  cancelApproveDelete(): void {
+    this.showApproveConfirm.set(false);
+    this.pendingApproveId.set('');
+    this.pendingApproveTitle.set('');
+    this.pendingApproveReason.set('');
+  }
+
+  proceedApproveDelete(): void {
+    const id = this.pendingApproveId();
+    if (!id) return;
+    this.showApproveConfirm.set(false);
+
+    this.postService.approveDeleteRequest(id).subscribe({
+      next: () => {
+        this.toastService.show('Deletion approved. Post has been deleted.', 'success');
+        this.dashboardCache.invalidateAdminPosts();
+        this.loadPosts();
+      },
+      error: err => {
+        this.toastService.show(err?.error?.message ?? 'Failed to approve deletion.', 'error');
+      },
+    });
+  }
+
+  // ── Admin: reject deletion request ───────────────────────────────────────
+  showRejectConfirm  = signal(false);
+  pendingRejectId    = signal<string>('');
+  pendingRejectTitle = signal<string>('');
+
+  openRejectDelete(id: string, title: string): void {
+    this.pendingRejectId.set(id);
+    this.pendingRejectTitle.set(title);
+    this.showRejectConfirm.set(true);
+  }
+
+  cancelRejectDelete(): void {
+    this.showRejectConfirm.set(false);
+    this.pendingRejectId.set('');
+    this.pendingRejectTitle.set('');
+  }
+
+  proceedRejectDelete(): void {
+    const id = this.pendingRejectId();
+    if (!id) return;
+    this.showRejectConfirm.set(false);
+
+    this.postService.rejectDeleteRequest(id).subscribe({
+      next: () => {
+        this.toastService.show('Deletion request rejected. Post kept.', 'success');
+        this.allBlogs.update(blogs =>
+          blogs.map(b => b._id === id ? { ...b, deleteRequested: false, deleteRequestReason: null } : b)
+        );
+        // Patch cache in-place — no full refetch needed
+        const cached = this.dashboardCache.getAdminPosts();
+        if (cached) {
+          this.dashboardCache.setAdminPosts(
+            cached.map((p: any) =>
+              p._id === id ? { ...p, deleteRequested: false, deleteRequestReason: null } : p
+            )
+          );
+        }
+      },
+      error: err => {
+        this.toastService.show(err?.error?.message ?? 'Failed to reject deletion.', 'error');
       },
     });
   }
@@ -214,6 +372,9 @@ loadPosts(userId?: string): void {
         this.deleteRequestSubmitting.set(false);
         this.toastService.show('Deletion request sent. Admin will review it shortly.', 'success');
         this.cancelDeleteRequest();
+        const uid = this.userId();
+        if (uid) this.dashboardCache.invalidateUser(uid);
+        else this.dashboardCache.invalidateAdminPosts();
         this.loadPosts();
       },
       error: err => {
@@ -225,8 +386,12 @@ loadPosts(userId?: string): void {
 
   isPostViewed   = signal(false);
   selectedPostId = signal<string>('');
+  selectedPost   = signal<Post | null>(null);
 
   viewPost(id: string): void {
+    // Pass the full object from the list so the modal renders instantly
+    const fromList = this.allBlogs().find(b => b._id === id) ?? null;
+    this.selectedPost.set(fromList);
     this.selectedPostId.set(id);
     this.isPostViewed.set(true);
   }
@@ -234,10 +399,12 @@ loadPosts(userId?: string): void {
   closeModal(): void {
     this.isPostViewed.set(false);
     this.selectedPostId.set('');
+    this.selectedPost.set(null);
   }
 
   ngOnDestroy(): void {
     clearTimeout(this.debounceTimer);
+    document.removeEventListener('visibilitychange', this._onVisibilityChange);
   }
 
   onPostUpdated(updatedPost: Post): void {

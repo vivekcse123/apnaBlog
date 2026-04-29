@@ -12,6 +12,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NotificationNavEvent, NotificationNavigationService, USER_NOTIFICATION_TYPES } from '../../../../core/services/open-notification/notification-navigation';
 import { Auth } from '../../../../core/services/auth';
 import { ToastService } from '../../../../core/services/toast.service';
+import { DashboardCache } from '../../../../core/services/dashboard-cache';
 
 @Component({
   selector: 'app-manage-users',
@@ -22,12 +23,13 @@ import { ToastService } from '../../../../core/services/toast.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ManageUsers implements OnInit, OnDestroy {
-  private adminService = inject(AdminService);
-  private route        = inject(ActivatedRoute);
-  private destroyRef   = inject(DestroyRef);
-  private navSvc       = inject(NotificationNavigationService);
-  private authService  = inject(Auth);
-  private toastService = inject(ToastService);
+  private adminService   = inject(AdminService);
+  private route          = inject(ActivatedRoute);
+  private destroyRef     = inject(DestroyRef);
+  private navSvc         = inject(NotificationNavigationService);
+  private authService    = inject(Auth);
+  private toastService   = inject(ToastService);
+  private dashboardCache = inject(DashboardCache);
 
   allUsers  = signal<User[]>([]);
   isLoading = signal(true);
@@ -41,10 +43,30 @@ export class ManageUsers implements OnInit, OnDestroy {
   debounceValue  = signal('');
   selectedRole   = signal('');
   selectedStatus = signal('');
+  showTodayOnly  = signal(false);
   private timer: any;
+
+  todayCount = computed(() => {
+    const today = new Date();
+    return this.allUsers().filter(u => {
+      const d = new Date(u.createdAt);
+      return d.getFullYear() === today.getFullYear() &&
+             d.getMonth()    === today.getMonth()    &&
+             d.getDate()     === today.getDate();
+    }).length;
+  });
 
   filteredUsers = computed(() => {
     let data = this.allUsers();
+    if (this.showTodayOnly()) {
+      const today = new Date();
+      data = data.filter(u => {
+        const d = new Date(u.createdAt);
+        return d.getFullYear() === today.getFullYear() &&
+               d.getMonth()    === today.getMonth()    &&
+               d.getDate()     === today.getDate();
+      });
+    }
     if (this.debounceValue()) {
       const s = this.debounceValue().toLowerCase();
       data = data.filter(u => u.name.toLowerCase().includes(s));
@@ -64,6 +86,7 @@ export class ManageUsers implements OnInit, OnDestroy {
 
   isProfileOpened  = signal(false);
   selectedUserId   = signal<string>('');
+  selectedUserObj  = signal<any>(null);
   showCreateModal  = signal(false);
   showConfirm      = signal(false);
   pendingUser      = signal<any>(null);
@@ -71,39 +94,93 @@ export class ManageUsers implements OnInit, OnDestroy {
   pendingDeleteUser  = signal<any>(null);
   userId       = signal<string>('');
 
-ngOnInit(): void {
-  this.route.parent?.paramMap
-    .pipe(takeUntilDestroyed(this.destroyRef))
-    .subscribe(params => {
-      this.userId.set(params.get('id') ?? '');
-      this.loadUsers();
-    });
+  ngOnInit(): void {
+    this.route.parent?.paramMap
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(params => {
+        this.userId.set(params.get('id') ?? '');
+        this.loadUsers();
+      });
 
-  // ✅ Replaces consumePendingEvent
-  this.navSvc.openModal$
-    .pipe(takeUntilDestroyed(this.destroyRef))
-    .subscribe((event: NotificationNavEvent) => {
-      if (USER_NOTIFICATION_TYPES.includes(event.type) && event.resourceId) {
-        this.getUserDetails(event.resourceId);
+    this.navSvc.openModal$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((event: NotificationNavEvent) => {
+        if (USER_NOTIFICATION_TYPES.includes(event.type) && event.resourceId) {
+          this.getUserDetails(event.resourceId);
+        }
+      });
+
+    // Re-fetch when the browser tab regains focus and data is stale
+    document.addEventListener('visibilitychange', this._onVisibilityChange);
+  }
+
+  // Arrow fn so `this` is stable as event listener reference
+  private readonly _onVisibilityChange = (): void => {
+    if (document.hidden) return;
+    const isSuperAdmin = this.authService.isSuperAdmin();
+    const stale = isSuperAdmin
+      ? this.dashboardCache.isRawUsersStale()
+      : this.dashboardCache.isAdminUsersStale();
+    if (stale) this.loadUsers();
+  };
+
+  loadUsers(): void {
+    const isSuperAdmin = this.authService.isSuperAdmin();
+
+    // ── Fast path: serve from independent cache slot ────────────────────────
+    if (isSuperAdmin) {
+      const cached = this.dashboardCache.getRawUsers();
+      if (cached) {
+        this.allUsers.set(cached);
+        this.isLoading.set(false);
+        if (this.dashboardCache.isRawUsersStale()) this._fetchRawUsers();
+        return;
       }
-    });
-}
+    } else {
+      const cached = this.dashboardCache.getAdminUsers();
+      if (cached) {
+        this.allUsers.set(cached as User[]);
+        this.isLoading.set(false);
+        if (this.dashboardCache.isAdminUsersStale()) this._fetchUsers();
+        return;
+      }
+    }
 
-loadUsers(): void {
-  const loader = this.authService.isSuperAdmin()
-    ? this.adminService.getAllUsersRaw(1, 1000)
-    : this.adminService.getAllUsers(1, 100);
+    // ── Cold path ───────────────────────────────────────────────────────────
+    this.isLoading.set(true);
+    if (isSuperAdmin) this._fetchRawUsers(true);
+    else this._fetchUsers(true);
+  }
 
-  this.isLoading.set(true);
+  private _fetchRawUsers(showLoader = false): void {
+    if (showLoader) this.isLoading.set(true);
+    this.adminService.getAllUsersRaw(1, 1000)
+      .pipe(takeUntilDestroyed(this.destroyRef), finalize(() => this.isLoading.set(false)))
+      .subscribe({
+        next: res => {
+          const users = res.data || [];
+          this.allUsers.set(users);
+          this.dashboardCache.setRawUsers(users);   // ← only writes its own slot
+        },
+        error: () => {},
+      });
+  }
 
-  loader.pipe(
-    takeUntilDestroyed(this.destroyRef),
-    finalize(() => this.isLoading.set(false))
-  ).subscribe({
-    next:  res => this.allUsers.set(res.data || []),
-    error: () => {},
-  });
-}
+  private _fetchUsers(showLoader = false): void {
+    if (showLoader) this.isLoading.set(true);
+    this.adminService.getAllUsers(1, 1000)
+      .pipe(takeUntilDestroyed(this.destroyRef), finalize(() => this.isLoading.set(false)))
+      .subscribe({
+        next: res => {
+          const users = res.data || [];
+          this.allUsers.set(users);
+          this.dashboardCache.setAdminUsers(users);  // ← only writes its own slot
+        },
+        error: () => {},
+      });
+  }
+
+  toggleTodayFilter(): void { this.showTodayOnly.update(v => !v); this.currentPage.set(1); }
 
   debounceSearch(value: string): void {
     clearTimeout(this.timer);
@@ -115,6 +192,9 @@ loadUsers(): void {
   nextPage():          void { if (this.currentPage() < this.totalPages()) this.currentPage.set(this.currentPage() + 1); }
 
   getUserDetails(userId: string): void {
+    // Pass the full object from the list so the modal renders instantly
+    const fromList = this.allUsers().find(u => u._id === userId) ?? null;
+    this.selectedUserObj.set(fromList);
     this.selectedUserId.set(userId);
     this.isProfileOpened.set(true);
   }
@@ -122,6 +202,7 @@ loadUsers(): void {
   closeProfile(): void {
     this.isProfileOpened.set(false);
     this.selectedUserId.set('');
+    this.selectedUserObj.set(null);
   }
 
   onUserUpdated(updatedUser: any): void {
@@ -148,6 +229,8 @@ loadUsers(): void {
           isActive ? `${user.name} has been frozen.` : `${user.name} has been unfrozen.`,
           'success'
         );
+        this.dashboardCache.invalidateAdminUsers();
+        this.dashboardCache.invalidateRawUsers();
         this.pendingUser.set(null);
       },
       error: err => {
@@ -172,6 +255,8 @@ loadUsers(): void {
         next: () => {
           this.allUsers.update(list => list.filter(u => u._id !== user._id));
           this.toastService.show(`${user.name} has been deleted successfully.`, 'success');
+          this.dashboardCache.invalidateAdminUsers();
+          this.dashboardCache.invalidateRawUsers();
           this.pendingDeleteUser.set(null);
         },
         error: err => {
@@ -185,5 +270,6 @@ loadUsers(): void {
 
   ngOnDestroy(): void {
     clearTimeout(this.timer);
+    document.removeEventListener('visibilitychange', this._onVisibilityChange);
   }
 }

@@ -29,7 +29,7 @@
     <h1 class="cat-title">{{ categoryName() }}</h1>
     <p class="cat-subtitle">
       @if (!isLoading()) {
-        {{ posts().length }} article{{ posts().length === 1 ? '' : 's' }} in this category
+        {{ posts().length }} blogs {{ posts().length === 1 ? '' : 's' }} in this category
       } @else {
         Exploring stories…
       }

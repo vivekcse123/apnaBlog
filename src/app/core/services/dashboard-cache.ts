@@ -1,106 +1,129 @@
 import { Injectable } from '@angular/core';
 
-interface DashboardSnapshot {
-  posts: any[];
-  users: any[];
-}
-
-interface UserSnapshot {
-  posts:    any[];
+interface Slice<T> {
+  data:     T;
   cachedAt: number;
 }
 
 /**
- * In-memory cache for the admin / user-home dashboard data.
+ * In-memory cache for admin/user dashboard data.
  *
- * Both dashboards load 1 000+ records on every mount, which causes a slow
- * first-paint on every navigation.  This service holds the last fetch for up
- * to TTL_MS (5 minutes) so that navigating back to the dashboard is instant.
+ * Each data type has its own independent slot so that loading ManageBlogs
+ * can never corrupt ManageUsers' cached data and vice-versa.
  *
  * Pattern:
- *   1. On mount, call `get()` (admin) or `getUserPosts(userId)` (user).
- *   2. If data is returned, render immediately and call `isStale()` /
- *      `isUserDataStale(userId)` to decide whether to silently refresh.
- *   3. After every fresh fetch, call `set(posts, users)` or
- *      `setUserPosts(userId, posts)`.
+ *   1. On mount, call the typed getter (e.g. getAdminPosts()).
+ *   2. If data returned, render immediately; call isXStale() to decide
+ *      whether to background-refresh.
+ *   3. After each fresh fetch, call the typed setter.
+ *   4. After any mutation, call the typed invalidator.
  */
 @Injectable({ providedIn: 'root' })
 export class DashboardCache {
-  private _data:     DashboardSnapshot | null = null;
-  private _cachedAt: number | null = null;
-  private _userSnapshots = new Map<string, UserSnapshot>();
 
-  /** Hard expiry — data older than this is always refetched. */
-  private readonly TTL_MS   = 5 * 60 * 1000;  // 5 minutes
+  /** Hard expiry — always refetch after this. */
+  private readonly TTL_MS   = 5 * 60 * 1_000;   // 5 min
 
-  /** Soft staleness — data older than this triggers a background refresh
-   *  while still serving cached content instantly. */
-  private readonly STALE_MS = 60 * 1_000;      // 60 seconds
+  /** Soft staleness — triggers a silent background refresh while serving
+   *  cached content instantly. 30 s gives a "real-time" feel on tab switch. */
+  private readonly STALE_MS = 30 * 1_000;        // 30 s
 
-  // ── Admin dashboard (posts + users) ───────────────────────────────────────
+  // ── Admin posts ─────────────────────────────────────────────────────────────
+  private _posts: Slice<any[]> | null = null;
 
-  /** Returns cached admin data if still within TTL, otherwise null. */
-  get(): DashboardSnapshot | null {
-    if (!this._data || !this._cachedAt) return null;
-    if (Date.now() - this._cachedAt > this.TTL_MS) {
-      this.invalidate();
-      return null;
-    }
-    return this._data;
+  getAdminPosts(): any[] | null {
+    if (!this._posts) return null;
+    if (Date.now() - this._posts.cachedAt > this.TTL_MS) { this._posts = null; return null; }
+    return this._posts.data;
   }
-
-  /** True when the admin cache exists but is older than STALE_MS. */
-  isStale(): boolean {
-    if (!this._cachedAt) return false;
-    return Date.now() - this._cachedAt > this.STALE_MS;
+  isAdminPostsStale(): boolean {
+    return !!this._posts && Date.now() - this._posts.cachedAt > this.STALE_MS;
   }
+  setAdminPosts(posts: any[]): void { this._posts = { data: posts, cachedAt: Date.now() }; }
+  invalidateAdminPosts(): void { this._posts = null; }
 
-  /** Milliseconds since the admin cache was populated, or null if empty. */
-  getAge(): number | null {
-    return this._cachedAt ? Date.now() - this._cachedAt : null;
+  // ── Admin users (regular admin — role=user filtered list) ───────────────────
+  private _users: Slice<any[]> | null = null;
+
+  getAdminUsers(): any[] | null {
+    if (!this._users) return null;
+    if (Date.now() - this._users.cachedAt > this.TTL_MS) { this._users = null; return null; }
+    return this._users.data;
   }
-
-  set(posts: any[], users: any[]): void {
-    this._data     = { posts, users };
-    this._cachedAt = Date.now();
+  isAdminUsersStale(): boolean {
+    return !!this._users && Date.now() - this._users.cachedAt > this.STALE_MS;
   }
+  setAdminUsers(users: any[]): void { this._users = { data: users, cachedAt: Date.now() }; }
+  invalidateAdminUsers(): void { this._users = null; }
 
-  invalidate(): void {
-    this._data     = null;
-    this._cachedAt = null;
+  // ── Raw users (super-admin — unfiltered list) ───────────────────────────────
+  private _rawUsers: Slice<any[]> | null = null;
+
+  getRawUsers(): any[] | null {
+    if (!this._rawUsers) return null;
+    if (Date.now() - this._rawUsers.cachedAt > this.TTL_MS) { this._rawUsers = null; return null; }
+    return this._rawUsers.data;
   }
+  isRawUsersStale(): boolean {
+    return !!this._rawUsers && Date.now() - this._rawUsers.cachedAt > this.STALE_MS;
+  }
+  setRawUsers(users: any[]): void { this._rawUsers = { data: users, cachedAt: Date.now() }; }
+  invalidateRawUsers(): void { this._rawUsers = null; }
 
-  // ── User dashboard (per-userId posts) ─────────────────────────────────────
+  // ── User posts (per-userId, for the user-home dashboard) ────────────────────
+  private _userPosts = new Map<string, Slice<any[]>>();
 
-  /** Returns cached posts for a specific user if still within TTL, else null. */
   getUserPosts(userId: string): any[] | null {
-    const entry = this._userSnapshots.get(userId);
-    if (!entry) return null;
-    if (Date.now() - entry.cachedAt > this.TTL_MS) {
-      this._userSnapshots.delete(userId);
-      return null;
-    }
-    return entry.posts;
+    const s = this._userPosts.get(userId);
+    if (!s) return null;
+    if (Date.now() - s.cachedAt > this.TTL_MS) { this._userPosts.delete(userId); return null; }
+    return s.data;
   }
-
-  /** True when the user cache exists but is older than STALE_MS. */
   isUserDataStale(userId: string): boolean {
-    const entry = this._userSnapshots.get(userId);
-    if (!entry) return false;
-    return Date.now() - entry.cachedAt > this.STALE_MS;
+    const s = this._userPosts.get(userId);
+    return !!s && Date.now() - s.cachedAt > this.STALE_MS;
   }
-
-  /** Milliseconds since the user cache was populated, or null if empty. */
   getUserDataAge(userId: string): number | null {
-    const entry = this._userSnapshots.get(userId);
-    return entry ? Date.now() - entry.cachedAt : null;
+    const s = this._userPosts.get(userId);
+    return s ? Date.now() - s.cachedAt : null;
   }
-
   setUserPosts(userId: string, posts: any[]): void {
-    this._userSnapshots.set(userId, { posts, cachedAt: Date.now() });
+    this._userPosts.set(userId, { data: posts, cachedAt: Date.now() });
+  }
+  invalidateUser(userId: string): void { this._userPosts.delete(userId); }
+
+  // ── Combined helpers used by AdminHome (dashboard needs both at once) ────────
+
+  /**
+   * Returns both posts AND users only when both independent slots are populated.
+   * AdminHome uses this to build the full dashboard in one go.
+   */
+  get(): { posts: any[]; users: any[] } | null {
+    const posts = this.getAdminPosts();
+    const users = this.getAdminUsers();
+    if (!posts || !users) return null;
+    return { posts, users };
   }
 
-  invalidateUser(userId: string): void {
-    this._userSnapshots.delete(userId);
+  /** True if either slot is stale (dashboard should background-refresh). */
+  isStale(): boolean {
+    return this.isAdminPostsStale() || this.isAdminUsersStale();
+  }
+
+  /** Milliseconds since the posts slot was populated (used by AdminHome). */
+  getAge(): number | null {
+    return this._posts ? Date.now() - this._posts.cachedAt : null;
+  }
+
+  /** Populates both slots simultaneously — called by AdminHome after forkJoin. */
+  set(posts: any[], users: any[]): void {
+    this.setAdminPosts(posts);
+    this.setAdminUsers(users);
+  }
+
+  /** Clears both the posts and users slots. */
+  invalidate(): void {
+    this.invalidateAdminPosts();
+    this.invalidateAdminUsers();
   }
 }

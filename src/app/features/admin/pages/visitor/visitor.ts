@@ -1,10 +1,11 @@
 import {
+  ChangeDetectionStrategy, ChangeDetectorRef,
   Component, OnInit, OnDestroy, AfterViewInit,
   ViewChild, ElementRef, inject, PLATFORM_ID
 } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Chart, registerables } from 'chart.js';
-import { interval, Subscription, forkJoin, of, fromEvent } from 'rxjs';
+import { interval, Subscription, forkJoin, of } from 'rxjs';
 import { switchMap, catchError, filter } from 'rxjs/operators';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -35,9 +36,11 @@ export interface GroupedVisit {
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './visitor.html',
-  styleUrls: ['./visitor.css']
+  styleUrls: ['./visitor.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Visitor implements OnInit, AfterViewInit, OnDestroy {
+  private cdRef = inject(ChangeDetectorRef);
 
   @ViewChild('lineChartRef')     lineChartRef!:     ElementRef<HTMLCanvasElement>;
   @ViewChild('doughnutChartRef') doughnutChartRef!: ElementRef<HTMLCanvasElement>;
@@ -91,6 +94,7 @@ export class Visitor implements OnInit, AfterViewInit, OnDestroy {
       this.stats = data;
       this.calculateChanges();
       this.setLastUpdated();
+      this.cdRef.markForCheck();
     });
   }
 
@@ -139,7 +143,7 @@ export class Visitor implements OnInit, AfterViewInit, OnDestroy {
         this.topPages    = topPages;
         this.deviceStats = devices;
 
-        this.recentVisits = recent;
+        this.recentVisits  = recent;
         this.groupedVisits = this.buildGroupedVisits(recent);
 
         this.sourceStats = sources;
@@ -147,10 +151,12 @@ export class Visitor implements OnInit, AfterViewInit, OnDestroy {
 
         this.isLoading = false;
         this.setLastUpdated();
+        this.cdRef.markForCheck();
       },
       error: () => {
         this.isLoading = false;
         this.setLastUpdated();
+        this.cdRef.markForCheck();
       },
     });
   }

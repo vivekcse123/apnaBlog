@@ -43,10 +43,11 @@ export class ViewPost implements OnInit, OnDestroy {
   /** True when the post is rejected — shown to all viewers */
   isRejected = computed(() => this.post()?.status === 'rejected');
 
-  postId      = input<string>('');
-  message     = input<string>('');
-  close       = output<void>();
-  postUpdated = output<Post>();
+  postId        = input<string>('');
+  preloadedPost = input<Post | null>(null);   // passed from list for zero-wait first render
+  message       = input<string>('');
+  close         = output<void>();
+  postUpdated   = output<Post>();
 
   post           = signal<Post | null>(null);
   isLoading      = signal(false);
@@ -143,13 +144,37 @@ export class ViewPost implements OnInit, OnDestroy {
   }
 
   loadPost(): void {
-    this.isLoading.set(true);
-    this.postService.getPostById(this.postId())
-      .pipe(takeUntil(this.destroy$), finalize(() => this.isLoading.set(false)))
+    const id = this.postId();
+
+    // ── Instant path: preloaded from list OR TTL cache ────────────────────────
+    // postService.getPostById returns of() synchronously on a cache hit, so the
+    // subscribe next-callback fires before the next line — served is set before
+    // we check it below, skipping the skeleton entirely.
+    const preload = this.preloadedPost();
+    if (preload && preload._id === id) {
+      this.post.set(preload);
+      this.isLoading.set(false);
+    }
+
+    let served = !!this.post();
+
+    this.postService.getPostById(id)
+      .pipe(takeUntil(this.destroy$), finalize(() => { if (!served) this.isLoading.set(false); }))
       .subscribe({
-        next: (res) => this.post.set(res.data),
-        error: () => this.toastService.show('Failed to load post details.', 'error'),
+        next: res => {
+          served = true;
+          this.post.set(res.data);
+          this.isLoading.set(false);
+        },
+        error: () => {
+          served = true;
+          this.isLoading.set(false);
+          if (!this.post()) this.toastService.show('Failed to load post details.', 'error');
+        },
       });
+
+    // Show skeleton only if nothing was served synchronously
+    if (!served) this.isLoading.set(true);
   }
 
   toggleComments(): void {

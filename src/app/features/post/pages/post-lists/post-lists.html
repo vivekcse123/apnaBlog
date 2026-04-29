@@ -1,14 +1,19 @@
 <div class="user-page">
 
   <div class="page-header">
-    <div>
-      <h2>Manage Blogs</h2>
-      <div class="blog-stats">
-        <span class="stat-pill total">{{ allBlogs().length }} Total</span>
-        <span class="stat-pill published">{{ publishedCount() }} Published</span>
-        @if (pendingCount() > 0) {
-          <span class="stat-pill pending">{{ pendingCount() }} Pending</span>
-        }
+    <div class="page-header-top">
+      <div>
+        <h2>Manage Blogs</h2>
+        <div class="blog-stats">
+          <span class="stat-pill total">{{ allBlogs().length }} Total</span>
+          <span class="stat-pill published">{{ publishedCount() }} Published</span>
+          @if (pendingCount() > 0) {
+            <span class="stat-pill pending">{{ pendingCount() }} Pending</span>
+          }
+          @if (deletionRequestCount() > 0 && (role() === 'admin' || role() === 'super_admin')) {
+            <span class="stat-pill deletion-req">{{ deletionRequestCount() }} Deletion Req.</span>
+          }
+        </div>
       </div>
     </div>
     <div class="actions">
@@ -56,7 +61,28 @@
         </svg>
         Today
       </button>
-      
+
+      @if (role() === 'admin' || role() === 'super_admin') {
+        <button
+          class="today-btn del-req-btn"
+          [class.today-btn--active]="showDeletionRequestOnly()"
+          (click)="toggleDeletionFilter()"
+          [title]="deletionRequestCount() + ' pending deletion requests'"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+            <path d="M10 11v6M14 11v6"/>
+            <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+          </svg>
+          Deletion Req.
+          @if (deletionRequestCount() > 0) {
+            <span class="del-req-count">{{ deletionRequestCount() }}</span>
+          }
+        </button>
+      }
+
       <button class="add-btn" (click)="showCreateBlog.set(true)">+ Add New Blog</button>
     </div>
   </div>
@@ -158,14 +184,25 @@
                 <td>{{ blog.updatedAt | date: 'mediumDate' }}</td>
                 <td>
                   <div class="action-buttons">
-                    @if (blog.deleteRequested && (role() === 'admin' || role() === 'super_admin')) {
-                      <span class="delete-req-badge" [title]="'Delete requested: ' + (blog.deleteRequestReason || '')">
-                        ⚠ Delete
-                      </span>
-                    }
                     <button class="edit" (click)="viewPost(blog._id)" title="View post"><i class="bi bi-eye"></i></button>
+
                     @if (role() === 'admin' || role() === 'super_admin') {
-                      <button class="delete" (click)="confirmDelete(blog._id, blog.title)" title="Delete post"><i class="bi bi-trash3"></i></button>
+                      @if (blog.deleteRequested) {
+                        <button class="approve"
+                          (click)="openApproveDelete(blog._id, blog.title, blog.deleteRequestReason || '')"
+                          [title]="'Approve deletion — Reason: ' + (blog.deleteRequestReason || 'none')">
+                          <i class="bi bi-check-lg"></i>
+                        </button>
+                        <button class="reject-del"
+                          (click)="openRejectDelete(blog._id, blog.title)"
+                          title="Reject deletion request">
+                          <i class="bi bi-x-lg"></i>
+                        </button>
+                      } @else {
+                        <button class="delete" (click)="confirmDelete(blog._id, blog.title)" title="Delete post">
+                          <i class="bi bi-trash3"></i>
+                        </button>
+                      }
                     } @else {
                       @if (blog.deleteRequested) {
                         <button class="delete-req-pending" title="Deletion pending admin approval" disabled>
@@ -224,6 +261,7 @@
 @if (isPostViewed()) {
   <app-view-post
     [postId]="selectedPostId()"
+    [preloadedPost]="selectedPost()"
     (close)="closeModal()"
     (postUpdated)="onPostUpdated($event)"
   />
@@ -248,6 +286,67 @@
       <div class="confirm-actions">
         <button class="btn-cancel" (click)="cancelDelete()">Cancel</button>
         <button class="btn-confirm delete" (click)="proceedDelete()">Yes, Delete</button>
+      </div>
+
+    </div>
+  </div>
+}
+
+@if (showApproveConfirm()) {
+  <div class="modal-overlay" (click)="cancelApproveDelete()">
+    <div class="confirm-box" (click)="$event.stopPropagation()">
+
+      <div class="confirm-icon approve-icon">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+          <path d="M10 11v6M14 11v6"/>
+          <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+        </svg>
+      </div>
+
+      <h3>Approve Deletion?</h3>
+      <p>
+        You are about to permanently delete <strong>{{ pendingApproveTitle() }}</strong>.
+      </p>
+      @if (pendingApproveReason()) {
+        <p class="approve-reason">
+          <strong>User's reason:</strong> {{ pendingApproveReason() }}
+        </p>
+      }
+
+      <div class="confirm-actions">
+        <button class="btn-cancel" (click)="cancelApproveDelete()">Cancel</button>
+        <button class="btn-confirm delete" (click)="proceedApproveDelete()">Yes, Delete</button>
+      </div>
+
+    </div>
+  </div>
+}
+
+@if (showRejectConfirm()) {
+  <div class="modal-overlay" (click)="cancelRejectDelete()">
+    <div class="confirm-box" (click)="$event.stopPropagation()">
+
+      <div class="confirm-icon reject-icon">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9"/>
+          <line x1="15" y1="9" x2="9" y2="15"/>
+          <line x1="9" y1="9" x2="15" y2="15"/>
+        </svg>
+      </div>
+
+      <h3>Reject Deletion Request?</h3>
+      <p>
+        The deletion request for <strong>{{ pendingRejectTitle() }}</strong> will be dismissed.
+        The post will remain published.
+      </p>
+
+      <div class="confirm-actions">
+        <button class="btn-cancel" (click)="cancelRejectDelete()">Cancel</button>
+        <button class="btn-confirm reject-confirm" (click)="proceedRejectDelete()">Yes, Reject</button>
       </div>
 
     </div>

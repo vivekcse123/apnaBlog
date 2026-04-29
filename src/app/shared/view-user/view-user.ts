@@ -21,10 +21,11 @@ export class ViewUser implements OnDestroy {
   private toastService = inject(ToastService);
   private destroy$     = new Subject<void>();
 
-  userId = input<string>('');
-  message = input<string>('');
-  close       = output<void>();
-  userUpdated = output<User>();
+  userId        = input<string>('');
+  preloadedUser = input<any>(null);   // passed from list for zero-wait first render
+  message       = input<string>('');
+  close         = output<void>();
+  userUpdated   = output<User>();
 
   user      = signal<any>(null);
   isLoading = signal(false);
@@ -49,23 +50,45 @@ export class ViewUser implements OnDestroy {
   }
 
   loadUser(id: string): void {
-    this.user.set(null);
-    this.totalBlogs.set(0);
-    this.totalViews.set(0);
     this.isEditing.set(false);
-    this.isLoading.set(true);
     this.errorMessage.set('');
 
+    // ── Instant path: preloaded from list ────────────────────────────────────
+    // Show data immediately from the row object while the fresh fetch runs.
+    const preload = this.preloadedUser();
+    if (preload && (preload._id === id || preload.id === id)) {
+      this.user.set(preload);
+      this.isLoading.set(false);
+    }
+
+    // UserService.getUserById returns of() synchronously on a cache hit, so
+    // served will be true before the isLoading guard below — no skeleton shown.
+    let served = !!this.user();
+
     this.userService.getUserById(id)
-      .pipe(takeUntil(this.destroy$), finalize(() => this.isLoading.set(false)))
+      .pipe(takeUntil(this.destroy$), finalize(() => { if (!served) this.isLoading.set(false); }))
       .subscribe({
-        next: (res) => {
+        next: res => {
+          served = true;
           this.user.set(res.data ?? res);
-          this.totalBlogs.set(res.totalBlogs ?? 0);
-          this.totalViews.set(res.totalViews ?? 0);
+          this.totalBlogs.set((res as any).totalBlogs ?? 0);
+          this.totalViews.set((res as any).totalViews ?? 0);
+          this.isLoading.set(false);
         },
-        error: () => this.toastService.show('Failed to load user details.', 'error'),
+        error: () => {
+          served = true;
+          this.isLoading.set(false);
+          if (!this.user()) this.toastService.show('Failed to load user details.', 'error');
+        },
       });
+
+    // Show skeleton only if nothing was served synchronously
+    if (!served) {
+      this.user.set(null);
+      this.totalBlogs.set(0);
+      this.totalViews.set(0);
+      this.isLoading.set(true);
+    }
   }
 
   startEdit(): void {

@@ -13,9 +13,10 @@ export class VisitorService {
 
   private readonly TRACKED_PAGES = [
     '/',
+    '/welcome',      // home page route
     '/about',
     '/privacy-policy',
-    '/terms', 
+    '/terms',
     '/disclaimer',
   ];
 
@@ -31,6 +32,12 @@ export class VisitorService {
     return this.TRACKED_PAGES.includes(path);
   }
 
+  private hasConsent(): boolean {
+    try {
+      return localStorage.getItem('apna_cookie_consent') === 'accepted';
+    } catch { return false; }
+  }
+
   private isDuplicate(path: string): boolean {
     try {
       const lastTracked = sessionStorage.getItem('lastTrackedPage');
@@ -42,6 +49,9 @@ export class VisitorService {
 
   trackVisit(rawPath: string): void {
     if (!isPlatformBrowser(this.platformId)) return;
+
+    // Only track when the user has explicitly accepted cookies
+    if (!this.hasConsent()) return;
 
     const path = this.normalizePath(rawPath);
 

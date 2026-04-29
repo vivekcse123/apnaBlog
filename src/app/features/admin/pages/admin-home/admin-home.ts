@@ -88,9 +88,16 @@ export class AdminHome implements OnInit, AfterViewInit, OnDestroy {
   private allUsers: any[] = [];
 
   // ── Lifecycle ─────────────────────────────────────────────
+  private readonly _onVisibilityChange = (): void => {
+    if (!document.hidden && this.dashboardCache.isStale()) {
+      this.fetchFresh(false);
+    }
+  };
+
   ngOnInit(): void {
     this.meta.updateTag({ name: 'robots', content: 'noindex, nofollow' });
     this.loadDashboardData();
+    document.addEventListener('visibilitychange', this._onVisibilityChange);
   }
 
   ngAfterViewInit(): void {
@@ -104,6 +111,7 @@ export class AdminHome implements OnInit, AfterViewInit, OnDestroy {
     this.contentDoughnut?.destroy();
     this.engagementBar?.destroy();
     this.userActivityBar?.destroy();
+    document.removeEventListener('visibilitychange', this._onVisibilityChange);
   }
 
   // ── Data Loading ──────────────────────────────────────────
@@ -118,7 +126,7 @@ export class AdminHome implements OnInit, AfterViewInit, OnDestroy {
       this.computeStats();
       this.isLoading.set(false);
 
-      // Silently refresh in the background if the cache is stale (>60s old)
+      // Silently refresh in the background if stale (>30 s)
       if (this.dashboardCache.isStale()) {
         this.fetchFresh(false);
       }

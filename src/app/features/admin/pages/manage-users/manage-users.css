@@ -32,6 +32,72 @@
   color: var(--text-muted);
 }
 
+/* ── User stat pills (header) ── */
+.user-stats {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+.stat-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.stat-pill.total     { background: var(--bg-surface-alt); color: var(--text-muted); border: 1px solid var(--border); }
+.stat-pill.new-today { background: color-mix(in srgb, #7F77DD 15%, transparent); color: #6d65cc; }
+
+/* ── Today filter button ── */
+.today-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.today-btn:hover {
+  border-color: #43cea2;
+  color: #43cea2;
+  box-shadow: 0 0 0 3px rgba(67, 206, 162, 0.12);
+}
+
+.today-btn--active {
+  background: linear-gradient(135deg, #43cea2, #185a9d);
+  border-color: transparent;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(67, 206, 162, 0.35);
+}
+
+.today-btn--active:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(67, 206, 162, 0.4);
+  color: #ffffff;
+}
+
+/* ── Empty state span ── */
+.empty-state span {
+  font-size: 12px;
+  color: var(--text-muted);
+  opacity: 0.75;
+}
+
 /* ── Actions ── */
 .actions {
   display: flex;
@@ -511,6 +577,8 @@ tbody > tr:hover td {
   .actions { width: 100%; }
   .actions input { width: 100%; }
   .actions select { flex: 1; }
+
+  .today-btn { flex: 1; justify-content: center; }
 
   .add-btn {
     width: 100%;
