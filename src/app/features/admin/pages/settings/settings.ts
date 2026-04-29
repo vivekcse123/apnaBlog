@@ -3,7 +3,7 @@ import { CommonModule, DatePipe, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Auth } from '../../../../core/services/auth';
+import { Auth, ActiveSession } from '../../../../core/services/auth';
 import { UserService } from '../../../user/services/user-service';
 import { ThemeService, Language } from '../../../../core/services/theme-service';
 import { User } from '../../../user/models/user.mode';
@@ -121,14 +121,81 @@ export class Settings implements OnInit {
 
   twoFactor    = signal(false);
   showSessions = signal(false);
+
+  private twoFactorKey(): string { return `2fa_${this.userId() ?? 'guest'}`; }
+
+  toggleTwoFactor(): void {
+    const next = !this.twoFactor();
+    this.twoFactor.set(next);
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.setItem(this.twoFactorKey(), String(next));
+    }
+  }
+
+  private loadTwoFactor(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    const stored = localStorage.getItem(this.twoFactorKey());
+    if (stored !== null) this.twoFactor.set(stored === 'true');
+  }
+
   showPassword = signal(false);
   passwordForm = { currentPassword: '', newPassword: '', confirm: '' };
 
-  sessions = [
-    { device: 'Chrome · Windows 11',   location: 'Hyderabad, IN', time: 'Now',         current: true  },
-    { device: 'Safari · iPhone 15',    location: 'Mumbai, IN',    time: '2 hours ago', current: false },
-    { device: 'Firefox · MacBook Pro', location: 'Bangalore, IN', time: 'Yesterday',   current: false },
-  ];
+  // ── Active Sessions (real data) ────────────────────────────────────────────
+  sessions         = signal<ActiveSession[]>([]);
+  sessionsLoading  = signal(false);
+  sessionsError    = signal('');
+  revokingId       = signal<string | null>(null);
+
+  toggleSessions(): void {
+    const next = !this.showSessions();
+    this.showSessions.set(next);
+    if (next) this.loadSessions();
+  }
+
+  loadSessions(): void {
+    const id = this.userId();
+    if (!id) return;
+    this.sessionsLoading.set(true);
+    this.sessionsError.set('');
+    this.authService.getSessions(id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next:  (res) => { this.sessions.set(res.data ?? []); this.sessionsLoading.set(false); },
+        error: (err) => {
+          this.sessionsLoading.set(false);
+          this.sessionsError.set(err?.error?.message ?? 'Could not load sessions. Try again.');
+        },
+      });
+  }
+
+  revokeSession(sessionId: string): void {
+    const id = this.userId();
+    if (!id || this.revokingId()) return;
+    this.revokingId.set(sessionId);
+    this.authService.revokeSession(id, sessionId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.sessions.set(this.sessions().filter(s => s.sessionId !== sessionId));
+          this.revokingId.set(null);
+        },
+        error: (err) => {
+          this.revokingId.set(null);
+          this.openModal('error', 'Revoke Failed', err?.error?.message ?? 'Could not revoke session.');
+        },
+      });
+  }
+
+  sessionTimeAgo(dateStr: string | Date): string {
+    if (!dateStr) return '';
+    const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+    if (diff < 60)     return 'just now';
+    if (diff < 3600)   return `${Math.floor(diff / 60)}m ago`;
+    if (diff < 86400)  return `${Math.floor(diff / 3600)}h ago`;
+    if (diff < 172800) return 'yesterday';
+    return `${Math.floor(diff / 86400)}d ago`;
+  }
 
   showFreezeConfirm  = signal(false);
   showDeleteConfirm  = signal(false);
@@ -176,6 +243,7 @@ export class Settings implements OnInit {
           this.user.set(res.data);
           this.role = (res.data?.role?.toLowerCase() as Role) ?? 'user';
           this.isLoading.set(false);
+          this.loadTwoFactor();
         },
         error: () => {
           this.isLoading.set(false);
@@ -263,6 +331,7 @@ export class Settings implements OnInit {
     this.editForm = { ...this.user() };
     this.isEditing.set(true);
     this.saveError.set('');
+    this.saveSuccess.set(false);
   }
 
   cancelEdit(): void {
@@ -293,11 +362,17 @@ export class Settings implements OnInit {
           this.user.set(res.data);
           this.isSaving.set(false);
           this.isEditing.set(false);
-          this.toastService.show('Settings have been changed successfully', 'success');
+          this.saveSuccess.set(true);
+          this.saveError.set('');
+          const t = setTimeout(() => this.saveSuccess.set(false), 3000);
+          this.destroyRef.onDestroy(() => clearTimeout(t));
         },
         error: (err) => {
           this.isSaving.set(false);
-          this.toastService.show(err?.error?.message ?? 'Failed to save. Try again.', 'error');
+          const msg = err?.error?.message ?? 'Failed to save. Try again.';
+          this.saveError.set(msg);
+          const t = setTimeout(() => this.saveError.set(''), 4000);
+          this.destroyRef.onDestroy(() => clearTimeout(t));
         },
       });
   }

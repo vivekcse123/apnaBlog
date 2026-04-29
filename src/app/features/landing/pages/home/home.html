@@ -107,19 +107,18 @@
           <div class="hero-stat">
             <strong class="hero-stat-num"
                     itemprop="numberOfItems"
-                    [attr.content]="allPosts().length">
-              {{ allPosts().length }}
+                    [attr.content]="publishedCount()">
+              {{ publishedCount() }}
             </strong>
             <span class="hero-stat-label">Stories</span>
           </div>
           <div class="hero-stat-sep" aria-hidden="true"></div>
           <div class="hero-stat">
-            <strong class="hero-stat-num">{{ categories.length }}</strong>
+            <strong class="hero-stat-num">{{ activeTopicsCount() }}</strong>
             <span class="hero-stat-label">Topics</span>
           </div>
           <div class="hero-stat-sep" aria-hidden="true"></div>
           <div class="hero-stat">
-
             <strong class="hero-stat-num">{{ totalViews() | formatCount }}</strong>
             <span class="hero-stat-label">Total Reads</span>
           </div>

@@ -80,7 +80,6 @@
         @if (!isLoading() && user(); as u) {
           <div class="profile-card">
 
-
             <div class="avatar-area">
               <div class="avatar-ring">
                 <div class="avatar-circle" (click)="triggerAvatarUpload()"
@@ -167,7 +166,7 @@
                 </div>
                 <div class="form-group">
                   <label>Bio</label>
-                  <input type="text" [(ngModel)]="editForm.bio" name = 'bio' placeholder="Your bio" />
+                  <input type="text" [(ngModel)]="editForm.bio" name="bio" placeholder="Your bio" />
                 </div>
               </div>
               <div class="form-actions">
@@ -187,7 +186,6 @@
       </div>
     }
 
-    <!-- all other sections remain exactly the same as before -->
     @if (activeSection() === 'appearance') {
       <div class="section-wrap">
         <div class="section-heading">
@@ -261,7 +259,7 @@
             </button>
           }
         </div>
-        <div class="info-note">◈ Language affects UI labels only.</div>
+        <div class="info-note">◈ Your language preference is saved. Full translation support is coming soon — the UI currently displays in English.</div>
       </div>
     }
 
@@ -338,7 +336,7 @@
               <div class="card-title">Two-Factor Authentication</div>
               <p class="card-sub">Add an extra layer of security</p>
             </div>
-            <button class="toggle-switch" [class.on]="twoFactor()" (click)="twoFactor.set(!twoFactor())">
+            <button class="toggle-switch" [class.on]="twoFactor()" (click)="toggleTwoFactor()">
               <span class="switch-thumb"></span>
             </button>
           </div>
@@ -347,7 +345,7 @@
           }
         </div>
         <div class="security-card">
-          <div class="sessions-header" (click)="showSessions.set(!showSessions())">
+          <div class="sessions-header" (click)="toggleSessions()">
             <div>
               <div class="card-title">Active Sessions</div>
               <p class="card-sub">Devices currently logged in</p>
@@ -356,19 +354,40 @@
           </div>
           @if (showSessions()) {
             <div class="sessions-list">
-              @for (s of sessions; track s.device) {
-                <div class="session-row">
-                  <div class="session-icon">{{ s.current ? '◉' : '◎' }}</div>
-                  <div class="session-info">
-                    <span class="session-device">{{ s.device }}</span>
-                    <span class="session-meta">{{ s.location }} · {{ s.time }}</span>
-                  </div>
-                  @if (s.current) {
-                    <span class="current-badge">Current</span>
-                  } @else {
-                    <button class="revoke-btn">Revoke</button>
-                  }
+              @if (sessionsLoading()) {
+                <div class="sessions-loading">Loading sessions…</div>
+              } @else if (sessionsError()) {
+                <div class="sessions-empty">
+                  ⚠ {{ sessionsError() }}
+                  <button class="revoke-btn" style="margin-left:12px" (click)="loadSessions()">Retry</button>
                 </div>
+              } @else if (sessions().length === 0) {
+                <div class="sessions-empty">
+                  No active sessions found.
+                  <button class="revoke-btn" style="margin-left:12px" (click)="loadSessions()">Refresh</button>
+                </div>
+              } @else {
+                @for (s of sessions(); track s.sessionId) {
+                  <div class="session-row">
+                    <div class="session-icon">{{ s.current ? '◉' : '◎' }}</div>
+                    <div class="session-info">
+                      <span class="session-device">{{ s.device }}</span>
+                      <span class="session-meta">
+                        {{ s.ip || 'Unknown location' }} · {{ sessionTimeAgo(s.createdAt) }}
+                      </span>
+                    </div>
+                    @if (s.current) {
+                      <span class="current-badge">Current</span>
+                    } @else {
+                      <button
+                        class="revoke-btn"
+                        [disabled]="revokingId() === s.sessionId"
+                        (click)="revokeSession(s.sessionId)">
+                        {{ revokingId() === s.sessionId ? 'Revoking…' : 'Revoke' }}
+                      </button>
+                    }
+                  </div>
+                }
               }
             </div>
           }

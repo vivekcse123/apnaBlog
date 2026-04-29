@@ -75,9 +75,12 @@ export class UserHome implements OnInit, AfterViewInit, OnDestroy {
 
   recentBlogs   = signal<any[]>([]);
   topBlogs      = signal<any[]>([]);
-  showBlogsModal  = signal(false);
-  blogsModalList  = signal<any[]>([]);
-  showCreateModal = signal(false);
+  showBlogsModal     = signal(false);
+  blogsModalList     = signal<any[]>([]);
+  showCreateModal    = signal(false);
+  showFollowersModal = signal(false);
+  followersList      = signal<any[]>([]);
+  followersLoading   = signal(false);
 
   createBlogLink  = computed(() => `/user/${this.userId()}/manage-blogs`);
   manageBlogsLink = computed(() => `/user/${this.userId()}/manage-blogs`);
@@ -500,6 +503,36 @@ export class UserHome implements OnInit, AfterViewInit, OnDestroy {
   closeBlogsModal(): void {
     this.showBlogsModal.set(false);
     if (isPlatformBrowser(this.platformId)) this.document.body.style.overflow = '';
+  }
+
+  openFollowersModal(): void {
+    this.showFollowersModal.set(true);
+    if (isPlatformBrowser(this.platformId)) this.document.body.style.overflow = 'hidden';
+
+    if (this.followersList().length === 0) {
+      this.followersLoading.set(true);
+      this.userService.getFollowers(this.userId())
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: (res) => {
+            this.followersList.set(res.data ?? []);
+            this.followersLoading.set(false);
+          },
+          error: () => this.followersLoading.set(false),
+        });
+    }
+  }
+
+  closeFollowersModal(): void {
+    this.showFollowersModal.set(false);
+    if (isPlatformBrowser(this.platformId)) this.document.body.style.overflow = '';
+  }
+
+  visitFollower(follower: any): void {
+    const post = follower.latestPost;
+    if (!post) return;
+    this.closeFollowersModal();
+    this.router.navigate(['/blog', post.slug || post.postId]);
   }
 
   openBlog(postId: string): void {

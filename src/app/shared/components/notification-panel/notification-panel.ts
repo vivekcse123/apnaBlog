@@ -146,6 +146,22 @@ export class NotificationPanel implements OnInit, OnDestroy {
     return ADMIN_ONLY_TYPES.has(n.type) ? 'Admin' : n.actorName;
   }
 
+  /**
+   * Returns the correct display message.
+   * For POST_LIKED on user-owned notifications (userId != null):
+   *   - actorName present  → "{name} liked your post"
+   *   - actorName missing  → "Someone liked your post"
+   * Admin-panel POST_LIKED notifications (userId == null) keep the backend message
+   * because their actorName is the post author, not the person who liked.
+   */
+  getDisplayMessage(n: Notification): string {
+    if (n.type === 'POST_LIKED' && n.userId !== null) {
+      const actor = n.actorName?.trim();
+      return actor ? `${actor} liked your post` : 'Someone liked your post';
+    }
+    return n.message;
+  }
+
   /** Human-readable relative time: "just now", "5m ago", "3h ago", "yesterday", etc. */
   timeAgo(date: string | Date | undefined): string {
     if (!date) return '';

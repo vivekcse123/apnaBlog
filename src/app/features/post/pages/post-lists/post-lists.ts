@@ -148,6 +148,7 @@ loadPosts(userId?: string): void {
 
   onPostCreated(): void { this.loadPosts(); this.currentPage.set(1); }
 
+  // ── Admin: direct delete confirm ──────────────────────────────────────────
   showConfirm        = signal(false);
   pendingDeleteId    = signal<string>('');
   pendingDeleteTitle = signal<string>('');
@@ -177,6 +178,47 @@ loadPosts(userId?: string): void {
       },
       error: err => {
         this.toastService.show(err?.error?.message ?? 'Failed to delete post.', 'error');
+      },
+    });
+  }
+
+  // ── User: soft delete request ──────────────────────────────────────────────
+  showDeleteRequestModal  = signal(false);
+  deleteRequestId         = signal<string>('');
+  deleteRequestTitle      = signal<string>('');
+  deleteRequestReason     = signal<string>('');
+  deleteRequestSubmitting = signal(false);
+
+  openDeleteRequest(id: string, title: string): void {
+    this.deleteRequestId.set(id);
+    this.deleteRequestTitle.set(title);
+    this.deleteRequestReason.set('');
+    this.showDeleteRequestModal.set(true);
+  }
+
+  cancelDeleteRequest(): void {
+    this.showDeleteRequestModal.set(false);
+    this.deleteRequestId.set('');
+    this.deleteRequestTitle.set('');
+    this.deleteRequestReason.set('');
+  }
+
+  submitDeleteRequest(): void {
+    const id     = this.deleteRequestId();
+    const reason = this.deleteRequestReason().trim();
+    if (!id || !reason) return;
+
+    this.deleteRequestSubmitting.set(true);
+    this.postService.requestPostDelete(id, reason).subscribe({
+      next: () => {
+        this.deleteRequestSubmitting.set(false);
+        this.toastService.show('Deletion request sent. Admin will review it shortly.', 'success');
+        this.cancelDeleteRequest();
+        this.loadPosts();
+      },
+      error: err => {
+        this.deleteRequestSubmitting.set(false);
+        this.toastService.show(err?.error?.message ?? 'Failed to submit deletion request.', 'error');
       },
     });
   }

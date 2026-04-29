@@ -122,7 +122,8 @@ body {
   position: absolute; bottom: 0; right: calc(100% + 12px);
   background: var(--bg-surface); border: 1.5px solid var(--border);
   border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.15);
-  padding: 8px; min-width: 200px;
+  padding: 8px; min-width: 200px; max-width: calc(100vw - 80px);
+  z-index: 910;
   animation: slideInRight 0.25s ease both;
 }
 
@@ -1112,7 +1113,7 @@ body {
   .related-grid     { grid-template-columns: 1fr; }
   .floating-actions { right: 14px; bottom: 20px; gap: 10px; }
   .float-btn        { width: 48px; height: 48px; }
-  .share-menu       { right: 52px; bottom: 0; min-width: 190px; }
+  .share-menu       { right: calc(100% + 8px); bottom: auto; top: 0; min-width: 190px; }
   .related-title { font-size: 22px; }
 
   /* Code blocks — scroll friendly on mobile */
@@ -1168,7 +1169,7 @@ body {
   .identity-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 160px; }
   .floating-actions { right: 10px; bottom: 16px; gap: 8px; }
   .float-btn { width: 42px; height: 42px; font-size: 17px; }
-  .share-menu { right: auto; left: 0; min-width: 220px; }
+  .share-menu { right: 0; left: auto; bottom: calc(100% + 8px); top: auto; min-width: 220px; max-width: calc(100vw - 24px); }
   .featured-image-wrap { border-radius: 10px; }
   .blog-content pre { padding: 12px 14px; }
   .load-more-btn { width: 100%; }

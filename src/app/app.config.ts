@@ -19,14 +19,11 @@ export const appConfig: ApplicationConfig = {
     provideZonelessChangeDetection(),
     provideRouter(
       routes,
-      // Eagerly preload lazy feature modules in the background after initial load
       withPreloading(PreloadAllModules),
-      // Restore scroll position when navigating back, and enable anchor scrolling
       withInMemoryScrolling({
         scrollPositionRestoration: 'enabled',
         anchorScrolling: 'enabled',
       }),
-      // Native browser View Transitions API for smooth page-to-page animations
       withViewTransitions(),
     ),
     provideClientHydration(withEventReplay()),

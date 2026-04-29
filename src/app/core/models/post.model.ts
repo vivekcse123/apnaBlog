@@ -40,4 +40,9 @@ export interface Post {
   lastEditedBy?:  User | string | null;
   lastEditedAt?:  Date | null;
   editHistory?:   EditHistoryEntry[];
+
+  // Soft-delete request (user requests, admin approves)
+  deleteRequested?:      boolean;
+  deleteRequestReason?:  string | null;
+  deleteRequestedAt?:    Date | null;
 }

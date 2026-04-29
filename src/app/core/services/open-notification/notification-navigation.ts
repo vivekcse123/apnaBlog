@@ -23,7 +23,7 @@ export const USER_NOTIFICATION_TYPES: NotificationType[] = [
 ];
 
 export const NON_NAVIGABLE_TYPES: NotificationType[] = [
-  'POST_DELETED', 'USER_DELETED', 'info', 'warning', 'success', 'error',
+  'POST_DELETED', 'POST_REJECTED', 'USER_DELETED', 'info', 'warning', 'success', 'error',
 ];
 
 @Injectable({ providedIn: 'root' })

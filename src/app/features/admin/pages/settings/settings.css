@@ -102,10 +102,11 @@
 .avatar-remove-btn {
   display: inline-flex;
   align-items: center;
+  width: fit-content;
   gap: 4px;
-  padding: 6px 12px;
-  font-size: 12px;
-  font-weight: 500;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 600;
   border: 1px solid color-mix(in srgb, #ef4444 40%, transparent);
   border-radius: 6px;
   background: color-mix(in srgb, #ef4444 8%, transparent);

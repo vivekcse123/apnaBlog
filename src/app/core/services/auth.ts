@@ -6,6 +6,16 @@ import { User } from '../../features/user/models/user.mode';
 import { isPlatformBrowser } from '@angular/common';
 import { environment } from '../../../environments/environments.prod';
 
+export interface ActiveSession {
+  sessionId:  string;
+  device:     string;
+  ip:         string | null;
+  createdAt:  string;
+  lastActive: string;
+  expiresAt:  string;
+  current:    boolean;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -28,6 +38,10 @@ export class Auth {
     this.isBrowser ? localStorage.getItem('token') : null
   );
 
+  sessionId = signal<string | null>(
+    this.isBrowser ? localStorage.getItem('sessionId') : null
+  );
+
   isAuthorized  = computed(() => !!this.token());
   isAdmin       = computed(() => this.userRole() === 'admin' || this.userRole() === 'super_admin');
   isSuperAdmin  = computed(() => this.userRole() === 'super_admin');
@@ -35,16 +49,18 @@ export class Auth {
   login(userCred: { email: string; password: string }): Observable<apiResponse<User>> {
     return this.http.post<apiResponse<User>>(`${this.authEndpoint}login`, userCred).pipe(
       tap((res) => {
-        const { _id, role, token } = res.data as any;
+        const { _id, role, token, sessionId } = res.data as any;
 
         this.userId.set(_id);
         this.userRole.set(role);
         this.token.set(token);
+        this.sessionId.set(sessionId ?? null);
 
         if (this.isBrowser) {
           localStorage.setItem('userId', _id);
           localStorage.setItem('role', role);
           localStorage.setItem('token', token);
+          if (sessionId) localStorage.setItem('sessionId', sessionId);
         }
       })
     );
@@ -54,12 +70,26 @@ export class Auth {
     this.userId.set(null);
     this.userRole.set(null);
     this.token.set(null);
+    this.sessionId.set(null);
 
     if (this.isBrowser) {
       localStorage.removeItem('userId');
       localStorage.removeItem('role');
       localStorage.removeItem('token');
+      localStorage.removeItem('sessionId');
     }
+  }
+
+  getSessions(userId: string): Observable<{ status: number; data: ActiveSession[] }> {
+    return this.http.get<{ status: number; data: ActiveSession[] }>(
+      `${this.authEndpoint}${userId}/sessions`
+    );
+  }
+
+  revokeSession(userId: string, sessionId: string): Observable<{ status: number; message: string }> {
+    return this.http.delete<{ status: number; message: string }>(
+      `${this.authEndpoint}${userId}/sessions/${sessionId}`
+    );
   }
 
   register(userData: User): Observable<apiResponse<User>> {

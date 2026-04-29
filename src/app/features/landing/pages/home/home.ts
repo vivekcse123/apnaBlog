@@ -188,8 +188,24 @@ export class Home implements OnInit, OnDestroy {
     !!this.selectedCategory() || !!this.searchQuery().trim() || this.selectedSort() !== 'newest'
   );
 
+  publishedCount = computed(() =>
+    this.allPosts().filter(p => p.status === 'published').length
+  );
+
+  activeTopicsCount = computed(() => {
+    const active = new Set<string>();
+    for (const post of this.allPosts()) {
+      if (post.status === 'published') {
+        for (const cat of post.categories) active.add(cat);
+      }
+    }
+    return active.size;
+  });
+
   totalViews = computed(() =>
-    this.allPosts().reduce((sum, p) => sum + (p.views ?? 0), 0)
+    this.allPosts()
+      .filter(p => p.status === 'published')
+      .reduce((sum, p) => sum + (p.views ?? 0), 0)
   );
 
   isDrawerPostOwner = computed(() => {

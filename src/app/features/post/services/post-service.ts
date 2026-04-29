@@ -100,6 +100,18 @@ export class PostService {
     return this.http.patch<apiResponse<Post>>(`${this.endPoint}/${id}`, postData);
   }
 
+  resubmitPost(id: string): Observable<apiResponse<Post>> {
+    return this.http.post<apiResponse<Post>>(`${this.endPoint}/${id}/resubmit`, {});
+  }
+
+  requestPostDelete(id: string, reason: string): Observable<apiResponse<Post>> {
+    return this.http.post<apiResponse<Post>>(`${this.endPoint}/${id}/request-delete`, { reason });
+  }
+
+  cancelPostDeleteRequest(id: string): Observable<apiResponse<Post>> {
+    return this.http.delete<apiResponse<Post>>(`${this.endPoint}/${id}/cancel-delete-request`);
+  }
+
   likePost(postId: string): Observable<apiResponse<Post>> {
     return this.http.post<apiResponse<Post>>(`${this.endPoint}/${postId}/like`, {});
   }

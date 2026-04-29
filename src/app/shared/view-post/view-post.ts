@@ -72,6 +72,8 @@ export class ViewPost implements OnInit, OnDestroy {
   rejectReason    = signal('');
   isRejecting     = signal(false);
 
+  isResubmitting = signal(false);
+
   // Image gallery management
   imageGallery  = signal<ImageItem[]>([]);
   uploadError   = signal('');
@@ -121,6 +123,17 @@ export class ViewPost implements OnInit, OnDestroy {
     'Trending', 'Motivation', 'Tips',
     'Opinion', 'Guide'
   ];
+
+  /**
+   * Returns "Admin" for admin/super_admin editors or unpopulated refs (string IDs),
+   * otherwise returns the user's name. Falls back to "Admin" if name is blank.
+   */
+  getEditorDisplay(editor: any): string {
+    if (!editor || typeof editor === 'string') return 'Admin';
+    const role = (editor?.role ?? '').toLowerCase();
+    if (role === 'admin' || role === 'super_admin') return 'Admin';
+    return (editor?.name ?? '').trim() || 'Admin';
+  }
 
   ngOnInit(): void { this.loadPost(); }
 
@@ -506,7 +519,12 @@ export class ViewPost implements OnInit, OnDestroy {
     const featuredImage = gallery[0]?.url ?? '';
     const images        = gallery.slice(1).map(img => img.url);
 
-    this.postService.updatePost(this.post()?._id ?? '', { ...this.editForm.value, featuredImage, images })
+    // Non-admins cannot set status via the edit form — status is controlled
+    // separately (resubmit button). Strip it to avoid a 403 from the backend.
+    const payload: any = { ...this.editForm.value, featuredImage, images };
+    if (this.isPendingForUser()) delete payload.status;
+
+    this.postService.updatePost(this.post()?._id ?? '', payload)
       .pipe(takeUntil(this.destroy$), finalize(() => this.isSaving.set(false)))
       .subscribe({
         next: (res) => {
@@ -536,6 +554,26 @@ export class ViewPost implements OnInit, OnDestroy {
     const text  = html.replace(/<[^>]*>/g, ' ').replace(/&[a-z]+;/gi, ' ');
     const words = text.trim().split(/\s+/).filter((w: string) => w.length > 0);
     this.wordCount.set(words.length);
+  }
+
+  resubmitPost(): void {
+    const id = this.post()?._id;
+    if (!id) return;
+
+    this.isResubmitting.set(true);
+    this.postService.resubmitPost(id)
+      .pipe(takeUntil(this.destroy$), finalize(() => this.isResubmitting.set(false)))
+      .subscribe({
+        next: (res) => {
+          const updated = res.data ?? { ...this.post(), status: 'pending', rejectionReason: null };
+          this.post.set(updated);
+          this.toastService.show('Post resubmitted for admin review.', 'success');
+          this.postUpdated.emit(updated as Post);
+        },
+        error: (err) => {
+          this.toastService.show(err?.error?.message ?? 'Failed to resubmit post.', 'error');
+        },
+      });
   }
 
   openRejectModal(): void {

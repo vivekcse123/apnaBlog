@@ -158,8 +158,25 @@
                 <td>{{ blog.updatedAt | date: 'mediumDate' }}</td>
                 <td>
                   <div class="action-buttons">
-                    <button class="edit" (click)="viewPost(blog._id)"><i class="bi bi-eye"></i></button>
-                    <button class="delete" (click)="confirmDelete(blog._id, blog.title)"><i class="bi bi-trash3"></i></button>
+                    @if (blog.deleteRequested && (role() === 'admin' || role() === 'super_admin')) {
+                      <span class="delete-req-badge" [title]="'Delete requested: ' + (blog.deleteRequestReason || '')">
+                        ⚠ Delete
+                      </span>
+                    }
+                    <button class="edit" (click)="viewPost(blog._id)" title="View post"><i class="bi bi-eye"></i></button>
+                    @if (role() === 'admin' || role() === 'super_admin') {
+                      <button class="delete" (click)="confirmDelete(blog._id, blog.title)" title="Delete post"><i class="bi bi-trash3"></i></button>
+                    } @else {
+                      @if (blog.deleteRequested) {
+                        <button class="delete-req-pending" title="Deletion pending admin approval" disabled>
+                          <i class="bi bi-hourglass-split"></i>
+                        </button>
+                      } @else {
+                        <button class="delete" (click)="openDeleteRequest(blog._id, blog.title)" title="Request deletion">
+                          <i class="bi bi-trash3"></i>
+                        </button>
+                      }
+                    }
                   </div>
                 </td>
               </tr>
@@ -231,6 +248,53 @@
       <div class="confirm-actions">
         <button class="btn-cancel" (click)="cancelDelete()">Cancel</button>
         <button class="btn-confirm delete" (click)="proceedDelete()">Yes, Delete</button>
+      </div>
+
+    </div>
+  </div>
+}
+
+@if (showDeleteRequestModal()) {
+  <div class="modal-overlay" (click)="cancelDeleteRequest()">
+    <div class="confirm-box" (click)="$event.stopPropagation()">
+
+      <div class="confirm-icon delete-req-icon">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+          <path d="M10 11v6M14 11v6"/>
+          <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+        </svg>
+      </div>
+
+      <h3>Request Deletion</h3>
+      <p>
+        Your blog <strong>{{ deleteRequestTitle() }}</strong> will be sent to an admin for review.
+        Please tell us why you want it deleted.
+      </p>
+
+      <textarea
+        class="delete-req-textarea"
+        placeholder="Reason for deletion (required)…"
+        maxlength="300"
+        rows="3"
+        [value]="deleteRequestReason()"
+        (input)="deleteRequestReason.set($any($event.target).value)">
+      </textarea>
+      <p class="delete-req-char">{{ deleteRequestReason().length }}/300</p>
+
+      <div class="confirm-actions">
+        <button class="btn-cancel" (click)="cancelDeleteRequest()" [disabled]="deleteRequestSubmitting()">Cancel</button>
+        <button class="btn-confirm delete"
+          [disabled]="!deleteRequestReason().trim() || deleteRequestSubmitting()"
+          (click)="submitDeleteRequest()">
+          @if (deleteRequestSubmitting()) {
+            <span class="btn-spinner"></span> Submitting…
+          } @else {
+            Send Request
+          }
+        </button>
       </div>
 
     </div>

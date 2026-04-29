@@ -65,6 +65,10 @@ export class UserService {
     );
   }
 
+  getFollowers(userId: string): Observable<{ status: number; data: any[] }> {
+    return this.http.get<{ status: number; data: any[] }>(`${this.endPoint}${userId}/followers`);
+  }
+
   followUser(authorId: string): Observable<{ status: number; data: { followersCount: number; isFollowing: boolean } }> {
     return this.http.post<{ status: number; data: { followersCount: number; isFollowing: boolean } }>(
       `${this.endPoint}${authorId}/follow`, {}

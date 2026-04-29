@@ -183,7 +183,8 @@
           </div>
         </div>
 
-        <div class="stat-card">
+        <button class="stat-card stat-card--clickable" (click)="openFollowersModal()"
+          type="button" aria-label="View your followers">
           <div class="stat-icon-wrap followers-icon">
             <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden="true">
               <circle cx="8" cy="7" r="3.5" stroke="#185a9d" stroke-width="2" fill="none"/>
@@ -198,7 +199,8 @@
             <span class="stat-value">{{ followersCount() }}</span>
             <span class="stat-chip followers-chip">following you</span>
           </div>
-        </div>
+          <span class="stat-chevron" aria-hidden="true">›</span>
+        </button>
 
       </div>
     </section>
@@ -606,6 +608,67 @@
                     type="button">
                     View →
                   </button>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+      </div>
+    </div>
+  }
+
+  <!-- ── Followers Modal ── -->
+  @if (showFollowersModal()) {
+    <div class="modal-backdrop" (click)="closeFollowersModal()"
+      role="dialog" aria-modal="true" aria-label="Your Followers">
+      <div class="blogs-modal" (click)="$event.stopPropagation()">
+
+        <div class="blogs-modal-header">
+          <div class="blogs-modal-title-group">
+            <h2 class="blogs-modal-title">Followers</h2>
+            <span class="blogs-modal-count">{{ followersCount() }} total</span>
+          </div>
+          <button class="blogs-modal-close" (click)="closeFollowersModal()"
+            aria-label="Close dialog">✕</button>
+        </div>
+
+        <div class="blogs-modal-body">
+          @if (followersLoading()) {
+            <div class="blogs-modal-empty">
+              <div class="loading-dots"><span></span><span></span><span></span></div>
+              <p>Loading followers…</p>
+            </div>
+          } @else if (followersList().length === 0) {
+            <div class="blogs-modal-empty">
+              <span class="blogs-modal-empty-icon">👥</span>
+              <p>No followers yet. Share your stories to grow your audience!</p>
+            </div>
+          } @else {
+            <div class="followers-list">
+              @for (f of followersList(); track f._id) {
+                <div class="follower-item" [class.follower-item--clickable]="!!f.latestPost"
+                  (click)="f.latestPost && visitFollower(f)"
+                  [attr.role]="f.latestPost ? 'button' : null"
+                  [attr.tabindex]="f.latestPost ? '0' : null"
+                  (keydown.enter)="f.latestPost && visitFollower(f)">
+                  <div class="follower-avatar">
+                    @if (f.avatar) {
+                      <img [src]="f.avatar" [alt]="f.name" class="follower-avatar-img" loading="lazy" />
+                    } @else {
+                      {{ (f.name || 'U').charAt(0).toUpperCase() }}
+                    }
+                  </div>
+                  <div class="follower-info">
+                    <span class="follower-name">{{ f.name }}</span>
+                    <span class="follower-email">
+                      @if (f.latestPost) { View their blog → }
+                      @else { No posts yet }
+                    </span>
+                  </div>
+                  @if (f.latestPost) {
+                    <span class="follower-chevron" aria-hidden="true">›</span>
+                  }
                 </div>
               }
             </div>
