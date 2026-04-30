@@ -1,5 +1,5 @@
 import { Component, inject, signal, computed, OnInit, OnDestroy, DestroyRef, ChangeDetectionStrategy } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
@@ -25,6 +25,7 @@ import { NotificationNavigationService, POST_NOTIFICATION_TYPES } from '../../..
 export class PostLists implements OnInit, OnDestroy {
 
   private route          = inject(ActivatedRoute);
+  private router         = inject(Router);
   private postService    = inject(PostService);
   private destroyRef     = inject(DestroyRef);
   private authService    = inject(Auth);
@@ -100,6 +101,22 @@ export class PostLists implements OnInit, OnDestroy {
         if (!id) return;
         this.userId.set(id);
         this.loadPosts(id);
+      });
+
+    // Pre-apply status filter when arriving via a deep-link (e.g. "Review Now" → ?status=pending)
+    this.route.queryParams
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(params => {
+        const status = params['status'];
+        if (status) {
+          this.selectedStatus.set(status);
+          // Clear the query param from the URL without triggering navigation
+          this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: {},
+            replaceUrl: true,
+          });
+        }
       });
 
     this.navSvc.openModal$

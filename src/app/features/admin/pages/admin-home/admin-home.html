@@ -41,7 +41,9 @@
         <strong>{{ totalPending() }} blog{{ totalPending() === 1 ? '' : 's' }} awaiting review</strong>
         <span>Review and approve or reject pending content</span>
       </div>
-      <a [routerLink]="['/admin', userId, 'manage-blogs']" class="pending-alert-cta">
+      <a [routerLink]="['/admin', userId, 'manage-blogs']"
+         [queryParams]="{ status: 'pending' }"
+         class="pending-alert-cta">
         Review Now →
       </a>
     </div>
