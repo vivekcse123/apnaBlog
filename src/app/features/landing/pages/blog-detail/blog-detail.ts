@@ -1123,8 +1123,11 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
       if (sessionStorage.getItem(key)) return;
       sessionStorage.setItem(key, '1');
     } catch { return; }
+    const newViews = post.views + 1;
     this.postService.addView(post._id).subscribe();
-    this.post.set({ ...post, views: post.views + 1 });
+    this.post.set({ ...post, views: newViews });
+    // Keep PostCache in sync — home-page cards read from it on back-navigation
+    this.postCache.patchOne(post._id, { views: newViews });
   }
 
   // ══════════════════════════════════════════════════════════════════════════

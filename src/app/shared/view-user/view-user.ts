@@ -1,4 +1,4 @@
-import { Component, effect, inject, input, OnDestroy, output, signal } from '@angular/core';
+import { Component, effect, inject, input, OnDestroy, output, signal, untracked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Subject, takeUntil, finalize } from 'rxjs';
@@ -40,7 +40,11 @@ export class ViewUser implements OnDestroy {
   constructor() {
     effect(() => {
       const id = this.userId();
-      if (id) this.loadUser(id);
+      if (!id) return;
+      // Read preloadedUser without tracking it — prevents the effect from
+      // re-firing when the parent nulls out selectedUserObj during close.
+      const preload = untracked(() => this.preloadedUser());
+      this.loadUser(id, preload);
     });
   }
 
@@ -49,46 +53,35 @@ export class ViewUser implements OnDestroy {
     this.destroy$.complete();
   }
 
-  loadUser(id: string): void {
+  loadUser(id: string, preload: any = null): void {
     this.isEditing.set(false);
     this.errorMessage.set('');
 
-    // ── Instant path: preloaded from list ────────────────────────────────────
-    // Show data immediately from the row object while the fresh fetch runs.
-    const preload = this.preloadedUser();
+    // Show preloaded row data instantly — no spinner for the first paint.
     if (preload && (preload._id === id || preload.id === id)) {
       this.user.set(preload);
       this.isLoading.set(false);
+    } else {
+      this.user.set(null);
+      this.totalBlogs.set(0);
+      this.totalViews.set(0);
+      this.isLoading.set(true);
     }
 
-    // UserService.getUserById returns of() synchronously on a cache hit, so
-    // served will be true before the isLoading guard below — no skeleton shown.
-    let served = !!this.user();
-
+    // Always fetch fresh data (picks up latest stats; UserService TTL-caches it).
     this.userService.getUserById(id)
-      .pipe(takeUntil(this.destroy$), finalize(() => { if (!served) this.isLoading.set(false); }))
+      .pipe(takeUntil(this.destroy$), finalize(() => this.isLoading.set(false)))
       .subscribe({
         next: res => {
-          served = true;
           this.user.set(res.data ?? res);
           this.totalBlogs.set((res as any).totalBlogs ?? 0);
           this.totalViews.set((res as any).totalViews ?? 0);
           this.isLoading.set(false);
         },
         error: () => {
-          served = true;
-          this.isLoading.set(false);
           if (!this.user()) this.toastService.show('Failed to load user details.', 'error');
         },
       });
-
-    // Show skeleton only if nothing was served synchronously
-    if (!served) {
-      this.user.set(null);
-      this.totalBlogs.set(0);
-      this.totalViews.set(0);
-      this.isLoading.set(true);
-    }
   }
 
   startEdit(): void {
@@ -129,8 +122,7 @@ export class ViewUser implements OnDestroy {
           this.user.set(updated);
           this.isEditing.set(false);
           this.toastService.show('User updated successfully', 'success');
-          this.userUpdated.emit(updated);
-          this.closeModal();
+          this.userUpdated.emit(updated); // parent's onUserUpdated closes the modal
         },
         error: (err) => {
           this.errorMessage.set(err?.error?.message ?? 'Something went wrong. Please try again.');

@@ -52,6 +52,15 @@ export class PostCache {
     this._persist(posts);
   }
 
+  /** Update a single post's fields without replacing the whole cache. */
+  patchOne(id: string, updates: Partial<PostWithTs>): void {
+    const posts = this.get();
+    if (!posts) return;
+    const patched = posts.map(p => p._id === id ? { ...p, ...updates } : p);
+    this._posts.set(patched);
+    this._persist(patched);
+  }
+
   invalidate(): void { this._clear(); }
 
   private _clear(): void {
