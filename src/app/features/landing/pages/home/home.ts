@@ -22,6 +22,7 @@ import { VisitorService } from '../../../../core/services/visitor';
 import { WelcomeModal } from '../welcome.modal';
 import { FormatCountPipe } from '../../../../shared/pipes/format-count-pipe';
 import { PostCache, PostWithTs } from '../../../post/services/post-cache';
+import { ReadingHistory }        from '../../../../core/services/reading-history';
 
 interface DrawerComment {
   _id?: string;
@@ -45,8 +46,9 @@ const FETCH_LIMIT = 100;
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Home implements OnInit, OnDestroy {
-  private postService    = inject(PostService);
-  private postCache      = inject(PostCache);
+  private postService     = inject(PostService);
+  private postCache       = inject(PostCache);
+  private readingHistory  = inject(ReadingHistory);
   private destroyRef     = inject(DestroyRef);
   private route          = inject(ActivatedRoute);
   private router         = inject(Router);
@@ -81,6 +83,10 @@ export class Home implements OnInit, OnDestroy {
 
   likedPostIds      = signal<Set<string>>(new Set());
   bookmarkedPostIds = signal<Set<string>>(new Set());
+
+  // ── Personalization signals (browser-only — always false/empty on SSR) ──────
+  historyLoaded  = signal(false);
+  readHistoryIds = signal<Set<string>>(new Set());
 
   commentDrawerPostId   = signal<string | null>(null);
   commentText           = signal('');
@@ -222,6 +228,30 @@ export class Home implements OnInit, OnDestroy {
     this.commentFetchedCount() < this.totalCommentsCount()
   );
 
+  // ── Personalization computeds ────────────────────────────────────────────────
+
+  /** Posts the user has bookmarked, in bookmark order (newest first). */
+  favoritePosts = computed(() => {
+    if (!this.historyLoaded()) return [];
+    const ids = this.bookmarkedPostIds();
+    return this.allPosts().filter(p => ids.has(p._id));
+  });
+
+  /** Unread posts that share the user's top-read categories, ranked by engagement. */
+  recommendedPosts = computed(() => {
+    if (!this.historyLoaded() || this.readHistoryIds().size < 3) return [];
+    const topCats = this.readingHistory.getTopCategories(3);
+    if (topCats.length === 0) return [];
+    const readIds = this.readHistoryIds();
+    return [...this.allPosts()]
+      .filter(p => !readIds.has(p._id) && p.categories.some(c => topCats.includes(c)))
+      .sort((a, b) => (b.views + b.likesCount * 2) - (a.views + a.likesCount * 2))
+      .slice(0, 8);
+  });
+
+  showFavorites   = computed(() => this.favoritePosts().length > 0);
+  showRecommended = computed(() => this.recommendedPosts().length > 0);
+
   @HostListener('document:keydown', ['$event'])
   onKeydown(event: KeyboardEvent): void {
     const tag = (event.target as Element).tagName;
@@ -250,6 +280,7 @@ export class Home implements OnInit, OnDestroy {
 
     this.restoreLikedIds();
     this.restoreBookmarkedIds();
+    this.restoreReadHistory();
 
     if (isPlatformBrowser(this.platformId)) {
       const normalisedPath = window.location.pathname.replace(/\/$/, '') || '/';
@@ -505,7 +536,7 @@ export class Home implements OnInit, OnDestroy {
       replaceUrl: true,
     });
     if (isPlatformBrowser(this.platformId)) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 36, behavior: 'smooth' });
     }
   }
 
@@ -516,7 +547,18 @@ export class Home implements OnInit, OnDestroy {
     if (page() < total - 1) page.set(page() + 1);
   }
 
-  readBlog(id: string): void { this.router.navigate(['/blog', id]); }
+  readBlog(id: string): void {
+    if (isPlatformBrowser(this.platformId)) {
+      const post = this.allPosts().find(p => p._id === id || (p as any).slug === id);
+      if (post) {
+        this.readingHistory.add(post);
+        const newIds = new Set(this.readHistoryIds());
+        newIds.add(post._id);
+        this.readHistoryIds.set(newIds);
+      }
+    }
+    this.router.navigate(['/blog', id]);
+  }
 
   scrollToTop(): void {
     if (isPlatformBrowser(this.platformId)) window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -588,6 +630,15 @@ export class Home implements OnInit, OnDestroy {
   }
 
   isBookmarked(postId: string): boolean { return this.bookmarkedPostIds().has(postId); }
+
+  private restoreReadHistory(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    const ids = new Set(this.readingHistory.getEntries().map(e => e.id));
+    this.readHistoryIds.set(ids);
+    this.historyLoaded.set(true);
+  }
+
+  isRead(postId: string): boolean { return this.readHistoryIds().has(postId); }
 
   toggleBookmark(postId: string, event: Event): void {
     event.stopPropagation();

@@ -67,6 +67,9 @@ export class ViewPost implements OnInit, OnDestroy {
   activeFormats  = signal<Set<string>>(new Set());
   activeBlock    = signal<string>('');
   isCodeActive   = signal(false);
+  showLinkInput  = signal(false);
+  linkUrlValue   = signal('');
+  private savedLinkRange: Range | null = null;
 
   // Reject modal state
   showRejectModal = signal(false);
@@ -121,8 +124,7 @@ export class ViewPost implements OnInit, OnDestroy {
   ];
 
   tagOptions = [
-    'Trending', 'Motivation', 'Tips',
-    'Opinion', 'Guide'
+    'Trending', 'Motivation', 'Tips', 'News', 'Opinion', 'Guide', 'Update'
   ];
 
   /**
@@ -689,7 +691,7 @@ export class ViewPost implements OnInit, OnDestroy {
 
   private cleanElement(element: Element): void {
     const allowedAttrs: { [key: string]: string[] } = {
-      'a':     ['href', 'title'],
+      'a':     ['href', 'title', 'target', 'rel'],
       'img':   ['src', 'alt', 'width', 'height'],
       'pre':   ['data-language'],
       'table': ['border', 'cellpadding', 'cellspacing'],
@@ -961,6 +963,52 @@ export class ViewPost implements OnInit, OnDestroy {
 
   isFormatActive(command: string): boolean {
     return this.activeFormats().has(command);
+  }
+
+  openLinkInput(): void {
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount > 0) {
+      this.savedLinkRange = sel.getRangeAt(0).cloneRange();
+      let node: Node | null = sel.getRangeAt(0).commonAncestorContainer;
+      while (node) {
+        if (node.nodeType === Node.ELEMENT_NODE && (node as Element).tagName === 'A') {
+          this.linkUrlValue.set((node as HTMLAnchorElement).getAttribute('href') ?? '');
+          break;
+        }
+        node = node.parentNode;
+      }
+    }
+    this.showLinkInput.set(true);
+  }
+
+  applyLink(): void {
+    const url = this.linkUrlValue().trim();
+    if (this.savedLinkRange) {
+      const sel = window.getSelection();
+      sel?.removeAllRanges();
+      sel?.addRange(this.savedLinkRange);
+    }
+    this.contentEditorRef.nativeElement.focus();
+    if (url) {
+      document.execCommand('createLink', false, url);
+      this.contentEditorRef.nativeElement.querySelectorAll(`a[href="${url}"]`).forEach(a => {
+        a.setAttribute('target', '_blank');
+        a.setAttribute('rel', 'noopener noreferrer');
+      });
+    } else {
+      document.execCommand('unlink', false, '');
+    }
+    const html = this.contentEditorRef.nativeElement.innerHTML;
+    this.editForm.patchValue({ content: html }, { emitEvent: false });
+    this.showLinkInput.set(false);
+    this.linkUrlValue.set('');
+    this.savedLinkRange = null;
+  }
+
+  cancelLink(): void {
+    this.showLinkInput.set(false);
+    this.linkUrlValue.set('');
+    this.savedLinkRange = null;
   }
 
   toggleCategory(category: string): void {

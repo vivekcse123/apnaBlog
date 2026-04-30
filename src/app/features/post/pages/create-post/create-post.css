@@ -479,6 +479,50 @@ form input[type="file"]::file-selector-button:hover {
 .underline-btn { text-decoration: underline; }
 .strike-btn { text-decoration: line-through; }
 
+/* ── Link Input Bar ── */
+.link-input-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: var(--bg-card, #fff);
+  border-bottom: 1px solid var(--border-light, #e0e0e0);
+}
+.link-url-input {
+  flex: 1;
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--border-light, #ccc);
+  border-radius: 4px;
+  font-size: 12px;
+  outline: none;
+  background: var(--bg-input, #f7f7f7);
+  color: var(--text-primary, #222);
+}
+.link-url-input:focus { border-color: var(--brand, #4f8ef7); }
+.link-apply-btn {
+  height: 28px;
+  padding: 0 10px;
+  background: var(--brand, #4f8ef7);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.link-apply-btn:hover { opacity: 0.85; }
+.link-cancel-btn {
+  height: 28px;
+  width: 28px;
+  background: transparent;
+  border: 1px solid var(--border-light, #ccc);
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--text-secondary, #666);
+}
+.link-cancel-btn:hover { background: var(--bg-hover, #f0f0f0); }
+
 /* ── Editable Content Area ── */
 .editor-content {
   min-height: 160px;

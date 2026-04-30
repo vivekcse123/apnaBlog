@@ -258,6 +258,43 @@
     </section>
   }
 
+  @defer (on idle) {
+    @if (!isFiltering() && showFavorites()) {
+      <section class="section section--pers" aria-labelledby="fav-heading">
+        <div class="section-header">
+          <span class="section-pill fav" aria-hidden="true">SAVED</span>
+          <h2 class="section-title" id="fav-heading">⭐ Saved Stories</h2>
+          <span class="fav-count-chip"
+                aria-label="{{ favoritePosts().length }} saved {{ favoritePosts().length === 1 ? 'story' : 'stories' }}">
+            {{ favoritePosts().length }}
+          </span>
+        </div>
+        <div class="blog-grid">
+          @for (blog of favoritePosts(); track blog._id) {
+            <ng-container [ngTemplateOutlet]="blogCard"
+                          [ngTemplateOutletContext]="{ $implicit: blog }"></ng-container>
+          }
+        </div>
+      </section>
+    }
+
+    @if (!isFiltering() && showRecommended()) {
+      <section class="section section--pers" aria-labelledby="rec-heading">
+        <div class="section-header">
+          <span class="section-pill rec" aria-hidden="true">FOR YOU</span>
+          <h2 class="section-title" id="rec-heading">✨ Recommended for You</h2>
+        </div>
+        <p class="rec-subtitle">Based on your reading interests</p>
+        <div class="blog-grid">
+          @for (blog of recommendedPosts(); track blog._id) {
+            <ng-container [ngTemplateOutlet]="blogCard"
+                          [ngTemplateOutletContext]="{ $implicit: blog }"></ng-container>
+          }
+        </div>
+      </section>
+    }
+  }
+
   <section class="section" aria-labelledby="trending-heading">
     <div class="section-header">
       <span class="section-pill trending" aria-hidden="true">HOT</span>
@@ -403,6 +440,9 @@
         <span class="card-cat" aria-hidden="true">{{ blog.categories[0] }}</span>
         @if (isNew(blog)) {
           <span class="new-badge" aria-label="New story — published in the last 48 hours">NEW</span>
+        }
+        @if (historyLoaded() && isRead(blog._id)) {
+          <span class="continue-badge" aria-label="You've read this story — continue reading">↩ Continue</span>
         }
       </div>
 

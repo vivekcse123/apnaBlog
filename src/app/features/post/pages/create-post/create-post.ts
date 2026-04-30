@@ -42,6 +42,9 @@ export class CreatePost implements OnInit, OnDestroy {
   activeFormats  = signal<Set<string>>(new Set());
   activeBlock    = signal<string>('');
   isCodeActive   = signal(false);
+  showLinkInput  = signal(false);
+  linkUrlValue   = signal('');
+  private savedLinkRange: Range | null = null;
 
   // ── Word count ───────────────────────────────────────────────────────────────
   wordCount = signal(0);
@@ -257,7 +260,7 @@ export class CreatePost implements OnInit, OnDestroy {
 
   private cleanElement(element: Element): void {
     const allowedAttrs: { [key: string]: string[] } = {
-      'a':    ['href', 'title'],
+      'a':    ['href', 'title', 'target', 'rel'],
       'img':  ['src', 'alt', 'width', 'height'],
       'pre':  ['data-language'],
       'table': ['border', 'cellpadding', 'cellspacing'],
@@ -529,6 +532,51 @@ export class CreatePost implements OnInit, OnDestroy {
 
   isActive(command: string): boolean {
     return this.activeFormats().has(command);
+  }
+
+  openLinkInput(): void {
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount > 0) {
+      this.savedLinkRange = sel.getRangeAt(0).cloneRange();
+      let node: Node | null = sel.getRangeAt(0).commonAncestorContainer;
+      while (node) {
+        if (node.nodeType === Node.ELEMENT_NODE && (node as Element).tagName === 'A') {
+          this.linkUrlValue.set((node as HTMLAnchorElement).getAttribute('href') ?? '');
+          break;
+        }
+        node = node.parentNode;
+      }
+    }
+    this.showLinkInput.set(true);
+  }
+
+  applyLink(): void {
+    const url = this.linkUrlValue().trim();
+    if (this.savedLinkRange) {
+      const sel = window.getSelection();
+      sel?.removeAllRanges();
+      sel?.addRange(this.savedLinkRange);
+    }
+    this.editorRef.nativeElement.focus();
+    if (url) {
+      document.execCommand('createLink', false, url);
+      this.editorRef.nativeElement.querySelectorAll(`a[href="${url}"]`).forEach(a => {
+        a.setAttribute('target', '_blank');
+        a.setAttribute('rel', 'noopener noreferrer');
+      });
+    } else {
+      document.execCommand('unlink', false, '');
+    }
+    this.onEditorInput();
+    this.showLinkInput.set(false);
+    this.linkUrlValue.set('');
+    this.savedLinkRange = null;
+  }
+
+  cancelLink(): void {
+    this.showLinkInput.set(false);
+    this.linkUrlValue.set('');
+    this.savedLinkRange = null;
   }
 
   // ── Unified image upload ─────────────────────────────────────────────────────
