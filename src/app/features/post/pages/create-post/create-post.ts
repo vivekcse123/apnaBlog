@@ -518,6 +518,16 @@ export class CreatePost implements OnInit, OnDestroy {
     return '';
   }
 
+  onEditorKeydown(event: KeyboardEvent): void {
+    if (!event.ctrlKey && !event.metaKey) return;
+    switch (event.key.toLowerCase()) {
+      case 'b': event.preventDefault(); this.format('bold');      break;
+      case 'i': event.preventDefault(); this.format('italic');    break;
+      case 'u': event.preventDefault(); this.format('underline'); break;
+      case 'k': event.preventDefault(); this.openLinkInput();     break;
+    }
+  }
+
   format(command: string, value?: string): void {
     this.editorRef.nativeElement.focus();
     document.execCommand(command, false, value ?? '');

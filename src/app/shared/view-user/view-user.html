@@ -35,116 +35,120 @@
       </div>
     </div>
 
-    @if (isLoading()) {
-      <div class="modal-loading">
-        <div class="loading-spinner"></div>
-        <p>Loading user details…</p>
-      </div>
-    }
+    <div class="modal-body">
+      @if (isLoading()) {
+        <div class="modal-loading">
+          <div class="loading-spinner"></div>
+          <p>Loading user details…</p>
+        </div>
+      }
+
+      @if (!isLoading()) {
+        @if (!isEditing()) {
+          <div class="user-stats">
+            <div class="stat-item">
+              <h4>{{ totalBlogs() }}</h4>
+              <p>Total Blogs</p>
+            </div>
+            <div class="stat-item">
+              <h4>{{ totalViews() }}</h4>
+              <p>Total Views</p>
+            </div>
+            <div class="stat-item">
+              <h4>{{ user()?.createdAt | date:'MMM yyyy' }}</h4>
+              <p>Joined Since</p>
+            </div>
+          </div>
+        }
+
+        @if (!isEditing()) {
+          <div class="details-grid">
+            <div class="detail-item">
+              <span>Role</span>
+              <p class="role-badge" [ngClass]="user()?.role?.toLowerCase()">
+                {{ user()?.role | titlecase }}
+              </p>
+            </div>
+            <div class="detail-item">
+              <span>Age</span>
+              <p>{{ calculateAge(user()?.dob) }}</p>
+            </div>
+            <div class="detail-item">
+              <span>Location</span>
+              <p>{{ user()?.location || 'India' }}</p>
+            </div>
+            <div class="detail-item">
+              <span>Date of Birth</span>
+              <p>{{ user()?.dob | date:'dd MMM yyyy' }}</p>
+            </div>
+          </div>
+        }
+
+        @if (isEditing()) {
+          <form class="edit-form" [formGroup]="editForm" (ngSubmit)="saveUser()">
+            <div class="edit-grid">
+
+              <div class="edit-field">
+                <label>Full Name</label>
+                <input type="text" formControlName="name" placeholder="Full name" />
+                @if (editForm.get('name')?.invalid && editForm.get('name')?.touched) {
+                  <small class="error">Name is required</small>
+                }
+              </div>
+
+              <div class="edit-field">
+                <label>Email</label>
+                <input type="email" formControlName="email" placeholder="Email address" />
+                @if (editForm.get('email')?.invalid && editForm.get('email')?.touched) {
+                  <small class="error">Valid email is required</small>
+                }
+              </div>
+
+              <div class="edit-field">
+                <label>Date of Birth</label>
+                <input type="date" formControlName="dob" />
+              </div>
+
+              <div class="edit-field">
+                <label>Location</label>
+                <input type="text" formControlName="location" placeholder="City, Country" />
+              </div>
+
+              <div class="edit-field">
+                <label>Role</label>
+                <select formControlName="role">
+                  <option value="user">User</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+
+              <div class="edit-field">
+                <label>Status</label>
+                <select formControlName="status">
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+              </div>
+
+            </div>
+          </form>
+        }
+
+        @if (message()) {
+          <div class="success-message">
+            <span>✓</span> {{ message() }}
+          </div>
+        }
+
+        @if (errorMessage()) {
+          <div class="error-message">
+            <span>✕</span> {{ errorMessage() }}
+          </div>
+        }
+      }
+    </div>
 
     @if (!isLoading()) {
-      @if (!isEditing()) {
-        <div class="user-stats">
-          <div class="stat-item">
-            <h4>{{ totalBlogs() }}</h4>
-            <p>Total Blogs</p>
-          </div>
-          <div class="stat-item">
-            <h4>{{ totalViews() }}</h4>
-            <p>Total Views</p>
-          </div>
-          <div class="stat-item">
-            <h4>{{ user()?.createdAt | date:'MMM yyyy' }}</h4>
-            <p>Joined Since</p>
-          </div>
-        </div>
-      }
-
-      @if (!isEditing()) {
-        <div class="details-grid">
-          <div class="detail-item">
-            <span>Role</span>
-            <p class="role-badge" [ngClass]="user()?.role?.toLowerCase()">
-              {{ user()?.role | titlecase }}
-            </p>
-          </div>
-          <div class="detail-item">
-            <span>Age</span>
-            <p>{{ calculateAge(user()?.dob) }}</p>
-          </div>
-          <div class="detail-item">
-            <span>Location</span>
-            <p>{{ user()?.location || 'India' }}</p>
-          </div>
-          <div class="detail-item">
-            <span>Date of Birth</span>
-            <p>{{ user()?.dob | date:'dd MMM yyyy' }}</p>
-          </div>
-        </div>
-      }
-
-      @if (isEditing()) {
-        <form class="edit-form" [formGroup]="editForm" (ngSubmit)="saveUser()">
-          <div class="edit-grid">
-
-            <div class="edit-field">
-              <label>Full Name</label>
-              <input type="text" formControlName="name" placeholder="Full name" />
-              @if (editForm.get('name')?.invalid && editForm.get('name')?.touched) {
-                <small class="error">Name is required</small>
-              }
-            </div>
-
-            <div class="edit-field">
-              <label>Email</label>
-              <input type="email" formControlName="email" placeholder="Email address" />
-              @if (editForm.get('email')?.invalid && editForm.get('email')?.touched) {
-                <small class="error">Valid email is required</small>
-              }
-            </div>
-
-            <div class="edit-field">
-              <label>Date of Birth</label>
-              <input type="date" formControlName="dob" />
-            </div>
-
-            <div class="edit-field">
-              <label>Location</label>
-              <input type="text" formControlName="location" placeholder="City, Country" />
-            </div>
-
-            <div class="edit-field">
-              <label>Role</label>
-              <select formControlName="role">
-                <option value="user">User</option>
-                <option value="admin">Admin</option>
-              </select>
-            </div>
-
-            <div class="edit-field">
-              <label>Status</label>
-              <select formControlName="status">
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-              </select>
-            </div>
-
-          </div>
-        </form>
-      }
-
-      @if (message()) {
-        <div class="success-message">
-          <span>✓</span> {{ message() }}
-        </div>
-      }
-
-      @if (errorMessage()) {
-        <div class="error-message">
-          <span>✕</span> {{ errorMessage() }}
-        </div>
-      }
-
       <div class="modal-footer">
         @if (!isEditing()) {
           <button class="btn-cancel" (click)="closeModal()">Cancel</button>

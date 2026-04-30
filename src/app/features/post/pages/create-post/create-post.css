@@ -159,6 +159,127 @@ form input[type="file"]::file-selector-button:hover {
   opacity: 0.85;
 }
 
+/* ── Form Field with label ── */
+.form-field {
+  margin-bottom: 18px;
+}
+
+.form-field-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 6px;
+}
+
+.form-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.required-star { color: #ef4444; margin-left: 2px; }
+
+.char-counter {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  transition: color 0.2s;
+}
+.char-counter.warn { color: #f59e0b; }
+.char-counter.over { color: #ef4444; font-weight: 700; }
+
+/* ── Section label (Content / Categories / Tags / Images) ── */
+.form-section-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 10px;
+  margin-top: 4px;
+}
+
+.form-section-icon { font-size: 13px; line-height: 1; }
+
+.shortcut-hint {
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: var(--bg-surface-alt);
+  border: 1px solid var(--border);
+  padding: 2px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+
+.field-hint-text {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: none;
+  letter-spacing: 0;
+  margin-left: 2px;
+}
+
+/* ── Pill selectors (categories + tags) ── */
+.pill-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pill-check {
+  display: inline-flex;
+  cursor: pointer;
+  user-select: none;
+}
+
+.pill-check-input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  width: 0;
+  height: 0;
+}
+
+.pill-check-label {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 14px;
+  border-radius: 99px;
+  border: 1.5px solid var(--border);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: var(--bg-surface-alt);
+  transition: border-color 0.15s, background 0.15s, color 0.15s, transform 0.15s;
+  cursor: pointer;
+}
+
+.pill-check-label:hover {
+  border-color: #43cea2;
+  color: var(--text-primary);
+  transform: translateY(-1px);
+}
+
+/* Selected state via CSS :has() — no Angular binding needed */
+.pill-check:has(.pill-check-input:checked) .pill-check-label {
+  background: color-mix(in srgb, #43cea2 15%, transparent);
+  border-color: #43cea2;
+  color: #1a7a5e;
+}
+
+[data-theme="dark"] .pill-check:has(.pill-check-input:checked) .pill-check-label {
+  color: #43cea2;
+}
+
 /* ── OR Divider ── */
 .or-divider {
   display: flex;
@@ -404,7 +525,7 @@ form input[type="file"]::file-selector-button:hover {
   background: var(--input-bg);
   margin-bottom: 6px;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
-  overflow: hidden;
+  overflow: clip; /* clip keeps radius without blocking sticky toolbar */
 }
 
 .editor-wrapper:focus-within {
@@ -525,8 +646,8 @@ form input[type="file"]::file-selector-button:hover {
 
 /* ── Editable Content Area ── */
 .editor-content {
-  min-height: 160px;
-  max-height: 320px;
+  min-height: 240px;
+  max-height: 420px;
   overflow-y: auto;
   padding: 12px 14px;
   outline: none;

@@ -28,25 +28,46 @@
 
     <form [formGroup]="createBlogForm" (ngSubmit)="createBlog()">
 
-      <input type="text" placeholder="Post Title" formControlName="title" />
-      @if (createBlogForm.get('title')?.invalid && (isSubmitted() || createBlogForm.get('title')?.touched)) {
-        @if (createBlogForm.get('title')?.errors?.['required']) {
-          <small class="error">Title is required...!</small>
+      <!-- ── Title ── -->
+      <div class="form-field">
+        <div class="form-field-header">
+          <label class="form-label" for="post-title">Post Title <span class="required-star">*</span></label>
+          <span class="char-counter"
+                [class.warn]="(createBlogForm.get('title')?.value?.length ?? 0) > 85"
+                [class.over]="(createBlogForm.get('title')?.value?.length ?? 0) > 100">
+            {{ createBlogForm.get('title')?.value?.length ?? 0 }}/100
+          </span>
+        </div>
+        <input id="post-title" type="text" placeholder="Give your story a compelling title…" formControlName="title" />
+        @if (createBlogForm.get('title')?.invalid && (isSubmitted() || createBlogForm.get('title')?.touched)) {
+          @if (createBlogForm.get('title')?.errors?.['required']) {
+            <small class="error">Title is required</small>
+          }
+          @if (createBlogForm.get('title')?.errors?.['minlength'] || createBlogForm.get('title')?.errors?.['maxlength']) {
+            <small class="error">Title should be 5–100 characters</small>
+          }
         }
-        @if (createBlogForm.get('title')?.errors?.['minlength'] || createBlogForm.get('title')?.errors?.['maxlength']) {
-          <small class="error">Title should be 5–100 characters long...!</small>
-        }
-      }
+      </div>
 
-      <input type="text" placeholder="Short Description" formControlName="description" />
-      @if (createBlogForm.get('description')?.invalid && (isSubmitted() || createBlogForm.get('description')?.touched)) {
-        @if (createBlogForm.get('description')?.errors?.['required']) {
-          <small class="error">Description is required...!</small>
+      <!-- ── Description ── -->
+      <div class="form-field">
+        <label class="form-label" for="post-desc">Short Description <span class="required-star">*</span></label>
+        <input id="post-desc" type="text" placeholder="Summarise your story in one or two sentences…" formControlName="description" />
+        @if (createBlogForm.get('description')?.invalid && (isSubmitted() || createBlogForm.get('description')?.touched)) {
+          @if (createBlogForm.get('description')?.errors?.['required']) {
+            <small class="error">Description is required</small>
+          }
+          @if (createBlogForm.get('description')?.errors?.['minlength']) {
+            <small class="error">Description should be at least 10 characters</small>
+          }
         }
-        @if (createBlogForm.get('description')?.errors?.['minlength']) {
-          <small class="error">Description should be at least 10 characters long...!</small>
-        }
-      }
+      </div>
+
+      <!-- ── Content ── -->
+      <div class="form-section-label">
+        <span class="form-section-icon">✍️</span> Content <span class="required-star">*</span>
+        <span class="shortcut-hint">Ctrl+B · Ctrl+I · Ctrl+U · Ctrl+K</span>
+      </div>
 
       <div class="editor-wrapper"
         [class.editor-error]="createBlogForm.get('content')?.invalid && (isSubmitted() || createBlogForm.get('content')?.touched)">
@@ -55,15 +76,15 @@
 
           <div class="toolbar-group">
             <button type="button" class="tool-btn" [class.active]="isActive('bold')"
-              (mousedown)="$event.preventDefault()" (click)="format('bold')" title="Bold">
+              (mousedown)="$event.preventDefault()" (click)="format('bold')" title="Bold (Ctrl+B)">
               <b>B</b>
             </button>
             <button type="button" class="tool-btn italic-btn" [class.active]="isActive('italic')"
-              (mousedown)="$event.preventDefault()" (click)="format('italic')" title="Italic">
+              (mousedown)="$event.preventDefault()" (click)="format('italic')" title="Italic (Ctrl+I)">
               <i>I</i>
             </button>
             <button type="button" class="tool-btn underline-btn" [class.active]="isActive('underline')"
-              (mousedown)="$event.preventDefault()" (click)="format('underline')" title="Underline">
+              (mousedown)="$event.preventDefault()" (click)="format('underline')" title="Underline (Ctrl+U)">
               <u>U</u>
             </button>
             <button type="button" class="tool-btn strike-btn" [class.active]="isActive('strikeThrough')"
@@ -232,9 +253,10 @@
           #editorRef
           class="editor-content"
           contenteditable="true"
-          data-placeholder="Write your blog content here..."
+          data-placeholder="Write your blog content here…"
           (input)="onEditorInput()"
           (paste)="onEditorPaste($event)"
+          (keydown)="onEditorKeydown($event)"
           (keyup)="onEditorKeyUp()"
           (mouseup)="onEditorMouseUp()"
         ></div>
@@ -262,28 +284,36 @@
         }
       }
 
-      <div class="field-group">
-        <label class="field-label">Categories <span class="required">*</span></label>
-        <div class="checkbox-grid" formArrayName="categories">
+      <!-- ── Categories ── -->
+      <div class="form-field">
+        <div class="form-section-label">
+          <span class="form-section-icon">🗂️</span> Category <span class="required-star">*</span>
+          <span class="field-hint-text">Pick one or more</span>
+        </div>
+        <div class="pill-row" formArrayName="categories">
           @for (category of categoryOptions; track category; let i = $index) {
-            <label class="checkbox-item">
-              <input type="checkbox" [formControlName]="i" />
-              <span>{{ category }}</span>
+            <label class="pill-check">
+              <input type="checkbox" [formControlName]="i" class="pill-check-input" />
+              <span class="pill-check-label">{{ category }}</span>
             </label>
           }
         </div>
         @if (isSubmitted() && !hasAtLeastOneChecked('categories')) {
-          <small class="error" style="position:relative;top:10px;">Select at least one category...!</small>
+          <small class="error" style="margin-top:20px;display:block;">Select at least one category</small>
         }
       </div>
 
-      <div class="field-group">
-        <label class="field-label">Tags</label>
-        <div class="checkbox-grid" formArrayName="tags">
+      <!-- ── Tags ── -->
+      <div class="form-field">
+        <div class="form-section-label">
+          <span class="form-section-icon">🏷️</span> Tags
+          <span class="field-hint-text">Optional</span>
+        </div>
+        <div class="pill-row" formArrayName="tags">
           @for (tag of tagOptions; track tag; let i = $index) {
-            <label class="checkbox-item">
-              <input type="checkbox" [formControlName]="i" />
-              <span>{{ tag }}</span>
+            <label class="pill-check">
+              <input type="checkbox" [formControlName]="i" class="pill-check-input" />
+              <span class="pill-check-label">{{ tag }}</span>
             </label>
           }
         </div>
@@ -291,10 +321,10 @@
 
       <!-- ── Blog Images (unified, up to 5) ── -->
       <div class="image-section">
-        <label class="field-label">
-          Blog Images
-          <span class="field-hint">({{ blogImages().length }}/5)</span>
-        </label>
+        <div class="form-section-label">
+          <span class="form-section-icon">🖼️</span> Images
+          <span class="field-hint-text">First image becomes the cover · up to 5 total ({{ blogImages().length }}/5)</span>
+        </div>
 
         @if (blogImages().length < 5) {
           <!-- URL input row -->

@@ -1,5 +1,16 @@
 <!doctype html>
 <html lang="en" data-theme="light">
+  <script>
+    // Apply theme before Angular boots — prevents flash of wrong theme
+    (function () {
+      try {
+        var h = new Date().getHours();
+        var isNight = h >= 18 || h < 6;
+        var saved = localStorage.getItem('app-theme');
+        document.documentElement.setAttribute('data-theme', saved || (isNight ? 'dark' : 'light'));
+      } catch (e) { /* SSR / private browsing */ }
+    })();
+  </script>
 <head>
   <meta name="google-adsense-account" content="ca-pub-6477809641944524">
   <meta charset="utf-8">
