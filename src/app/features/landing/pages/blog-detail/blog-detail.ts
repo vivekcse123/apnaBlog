@@ -296,11 +296,15 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     if (!p) return;
 
     // If the original post is already written in the requested language,
-    // skip the API call entirely — just highlight the button and show the
-    // original content as-is so formatting is perfectly preserved.
-    if (!this.translation() && this.isOriginalInLang(lang)) {
+    // always revert to original content — never send it through the translator
+    // (wrong source lang would garble text and break HTML formatting).
+    if (this.isOriginalInLang(lang)) {
+      const wasShowingOriginal = this.translation() === null;
+      this.translation.set(null);   // revert to unmodified original
       this.activeLang.set(lang);
-      this.toastService.show(`Already in this language`, 'success');
+      if (wasShowingOriginal) {
+        this.toastService.show('Already in this language', 'success');
+      }
       return;
     }
 
