@@ -114,9 +114,23 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   // and destroy the imperatively injected code-block wrappers.
   private readonly _contentHtml = signal<string>('');
 
+  // ── Translation ────────────────────────────────────────────────────────────
+  readonly LANGUAGES = [
+    { code: 'hi', label: 'हिंदी' },
+    { code: 'mr', label: 'मराठी' },
+    { code: 'ta', label: 'தமிழ்' },
+    { code: 'te', label: 'తెలుగు' },
+    { code: 'bn', label: 'বাংলা' },
+    { code: 'gu', label: 'ગુજરાતી' },
+  ];
+  translation = signal<{ title: string; description: string; content: string } | null>(null);
+  translating = signal(false);
+  activeLang  = signal<string | null>(null);
+
   // bypassSecurityTrustHtml is intentional — content is authored/trusted DB content.
+  // Falls back to original content when no translation is active.
   safeContent = computed<SafeHtml>(() =>
-    this.sanitizer.bypassSecurityTrustHtml(this._contentHtml())
+    this.sanitizer.bypassSecurityTrustHtml(this.translation()?.content ?? this._contentHtml())
   );
 
   // ── Likes / Bookmarks ─────────────────────────────────────────────────────
@@ -236,6 +250,29 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   get authorEmail(): string      { return (this.post()?.user as any)?.email    ?? ''; }
   get authorBio(): string        { return (this.post()?.user as any)?.bio      ?? ''; }
 
+  // ── Translation controls ──────────────────────────────────────────────────
+  readIn(lang: string): void {
+    if (this.activeLang() === lang || this.translating()) return;
+    const p = this.post();
+    if (!p) return;
+    this.translating.set(true);
+    this.postService.translatePost(p._id, lang)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          this.translation.set(res.data);
+          this.activeLang.set(lang);
+          this.translating.set(false);
+        },
+        error: () => this.translating.set(false),
+      });
+  }
+
+  resetLang(): void {
+    this.translation.set(null);
+    this.activeLang.set(null);
+  }
+
   // ── Modal controls ────────────────────────────────────────────────────────
   openAuthorModal(): void  { this.showAuthorModal.set(true);  this.lockScroll(true);  }
   closeAuthorModal(): void { this.showAuthorModal.set(false); this.lockScroll(false); }
@@ -283,6 +320,9 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
         this.loadError.set(false);
         this.post.set(null);
         this._contentHtml.set('');
+        this.translation.set(null);
+        this.activeLang.set(null);
+        this.translating.set(false);
         this.commentDrawerOpen.set(false);
         this.drawerComments.set([]);
         this.commentFetchedCount.set(0);

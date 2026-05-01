@@ -168,6 +168,16 @@
           </div>
         </div>
 
+        @if (isAdmin() && post()?.slug) {
+          <div class="detail-block full slug-detail-block">
+            <span class="detail-label">Slug URL</span>
+            <div class="slug-view-row">
+              <code class="slug-code">/blog/{{ post()?.slug }}</code>
+              <a class="slug-open-link" [href]="'/blog/' + post()?.slug" target="_blank" rel="noopener">↗ Open</a>
+            </div>
+          </div>
+        }
+
         @if (post()?.featuredImage) {
           <div class="detail-block full">
             <span class="detail-label">Featured Image</span>
@@ -236,6 +246,26 @@
               <small class="error">Description is required (min 10 chars)</small>
             }
           </div>
+
+          <!-- ── Slug (admin / super_admin only) ── -->
+          @if (isAdmin()) {
+            <div class="edit-field full slug-edit-field">
+              <div class="slug-label-row">
+                <label class="form-label" for="edit-slug">Slug URL</label>
+                <span class="slug-hint">Lowercase letters, numbers and hyphens only · max 110 chars</span>
+              </div>
+              <div class="slug-input-wrap">
+                <span class="slug-prefix">/blog/</span>
+                <input id="edit-slug" type="text" formControlName="slug"
+                  placeholder="my-custom-slug"
+                  (blur)="formatSlugInput()"
+                  (input)="formatSlugInput()" />
+              </div>
+              @if (editForm.get('slug')?.invalid && editForm.get('slug')?.touched) {
+                <small class="error">Use only lowercase letters, numbers and hyphens (e.g. my-post-title)</small>
+              }
+            </div>
+          }
 
           <!-- ── Content ── -->
           <div class="edit-field full">

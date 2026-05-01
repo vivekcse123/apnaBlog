@@ -152,6 +152,10 @@ export class PostService {
     return this.http.post<apiResponse<Post>>(`${this.endPoint}/${postId}/view`, {});
   }
 
+  translatePost(id: string, lang: string): Observable<{ status: number; lang: string; data: { title: string; description: string; content: string; translatedAt: string } }> {
+    return this.http.get<any>(`${this.endPoint}/${id}/translate?lang=${lang}`);
+  }
+
   commentPost(postId: string, comment: string, userId?: string): Observable<apiResponse<Post>> {
     const body: Record<string, string> = { comment: comment.trim() };
     if (userId?.trim()) body['userId'] = userId;

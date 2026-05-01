@@ -248,6 +248,8 @@ export class ViewPost implements OnInit, OnDestroy {
       featuredImage: [p?.featuredImage || ''],
       // Non-admins cannot change status while the post is pending
       status:        [p?.status || 'draft', this.isPendingForUser() ? [] : Validators.required],
+      // Slug — shown and editable only for admin/super_admin
+      slug:          [p?.slug || '', [Validators.pattern(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)]],
     });
 
     // Build gallery: featured image first, then any additional images
@@ -542,6 +544,17 @@ export class ViewPost implements OnInit, OnDestroy {
     return this.imageGallery().some(img => img.isUploading);
   }
 
+  formatSlugInput(): void {
+    const raw = (this.editForm.get('slug')?.value ?? '') as string;
+    const formatted = raw.toLowerCase()
+      .replace(/[^\w\s-]/g, ' ')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .substring(0, 110);
+    this.editForm.get('slug')?.setValue(formatted, { emitEvent: false });
+  }
+
   savePost(): void {
     if (this.editForm.invalid) return;
     if (this.hasUploadingImages()) {
@@ -561,6 +574,8 @@ export class ViewPost implements OnInit, OnDestroy {
     // separately (resubmit button). Strip it to avoid a 403 from the backend.
     const payload: any = { ...this.editForm.value, featuredImage, images };
     if (this.isPendingForUser()) delete payload.status;
+    // Slug editing is admin-only — strip from payload for regular users
+    if (!this.isAdmin()) delete payload.slug;
 
     this.postService.updatePost(this.post()?._id ?? '', payload)
       .pipe(takeUntil(this.destroy$), finalize(() => this.isSaving.set(false)))

@@ -417,6 +417,39 @@ body {
 .like-icon { font-size: 18px; display: inline-block; transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1); }
 .like-btn-main:active .like-icon { transform: scale(1.4); }
 
+/* ── Language Bar ── */
+.lang-bar {
+  display: flex; align-items: center; flex-wrap: wrap;
+  gap: 8px; margin-top: 20px; padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+.lang-bar-label {
+  font-size: 13px; color: var(--text-muted);
+  font-weight: 500; white-space: nowrap;
+}
+.lang-btn {
+  padding: 5px 12px; border-radius: 20px; font-size: 13px; font-weight: 500;
+  border: 1px solid var(--border); background: transparent;
+  color: var(--text-secondary); cursor: pointer;
+  transition: background 0.18s, color 0.18s, border-color 0.18s;
+}
+.lang-btn:hover:not(:disabled) {
+  background: var(--accent, #6366f1); color: #fff;
+  border-color: var(--accent, #6366f1);
+}
+.lang-btn--active {
+  background: var(--accent, #6366f1); color: #fff;
+  border-color: var(--accent, #6366f1);
+}
+.lang-btn--reset {
+  background: transparent; color: var(--text-muted);
+  border-style: dashed;
+}
+.lang-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.lang-translating {
+  font-size: 13px; color: var(--text-muted); font-style: italic;
+}
+
 /* ── Blog Content ── */
 .blog-content {
   font-size: 17px; line-height: 1.8;

@@ -169,8 +169,8 @@
         }
       </div>
 
-      <h1 class="blog-title">{{ post()!.title }}</h1>
-      <p class="blog-description">{{ post()!.description }}</p>
+      <h1 class="blog-title">{{ translation()?.title || post()!.title }}</h1>
+      <p class="blog-description">{{ translation()?.description || post()!.description }}</p>
 
       <!-- Author chip -->
       <button class="author-chip" (click)="openAuthorModal()" type="button"
@@ -206,6 +206,24 @@
           <span class="like-count">{{ post()!.likesCount }}</span>
         </button>
       </div>
+
+      <!-- Language bar -->
+      <div class="lang-bar">
+        <span class="lang-bar-label">Read in:</span>
+        @for (l of LANGUAGES; track l.code) {
+          <button class="lang-btn"
+            [class.lang-btn--active]="activeLang() === l.code"
+            [disabled]="translating()"
+            (click)="readIn(l.code)">{{ l.label }}</button>
+        }
+        @if (activeLang()) {
+          <button class="lang-btn lang-btn--reset" (click)="resetLang()">EN</button>
+        }
+        @if (translating()) {
+          <span class="lang-translating">Translating…</span>
+        }
+      </div>
+
     </header>
 
     <div class="blog-content" [innerHTML]="safeContent()"></div>
