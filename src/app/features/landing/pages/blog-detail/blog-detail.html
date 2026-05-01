@@ -210,14 +210,17 @@
       <!-- Language bar -->
       <div class="lang-bar">
         <span class="lang-bar-label">Read in:</span>
+        <button class="lang-btn"
+          [class.lang-btn--active]="activeLang() === 'en'"
+          [disabled]="translating()"
+          title="English"
+          (click)="readIn('en')">English</button>
         @for (l of LANGUAGES; track l.code) {
           <button class="lang-btn"
             [class.lang-btn--active]="activeLang() === l.code"
             [disabled]="translating()"
+            [title]="l.english"
             (click)="readIn(l.code)">{{ l.label }}</button>
-        }
-        @if (activeLang()) {
-          <button class="lang-btn lang-btn--reset" (click)="resetLang()">EN</button>
         }
         @if (translating()) {
           <span class="lang-translating">Translating…</span>

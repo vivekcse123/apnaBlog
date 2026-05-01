@@ -18,6 +18,7 @@ import { ThemeService } from '../../../../core/services/theme-service';
 import { Auth } from '../../../../core/services/auth';
 import { UserService } from '../../../user/services/user-service';
 import { User } from '../../../user/models/user.mode';
+import { ToastService } from '../../../../core/services/toast.service';
 
 // ── Transfer-state key: SSR writes the post here; browser reads it instantly ──
 const POST_STATE_KEY = makeStateKey<Post | null>('blogDetailPost');
@@ -83,6 +84,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   private sanitizer     = inject(DomSanitizer);
   private transferState = inject(TransferState);
   themeService          = inject(ThemeService);
+  private toastService  = inject(ToastService);
 
   // ── Post state ────────────────────────────────────────────────────────────
   post         = signal<Post | null>(null);
@@ -116,12 +118,12 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
 
   // ── Translation ────────────────────────────────────────────────────────────
   readonly LANGUAGES = [
-    { code: 'hi', label: 'हिंदी' },
-    { code: 'mr', label: 'मराठी' },
-    { code: 'ta', label: 'தமிழ்' },
-    { code: 'te', label: 'తెలుగు' },
-    { code: 'bn', label: 'বাংলা' },
-    { code: 'gu', label: 'ગુજરાતી' },
+    { code: 'hi', label: 'हिंदी',    english: 'Hindi' },
+    { code: 'mr', label: 'मराठी',    english: 'Marathi' },
+    { code: 'ta', label: 'தமிழ்',    english: 'Tamil' },
+    { code: 'te', label: 'తెలుగు',   english: 'Telugu' },
+    { code: 'ml', label: 'മലയാളം',  english: 'Malayalam' },
+    { code: 'kn', label: 'ಕನ್ನಡ',   english: 'Kannada' },
   ];
   translation = signal<{ title: string; description: string; content: string } | null>(null);
   translating = signal(false);
@@ -251,10 +253,57 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   get authorBio(): string        { return (this.post()?.user as any)?.bio      ?? ''; }
 
   // ── Translation controls ──────────────────────────────────────────────────
+
+  /**
+   * Returns true when the original post is already written in `lang`,
+   * so we can skip the translation API and preserve the original formatting.
+   *
+   * Hindi and Marathi both use Devanagari, so we need a discriminator:
+   *   ळ (U+0933) is very common in Marathi (काळ, वेळ, बोलणे…) but
+   *   virtually absent from modern standard Hindi — used as the tiebreaker.
+   */
+  private isOriginalInLang(lang: string): boolean {
+    const text = (this.post()?.title ?? '') + ' ' + (this.post()?.description ?? '');
+
+    const hasDevanagari  = /[ऀ-ॿ]/.test(text);
+    const hasMarathiChar = /ळ/.test(text); // ळ — Marathi discriminator
+
+    switch (lang) {
+      case 'en': {
+        // No Indic script at all → original is English
+        const hasIndic = /[ऀ-ॿ஀-௿ఀ-౿ಀ-೿ഀ-ൿ]/.test(text);
+        return !hasIndic;
+      }
+      case 'hi':
+        // Devanagari present AND no Marathi-specific ळ → Hindi
+        return hasDevanagari && !hasMarathiChar;
+      case 'mr':
+        // Devanagari present AND ळ found → Marathi
+        return hasDevanagari && hasMarathiChar;
+      case 'ta': return (text.match(/[஀-௿]/g) ?? []).length >= 3;
+      case 'te': return (text.match(/[ఀ-౿]/g) ?? []).length >= 3;
+      case 'ml': return (text.match(/[ഀ-ൿ]/g) ?? []).length >= 3;
+      case 'kn': return (text.match(/[ಀ-೿]/g) ?? []).length >= 3;
+      default:   return false;
+    }
+  }
+
   readIn(lang: string): void {
-    if (this.activeLang() === lang || this.translating()) return;
+    if (this.translating()) return;
+    if (this.activeLang() === lang) return; // already showing this language
+
     const p = this.post();
     if (!p) return;
+
+    // If the original post is already written in the requested language,
+    // skip the API call entirely — just highlight the button and show the
+    // original content as-is so formatting is perfectly preserved.
+    if (!this.translation() && this.isOriginalInLang(lang)) {
+      this.activeLang.set(lang);
+      this.toastService.show(`Already in this language`, 'success');
+      return;
+    }
+
     this.translating.set(true);
     this.postService.translatePost(p._id, lang)
       .pipe(takeUntilDestroyed(this.destroyRef))
