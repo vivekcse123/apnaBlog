@@ -81,8 +81,10 @@ export class ManageUsers implements OnInit, OnDestroy {
     return this.filteredUsers().slice(start, start + this.limit());
   });
 
-  totalPages = computed(() => Math.ceil(this.filteredUsers().length / this.limit()));
+  totalPages = computed(() => Math.max(1, Math.ceil(this.filteredUsers().length / this.limit())));
   pages      = computed(() => Array.from({ length: this.totalPages() }, (_, i) => i + 1));
+  pageStart  = computed(() => Math.min((this.currentPage() - 1) * this.limit() + 1, this.filteredUsers().length));
+  pageEnd    = computed(() => Math.min(this.currentPage() * this.limit(), this.filteredUsers().length));
 
   isProfileOpened  = signal(false);
   selectedUserId   = signal<string>('');

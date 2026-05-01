@@ -95,7 +95,7 @@
             @for (user of paginatedUsers(); track user._id) {
               <tr [appDisabled]="user.status === 'inactive'">
 
-                <td>
+                <td class="cell-user-name">
                   <div class="user-cell">
                     <div class="user-avatar">
                       @if (user.avatar) {
@@ -108,9 +108,9 @@
                   </div>
                 </td>
 
-                <td class="email-cell">{{ user.email }}</td>
+                <td data-label="Email" class="email-cell">{{ user.email }}</td>
 
-                <td>
+                <td data-label="Role">
                   <span class="role-badge"
                     [class.admin]="user.role === 'admin'"
                     [class.super-admin]="user.role === 'super_admin'">
@@ -118,7 +118,7 @@
                   </span>
                 </td>
 
-                <td>
+                <td data-label="Status">
                   <span class="status-badge"
                     [class.status-active]="user.status === 'active'"
                     [class.status-inactive]="user.status === 'inactive'"
@@ -128,9 +128,10 @@
                   </span>
                 </td>
 
-                <td>{{ user.createdAt | date: 'mediumDate' }}</td>
-                <td>{{ user.updatedAt | date: 'mediumDate' }}</td>
-                <td>
+                <td data-label="Created">{{ user.createdAt | date: 'mediumDate' }}</td>
+                <td data-label="Updated">{{ user.updatedAt | date: 'mediumDate' }}</td>
+
+                <td class="cell-actions">
                   <div class="action-buttons">
                     <button class="view"   (click)="getUserDetails(user._id)"   title="View details"><i class="bi bi-eye"></i></button>
                     <button class="delete" (click)="deleteUser(user)"           title="Delete user"><i class="bi bi-trash3"></i></button>
@@ -174,13 +175,28 @@
     </div>
   </div>
 
-  <div class="pagination">
-    <button (click)="previousPage()" [disabled]="currentPage() === 1">Prev</button>
-    @for (page of pages(); track page) {
-      <button (click)="goToPage(page)" [class.active]="currentPage() === page">{{ page }}</button>
-    }
-    <button (click)="nextPage()" [disabled]="currentPage() === totalPages()">Next</button>
-  </div>
+  @if (filteredUsers().length > 0) {
+    <div class="pagination">
+      <span class="pg-info">
+        Showing {{ pageStart() }}–{{ pageEnd() }} of {{ filteredUsers().length }}
+      </span>
+      <div class="pg-controls">
+        <button class="pg-btn" (click)="goToPage(1)"
+                [disabled]="currentPage() === 1" title="First page">«</button>
+        <button class="pg-btn" (click)="previousPage()"
+                [disabled]="currentPage() === 1" title="Previous page">‹</button>
+        @for (page of pages(); track page) {
+          <button class="pg-btn pg-num"
+                  [class.pg-active]="currentPage() === page"
+                  (click)="goToPage(page)">{{ page }}</button>
+        }
+        <button class="pg-btn" (click)="nextPage()"
+                [disabled]="currentPage() === totalPages()" title="Next page">›</button>
+        <button class="pg-btn" (click)="goToPage(totalPages())"
+                [disabled]="currentPage() === totalPages()" title="Last page">»</button>
+      </div>
+    </div>
+  }
 
 </div>
 

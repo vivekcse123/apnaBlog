@@ -56,7 +56,7 @@
       </div>
 
       @if (showComments()) {
-        <div class="comments-section">
+        <div class="comments-section" #commentsSectionRef>
           <p class="comments-title">
             Comments
             @if ((post()?.comments?.length ?? 0) > 0) {
@@ -193,17 +193,26 @@
       <form class="edit-form" [formGroup]="editForm" (ngSubmit)="savePost()">
         <div class="edit-grid">
 
+          <!-- ── Title ── -->
           <div class="edit-field">
-            <label>Title</label>
-            <input type="text" formControlName="title" placeholder="Post title" />
+            <div class="form-field-header">
+              <label class="form-label" for="edit-title">Post Title <span class="required-star">*</span></label>
+              <span class="char-counter"
+                    [class.warn]="(editForm.get('title')?.value?.length ?? 0) > 85"
+                    [class.over]="(editForm.get('title')?.value?.length ?? 0) > 100">
+                {{ editForm.get('title')?.value?.length ?? 0 }}/100
+              </span>
+            </div>
+            <input id="edit-title" type="text" formControlName="title" placeholder="Give your story a compelling title…" />
             @if (editForm.get('title')?.invalid && editForm.get('title')?.touched) {
               <small class="error">Title is required (5–100 chars)</small>
             }
           </div>
 
+          <!-- ── Status ── -->
           @if (!isPendingForUser()) {
             <div class="edit-field">
-              <label>Status</label>
+              <label class="form-label">Status</label>
               <select formControlName="status">
                 <option value="draft">Draft</option>
                 <option value="published">Published</option>
@@ -211,7 +220,7 @@
             </div>
           } @else {
             <div class="edit-field">
-              <label>Status</label>
+              <label class="form-label">Status</label>
               <div class="pending-status-badge">
                 <span class="pending-dot"></span>
                 Pending Admin Review
@@ -219,17 +228,21 @@
             </div>
           }
 
+          <!-- ── Description ── -->
           <div class="edit-field full">
-            <label>Description</label>
-            <input type="text" formControlName="description" placeholder="Short description" />
+            <label class="form-label" for="edit-desc">Short Description <span class="required-star">*</span></label>
+            <input id="edit-desc" type="text" formControlName="description" placeholder="Summarise your story in one or two sentences…" />
             @if (editForm.get('description')?.invalid && editForm.get('description')?.touched) {
               <small class="error">Description is required (min 10 chars)</small>
             }
           </div>
 
-          <!-- ── Full Rich Text Editor ── -->
+          <!-- ── Content ── -->
           <div class="edit-field full">
-            <label>Content</label>
+            <div class="form-section-label">
+              <span class="form-section-icon">✍️</span> Content <span class="required-star">*</span>
+              <span class="shortcut-hint">Ctrl+B · Ctrl+I · Ctrl+U · Ctrl+K</span>
+            </div>
             <div class="editor-wrapper" [class.editor-error]="editForm.get('content')?.invalid && editForm.get('content')?.touched">
 
               <div class="editor-toolbar">
@@ -237,15 +250,15 @@
                 <!-- Text Style -->
                 <div class="toolbar-group">
                   <button type="button" class="tool-btn" [class.active]="isFormatActive('bold')"
-                    (mousedown)="$event.preventDefault()" (click)="execFormat('bold')" title="Bold">
+                    (mousedown)="$event.preventDefault()" (click)="execFormat('bold')" title="Bold (Ctrl+B)">
                     <b>B</b>
                   </button>
                   <button type="button" class="tool-btn italic-btn" [class.active]="isFormatActive('italic')"
-                    (mousedown)="$event.preventDefault()" (click)="execFormat('italic')" title="Italic">
+                    (mousedown)="$event.preventDefault()" (click)="execFormat('italic')" title="Italic (Ctrl+I)">
                     <i>I</i>
                   </button>
                   <button type="button" class="tool-btn underline-btn" [class.active]="isFormatActive('underline')"
-                    (mousedown)="$event.preventDefault()" (click)="execFormat('underline')" title="Underline">
+                    (mousedown)="$event.preventDefault()" (click)="execFormat('underline')" title="Underline (Ctrl+U)">
                     <u>U</u>
                   </button>
                   <button type="button" class="tool-btn strike-btn" [class.active]="isFormatActive('strikeThrough')"
@@ -426,9 +439,10 @@
                 #contentEditor
                 class="editor-content"
                 contenteditable="true"
-                data-placeholder="Write your blog content here..."
+                data-placeholder="Write your blog content here…"
                 (input)="onContentInput($event)"
                 (paste)="onContentPaste($event)"
+                (keydown)="onEditKeydown($event)"
                 (keyup)="updateEditorFormats()"
                 (mouseup)="updateEditorFormats()"
                 (blur)="editForm.get('content')?.markAsTouched()">
@@ -444,7 +458,10 @@
 
           <!-- Categories -->
           <div class="edit-field full">
-            <label>Categories</label>
+            <div class="form-section-label">
+              <span class="form-section-icon">🗂️</span> Category <span class="required-star">*</span>
+              <span class="field-hint-text">Pick one or more</span>
+            </div>
             <div class="pill-selector">
               @for (cat of categoryOptions; track cat) {
                 <span class="pill selectable"
@@ -458,7 +475,10 @@
 
           <!-- Tags -->
           <div class="edit-field full">
-            <label>Tags</label>
+            <div class="form-section-label">
+              <span class="form-section-icon">🏷️</span> Tags
+              <span class="field-hint-text">Optional</span>
+            </div>
             <div class="pill-selector">
               @for (tag of tagOptions; track tag) {
                 <span class="pill selectable"
@@ -472,7 +492,10 @@
 
           <!-- ── Image Gallery Section ── -->
           <div class="edit-field full">
-            <label>Images <span class="img-count-hint">({{ imageGallery().length }}/5)</span></label>
+            <div class="form-section-label">
+              <span class="form-section-icon">🖼️</span> Images
+              <span class="field-hint-text">First image becomes the cover · up to 5 total ({{ imageGallery().length }}/5)</span>
+            </div>
 
             @if (imageGallery().length < 5) {
               <!-- URL input -->

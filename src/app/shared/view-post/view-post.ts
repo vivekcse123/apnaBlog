@@ -112,9 +112,10 @@ export class ViewPost implements OnInit, OnDestroy {
   private cropDragStartOffX = 0;
   private cropDragStartOffY = 0;
 
-  @ViewChild('contentEditor') contentEditorRef!: ElementRef<HTMLDivElement>;
-  @ViewChild('cropImageEl')   cropImageEl!: ElementRef<HTMLImageElement>;
-  @ViewChild('cropFrameEl')   cropFrameEl!: ElementRef<HTMLDivElement>;
+  @ViewChild('contentEditor')      contentEditorRef!: ElementRef<HTMLDivElement>;
+  @ViewChild('cropImageEl')        cropImageEl!: ElementRef<HTMLImageElement>;
+  @ViewChild('cropFrameEl')        cropFrameEl!: ElementRef<HTMLDivElement>;
+  @ViewChild('commentsSectionRef') commentsSectionRef?: ElementRef<HTMLDivElement>;
 
   categoryOptions = [
     'Update', 'News',
@@ -180,7 +181,17 @@ export class ViewPost implements OnInit, OnDestroy {
   }
 
   toggleComments(): void {
-    this.showComments.set(!this.showComments());
+    const opening = !this.showComments();
+    this.showComments.set(opening);
+    if (opening) {
+      // Wait one tick for Angular to render the comments section, then scroll to it
+      setTimeout(() => {
+        this.commentsSectionRef?.nativeElement?.scrollIntoView({
+          behavior: 'smooth',
+          block:    'start',
+        });
+      }, 60);
+    }
   }
 
   confirmDeleteComment(commentId: string): void {
@@ -943,6 +954,16 @@ export class ViewPost implements OnInit, OnDestroy {
     if (/\bfn\s+\w+|let\s+mut\b|::/.test(code))               return 'rust';
     if (/\bfunc\s+\w+|:=|fmt\./.test(code))                   return 'go';
     return '';
+  }
+
+  onEditKeydown(event: KeyboardEvent): void {
+    if (!event.ctrlKey && !event.metaKey) return;
+    switch (event.key.toLowerCase()) {
+      case 'b': event.preventDefault(); this.execFormat('bold');      break;
+      case 'i': event.preventDefault(); this.execFormat('italic');    break;
+      case 'u': event.preventDefault(); this.execFormat('underline'); break;
+      case 'k': event.preventDefault(); this.openLinkInput();         break;
+    }
   }
 
   execFormat(command: string): void {

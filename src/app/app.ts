@@ -6,6 +6,7 @@ import { Toast } from './shared/toast/toast';
 import { CookieConsent } from './shared/cookie-consent/cookie-consent';
 import { LoaderService } from './core/services/loader-service';
 import { AliveService } from './core/services/alive-server/alive-service';
+import { VisitorService } from './core/services/visitor';
 
 @Component({
   selector: 'app-root',
@@ -17,10 +18,11 @@ import { AliveService } from './core/services/alive-server/alive-service';
 export class App implements OnInit, OnDestroy {
   loaderService = inject(LoaderService);
 
-  private routerSub!: Subscription;
-  private aliveService  = inject(AliveService);
-  private aliveStarted  = false;
-  private isFirstNav    = true;
+  private routerSub!:    Subscription;
+  private aliveService   = inject(AliveService);
+  private visitorService = inject(VisitorService);
+  private aliveStarted   = false;
+  private isFirstNav     = true;
 
   constructor(private router: Router) {}
 
@@ -44,6 +46,11 @@ export class App implements OnInit, OnDestroy {
         if (!this.aliveStarted) {
           this.aliveStarted = true;
           this.aliveService.start();
+        }
+
+        // Track every completed navigation — deduplication handled inside trackVisit
+        if (event instanceof NavigationEnd) {
+          this.visitorService.trackVisit(event.urlAfterRedirects);
         }
       }
     });

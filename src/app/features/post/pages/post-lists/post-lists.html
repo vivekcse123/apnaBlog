@@ -137,11 +137,11 @@
           @if (!isLoading()) {
             @for (blog of paginatedBlogs(); track blog._id) {
               <tr>
-                <td>
+                <td class="cell-blog-title">
                   <div class="blog-title">{{ blog.title }}</div>
                   <div class="blog-sub">{{ blog.description }}</div>
                 </td>
-                <td>
+                <td data-label="Category">
                   <div class="category-list">
                     @for (category of blog.categories.slice(0, 2); track category) {
                       <span class="category-badge" style="margin: 2px;" [ngClass]="category.toLowerCase()">
@@ -150,7 +150,7 @@
                     }
                   </div>
                 </td>
-                <td>
+                <td data-label="Status">
                   <span class="status-badge"
                     [class.status-published]="blog.status === 'published'"
                     [class.status-draft]="blog.status === 'draft'"
@@ -162,7 +162,7 @@
                     @else { {{ blog.status | titlecase }} }
                   </span>
                 </td>
-                <td>
+                <td data-label="Views">
                   <div class="stat-cell">
                     <svg width="13" height="13" viewBox="0 0 22 22" fill="none">
                       <ellipse cx="11" cy="11" rx="8" ry="5" stroke="#7F77DD" stroke-width="2" fill="none"/>
@@ -171,7 +171,7 @@
                     {{ blog.views | number }}
                   </div>
                 </td>
-                <td>
+                <td data-label="Likes">
                   <div class="stat-cell">
                     <svg width="13" height="13" viewBox="0 0 22 22" fill="none">
                       <path d="M11 18s-7-4.5-7-9a4 4 0 018 0 4 4 0 018 0c0 4.5-7 9-7 9z"
@@ -180,11 +180,11 @@
                     {{ blog.likesCount | number }}
                   </div>
                 </td>
-                <td>{{ blog.createdAt | date: 'mediumDate' }}</td>
-                <td>{{ blog.updatedAt | date: 'mediumDate' }}</td>
-                <td>
+                <td data-label="Published">{{ blog.createdAt | date: 'mediumDate' }}</td>
+                <td data-label="Updated">{{ blog.updatedAt | date: 'mediumDate' }}</td>
+                <td class="cell-actions">
                   <div class="action-buttons">
-                    <button class="edit" (click)="viewPost(blog._id)" title="View post"><i class="bi bi-eye"></i></button>
+                    <button class="edit" (click)="viewPost(blog._id)" title="View / Edit post"><i class="bi bi-eye"></i></button>
 
                     @if (role() === 'admin' || role() === 'super_admin') {
                       @if (blog.deleteRequested) {
@@ -248,13 +248,28 @@
     </div>
   </div>
 
-  <div class="pagination">
-    <button (click)="previousPage()" [disabled]="currentPage() === 1">Prev</button>
-    @for (page of pages(); track page) {
-      <button (click)="goToPage(page)" [class.active]="currentPage() === page">{{ page }}</button>
-    }
-    <button (click)="nextPage()" [disabled]="currentPage() === totalPages()">Next</button>
-  </div>
+  @if (filteredBlogs().length > 0) {
+    <div class="pagination">
+      <span class="pg-info">
+        Showing {{ pageStart() }}–{{ pageEnd() }} of {{ filteredBlogs().length }}
+      </span>
+      <div class="pg-controls">
+        <button class="pg-btn" (click)="goToPage(1)"
+                [disabled]="currentPage() === 1" title="First page">«</button>
+        <button class="pg-btn" (click)="previousPage()"
+                [disabled]="currentPage() === 1" title="Previous page">‹</button>
+        @for (page of pages(); track page) {
+          <button class="pg-btn pg-num"
+                  [class.pg-active]="currentPage() === page"
+                  (click)="goToPage(page)">{{ page }}</button>
+        }
+        <button class="pg-btn" (click)="nextPage()"
+                [disabled]="currentPage() === totalPages()" title="Next page">›</button>
+        <button class="pg-btn" (click)="goToPage(totalPages())"
+                [disabled]="currentPage() === totalPages()" title="Last page">»</button>
+      </div>
+    </div>
+  }
 
 </div>
 

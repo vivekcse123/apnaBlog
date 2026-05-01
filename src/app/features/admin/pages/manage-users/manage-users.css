@@ -338,46 +338,40 @@ tbody > tr:hover td {
   font-size: 14px;
 }
 
-/* ── Action Buttons ── */
+/* ── Action Buttons — icon-only squares ── */
 .action-buttons {
   display: flex;
-  gap: 6px;
+  gap: 5px;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .action-buttons button {
-  font-size: 13px;
-  font-weight: 500;
-  font-family: 'DM Sans', sans-serif;
-  width: 76px;
-  padding: 6px 10px;
+  width: 34px;
+  height: 34px;
+  padding: 0;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
   color: #ffffff;
-  transition: opacity 0.2s ease, transform 0.15s ease;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: opacity 0.2s, transform 0.15s, box-shadow 0.15s;
 }
 
 .action-buttons button:hover {
   opacity: 0.88;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.18);
 }
 
-.action-buttons .view         { background-color: #5bc0de; }
-.action-buttons .view:hover   { background-color: #31b0d5; }
-
-.action-buttons .edit         { background-color: #5cb85c; }
-.action-buttons .edit:hover   { background-color: #449d44; }
-
-.action-buttons .delete       { background-color: var(--danger); }
-.action-buttons .delete:hover { background-color: var(--danger-hover); }
-
-/* Freeze = warn amber, Unfreeze = green */
-.action-buttons .freeze       { background-color: var(--warn); }
-.action-buttons .freeze:hover { background-color: var(--warn-hover); }
-
-.action-buttons .unfreeze       { background-color: var(--success); }
-.action-buttons .unfreeze:hover { background-color: var(--success-hover); }
+.action-buttons .view     { background-color: #5bc0de; }
+.action-buttons .delete   { background-color: var(--danger); }
+.action-buttons .freeze   { background-color: var(--warn); }
+.action-buttons .unfreeze { background-color: var(--success); }
 
 /* ── Inline skeleton rows ── */
 .sk-row td { pointer-events: none; border-bottom: 1px solid var(--border); }
@@ -405,47 +399,65 @@ tbody > tr:hover td {
 /* ── Pagination ── */
 .pagination {
   display: flex;
-  justify-content: center;
   align-items: center;
-  gap: 8px;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 16px 4px 4px;
+}
+
+.pg-info {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.pg-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   flex-wrap: wrap;
 }
 
-.pagination button {
-  padding: 6px 12px;
-  border-radius: 6px;
-  border: 1px solid var(--border);
+.pg-btn {
+  min-width: 34px;
+  height: 34px;
+  padding: 0 8px;
+  border-radius: 8px;
+  border: 1.5px solid var(--border);
   background: var(--bg-surface);
   color: var(--text-secondary);
-  cursor: pointer;
-  font-size: 14px;
+  font-size: 13px;
+  font-weight: 600;
   font-family: 'DM Sans', sans-serif;
-  transition: background 0.2s ease, color 0.2s ease,
-              border-color 0.2s ease, transform 0.2s ease;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.15s;
 }
 
-.pagination button:hover:not(:disabled) {
-  background: linear-gradient(135deg, #43cea2, #185a9d);
-  color: #ffffff;
-  border-color: transparent;
+.pg-btn:hover:not(:disabled) {
+  background: var(--accent-subtle);
+  border-color: var(--accent);
+  color: var(--accent-text);
   transform: translateY(-1px);
 }
 
-.pagination button.active {
-  background: linear-gradient(135deg, #43cea2, #185a9d);
-  color: #ffffff;
-  border-color: transparent;
-  font-weight: 600;
-}
-
-.pagination button:disabled {
-  opacity: 0.4;
+.pg-btn:disabled {
+  opacity: 0.35;
   cursor: not-allowed;
 }
 
-.pagination button:focus-visible {
-  outline: 2px solid #43cea2;
-  outline-offset: 2px;
+.pg-btn.pg-active {
+  background: linear-gradient(135deg, #43cea2, #185a9d);
+  border-color: transparent;
+  color: #fff;
+  cursor: default;
+}
+
+@media (max-width: 600px) {
+  .pagination  { justify-content: center; }
+  .pg-info     { width: 100%; text-align: center; }
 }
 
 /* ── Modal Overlay ── */
@@ -587,15 +599,80 @@ tbody > tr:hover td {
 }
 
 @media (max-width: 480px) {
-  .user-page { padding: 16px; }
+  .user-page  { padding: 16px; }
+  .confirm-box { margin: 0 16px; }
+}
 
-  .action-buttons button {
-    width: 60px;
-    font-size: 12px;
-    padding: 5px 6px;
+/* ── Mobile Card Layout (≤ 640px) ── */
+@media (max-width: 640px) {
+  .table-scroll { overflow-x: visible; }
+
+  table        { display: block; min-width: unset; }
+  thead        { display: none; }
+  tbody        { display: flex; flex-direction: column; gap: 10px; }
+
+  tbody tr {
+    display: block;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: var(--card-shadow);
+    transition: box-shadow 0.2s;
   }
 
-  .confirm-box {
-    margin: 0 16px;
+  tbody tr:hover { box-shadow: var(--card-shadow-lg); }
+
+  /* Name row — card header */
+  td.cell-user-name {
+    display: flex;
+    align-items: center;
+    padding: 12px 14px;
+    background: var(--bg-surface-alt);
+    border-bottom: 1px solid var(--border);
+    font-weight: 600;
   }
+  td.cell-user-name::before { display: none; }
+
+  /* Data rows */
+  td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 9px 14px;
+    border-bottom: 1px solid var(--border);
+    white-space: normal;
+    font-size: 13px;
+  }
+
+  td:last-child { border-bottom: none; }
+
+  td[data-label]::before {
+    content: attr(data-label);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    flex-shrink: 0;
+    margin-right: 10px;
+  }
+
+  /* Actions row — right-aligned at card bottom */
+  td.cell-actions {
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 10px 14px;
+    background: var(--bg-surface-alt);
+    border-top: 1px solid var(--border);
+    border-bottom: none;
+  }
+  td.cell-actions::before { display: none; }
+
+  /* Slightly larger icon buttons on mobile for easier tapping */
+  .action-buttons button { width: 38px; height: 38px; font-size: 15px; border-radius: 10px; }
+
+  /* Skeleton rows as cards */
+  .sk-row { border-radius: 14px; overflow: hidden; }
+  .sk-row td { display: block; padding: 10px 14px; }
 }

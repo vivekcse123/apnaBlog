@@ -168,7 +168,7 @@ form input[type="file"]::file-selector-button:hover {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  margin-bottom: 6px;
+  margin-bottom: 0;
 }
 
 .form-label {
@@ -200,8 +200,8 @@ form input[type="file"]::file-selector-button:hover {
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  margin-bottom: 10px;
-  margin-top: 4px;
+  margin-bottom: 2px;
+  margin-top: 2px;
 }
 
 .form-section-icon { font-size: 13px; line-height: 1; }

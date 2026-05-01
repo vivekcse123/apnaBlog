@@ -18,7 +18,6 @@ import { ThemeService } from '../../../../core/services/theme-service';
 import { Auth } from '../../../../core/services/auth';
 import { UserService } from '../../../user/services/user-service';
 import { User } from '../../../user/models/user.mode';
-import { VisitorService } from '../../../../core/services/visitor';
 import { WelcomeModal } from '../welcome.modal';
 import { FormatCountPipe } from '../../../../shared/pipes/format-count-pipe';
 import { PostCache, PostWithTs } from '../../../post/services/post-cache';
@@ -55,7 +54,6 @@ export class Home implements OnInit, OnDestroy {
   private auth           = inject(Auth);
   private userService    = inject(UserService);
   themeService           = inject(ThemeService);
-  private visitorService = inject(VisitorService);
   private platformId     = inject(PLATFORM_ID);
   private meta           = inject(Meta);
   private titleService   = inject(Title);
@@ -283,10 +281,6 @@ export class Home implements OnInit, OnDestroy {
     this.restoreReadHistory();
 
     if (isPlatformBrowser(this.platformId)) {
-      const normalisedPath = window.location.pathname.replace(/\/$/, '') || '/';
-      if (normalisedPath === '/welcome') {
-        this.visitorService.trackVisit('/welcome');
-      }
       const alreadySeen = sessionStorage.getItem('apna_welcome_seen');
       if (!alreadySeen) {
         const delay = 2000 + Math.random() * 1000;

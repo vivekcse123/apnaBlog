@@ -90,8 +90,10 @@ export class PostLists implements OnInit, OnDestroy {
     return this.filteredBlogs().slice(start, start + this.itemsPerPage());
   });
 
-  totalPages = computed(() => Math.ceil(this.filteredBlogs().length / this.itemsPerPage()));
+  totalPages = computed(() => Math.max(1, Math.ceil(this.filteredBlogs().length / this.itemsPerPage())));
   pages      = computed(() => Array.from({ length: this.totalPages() }, (_, i) => i + 1));
+  pageStart  = computed(() => Math.min((this.currentPage() - 1) * this.itemsPerPage() + 1, this.filteredBlogs().length));
+  pageEnd    = computed(() => Math.min(this.currentPage() * this.itemsPerPage(), this.filteredBlogs().length));
 
   ngOnInit(): void {
     this.route?.parent?.params

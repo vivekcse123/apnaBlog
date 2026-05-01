@@ -369,3 +369,67 @@
   .role-btns { flex-wrap: wrap; gap: 6px; }
   .role-btn { font-size: 11px; padding: 5px 10px; }
 }
+
+/* ── Pagination ── */
+.rm-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 16px 4px 4px;
+}
+
+.pg-info {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.pg-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.pg-btn {
+  min-width: 34px;
+  height: 34px;
+  padding: 0 8px;
+  border-radius: 8px;
+  border: 1.5px solid var(--border);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.15s;
+}
+
+.pg-btn:hover:not(:disabled) {
+  background: var(--accent-subtle);
+  border-color: var(--accent);
+  color: var(--accent-text);
+  transform: translateY(-1px);
+}
+
+.pg-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.pg-btn.pg-active {
+  background: linear-gradient(135deg, #43cea2, #185a9d);
+  border-color: transparent;
+  color: #fff;
+  cursor: default;
+}
+
+@media (max-width: 600px) {
+  .rm-pagination { justify-content: center; }
+  .pg-info { width: 100%; text-align: center; }
+}

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, inject, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AdminService } from '../../../admin/services/admin-service';
@@ -18,9 +18,9 @@ export class RoleManagement implements OnInit {
   private adminService = inject(AdminService);
   private destroyRef   = inject(DestroyRef);
 
-  users      = signal<any[]>([]);
-  filtered   = signal<any[]>([]);
-  isLoading  = signal(true);
+  users       = signal<any[]>([]);
+  filtered    = signal<any[]>([]);
+  isLoading   = signal(true);
   searchQuery = '';
   filterRole  = '';
   confirmUser = signal<any | null>(null);
@@ -29,6 +29,18 @@ export class RoleManagement implements OnInit {
   toast       = signal<{ msg: string; type: 'success' | 'error' } | null>(null);
 
   readonly roles: Role[] = ['user', 'admin', 'super_admin'];
+
+  // ── Pagination ────────────────────────────────────────────────────────────────
+  readonly pageSize  = 10;
+  currentPage        = signal(1);
+  totalPages         = computed(() => Math.max(1, Math.ceil(this.filtered().length / this.pageSize)));
+  pagedUsers         = computed(() => {
+    const start = (this.currentPage() - 1) * this.pageSize;
+    return this.filtered().slice(start, start + this.pageSize);
+  });
+  pageStart          = computed(() => Math.min((this.currentPage() - 1) * this.pageSize + 1, this.filtered().length));
+  pageEnd            = computed(() => Math.min(this.currentPage() * this.pageSize, this.filtered().length));
+  pageNumbers        = computed(() => Array.from({ length: this.totalPages() }, (_, i) => i + 1));
 
   ngOnInit(): void {
     this.adminService.getAllUsersRaw(1, 1000)
@@ -53,6 +65,12 @@ export class RoleManagement implements OnInit {
       list = list.filter(u => u.role === this.filterRole);
     }
     this.filtered.set(list);
+    this.currentPage.set(1);
+  }
+
+  goToPage(page: number): void {
+    if (page < 1 || page > this.totalPages()) return;
+    this.currentPage.set(page);
   }
 
   openConfirm(user: any, role: Role): void {
