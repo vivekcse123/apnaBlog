@@ -8,6 +8,7 @@
     { label: 'Traffic →',       routerLink: '/super-admin/' + userId() + '/visitor' }
   ]"
   [profile]="initial()"
+  [name]="user()?.name"
   [avatarUrl]="avatar()"
   [userRole]="'super_admin'"
   [panelOpen]="isOpened()"
@@ -21,13 +22,12 @@
     [email]="user()?.email"
     [role]="user()?.role"
     [avatar]="avatar()"
+    [userId]="userId() ?? ''"
+    [basePath]="'super-admin'"
+    [totalBlogs]="user()?.totalBlogs ?? 0"
+    [totalViews]="user()?.totalViews ?? 0"
     (close)="closeProfile()"
-  >
-    <a [routerLink]="['/super-admin', userId(), 'settings']"
-       class="edit_setting" primary-action>
-      Edit Setting
-    </a>
-    <a routerLink="/" secondary-action (click)="logout()" class="logout_btn">Logout</a>
+    (logout)="logout()">
   </app-user-profile>
 }
 

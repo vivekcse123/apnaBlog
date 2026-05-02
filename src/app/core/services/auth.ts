@@ -1,6 +1,7 @@
 import { computed, inject, Injectable, PLATFORM_ID, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
+import { Router } from '@angular/router';
 import { apiResponse } from '../models/api-response.model';
 import { User } from '../../features/user/models/user.mode';
 import { isPlatformBrowser } from '@angular/common';
@@ -23,6 +24,7 @@ export class Auth {
   private authEndpoint = environment.apiAuthEndpoint;
 
   private http = inject(HttpClient);
+  private router = inject(Router);
   private platformId = inject(PLATFORM_ID);
   private isBrowser = isPlatformBrowser(this.platformId);
 
@@ -78,6 +80,8 @@ export class Auth {
       localStorage.removeItem('token');
       localStorage.removeItem('sessionId');
     }
+
+    this.router.navigate(['/']);
   }
 
   getSessions(userId: string): Observable<{ status: number; data: ActiveSession[] }> {

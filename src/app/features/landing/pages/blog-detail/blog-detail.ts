@@ -176,7 +176,11 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
 
   // ── Header visibility ─────────────────────────────────────────────────────
   headerHidden    = signal(false);
+  showScrollTop   = signal(false);
   private lastScrollY = 0;
+
+  // Show article title in header once user has scrolled 10% into the article
+  showHeaderTitle = computed(() => this.readingProgress() > 10);
 
   // ── Reply state ───────────────────────────────────────────────────────────
   replyingToId    = signal<string | null>(null);
@@ -431,6 +435,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
           this.updateReadingProgress();
           this.updateActiveHeading();
           this.updateHeaderVisibility();
+          this.showScrollTop.set(window.scrollY > 400);
         });
 
       fromEvent<KeyboardEvent>(this.document, 'keydown')
@@ -1249,6 +1254,10 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     this.contentEl.querySelectorAll('h2, h3, h4').forEach((h: Element, i: number) => {
       if (!h.id) h.id = `heading-${i}`;
     });
+  }
+
+  scrollToTop(): void {
+    if (isPlatformBrowser(this.platformId)) window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   scrollToHeading(id: string): void {

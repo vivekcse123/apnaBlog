@@ -7,6 +7,7 @@
     { label: 'Traffic →', routerLink: `/admin/${userId()}/visitor` }
   ]"
   [profile]="initial()"
+  [name]="user()?.name"
   [avatarUrl]="avatar()"
   [userRole]="user()?.role"
   [panelOpen]="isOpened()"
@@ -14,20 +15,18 @@
 >
 </app-common-header>
 
-@if(isOpened()){
-<app-user-profile
-  [name]="user()?.name"
-  [email]="user()?.email"
-  [role]="user()?.role"
-  [avatar]="avatar()"
-  (close)="closeProfile()"
->
-<a [routerLink]="['/admin', userId(), 'settings']"
-   class="edit_setting"
-   primary-action>
-  Edit Setting
-</a>
-<a routerLink="/" secondary-action (click)="logout()" class="logout_btn">Logout</a>
-</app-user-profile>
+@if (isOpened()) {
+  <app-user-profile
+    [name]="user()?.name"
+    [email]="user()?.email"
+    [role]="user()?.role"
+    [avatar]="avatar()"
+    [userId]="userId() ?? ''"
+    [basePath]="'admin'"
+    [totalBlogs]="user()?.totalBlogs ?? 0"
+    [totalViews]="user()?.totalViews ?? 0"
+    (close)="closeProfile()"
+    (logout)="logout()">
+  </app-user-profile>
 }
 <router-outlet></router-outlet>

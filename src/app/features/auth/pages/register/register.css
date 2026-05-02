@@ -331,6 +331,17 @@
   gap: 16px;
 }
 
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.field-row .show-password-row {
+  grid-column: 1 / -1;
+  margin-top: 0;
+}
+
 .field-group {
   display: flex;
   flex-direction: column;
@@ -610,4 +621,5 @@ form input::placeholder { color: var(--text-muted); }
   .form-panel    { padding: 28px 22px; }
   .form-header h2 { font-size: 22px; }
   .actions       { flex-direction: column; }
+  .field-row     { grid-template-columns: 1fr; }
 }

@@ -6,6 +6,7 @@
     { label: 'Explore Blogs →',routerLink: '/user/' + userId() + '/explore-blogs' }
   ]"
   [profile]="initial()"
+  [name]="user()?.name"
   [avatarUrl]="avatar()"
   [userRole]="user()?.role"
   [panelOpen]="isOpened()"
@@ -14,17 +15,15 @@
 
 @if (isOpened()) {
   <app-user-profile
-    [email]="user()?.email"
     [name]="user()?.name"
+    [email]="user()?.email"
     [role]="user()?.role"
     [avatar]="avatar()"
-    (close)="closeProfile()">
-    <a [routerLink]="['/user', userId(), 'settings']" primary-action class="edit_setting">
-      Edit Setting
-    </a>
-    <a routerLink="/" secondary-action (click)="logout()" class="logout_btn">
-      Logout
-    </a>
+    [userId]="userId()"
+    [totalBlogs]="user()?.totalBlogs ?? 0"
+    [totalViews]="user()?.totalViews ?? 0"
+    (close)="closeProfile()"
+    (logout)="logout()">
   </app-user-profile>
 }
 

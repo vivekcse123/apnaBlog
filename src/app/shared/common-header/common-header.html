@@ -1,86 +1,125 @@
-<header class="header">
+<header class="ch">
 
-  <a class="app-logo" routerLink="/">
-    <img class="app-logo-img" src="/logo-96.png" alt="ApnaInsights" />
-    <span class="app-logo-text">ApnaInsights</span>
+  <!-- Brand -->
+  <a class="ch-brand" routerLink="/" aria-label="ApnaInsights">
+    <img src="/logo-96.png" alt="" width="34" height="34" class="ch-brand-img"/>
+    <span class="ch-brand-text">ApnaInsights</span>
   </a>
 
-  <nav class="nav" role="navigation" aria-label="Main navigation">
+  <!-- Desktop nav (col 2 — hidden on mobile) -->
+  <nav class="ch-nav" role="navigation" aria-label="Main navigation">
     @for (nav of navs; track nav.label) {
-      <a
-        [routerLink]="nav.routerLink"
-        routerLinkActive="active"
-        [routerLinkActiveOptions]="{ exact: true }"
-        class="nav-link"
-      >
+      <a class="ch-nav-link"
+         [routerLink]="nav.routerLink"
+         routerLinkActive="ch-nav-link--active"
+         [routerLinkActiveOptions]="{ exact: true }">
         {{ nav.label }}
       </a>
     }
   </nav>
 
-  <div class="right-section">
+  <!-- Right actions — col 3 (always visible, contains hamburger on mobile) -->
+  <div class="ch-right">
+
+    <!-- Theme toggle — desktop only -->
+    <button class="ch-icon-btn ch-theme-btn"
+            (click)="themeService.toggleTheme()"
+            [title]="themeService.theme() === 'dark' ? 'Light mode' : 'Dark mode'"
+            [attr.aria-label]="themeService.theme() === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'">
+      <span aria-hidden="true">{{ themeService.theme() === 'dark' ? '☀' : '☾' }}</span>
+    </button>
+
+    <!-- Notification bell -->
+    <app-notification-panel />
+
+    <!-- Role badge — desktop only -->
     @if (userRole) {
-      <span class="header-role-badge"
-        [class.badge-user]="userRole === 'user'"
-        [class.badge-admin]="userRole === 'admin'"
-        [class.badge-super]="userRole === 'super_admin'">
+      <span class="ch-role-badge ch-role-desktop"
+            [class.ch-role--user]="userRole === 'user'"
+            [class.ch-role--admin]="userRole === 'admin'"
+            [class.ch-role--super]="userRole === 'super_admin'">
+        <span class="ch-role-icon" aria-hidden="true">{{ getRoleIcon() }}</span>
         {{ getRoleLabel() }}
       </span>
     }
 
-    <app-notification-panel />
-
-    <div class="profile" [class.open]="profileOpen" (click)="openProfile($event)">
+    <!-- Profile avatar -->
+    <button class="ch-avatar" [class.ch-avatar--open]="profileOpen"
+            (click)="openProfile($event)"
+            [attr.aria-label]="'Profile: ' + displayName"
+            [title]="displayName">
       @if (avatarUrl) {
-        <img [src]="avatarUrl" class="profile-avatar-img" alt="Profile" />
+        <img [src]="avatarUrl" alt="" class="ch-avatar-img"/>
       } @else {
-        {{ profile }}
+        <span class="ch-avatar-initial" aria-hidden="true">{{ profile }}</span>
+      }
+    </button>
+
+    <!-- Hamburger — mobile only, inside ch-right so no grid gap -->
+    <button class="ch-hamburger" type="button"
+            (click)="toggleMenu()"
+            [class.ch-hamburger--open]="menuOpen"
+            aria-label="Toggle navigation"
+            [attr.aria-expanded]="menuOpen">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+
+  </div>
+
+</header>
+
+<!-- Mobile drawer -->
+<div class="ch-drawer" [class.ch-drawer--open]="menuOpen"
+     role="navigation" aria-label="Mobile navigation">
+
+  <!-- User card -->
+  <div class="ch-drawer-user">
+    <div class="ch-drawer-avatar">
+      @if (avatarUrl) {
+        <img [src]="avatarUrl" alt="" class="ch-drawer-avatar-img"/>
+      } @else {
+        <span aria-hidden="true">{{ profile }}</span>
+      }
+    </div>
+    <div class="ch-drawer-user-info">
+      <span class="ch-drawer-user-name">{{ displayName }}</span>
+      @if (userRole) {
+        <span class="ch-role-badge ch-drawer-role"
+              [class.ch-role--user]="userRole === 'user'"
+              [class.ch-role--admin]="userRole === 'admin'"
+              [class.ch-role--super]="userRole === 'super_admin'">
+          <span aria-hidden="true">{{ getRoleIcon() }}</span>
+          {{ getRoleLabel() }}
+        </span>
       }
     </div>
   </div>
 
-  <button
-    class="hamburger"
-    type="button"
-    (click)="toggleMenu()"
-    [class.open]="menuOpen"
-    aria-label="Toggle navigation menu"
-    [attr.aria-expanded]="menuOpen"
-  >
-    <span></span>
-    <span></span>
-    <span></span>
-  </button>
+  <!-- Nav links -->
+  <nav class="ch-drawer-nav">
+    @for (nav of navs; track nav.label) {
+      <a class="ch-drawer-link"
+         [routerLink]="nav.routerLink"
+         routerLinkActive="ch-drawer-link--active"
+         [routerLinkActiveOptions]="{ exact: true }"
+         (click)="menuOpen = false">
+        {{ nav.label }}
+      </a>
+    }
+  </nav>
 
-</header>
+  <!-- Footer: theme toggle -->
+  <div class="ch-drawer-footer">
+    <button class="ch-drawer-theme" (click)="themeService.toggleTheme()">
+      <span aria-hidden="true">{{ themeService.theme() === 'dark' ? '☀' : '☾' }}</span>
+      {{ themeService.theme() === 'dark' ? 'Switch to Light' : 'Switch to Dark' }}
+    </button>
+  </div>
 
-<div class="mobile-drawer" [class.open]="menuOpen" role="navigation" aria-label="Mobile navigation">
-  @if (userRole) {
-    <div class="drawer-role-row">
-      <span class="header-role-badge drawer-role-badge"
-        [class.badge-user]="userRole === 'user'"
-        [class.badge-admin]="userRole === 'admin'"
-        [class.badge-super]="userRole === 'super_admin'">
-        {{ getRoleLabel() }}
-      </span>
-    </div>
-  }
-  @for (nav of navs; track nav.label) {
-    <a
-      [routerLink]="nav.routerLink"
-      routerLinkActive="drawer-active"
-      [routerLinkActiveOptions]="{ exact: true }"
-      class="drawer-link"
-      (click)="menuOpen = false"
-    >
-      {{ nav.label }}
-    </a>
-  }
 </div>
 
-<div
-  class="drawer-backdrop"
-  [class.open]="menuOpen"
-  (click)="menuOpen = false"
-  aria-hidden="true"
-></div>
+<!-- Backdrop -->
+<div class="ch-backdrop" [class.ch-backdrop--open]="menuOpen"
+     (click)="menuOpen = false" aria-hidden="true"></div>

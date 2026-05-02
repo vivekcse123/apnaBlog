@@ -1,4 +1,5 @@
-import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { Meta, Title } from '@angular/platform-browser';
 import { DOCUMENT } from '@angular/common';
 import { RouterLink } from '@angular/router';
@@ -27,10 +28,11 @@ interface FAQ {
 })
 export class About implements OnInit, OnDestroy {
 
-  private meta = inject(Meta);
-  private title = inject(Title);
-  private document = inject(DOCUMENT);
+  private meta           = inject(Meta);
+  private title          = inject(Title);
+  private document       = inject(DOCUMENT);
   private contactService = inject(ContactService);
+  private platformId     = inject(PLATFORM_ID);
 
   navMenuOpen = false;
   formSubmitted = false;
@@ -47,10 +49,56 @@ export class About implements OnInit, OnDestroy {
     message: ''
   };
 
+  activeTestimonial = signal(0);
+  private carouselTimer: ReturnType<typeof setInterval> | null = null;
+
+  testimonials = [
+    {
+      initials: 'RP', name: 'Ravi Prasad', location: 'Hyderabad, Telangana',
+      quote: 'ApnaInsights gave me the platform I always needed. As a farmer from rural Telangana, I never thought my stories about village agriculture would reach thousands of readers. This platform truly lives up to its name.'
+    },
+    {
+      initials: 'SM', name: 'Sneha Mehta', location: 'Pune, Maharashtra',
+      quote: 'The editor is so clean and easy to use. I\'ve tried other blogging platforms but ApnaInsights feels like it was made specifically for the Indian blogger. The community here is warm and supportive.'
+    },
+    {
+      initials: 'VV', name: 'Virat Verma', location: 'Lucknow, U.P',
+      quote: 'I started sharing my health journey on ApnaInsights and the response was overwhelming. The trending algorithm actually works — my posts reached people who needed them most. Highly recommend to every Indian writer.'
+    },
+    {
+      initials: 'AS', name: 'Arjun Sharma', location: 'New Delhi',
+      quote: 'As a tech enthusiast, I was looking for a platform that understood Indian readers. ApnaInsights nailed it — the categories are spot on, the reach is real, and writing here feels like talking to your own community.'
+    },
+    {
+      initials: 'PM', name: 'Priya Malhotra', location: 'Bangalore, Karnataka',
+      quote: 'I write about fitness and healthy living, and the Exercise and Lifestyle categories on ApnaInsights helped me find exactly the right audience. The dark mode is a bonus — I write late at night!'
+    }
+  ];
+
+  goToTestimonial(index: number): void {
+    this.activeTestimonial.set(index);
+    this.startCarousel();
+  }
+
+  startCarousel(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    this.stopCarousel();
+    this.carouselTimer = setInterval(() => {
+      this.activeTestimonial.update(i => (i + 1) % this.testimonials.length);
+    }, 4500);
+  }
+
+  stopCarousel(): void {
+    if (this.carouselTimer) {
+      clearInterval(this.carouselTimer);
+      this.carouselTimer = null;
+    }
+  }
+
   faqs: FAQ[] = [
     {
       q: 'What is ApnaInsights?',
-      a: 'ApnaInsights is India\'s community-first blogging platform where real people share real experiences. Writers publish stories on technology, lifestyle, health, business, education, entertainment, social issues, and village life. The platform has 1000+ stories, 100+ active writers, and 10,000+ monthly readers.'
+      a: 'ApnaInsights is India\'s community-first blogging platform where real people share real experiences. Writers publish stories across 14 categories including technology, lifestyle, health, business, education, sports, village life and more. The platform has 2K+ stories, 800+ active writers, and 12K+ monthly readers.'
     },
     {
       q: 'Is ApnaInsights free to use?',
@@ -58,7 +106,7 @@ export class About implements OnInit, OnDestroy {
     },
     {
       q: 'How do I start writing on ApnaInsights?',
-      a: 'Simply sign up for a free account, then click "Write a Story" to access our rich blog editor. You can publish in 12 categories: Sports, Technology, Lifestyle, Education, Health, Business, Entertainment, Social, Cooking, Exercise, Quotes and Village.'
+      a: 'Simply sign up for a free account, then click "Write a Story" to access our rich blog editor. You can publish across 14 categories: Update, News, Sports, Technology, Lifestyle, Education, Health, Business, Entertainment, Social, Village, Cooking, Quotes and Exercise.'
     },
     {
       q: 'Who founded ApnaInsights?',
@@ -66,7 +114,7 @@ export class About implements OnInit, OnDestroy {
     },
     {
       q: 'What categories can I write about on ApnaInsights?',
-      a: 'ApnaInsights supports 12 content categories: Sports, Technology, Lifestyle, Education, Health, Business, Entertainment, Social Issues, Cooking Recipes, Motivational Quotes, Exercise Tips and Village Life. Each category has a dedicated feed and trending algorithm.'
+      a: 'ApnaInsights supports 14 content categories: Update, News, Sports, Technology, Lifestyle, Education, Health, Business, Entertainment, Social, Village, Cooking, Quotes and Exercise. Each category has a dedicated feed and trending algorithm.'
     },
     {
       q: 'Is my content safe and private on ApnaInsights?',
@@ -85,9 +133,11 @@ export class About implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.setMetaTags();
     this.injectJsonLd();
+    this.startCarousel();
   }
 
   ngOnDestroy(): void {
+    this.stopCarousel();
     const scripts = this.document.querySelectorAll('script[data-apna-schema]');
     scripts.forEach(s => s.remove());
   }
@@ -96,7 +146,7 @@ export class About implements OnInit, OnDestroy {
 
     this.title.setTitle('About ApnaInsights | Community Blogging Platform Built for India');
 
-    this.meta.updateTag({ name: 'description', content: 'ApnaInsights is India\'s community-first blogging platform. Publish stories on technology, lifestyle, health, business, village life and more. 10K+ stories, 5K+ writers, 50K+ readers. Free to write, free to read.' });
+    this.meta.updateTag({ name: 'description', content: 'ApnaInsights is India\'s community-first blogging platform. Publish stories across 14 categories — technology, lifestyle, health, business, village life and more. 2K+ stories, 800+ writers, 12K+ monthly readers. Free to write, free to read.' });
     this.meta.updateTag({ name: 'keywords', content: 'ApnaInsights, Indian blogging platform, write blogs online India, community blogging, publish stories India, blog writing platform, free blogging India, blog platform Telugu, Hindi blog platform' });
     this.meta.updateTag({ name: 'robots', content: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' });
     this.meta.updateTag({ name: 'author', content: 'Vivek Verma, ApnaInsights' });
@@ -106,7 +156,7 @@ export class About implements OnInit, OnDestroy {
 
     this.meta.updateTag({ property: 'og:type', content: 'website' });
     this.meta.updateTag({ property: 'og:title', content: 'About ApnaInsights | Community Blogging Platform Built for India' });
-    this.meta.updateTag({ property: 'og:description', content: 'ApnaInsights is India\'s community-first blogging platform where real people share real experiences. 10K+ stories, 5K+ active writers, 50K+ monthly readers.' });
+    this.meta.updateTag({ property: 'og:description', content: 'ApnaInsights is India\'s community-first blogging platform where real people share real experiences. 2K+ stories, 800+ active writers, 12K+ monthly readers.' });
     this.meta.updateTag({ property: 'og:url', content: 'https://apnainsights.com/about' });
     this.meta.updateTag({ property: 'og:site_name', content: 'ApnaInsights' });
     this.meta.updateTag({ property: 'og:image', content: 'https://apnainsights.com/og-image.png' });

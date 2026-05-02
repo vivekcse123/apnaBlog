@@ -530,7 +530,9 @@ export class Home implements OnInit, OnDestroy {
       replaceUrl: true,
     });
     if (isPlatformBrowser(this.platformId)) {
-      window.scrollTo({ top: 36, behavior: 'smooth' });
+      const filterEl = this.document.querySelector('.filter-wrap') as HTMLElement;
+      const top = filterEl ? filterEl.getBoundingClientRect().top + window.scrollY - 10 : 45;
+      window.scrollTo({ top, behavior: 'smooth' });
     }
   }
 

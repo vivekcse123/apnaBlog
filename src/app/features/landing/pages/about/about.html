@@ -79,22 +79,22 @@
 
       <div class="hero-stats" role="region" aria-label="Platform statistics">
         <div class="stat-item">
-          <span class="stat-num" aria-label="Ten thousand plus">10K+</span>
+          <span class="stat-num" aria-label="Two thousand plus">2K+</span>
           <span class="stat-label">Stories Published</span>
         </div>
         <div class="stat-divider" aria-hidden="true"></div>
         <div class="stat-item">
-          <span class="stat-num" aria-label="Five thousand plus">5K+</span>
+          <span class="stat-num" aria-label="Eight hundred plus">800+</span>
           <span class="stat-label">Active Writers</span>
         </div>
         <div class="stat-divider" aria-hidden="true"></div>
         <div class="stat-item">
-          <span class="stat-num">8</span>
+          <span class="stat-num">14</span>
           <span class="stat-label">Categories</span>
         </div>
         <div class="stat-divider" aria-hidden="true"></div>
         <div class="stat-item">
-          <span class="stat-num" aria-label="Fifty thousand plus">50K+</span>
+          <span class="stat-num" aria-label="Twelve thousand plus">12K+</span>
           <span class="stat-label">Monthly Readers</span>
         </div>
       </div>
@@ -373,8 +373,8 @@
         <div class="feature-item" role="listitem">
           <span class="feature-icon" aria-hidden="true">🏷️</span>
           <div>
-            <h3>8 Content Categories</h3>
-            <p>Technology, Lifestyle, Education, Health, Business, Entertainment, Social, and Village — find your niche audience.</p>
+            <h3>14 Content Categories</h3>
+            <p>From Technology, Health &amp; Lifestyle to Village Life, Sports, Cooking, Quotes, Exercise and more — find your niche and the right audience.</p>
           </div>
         </div>
         <div class="feature-item" role="listitem">
@@ -416,49 +416,43 @@
         <h2 class="section-title" id="testimonials-heading">Writers love<br><span class="gradient-text">ApnaInsights</span></h2>
         <p class="section-sub" style="margin: 0 auto; text-align: center;">Real stories from real writers across India who found their voice on our platform.</p>
       </div>
-      <div class="testimonials-grid" role="list">
+      <div class="testimonials-carousel"
+           (mouseenter)="stopCarousel()"
+           (mouseleave)="startCarousel()"
+           role="region"
+           aria-label="Writer testimonials">
 
-        <blockquote class="testimonial-card" role="listitem">
-          <div class="testimonial-stars" aria-label="5 out of 5 stars">★★★★★</div>
-          <p>
-            "ApnaInsights gave me the platform I always needed. As a farmer from rural Telangana, I never thought my stories about village agriculture would reach thousands of readers. This platform truly lives up to its name."
-          </p>
-          <footer class="testimonial-author">
-            <div class="testimonial-avatar" aria-hidden="true">RP</div>
-            <div>
-              <cite class="t-name">Ravi Prasad</cite>
-              <span class="t-location">Hyderabad, Telangana</span>
+        <div class="testimonials-track"
+             [style.transform]="'translateX(-' + activeTestimonial() * 100 + '%)'">
+          @for (t of testimonials; track t.name) {
+            <div class="testimonial-slide">
+              <blockquote class="testimonial-card">
+                <div class="testimonial-stars" aria-label="5 out of 5 stars">★★★★★</div>
+                <p>"{{ t.quote }}"</p>
+                <footer class="testimonial-author">
+                  <div class="testimonial-avatar" aria-hidden="true">{{ t.initials }}</div>
+                  <div>
+                    <cite class="t-name">{{ t.name }}</cite>
+                    <span class="t-location">{{ t.location }}</span>
+                  </div>
+                </footer>
+              </blockquote>
             </div>
-          </footer>
-        </blockquote>
+          }
+        </div>
 
-        <blockquote class="testimonial-card" role="listitem">
-          <div class="testimonial-stars" aria-label="5 out of 5 stars">★★★★★</div>
-          <p>
-            "The editor is so clean and easy to use. I've tried other blogging platforms but ApnaInsights feels like it was made specifically for the Indian blogger. The community here is warm and supportive."
-          </p>
-          <footer class="testimonial-author">
-            <div class="testimonial-avatar" aria-hidden="true">SM</div>
-            <div>
-              <cite class="t-name">Sneha Mehta</cite>
-              <span class="t-location">Pune, Maharashtra</span>
-            </div>
-          </footer>
-        </blockquote>
-
-        <blockquote class="testimonial-card" role="listitem">
-          <div class="testimonial-stars" aria-label="5 out of 5 stars">★★★★★</div>
-          <p>
-            "I started sharing my health journey on ApnaInsights and the response was overwhelming. The trending algorithm actually works — my posts reached people who needed them most. Highly recommend to every Indian writer."
-          </p>
-          <footer class="testimonial-author">
-            <div class="testimonial-avatar" aria-hidden="true">AK</div>
-            <div>
-              <cite class="t-name">Virat Verma</cite>
-              <span class="t-location">Lucknow, U.P</span>
-            </div>
-          </footer>
-        </blockquote>
+        <div class="carousel-dots" role="tablist" aria-label="Select testimonial">
+          @for (t of testimonials; track t.name; let i = $index) {
+            <button
+              class="carousel-dot"
+              [class.active]="activeTestimonial() === i"
+              (click)="goToTestimonial(i)"
+              [attr.aria-label]="'View testimonial from ' + t.name"
+              role="tab"
+              [attr.aria-selected]="activeTestimonial() === i">
+            </button>
+          }
+        </div>
 
       </div>
     </div>
@@ -614,11 +608,6 @@
                   <rect x="2" y="2" width="20" height="20" rx="5" stroke="currentColor" stroke-width="2"/>
                   <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/>
                   <circle cx="17.5" cy="6.5" r="1" fill="currentColor"/>
-                </svg>
-              </a>
-              <a href="https://github.com/apnainsights" class="social-btn" aria-label="ApnaInsights on GitHub" rel="noopener noreferrer" target="_blank" role="listitem">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0020 4.77 5.07 5.07 0 0019.91 1S18.73.65 16 2.48a13.38 13.38 0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 4.77a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
               </a>
             </div>

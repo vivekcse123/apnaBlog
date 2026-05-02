@@ -9,80 +9,142 @@ body {
 /* ── Header ── */
 .header {
   position: sticky; top: 0; z-index: 1000;
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 0 6%; height: 66px;
-  background: var(--bg-surface);
-  border-bottom: 1px solid var(--border);
-  box-shadow: var(--card-shadow);
-  transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 20px;
+  padding: 0 5%;
+  height: 64px;
+  background: color-mix(in srgb, var(--bg-surface) 90%, transparent);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+  box-shadow: 0 1px 24px rgba(0,0,0,0.07);
+  transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
   will-change: transform;
 }
 
-/* Auto-hide on mobile scroll-down — JS adds/removes this class */
 @media (max-width: 767px) {
   .header--hidden { transform: translateY(-100%); }
 }
 
+/* Animated shimmer gradient bottom border */
 .header::after {
   content: '';
   position: absolute; bottom: 0; left: 0;
-  width: 100%; height: 3px;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  width: 100%; height: 2px;
+  background: linear-gradient(90deg, #43cea2, #185a9d, #43cea2);
+  background-size: 200% 100%;
+  animation: hdr-shimmer 4s linear infinite;
+}
+@keyframes hdr-shimmer {
+  0%   { background-position: 0% 0%; }
+  100% { background-position: 200% 0%; }
 }
 
-.header-left, .header-right { display: flex; align-items: center; gap: 14px; }
+/* ── Left — brand ── */
+.header-left { display: flex; align-items: center; }
 
 .app-logo {
-  display: flex; align-items: center; gap: 8px;
-  text-decoration: none; cursor: pointer;
+  display: flex; align-items: center; gap: 9px;
+  text-decoration: none; transition: opacity 0.2s;
 }
+.app-logo:hover { opacity: 0.82; }
 
-.app-logo-img { border-radius: 6px; }
+.app-logo-img { border-radius: 8px; }
 
 .app-logo-text {
-  font-size: 20px; font-weight: 700;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  font-size: 19px; font-weight: 700; letter-spacing: -0.3px;
+  background: linear-gradient(135deg, #43cea2 0%, #185a9d 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-.theme-toggle {
-  width: 38px; height: 38px; border-radius: 10px;
+/* ── Center — article title (fades in on scroll) ── */
+.header-center {
+  min-width: 0;
+  opacity: 0; transform: translateY(8px);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+  pointer-events: none;
+}
+.header-center--visible {
+  opacity: 1; transform: translateY(0);
+  pointer-events: auto;
+}
+.header-article-title {
+  display: block;
+  font-size: 13.5px; font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  text-align: center; letter-spacing: -0.1px;
+}
+
+/* ── Right — actions ── */
+.header-right { display: flex; align-items: center; gap: 8px; }
+
+/* Reading progress ring */
+.progress-ring-wrap {
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px;
+  opacity: 0; transform: scale(0.7);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  cursor: default;
+}
+.progress-ring-wrap--visible { opacity: 1; transform: scale(1); }
+
+.progress-ring-svg { display: block; overflow: visible; }
+
+.progress-ring-pct {
+  position: absolute;
+  font-size: 8px; font-weight: 700;
+  color: var(--text-muted); line-height: 1;
+  pointer-events: none;
+}
+
+/* Theme toggle */
+.hdr-icon-btn {
+  width: 36px; height: 36px; border-radius: 10px;
   border: 1.5px solid var(--border);
   background: var(--bg-surface-alt);
   color: var(--text-secondary); cursor: pointer;
   display: flex; align-items: center; justify-content: center;
-  font-size: 16px;
-  transition: background 0.2s, border-color 0.2s, transform 0.2s;
+  font-size: 15px;
+  transition: background 0.2s, border-color 0.2s, transform 0.25s;
 }
-
-.theme-toggle:hover {
+.hdr-icon-btn:hover {
   background: var(--accent-subtle); border-color: var(--accent);
-  color: var(--accent-text); transform: rotate(15deg);
+  color: var(--accent-text); transform: rotate(18deg) scale(1.05);
 }
 
-.back-btn {
-  display: flex; align-items: center; gap: 6px;
+/* Back button */
+.hdr-back-btn {
+  display: flex; align-items: center; gap: 5px;
+  padding: 8px 16px;
   background: transparent; border: 1.5px solid var(--border);
-  color: var(--text-secondary); border-radius: 8px;
-  padding: 9px 18px; font-size: 14px; font-weight: 600;
+  color: var(--text-secondary); border-radius: 20px;
+  font-size: 13.5px; font-weight: 600;
   font-family: 'DM Sans', sans-serif; cursor: pointer;
-  transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.2s;
+  transition: background 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+  white-space: nowrap;
 }
-
-.back-btn:hover {
+.hdr-back-btn:hover {
   background: var(--accent-subtle); border-color: var(--accent);
-  color: var(--accent-text); transform: translateY(-2px);
+  color: var(--accent-text);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--accent) 25%, transparent);
+  transform: translateX(-2px);
 }
 
-/* ── Progress Bar ── */
+/* ── Progress Bar (fixed top) ── */
 .reading-progress-bar {
-  position: fixed; top: 0px; left: 0; height: 4px;
+  position: fixed; top: 0; left: 0; height: 4px;
   background: linear-gradient(135deg, #43cea2, #185a9d);
   z-index: 999; transition: width 0.1s linear;
   box-shadow: 0 2px 8px rgba(67,206,162,0.3);
 }
+
+/* Reading progress bar — now integrated into .hdr-prog inside the header */
 
 /* ── Floating Actions ── */
 .floating-actions {
@@ -1193,8 +1255,11 @@ body {
   .apos-thumb { width: 56px; height: 42px; }
   .blog-detail-container { padding: 20px 16px 32px; }
   .blog-content { font-size: 16.5px; }
-  .app-logo-text { display: none; }
-  .back-btn { padding: 8px 12px; font-size: 13px; }
+  .app-logo-text      { display: none; }
+  .header-center      { display: none; }
+  .progress-ring-wrap { display: none; }
+  .hdr-back-btn span  { display: none; }
+  .hdr-back-btn       { padding: 8px 10px; border-radius: 10px; }
   .comment-actions { flex-wrap: wrap; gap: 8px; }
   .comment-actions .ctrl-enter-hint { width: 100%; text-align: left; }
   .submit-comment-btn { width: 100%; justify-content: center; }
@@ -1710,6 +1775,45 @@ body {
   .blog-detail-container { padding: 16px 12px 28px; }
   .blog-title { font-size: clamp(20px, 7.5vw, 26px); }
   .comment-input-area { padding: 12px; }
+}
+
+/* ── Scroll-to-top FAB (left side) ────────────────────────────────────────── */
+.bd-scroll-top-fab {
+  position: fixed;
+  left: 24px;
+  bottom: 32px;
+  z-index: 900;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, #43cea2, #185a9d);
+  color: #fff;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(67, 206, 162, 0.35);
+  opacity: 0;
+  transform: translateY(16px);
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease, box-shadow 0.2s ease;
+}
+
+.bd-scroll-top-fab.visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.bd-scroll-top-fab:hover {
+  box-shadow: 0 8px 24px rgba(67, 206, 162, 0.5);
+  transform: translateY(-2px);
+}
+
+@media (max-width: 640px) {
+  .bd-scroll-top-fab { left: 16px; bottom: 20px; width: 40px; height: 40px; font-size: 18px; }
 }
 
 /* ── AdSense Ad Unit ───────────────────────────────────────────────────────── */

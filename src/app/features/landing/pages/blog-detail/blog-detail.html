@@ -1,17 +1,59 @@
 <header class="header" [class.header--hidden]="headerHidden()">
+
+  <!-- Left — brand -->
   <div class="header-left">
     <a class="app-logo" routerLink="/" aria-label="ApnaInsights — homepage">
       <img class="app-logo-img" src="/logo-96.png" alt="ApnaInsights" width="32" height="32"/>
       <span class="app-logo-text">ApnaInsights</span>
     </a>
   </div>
+
+  <!-- Center — article title (slides in after 10% scroll) -->
+  <div class="header-center" [class.header-center--visible]="showHeaderTitle()">
+    <span class="header-article-title">{{ post()?.title }}</span>
+  </div>
+
+  <!-- Right — actions -->
   <div class="header-right">
-    <button class="theme-toggle"
-            (click)="themeService.toggleTheme()"
-            [attr.aria-label]="themeService.theme() === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'">
-      <span class="theme-icon" aria-hidden="true">{{ themeService.theme() === 'dark' ? '☀' : '☾' }}</span>
+
+    <!-- Reading progress ring -->
+    <div class="progress-ring-wrap" [title]="(readingProgress() | number:'1.0-0') + '% read'"
+         [class.progress-ring-wrap--visible]="readingProgress() > 0">
+      <svg viewBox="0 0 36 36" width="32" height="32" class="progress-ring-svg" aria-hidden="true">
+        <circle cx="18" cy="18" r="14" fill="none"
+          stroke="var(--border)" stroke-width="3"/>
+        <circle cx="18" cy="18" r="14" fill="none"
+          stroke="url(#hdrProgressGrad)" stroke-width="3"
+          stroke-linecap="round"
+          [attr.stroke-dasharray]="(readingProgress() * 0.8796).toFixed(2) + ' 87.96'"
+          transform="rotate(-90 18 18)"/>
+        <defs>
+          <linearGradient id="hdrProgressGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#43cea2"/>
+            <stop offset="100%" stop-color="#185a9d"/>
+          </linearGradient>
+        </defs>
+      </svg>
+      <span class="progress-ring-pct">{{ readingProgress() | number:'1.0-0' }}</span>
+    </div>
+
+    <!-- Theme toggle -->
+    <button class="hdr-icon-btn" (click)="themeService.toggleTheme()"
+            [attr.aria-label]="themeService.theme() === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
+            [title]="themeService.theme() === 'dark' ? 'Light mode' : 'Dark mode'">
+      <span aria-hidden="true">{{ themeService.theme() === 'dark' ? '☀' : '☾' }}</span>
     </button>
-    <button class="back-btn" (click)="goBack()" aria-label="Go back">← Back</button>
+
+    <!-- Back -->
+    <button class="hdr-back-btn" (click)="goBack()" aria-label="Go back">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2.5"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+      <span>Back</span>
+    </button>
+
   </div>
 </header>
 
@@ -682,6 +724,14 @@
   </div>
 
 </div>
+
+<button
+  class="bd-scroll-top-fab"
+  [class.visible]="showScrollTop()"
+  (click)="scrollToTop()"
+  aria-label="Scroll back to top">
+  <span aria-hidden="true">↑</span>
+</button>
 
 <footer class="blog-detail-footer">
   <div class="blog-detail-footer-inner">
