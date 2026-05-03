@@ -1,5 +1,5 @@
 import {
-  Component, OnInit, inject, signal, computed, DestroyRef, PLATFORM_ID
+  Component, OnInit, inject, signal, computed, DestroyRef, PLATFORM_ID, HostListener
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule, DatePipe, isPlatformBrowser } from '@angular/common';
@@ -33,10 +33,29 @@ export class CategoryPage implements OnInit {
   private titleSvc    = inject(Title);
   private document    = inject(DOCUMENT);
 
-  categorySlug = signal('');
-  categoryName = signal('');
-  allPosts     = signal<Post[]>([]);
-  isLoading    = signal(true);
+  categorySlug    = signal('');
+  categoryName    = signal('');
+  allPosts        = signal<Post[]>([]);
+  isLoading       = signal(true);
+  showCatDropdown = signal(false);
+
+  readonly ALL_CATEGORIES = CATEGORIES;
+
+  @HostListener('document:click', ['$event'])
+  onDocClick(e: MouseEvent): void {
+    const target = e.target as HTMLElement;
+    if (!target.closest('.cat-switch-wrap')) {
+      this.showCatDropdown.set(false);
+    }
+  }
+
+  toggleCatDropdown(): void { this.showCatDropdown.set(!this.showCatDropdown()); }
+
+  switchCategory(cat: string): void {
+    this.showCatDropdown.set(false);
+    this.router.navigate(['/category', cat.toLowerCase()]);
+    if (isPlatformBrowser(this.platformId)) window.scrollTo({ top: 0, behavior: 'instant' });
+  }
 
   posts = computed(() => {
     const name = this.categoryName().toLowerCase();

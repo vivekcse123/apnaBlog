@@ -30,37 +30,35 @@ export class UserProfile {
   get roleLabel(): string {
     if (this.role === 'super_admin') return 'Super Admin';
     if (this.role === 'admin')       return 'Admin';
-    return 'Writer';
+    return 'User';
   }
 
   get navItems(): NavItem[] {
-    const b = this.basePath;
+    const b  = this.basePath;
     const id = this.userId;
 
     if (b === 'admin') {
       return [
-        { label: 'Dashboard',    route: [`/${b}`, id],                   icon: 'home'     },
-        { label: 'Manage Blogs', route: [`/${b}`, id, 'manage-blogs'],   icon: 'docs'     },
-        { label: 'Manage Users', route: [`/${b}`, id, 'manage-users'],   icon: 'users'    },
-        { label: 'Settings',     route: [`/${b}`, id, 'settings'],       icon: 'settings' },
+        { label: 'Create Blog',      route: [`/${b}`, id, 'create-blog'],   icon: 'write'    },
+        { label: 'Create User',      route: [`/${b}`, id, 'create-user'],   icon: 'add-user' },
+        { label: 'Visitor Analytics',route: [`/${b}`, id, 'visitor'],       icon: 'chart'    },
+        { label: 'Account Settings', route: [`/${b}`, id, 'settings'],      icon: 'settings' },
       ];
     }
 
     if (b === 'super-admin') {
       return [
-        { label: 'Dashboard',       route: [`/${b}`, id],                      icon: 'home'    },
-        { label: 'Manage Blogs',    route: [`/${b}`, id, 'manage-blogs'],      icon: 'docs'    },
-        { label: 'Manage Users',    route: [`/${b}`, id, 'manage-users'],      icon: 'users'   },
-        { label: 'Role Management', route: [`/${b}`, id, 'role-management'],   icon: 'shield'  },
-        { label: 'Settings',        route: [`/${b}`, id, 'settings'],          icon: 'settings'},
+        { label: 'Role Management',  route: [`/${b}`, id, 'role-management'], icon: 'shield'   },
+        { label: 'Visitor Analytics',route: [`/${b}`, id, 'visitor'],         icon: 'chart'    },
+        { label: 'Account Settings', route: [`/${b}`, id, 'settings'],        icon: 'settings' },
       ];
     }
 
     return [
-      { label: 'Dashboard',  route: ['/user', id],                  icon: 'home'     },
-      { label: 'My Stories', route: ['/user', id, 'manage-blogs'],  icon: 'docs'     },
-      { label: 'Explore',    route: ['/user', id, 'explore-blogs'], icon: 'search'   },
-      { label: 'Settings',   route: ['/user', id, 'settings'],      icon: 'settings' },
+      { label: 'Write a Story',   route: ['/user', id, 'manage-blogs'],  icon: 'write'    },
+      { label: 'My Overview',     route: ['/user', id],                  icon: 'chart'    },
+      { label: 'Account Settings',route: ['/user', id, 'settings'],      icon: 'settings' },
+      { label: 'Public Site',     route: ['/welcome'],                   icon: 'globe'    },
     ];
   }
 

@@ -126,24 +126,36 @@
 }
 
 .sidebar-brand {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  padding: 0 1.25rem 1.5rem;
+  padding: 0 1.25rem 1.25rem;
   border-bottom: 1px solid var(--sidebar-border);
   margin-bottom: 0.75rem;
 }
 
-.brand-icon {
-  font-size: 1.4rem;
-  color: var(--sidebar-brand);
+/* ── Breadcrumb ── */
+.settings-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
-.brand-text {
-  font-size: 1.05rem;
-  font-weight: 600;
-  color: var(--sidebar-active);
-  letter-spacing: 0.02em;
+.bc-home {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: default;
+}
+
+.settings-breadcrumb svg {
+  color: var(--text-muted);
+  flex-shrink: 0;
+  opacity: 0.6;
+}
+
+.bc-current {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: 0.01em;
 }
 
 /* ── Nav ── */

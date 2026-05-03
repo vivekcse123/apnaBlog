@@ -169,6 +169,50 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   readingTime     = signal(0);
   showToc         = signal(false);
 
+  // ── Text resize ───────────────────────────────────────────────────────────
+  fontSize = signal<'sm' | 'md' | 'lg'>('md');
+
+  setFontSize(size: 'sm' | 'md' | 'lg'): void {
+    this.fontSize.set(size);
+    if (isPlatformBrowser(this.platformId)) {
+      try { localStorage.setItem('bd_font_size', size); } catch { }
+    }
+  }
+
+  // ── Trending posts ────────────────────────────────────────────────────────
+  trendingPosts = signal<Post[]>([]);
+
+  // ── Image lightbox ────────────────────────────────────────────────────────
+  lightboxSrc = signal<string | null>(null);
+  lightboxAlt = signal<string>('');
+
+  openLightbox(src: string, alt: string): void {
+    this.lightboxSrc.set(src);
+    this.lightboxAlt.set(alt);
+    this.lockScroll(true);
+  }
+
+  closeLightbox(): void {
+    this.lightboxSrc.set(null);
+    this.lockScroll(false);
+  }
+
+  // ── Categories dropdown ───────────────────────────────────────────────────
+  showCatDropdown = signal(false);
+
+  readonly ALL_CATEGORIES = [
+    'Update', 'News', 'Sports', 'Technology', 'Lifestyle',
+    'Education', 'Health', 'Business', 'Entertainment',
+    'Social', 'Village', 'Cooking', 'Quotes', 'Exercise',
+  ];
+
+  toggleCatDropdown(): void { this.showCatDropdown.set(!this.showCatDropdown()); }
+
+  navigateToCategory(cat: string): void {
+    this.showCatDropdown.set(false);
+    this.filterByTag(cat);
+  }
+
   // ── Share ─────────────────────────────────────────────────────────────────
   shareCount      = signal(0);
   shareMenuOpen   = signal(false);
@@ -426,6 +470,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     this.restoreLikedIds();
     this.restoreBookmarkedIds();
     this.fetchCurrentUser();
+    this.restoreFontSize();
 
     // Browser-only scroll + keyboard listeners
     if (isPlatformBrowser(this.platformId)) {
@@ -438,14 +483,24 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
           this.showScrollTop.set(window.scrollY > 400);
         });
 
+      fromEvent<MouseEvent>(this.document, 'click')
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe(e => {
+          if (!(e.target as HTMLElement).closest('.cat-dropdown-wrap')) {
+            this.showCatDropdown.set(false);
+          }
+        });
+
       fromEvent<KeyboardEvent>(this.document, 'keydown')
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe(e => {
           if (e.key !== 'Escape') return;
-          if (this.showAuthorPostsModal()) { this.closeAuthorPostsModal(); return; }
-          if (this.showAuthorModal())      { this.closeAuthorModal();      return; }
-          if (this.commentDrawerOpen())    { this.closeCommentDrawer();    return; }
+          if (this.lightboxSrc())          { this.closeLightbox();            return; }
+          if (this.showAuthorPostsModal()) { this.closeAuthorPostsModal();    return; }
+          if (this.showAuthorModal())      { this.closeAuthorModal();         return; }
+          if (this.commentDrawerOpen())    { this.closeCommentDrawer();       return; }
           this.shareMenuOpen.set(false);
+          this.showCatDropdown.set(false);
           this.showToc.set(false);
         });
     }
@@ -674,7 +729,9 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     try {
       const ads: any[] = (window as any).adsbygoogle ?? [];
       (window as any).adsbygoogle = ads;
-      ads.push({});
+      // Push once per <ins> so every ad slot initialises independently
+      const slots = this.elementRef.nativeElement.querySelectorAll('ins.adsbygoogle');
+      slots.forEach(() => ads.push({}));
     } catch (_) { /* ignore */ }
   }
 
@@ -786,6 +843,14 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
       });
   }
 
+  private restoreFontSize(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    try {
+      const s = localStorage.getItem('bd_font_size');
+      if (s === 'sm' || s === 'lg') this.fontSize.set(s);
+    } catch { }
+  }
+
   private _processRelatedAndAuthor(currentPost: Post, allPosts: Post[]): void {
     const authorId = (currentPost.user as any)?._id ?? currentPost.user;
 
@@ -821,6 +886,13 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
       });
 
     this.relatedPosts.set(related.slice(0, 4));
+
+    // Trending — top 5 published posts by views, excluding current
+    const trending = allPosts
+      .filter(p => p._id !== currentPost._id && p.status === 'published')
+      .sort((a, b) => (b.views ?? 0) - (a.views ?? 0))
+      .slice(0, 5);
+    this.trendingPosts.set(trending);
   }
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -1567,6 +1639,16 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     this.router.navigate(['/category', tag.toLowerCase()]);
     if (isPlatformBrowser(this.platformId)) {
       window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+  }
+
+  onContentClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    const img = target.closest('figure.inline-img img') as HTMLImageElement | null
+              ?? (target.tagName === 'IMG' && target.closest('figure.inline-img') ? target as HTMLImageElement : null);
+    if (img) {
+      event.preventDefault();
+      this.openLightbox(img.src, img.alt || '');
     }
   }
 }

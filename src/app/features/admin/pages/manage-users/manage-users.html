@@ -1,67 +1,146 @@
 <div class="user-page">
 
+  <!-- ── Page Header ── -->
   <div class="page-header">
-    <div>
+    <div class="page-header-left">
       <h2>Manage Users</h2>
-      <div class="user-stats">
-        <span class="stat-pill total">{{ allUsers().length }} Total</span>
-        @if (todayCount() > 0) {
-          <span class="stat-pill new-today">{{ todayCount() }} New Today</span>
-        }
-      </div>
+      <p>A comprehensive overview of all registered users</p>
     </div>
-    <div class="actions">
-      <input
-        type="text"
-        placeholder="Search user..."
-        [(ngModel)]="searchName"
-        (ngModelChange)="debounceSearch($event)"
-      />
-      <select
-        [ngModel]="selectedRole()"
-        (ngModelChange)="selectedRole.set($event); currentPage.set(1)">
-        <option value="">Filter by Role</option>
-        <option value="user">User</option>
-        <option value="admin">Admin</option>
-        <option value="super_admin">Super Admin</option>
-      </select>
-      <select
-        [ngModel]="selectedStatus()"
-        (ngModelChange)="selectedStatus.set($event); currentPage.set(1)">
-        <option value="">Filter by Status</option>
-        <option value="active">Active</option>
-        <option value="inactive">Inactive</option>
-      </select>
-      <button
-        class="today-btn"
-        [class.today-btn--active]="showTodayOnly()"
-        (click)="toggleTodayFilter()"
-      >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-          <line x1="16" y1="2" x2="16" y2="6"/>
-          <line x1="8" y1="2" x2="8" y2="6"/>
-          <line x1="3" y1="10" x2="21" y2="10"/>
+    <div class="page-header-right">
+      <div class="search-wrap">
+        <svg class="search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
         </svg>
-        Today
-      </button>
-      <button class="add-btn" (click)="showCreateModal.set(true)">+ Add User</button>
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Search users..."
+          [(ngModel)]="searchName"
+          (ngModelChange)="debounceSearch($event)"
+        />
+      </div>
     </div>
   </div>
 
+  <!-- ── Stats Bar ── -->
+  <div class="stats-bar">
+
+    <div class="stat-card">
+      <div class="stat-icon-wrap users-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#185a9d" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+      </div>
+      <div class="stat-body">
+        <span class="stat-label">Total Users</span>
+        <span class="stat-value">{{ allUsers().length }}</span>
+        <span class="stat-chip users-chip">Registered accounts</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon-wrap active-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-5"/></svg>
+      </div>
+      <div class="stat-body">
+        <span class="stat-label">Active</span>
+        <span class="stat-value stat-value--active">{{ activeCount() }}</span>
+        <span class="stat-chip active-chip">Currently active</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon-wrap inactive-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M15 9l-6 6M9 9l6 6"/></svg>
+      </div>
+      <div class="stat-body">
+        <span class="stat-label">Inactive</span>
+        <span class="stat-value stat-value--inactive">{{ inactiveCount() }}</span>
+        <span class="stat-chip inactive-chip">Frozen accounts</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon-wrap admin-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <div class="stat-body">
+        <span class="stat-label">Admins</span>
+        <span class="stat-value stat-value--admin">{{ adminCount() }}</span>
+        <span class="stat-chip admin-chip">With admin access</span>
+      </div>
+    </div>
+
+    @if (todayCount() > 0) {
+      <div class="stat-card">
+        <div class="stat-icon-wrap today-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#43cea2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        </div>
+        <div class="stat-body">
+          <span class="stat-label">New Today</span>
+          <span class="stat-value stat-value--today">{{ todayCount() }}</span>
+          <span class="stat-chip today-chip">Joined today</span>
+        </div>
+      </div>
+    }
+
+  </div>
+
+  <!-- ── Filters ── -->
+  <div class="filters-row">
+    <select
+      class="filter-select"
+      [ngModel]="selectedRole()"
+      (ngModelChange)="selectedRole.set($event); currentPage.set(1)">
+      <option value="">Filter by Role</option>
+      <option value="user">User</option>
+      <option value="admin">Admin</option>
+      <option value="super_admin">Super Admin</option>
+    </select>
+    <select
+      class="filter-select"
+      [ngModel]="selectedStatus()"
+      (ngModelChange)="selectedStatus.set($event); currentPage.set(1)">
+      <option value="">Filter by Status</option>
+      <option value="active">Active</option>
+      <option value="inactive">Inactive</option>
+    </select>
+    <button
+      class="today-btn"
+      [class.today-btn--active]="showTodayOnly()"
+      (click)="toggleTodayFilter()"
+    >
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+        <line x1="16" y1="2" x2="16" y2="6"/>
+        <line x1="8" y1="2" x2="8" y2="6"/>
+        <line x1="3" y1="10" x2="21" y2="10"/>
+      </svg>
+      Today
+    </button>
+    <div class="filters-spacer"></div>
+    <button class="add-btn" (click)="showCreateModal.set(true)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      Add User
+    </button>
+  </div>
+
+  <!-- ── Table ── -->
   <div class="table-card">
     <div class="table-scroll">
       <table>
         <thead>
           <tr>
-            <th>Name</th>
+            <th>User</th>
             <th>Email</th>
             <th>Role</th>
             <th>Status</th>
-            <th>Created</th>
-             <th>Updated</th>
-            <th width="220">Actions</th>
+            <th>Joined</th>
+            <th>Last Active</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -79,7 +158,7 @@
                 <td><div class="sk-cell" style="width:64px;height:22px;border-radius:20px;"></div></td>
                 <td><div class="sk-cell" style="width:56px;height:22px;border-radius:999px;"></div></td>
                 <td><div class="sk-cell" style="width:80px;"></div></td>
-                <td><div class="sk-cell" style="width:80px;"></div></td>
+                <td><div class="sk-cell" style="width:100px;"></div></td>
                 <td>
                   <div style="display:flex;gap:6px;">
                     <div class="sk-cell" style="width:34px;height:30px;border-radius:6px;"></div>
@@ -97,14 +176,14 @@
 
                 <td class="cell-user-name">
                   <div class="user-cell">
-                    <div class="user-avatar">
+                    <div class="user-avatar" [style.background]="avatarColor(user.name)">
                       @if (user.avatar) {
                         <img [src]="user.avatar" class="user-avatar-img" [alt]="user.name" />
                       } @else {
                         {{ user.name.charAt(0) | uppercase }}
                       }
                     </div>
-                    <span>{{ user.name | titlecase }}</span>
+                    <span class="user-name-text">{{ user.name | titlecase }}</span>
                   </div>
                 </td>
 
@@ -112,8 +191,9 @@
 
                 <td data-label="Role">
                   <span class="role-badge"
-                    [class.admin]="user.role === 'admin'"
-                    [class.super-admin]="user.role === 'super_admin'">
+                    [class.role-badge--admin]="user.role === 'admin'"
+                    [class.role-badge--super]="user.role === 'super_admin'"
+                    [class.role-badge--user]="user.role === 'user'">
                     {{ user.role === 'super_admin' ? 'Super Admin' : (user.role | titlecase) }}
                   </span>
                 </td>
@@ -124,24 +204,59 @@
                     [class.status-inactive]="user.status === 'inactive'"
                     [class.status-pending]="user.status === 'pending_deletion'"
                   >
-                    {{ user.status === 'pending_deletion' ? 'Pending Deletion' : (user.status | titlecase) }}
+                    <span class="status-dot"></span>
+                    {{ user.status === 'pending_deletion' ? 'Pending' : (user.status | titlecase) }}
                   </span>
                 </td>
 
-                <td data-label="Created">{{ user.createdAt | date: 'mediumDate' }}</td>
-                <td data-label="Updated">{{ user.updatedAt | date: 'mediumDate' }}</td>
+                <td data-label="Joined" class="date-cell">{{ user.createdAt | date: 'MMM d, y' }}</td>
+
+                <td data-label="Last Active" class="last-active-cell">
+                  <span class="date-text">{{ user.updatedAt | date: 'MMM d, y' }}</span>
+                  <span class="time-ago">{{ timeAgo(user.updatedAt) }}</span>
+                </td>
 
                 <td class="cell-actions">
                   <div class="action-buttons">
-                    <button class="view"   (click)="getUserDetails(user._id)"   title="View details"><i class="bi bi-eye"></i></button>
-                    <button class="delete" (click)="deleteUser(user)"           title="Delete user"><i class="bi bi-trash3"></i></button>
+                    <button class="action-btn action-btn--view"
+                            (click)="getUserDetails(user._id)"
+                            title="View details">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                           stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                      </svg>
+                    </button>
                     <button
-                      [class.freeze]="user.status === 'active'"
-                      [class.unfreeze]="user.status !== 'active'"
+                      class="action-btn"
+                      [class.action-btn--freeze]="user.status === 'active'"
+                      [class.action-btn--unfreeze]="user.status !== 'active'"
                       (click)="toggleUserStatus(user)"
                       [title]="user.status === 'active' ? 'Freeze user' : 'Unfreeze user'"
                     >
-                      <i class="bi" [ngClass]="user.status === 'active' ? 'bi-lock-fill' : 'bi-unlock-fill'"></i>
+                      @if (user.status === 'active') {
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                          <path d="M7 11V7a5 5 0 0110 0v4"/>
+                        </svg>
+                      } @else {
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                             stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                          <path d="M7 11V7a5 5 0 019.9-1"/>
+                        </svg>
+                      }
+                    </button>
+                    <button class="action-btn action-btn--delete"
+                            (click)="deleteUser(user)"
+                            title="Delete user">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+                        <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+                      </svg>
                     </button>
                   </div>
                 </td>
@@ -154,8 +269,8 @@
                 <td colspan="7" class="empty-row">
                   <div class="empty-state">
                     <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
-                      <circle cx="12" cy="8" r="4" stroke="#ddd" stroke-width="2" fill="none"/>
-                      <path d="M4 20c0-4.418 3.582-7 8-7s8 2.582 8 7" stroke="#ddd" stroke-width="2" stroke-linecap="round" fill="none"/>
+                      <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                      <path d="M4 20c0-4.418 3.582-7 8-7s8 2.582 8 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none"/>
                     </svg>
                     @if (showTodayOnly()) {
                       <p>No new users today</p>
@@ -173,30 +288,31 @@
         </tbody>
       </table>
     </div>
-  </div>
 
-  @if (filteredUsers().length > 0) {
-    <div class="pagination">
-      <span class="pg-info">
-        Showing {{ pageStart() }}–{{ pageEnd() }} of {{ filteredUsers().length }}
-      </span>
-      <div class="pg-controls">
-        <button class="pg-btn" (click)="goToPage(1)"
-                [disabled]="currentPage() === 1" title="First page">«</button>
-        <button class="pg-btn" (click)="previousPage()"
-                [disabled]="currentPage() === 1" title="Previous page">‹</button>
-        @for (page of pages(); track page) {
-          <button class="pg-btn pg-num"
-                  [class.pg-active]="currentPage() === page"
-                  (click)="goToPage(page)">{{ page }}</button>
-        }
-        <button class="pg-btn" (click)="nextPage()"
-                [disabled]="currentPage() === totalPages()" title="Next page">›</button>
-        <button class="pg-btn" (click)="goToPage(totalPages())"
-                [disabled]="currentPage() === totalPages()" title="Last page">»</button>
+    <!-- ── Pagination ── -->
+    @if (filteredUsers().length > 0) {
+      <div class="pagination">
+        <span class="pg-info">
+          Showing {{ pageStart() }}–{{ pageEnd() }} of {{ filteredUsers().length }} users
+        </span>
+        <div class="pg-controls">
+          <button class="pg-btn" (click)="goToPage(1)"
+                  [disabled]="currentPage() === 1" title="First page">«</button>
+          <button class="pg-btn" (click)="previousPage()"
+                  [disabled]="currentPage() === 1" title="Previous page">‹</button>
+          @for (page of visiblePages(); track page) {
+            <button class="pg-btn pg-num"
+                    [class.pg-active]="currentPage() === page"
+                    (click)="goToPage(page)">{{ page }}</button>
+          }
+          <button class="pg-btn" (click)="nextPage()"
+                  [disabled]="currentPage() === totalPages()" title="Next page">›</button>
+          <button class="pg-btn" (click)="goToPage(totalPages())"
+                  [disabled]="currentPage() === totalPages()" title="Last page">»</button>
+        </div>
       </div>
-    </div>
-  }
+    }
+  </div>
 
 </div>
 

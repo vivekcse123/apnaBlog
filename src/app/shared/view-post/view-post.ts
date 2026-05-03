@@ -71,6 +71,15 @@ export class ViewPost implements OnInit, OnDestroy {
   linkUrlValue   = signal('');
   private savedLinkRange: Range | null = null;
 
+  // ── Inline image picker ────────────────────────────────────────────────────
+  showInlineImgPicker = signal(false);
+  inlineImgUrl        = signal('');
+  inlineImgAlt        = signal('');
+  inlineImgCaption    = signal('');
+  inlineImgUploading  = signal(false);
+  inlineImgError      = signal('');
+  private savedInlineRange: Range | null = null;
+
   // Reject modal state
   showRejectModal = signal(false);
   rejectReason    = signal('');
@@ -1045,6 +1054,96 @@ export class ViewPost implements OnInit, OnDestroy {
     this.showLinkInput.set(false);
     this.linkUrlValue.set('');
     this.savedLinkRange = null;
+  }
+
+  // ── Inline image methods ──────────────────────────────────────────────────
+
+  openInlineImgPicker(): void {
+    const sel = window.getSelection();
+    this.savedInlineRange = (sel && sel.rangeCount > 0)
+      ? sel.getRangeAt(0).cloneRange()
+      : null;
+    this.inlineImgUrl.set('');
+    this.inlineImgAlt.set('');
+    this.inlineImgCaption.set('');
+    this.inlineImgError.set('');
+    this.showInlineImgPicker.set(true);
+  }
+
+  closeInlineImgPicker(): void {
+    this.showInlineImgPicker.set(false);
+    this.savedInlineRange = null;
+  }
+
+  private doInsertInlineImg(url: string): void {
+    const alt     = (this.inlineImgAlt().trim() || 'image').replace(/"/g, '&quot;');
+    const caption =  this.inlineImgCaption().trim();
+    const capHtml = caption
+      ? `<figcaption class="inline-img-caption">${caption}</figcaption>`
+      : '';
+    const html = `<figure class="inline-img" contenteditable="false"><button class="inline-img-remove" type="button" title="Remove image">✕</button><img src="${url}" alt="${alt}" loading="lazy" />${capHtml}</figure><p><br></p>`;
+
+    this.contentEditorRef.nativeElement.focus();
+    const sel = window.getSelection();
+    if (this.savedInlineRange && sel) {
+      sel.removeAllRanges();
+      sel.addRange(this.savedInlineRange);
+    }
+    document.execCommand('insertHTML', false, html);
+    this.closeInlineImgPicker();
+    this.contentEditorRef.nativeElement.dispatchEvent(new Event('input'));
+  }
+
+  onEditorImageClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    if (target.classList.contains('inline-img-remove')) {
+      event.preventDefault();
+      const figure = target.closest('figure.inline-img');
+      if (figure) {
+        figure.remove();
+        this.contentEditorRef.nativeElement.dispatchEvent(new Event('input'));
+      }
+    }
+  }
+
+  insertInlineImgByUrl(): void {
+    const url = this.inlineImgUrl().trim();
+    if (!url)                      { this.inlineImgError.set('Please enter an image URL.');          return; }
+    if (!this.inlineImgAlt().trim()) { this.inlineImgError.set('Alt text is required for SEO.');     return; }
+    try { new URL(url); } catch   { this.inlineImgError.set('Please enter a valid URL.');            return; }
+    this.inlineImgError.set('');
+    this.doInsertInlineImg(url);
+  }
+
+  onInlineImgFileChange(event: Event, fileInput: HTMLInputElement): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    fileInput.value = '';
+    if (!file) return;
+    if (!this.inlineImgAlt().trim()) {
+      this.inlineImgError.set('Please fill in the alt text before uploading.');
+      return;
+    }
+    const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (!allowed.includes(file.type) || file.size > 5 * 1024 * 1024) {
+      this.inlineImgError.set('Use JPG/PNG/WEBP/GIF under 5 MB.');
+      return;
+    }
+    this.inlineImgError.set('');
+    this.inlineImgUploading.set(true);
+    this.uploadService.uploadImage(file).subscribe({
+      next: res => {
+        this.inlineImgUploading.set(false);
+        if (res.success && res.url) {
+          this.doInsertInlineImg(res.url);
+        } else {
+          this.inlineImgError.set(res.message ?? 'Upload failed.');
+        }
+      },
+      error: err => {
+        this.inlineImgUploading.set(false);
+        this.inlineImgError.set(err.error?.message ?? 'Upload failed. Please try again.');
+      },
+    });
   }
 
   toggleCategory(category: string): void {

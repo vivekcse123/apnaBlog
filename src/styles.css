@@ -493,3 +493,38 @@ html, body { height: 100%; }
   pointer-events: none;
   flex-shrink: 0;
 }
+/* ── Inline images in blog-detail (innerHTML bypasses component CSS scoping) ── */
+.blog-content figure.inline-img {
+  margin: 28px 0;
+  text-align: center;
+  position: relative;
+}
+
+.blog-content figure.inline-img img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 10px;
+  display: block;
+  margin: 0 auto;
+  background: transparent;
+  cursor: zoom-in;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.blog-content figure.inline-img img:hover {
+  opacity: 0.92;
+  transform: scale(1.005);
+}
+
+.blog-content figure.inline-img .inline-img-remove {
+  display: none !important;
+}
+
+.blog-content figure.inline-img figcaption {
+  margin-top: 8px;
+  font-size: 13px;
+  color: #888;
+  font-style: italic;
+  line-height: 1.5;
+  text-align: center;
+}

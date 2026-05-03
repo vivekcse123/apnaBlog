@@ -19,8 +19,14 @@
 
   <aside class="sidebar">
     <div class="sidebar-brand">
-      <span class="brand-icon">⬡</span>
-      <span class="brand-text">Settings</span>
+      <nav class="settings-breadcrumb" aria-label="Breadcrumb">
+        <span class="bc-home">Dashboard</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+        <span class="bc-current">Settings</span>
+      </nav>
     </div>
     <nav class="sidebar-nav">
       @for (s of sections; track s.id) {

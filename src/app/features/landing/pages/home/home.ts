@@ -292,6 +292,14 @@ export class Home implements OnInit, OnDestroy {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(params => {
         this.selectedCategory.set(params.get('category') ?? '');
+        const q = params.get('q');
+        if (q) {
+          this.searchQuery.set(q);
+          this.searchInput$.next(q);
+          if (this.searchInputEl?.nativeElement) {
+            this.searchInputEl.nativeElement.value = q;
+          }
+        }
       });
 
     this.searchInput$.pipe(
@@ -311,6 +319,16 @@ export class Home implements OnInit, OnDestroy {
     this.readingTimeCache.clear();
     const scripts = this.document.querySelectorAll('script[data-apna-home-schema]');
     scripts.forEach(s => s.remove());
+  }
+
+  private pushHomeAds(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    try {
+      const ads: any[] = (window as any).adsbygoogle ?? [];
+      (window as any).adsbygoogle = ads;
+      const slots = this.document.querySelectorAll('.home-ad-wrap ins.adsbygoogle');
+      slots.forEach(() => ads.push({}));
+    } catch (_) { }
   }
 
 
@@ -355,6 +373,7 @@ export class Home implements OnInit, OnDestroy {
         if (totalPages <= 1) {
           this.commitPosts(firstBatch);
           this.isLoading.set(false);
+          setTimeout(() => this.pushHomeAds(), 300);
           return;
         }
 
@@ -386,6 +405,7 @@ export class Home implements OnInit, OnDestroy {
           ];
           this.commitPosts(allRaw);
           this.isLoading.set(false);
+          setTimeout(() => this.pushHomeAds(), 300);
         });
       });
   }

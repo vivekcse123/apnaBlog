@@ -95,6 +95,30 @@ export class PostLists implements OnInit, OnDestroy {
   pageStart  = computed(() => Math.min((this.currentPage() - 1) * this.itemsPerPage() + 1, this.filteredBlogs().length));
   pageEnd    = computed(() => Math.min(this.currentPage() * this.itemsPerPage(), this.filteredBlogs().length));
 
+  visiblePages = computed(() => {
+    const total = this.totalPages();
+    const cur   = this.currentPage();
+    if (total <= 7) return this.pages();
+    const start = Math.max(1, Math.min(cur - 3, total - 6));
+    return Array.from({ length: Math.min(7, total) }, (_, i) => start + i);
+  });
+
+  draftCount = computed(() => this.allBlogs().filter(p => p.status === 'draft').length);
+
+  timeAgo(date: any): string {
+    if (!date) return '—';
+    const diff = Date.now() - new Date(date).getTime();
+    const m = Math.floor(diff / 60000);
+    if (m < 1)   return 'just now';
+    if (m < 60)  return `${m}m ago`;
+    const h = Math.floor(m / 60);
+    if (h < 24)  return `${h}h ago`;
+    const d = Math.floor(h / 24);
+    if (d < 30)  return `${d}d ago`;
+    const mo = Math.floor(d / 30);
+    return `${mo}mo ago`;
+  }
+
   ngOnInit(): void {
     this.route?.parent?.params
       .pipe(takeUntilDestroyed(this.destroyRef))

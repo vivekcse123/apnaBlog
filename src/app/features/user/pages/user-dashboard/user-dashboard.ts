@@ -1,21 +1,23 @@
 import { CommonModule } from '@angular/common';
 import { Component, DestroyRef, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonHeader } from '../../../../shared/common-header/common-header';
-import { ActivatedRoute, RouterLink, RouterOutlet } from '@angular/router';
+import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
 import { UserService } from '../../services/user-service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { UserProfile } from '../../../../shared/user-profile/user-profile';
 import { Auth } from '../../../../core/services/auth';
+import { Sidebar } from '../../../../shared/sidebar/sidebar';
 
 @Component({
   selector: 'app-user-dashboard',
   standalone: true,
-  imports: [CommonModule, CommonHeader, UserProfile, RouterOutlet, RouterLink],
+  imports: [CommonModule, CommonHeader, UserProfile, RouterOutlet, Sidebar],
   templateUrl: './user-dashboard.html',
   styleUrl: './user-dashboard.css',
 })
 export class UserDashboard implements OnInit {
   private route       = inject(ActivatedRoute);
+  private router      = inject(Router);
   private userService = inject(UserService);
   private destroyRef  = inject(DestroyRef);
   private authService = inject(Auth);
@@ -24,7 +26,8 @@ export class UserDashboard implements OnInit {
   initial = signal<string>('');
   avatar  = signal<string | null>(null);
   user    = signal<any>(null);
-  isOpened = signal<boolean>(false);
+  isOpened    = signal<boolean>(false);
+  sidebarOpen = signal<boolean>(false);
 
   // passes avatar URL if exists, otherwise passes initials string
   // CommonHeader will need to handle both cases
@@ -56,5 +59,13 @@ export class UserDashboard implements OnInit {
 
   openProfile():  void { this.isOpened.set(!this.isOpened()); }
   closeProfile(): void { this.isOpened.set(false); }
+  toggleSidebar(): void { this.sidebarOpen.update(v => !v); }
   logout():       void { this.authService.logout(); }
+
+  onSearch(query: string): void {
+    if (!query.trim()) return;
+    this.router.navigate(['/user', this.userId(), 'explore-blogs'], {
+      queryParams: { q: query.trim() }
+    });
+  }
 }

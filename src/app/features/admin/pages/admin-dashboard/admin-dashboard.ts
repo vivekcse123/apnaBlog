@@ -1,17 +1,18 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { Auth } from '../../../../core/services/auth';
-import { ActivatedRoute, Router, RouterOutlet, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
 import { UserService } from '../../../user/services/user-service';
 import { Subscription, switchMap } from 'rxjs';
 import { CommonHeader } from "../../../../shared/common-header/common-header";
 import { UserProfile } from "../../../../shared/user-profile/user-profile";
 import { User } from '../../../user/models/user.mode';
+import { Sidebar } from '../../../../shared/sidebar/sidebar';
 
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, CommonHeader, UserProfile, RouterLink],
+  imports: [CommonModule, RouterOutlet, CommonHeader, UserProfile, Sidebar],
   templateUrl: './admin-dashboard.html',
   styleUrl: './admin-dashboard.css',
 })
@@ -60,15 +61,22 @@ export class AdminDashboard implements OnInit, OnDestroy{
     })
   }
 
-  isOpened = signal(false);
-  openProfile(): void { this.isOpened.set(!this.isOpened()); }
+  isOpened    = signal(false);
+  sidebarOpen = signal(false);
+  openProfile():  void { this.isOpened.set(!this.isOpened()); }
+  toggleSidebar(): void { this.sidebarOpen.update(v => !v); }
 
   closeProfile(){
     this.isOpened.set(false);
   }
 
-  logout(){
-    this.authService.logout();
+  logout(): void { this.authService.logout(); }
+
+  onSearch(query: string): void {
+    if (!query.trim()) return;
+    this.router.navigate(['/admin', this.userId(), 'manage-blogs'], {
+      queryParams: { q: query.trim() }
+    });
   }
 
   ngOnDestroy(): void {

@@ -1,6 +1,7 @@
 import { Component, signal, inject, output, DestroyRef } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Auth } from '../../../../core/services/auth';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
@@ -13,9 +14,11 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 })
 export class CreateUser {
 
-  private fb = inject(FormBuilder);
-  private authService = inject(Auth);
-  private destroyRef = inject(DestroyRef);
+  private fb            = inject(FormBuilder);
+  private authService   = inject(Auth);
+  private destroyRef    = inject(DestroyRef);
+  private route         = inject(ActivatedRoute);
+  private router        = inject(Router);
 
   close = output<void>();
   userCreated = output<void>();
@@ -45,6 +48,9 @@ export class CreateUser {
 
   closeModal() {
     this.close.emit();
+    if (this.router.url.includes('/create-user')) {
+      this.router.navigate(['..'], { relativeTo: this.route });
+    }
   }
 
   createUser() {

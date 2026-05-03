@@ -46,6 +46,10 @@ export class ManageUsers implements OnInit, OnDestroy {
   showTodayOnly  = signal(false);
   private timer: any;
 
+  activeCount   = computed(() => this.allUsers().filter(u => u.status === 'active').length);
+  inactiveCount = computed(() => this.allUsers().filter(u => u.status !== 'active').length);
+  adminCount    = computed(() => this.allUsers().filter(u => u.role === 'admin' || u.role === 'super_admin').length);
+
   todayCount = computed(() => {
     const today = new Date();
     return this.allUsers().filter(u => {
@@ -269,6 +273,35 @@ export class ManageUsers implements OnInit, OnDestroy {
   }
 
   cancelDelete(): void { this.showDeleteConfirm.set(false); this.pendingDeleteUser.set(null); }
+
+  timeAgo(date: any): string {
+    if (!date) return '—';
+    const diff = Date.now() - new Date(date).getTime();
+    const m = Math.floor(diff / 60000);
+    if (m < 1)   return 'just now';
+    if (m < 60)  return `${m}m ago`;
+    const h = Math.floor(m / 60);
+    if (h < 24)  return `${h}h ago`;
+    const d = Math.floor(h / 24);
+    if (d < 30)  return `${d}d ago`;
+    const mo = Math.floor(d / 30);
+    return `${mo}mo ago`;
+  }
+
+  avatarColor(name: string): string {
+    const colors = ['#43cea2','#185a9d','#f59e0b','#8b5cf6','#ef4444','#06b6d4','#10b981','#f97316'];
+    let hash = 0;
+    for (const c of name ?? '') hash = c.charCodeAt(0) + ((hash << 5) - hash);
+    return colors[Math.abs(hash) % colors.length];
+  }
+
+  visiblePages = computed(() => {
+    const total = this.totalPages();
+    const cur   = this.currentPage();
+    if (total <= 7) return this.pages();
+    const start = Math.max(1, Math.min(cur - 3, total - 6));
+    return Array.from({ length: Math.min(7, total) }, (_, i) => start + i);
+  });
 
   ngOnDestroy(): void {
     clearTimeout(this.timer);

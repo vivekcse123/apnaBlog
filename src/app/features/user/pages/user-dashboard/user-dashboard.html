@@ -1,30 +1,56 @@
-<app-common-header
-  [navs]="[
-    { label: 'Home',           routerLink: '/user/' + userId() },
-    { label: 'Blogs',          routerLink: '/user/' + userId() + '/manage-blogs' },
-    { label: 'Settings',       routerLink: '/user/' + userId() + '/settings' },
-    { label: 'Explore Blogs →',routerLink: '/user/' + userId() + '/explore-blogs' }
-  ]"
-  [profile]="initial()"
-  [name]="user()?.name"
-  [avatarUrl]="avatar()"
-  [userRole]="user()?.role"
-  [panelOpen]="isOpened()"
-  (open)="openProfile()">
-</app-common-header>
+<div class="dash-shell">
 
-@if (isOpened()) {
-  <app-user-profile
-    [name]="user()?.name"
-    [email]="user()?.email"
-    [role]="user()?.role"
-    [avatar]="avatar()"
-    [userId]="userId()"
-    [totalBlogs]="user()?.totalBlogs ?? 0"
-    [totalViews]="user()?.totalViews ?? 0"
-    (close)="closeProfile()"
-    (logout)="logout()">
-  </app-user-profile>
-}
+  <app-sidebar
+    [isOpen]="sidebarOpen()"
+    (close)="sidebarOpen.set(false)"
+    [navLinks]="[
+      { label: 'Home',    routerLink: '/user/' + userId(),                    icon: 'home',     exact: true  },
+      { label: 'Blogs',   routerLink: '/user/' + userId() + '/manage-blogs',  icon: 'docs',     exact: false },
+      { label: 'Explore', routerLink: '/user/' + userId() + '/explore-blogs', icon: 'search',   exact: false },
+      { label: 'Settings',routerLink: '/user/' + userId() + '/settings',      icon: 'settings', exact: false }
+    ]"
+    [shortcuts]="[
+      { label: 'Write a Story', routerLink: '/user/' + userId() + '/manage-blogs', icon: 'write' },
+      { label: 'View Site',     routerLink: '/welcome',                              icon: 'globe' }
+    ]"
+    [userName]="user()?.name ?? ''"
+    [userRole]="user()?.role ?? ''"
+    [avatarUrl]="avatar()"
+    [initial]="initial()"
+    (logout)="logout()"
+    (profileClick)="openProfile()">
+  </app-sidebar>
 
-<router-outlet></router-outlet>
+  <div class="dash-main">
+    <app-common-header
+      [profile]="initial()"
+      [name]="user()?.name"
+      [avatarUrl]="avatar()"
+      [userRole]="user()?.role"
+      [navs]="[]"
+      [panelOpen]="isOpened()"
+      (open)="openProfile()"
+      (searchChange)="onSearch($event)"
+      (menuToggle)="toggleSidebar()">
+    </app-common-header>
+
+    @if (isOpened()) {
+      <app-user-profile
+        [name]="user()?.name"
+        [email]="user()?.email"
+        [role]="user()?.role"
+        [avatar]="avatar()"
+        [userId]="userId()"
+        [totalBlogs]="user()?.totalBlogs ?? 0"
+        [totalViews]="user()?.totalViews ?? 0"
+        (close)="closeProfile()"
+        (logout)="logout()">
+      </app-user-profile>
+    }
+
+    <div class="dash-content">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+
+</div>

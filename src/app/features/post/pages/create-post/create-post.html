@@ -223,6 +223,20 @@
 
           <span class="toolbar-sep"></span>
 
+          <!-- Inline image insert -->
+          <div class="toolbar-group">
+            <button type="button" class="tool-btn" [class.active]="showInlineImgPicker()"
+              (mousedown)="$event.preventDefault()" (click)="openInlineImgPicker()" title="Insert Image">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <circle cx="8.5" cy="8.5" r="1.5"/>
+                <polyline points="21 15 16 10 5 21"/>
+              </svg>
+            </button>
+          </div>
+
+          <span class="toolbar-sep"></span>
+
           <div class="toolbar-group">
             <button type="button" class="tool-btn"
               (mousedown)="$event.preventDefault()" (click)="format('removeFormat')" title="Clear Formatting">
@@ -235,6 +249,44 @@
           </div>
 
         </div>
+
+        @if (showInlineImgPicker()) {
+          <div class="inline-img-bar">
+            <div class="inline-img-fields">
+              <input type="text" class="inline-img-input" placeholder="Alt text — describe the image (required for SEO)"
+                [value]="inlineImgAlt()"
+                (input)="inlineImgAlt.set($any($event.target).value)" />
+              <input type="text" class="inline-img-input" placeholder="Caption (optional)"
+                [value]="inlineImgCaption()"
+                (input)="inlineImgCaption.set($any($event.target).value)" />
+            </div>
+            <div class="inline-img-actions">
+              <label class="inline-img-upload-label" [class.disabled]="inlineImgUploading()">
+                <input #inlineFileInput type="file" accept="image/*" style="display:none"
+                  (change)="onInlineImgFileChange($event, inlineFileInput)" />
+                @if (inlineImgUploading()) {
+                  <svg class="spin" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                  Uploading…
+                } @else {
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  Upload File
+                }
+              </label>
+              <span class="inline-img-or">or</span>
+              <input type="url" class="inline-img-url-input" placeholder="Paste image URL…"
+                [value]="inlineImgUrl()"
+                (input)="inlineImgUrl.set($any($event.target).value)"
+                (keydown.enter)="insertInlineImgByUrl()" />
+              <button type="button" class="inline-img-insert-btn"
+                (click)="insertInlineImgByUrl()"
+                [disabled]="inlineImgUploading()">Insert</button>
+            </div>
+            @if (inlineImgError()) {
+              <span class="inline-img-error">{{ inlineImgError() }}</span>
+            }
+            <button type="button" class="link-cancel-btn" (click)="closeInlineImgPicker()">✕</button>
+          </div>
+        }
 
         @if (showLinkInput()) {
           <div class="link-input-bar">
@@ -259,6 +311,7 @@
           (keydown)="onEditorKeydown($event)"
           (keyup)="onEditorKeyUp()"
           (mouseup)="onEditorMouseUp()"
+          (click)="onEditorImageClick($event)"
         ></div>
 
         <div class="editor-statusbar">

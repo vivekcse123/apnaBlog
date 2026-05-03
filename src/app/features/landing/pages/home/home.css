@@ -1237,3 +1237,18 @@ input[type="search"]::-webkit-search-decoration {
     display: none;
   }
 }
+/* ── AdSense units ── */
+.home-ad-wrap {
+  overflow: hidden;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 5%;
+}
+.home-ad-wrap:has(ins[data-ad-status="filled"]) {
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+.home-ad-wrap:has(ins[data-ad-status="unfilled"]),
+.home-ad-wrap:has(ins[style*="height: 0"]) {
+  display: none;
+}

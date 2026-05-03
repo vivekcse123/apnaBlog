@@ -1,86 +1,252 @@
-<header class="ch">
+<div class="ch-topbar">
 
-  <!-- Brand -->
-  <a class="ch-brand" routerLink="/" aria-label="ApnaInsights">
-    <img src="/logo-96.png" alt="" width="34" height="34" class="ch-brand-img"/>
-    <span class="ch-brand-text">ApnaInsights</span>
-  </a>
+  <!-- Hamburger — mobile only -->
+  <button class="ch-hamburger" (click)="menuToggle.emit()" aria-label="Toggle sidebar">
+    <span></span><span></span><span></span>
+  </button>
 
-  <!-- Desktop nav (col 2 — hidden on mobile) -->
-  <nav class="ch-nav" role="navigation" aria-label="Main navigation">
-    @for (nav of navs; track nav.label) {
-      <a class="ch-nav-link"
-         [routerLink]="nav.routerLink"
-         routerLinkActive="ch-nav-link--active"
-         [routerLinkActiveOptions]="{ exact: true }">
-        {{ nav.label }}
-      </a>
+  <!-- Global Search -->
+  <div class="ch-search" #searchBar>
+    <svg class="ch-search-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+      <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+    </svg>
+    <input
+      class="ch-search-input"
+      type="search"
+      [ngModel]="searchQuery"
+      (ngModelChange)="onSearchInput($event)"
+      (focus)="onSearchFocus()"
+      (click)="onSearchClick()"
+      (keydown.enter)="onSearchEnter()"
+      placeholder="Search blogs, users, sections..."
+      autocomplete="off"
+      aria-label="Global search"
+      aria-haspopup="listbox"
+      [attr.aria-expanded]="showSuggestions"
+    />
+    <span class="ch-search-divider" aria-hidden="true"></span>
+    <kbd class="ch-search-kbd" aria-label="Press Ctrl K or Cmd K">⌘K</kbd>
+
+    @if (showSuggestions) {
+      <div class="ch-suggestions" role="listbox" aria-label="Search suggestions">
+
+        <!-- Panel header -->
+        <div class="ch-sugg-panel-header">
+          <span>{{ searchQuery.trim() ? 'Search Results' : 'Quick Access' }}</span>
+          @if (!searchQuery.trim()) {
+            <span class="ch-sugg-panel-hint">Recent items</span>
+          }
+        </div>
+
+        <!-- Navigate — always visible -->
+        @if (navSuggestions.length > 0) {
+          <div class="ch-sugg-section">
+            <span class="ch-sugg-heading">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H5a1 1 0 01-1-1V9.5z"/></svg>
+              {{ searchQuery.trim() ? 'Navigate' : 'Quick Navigation' }}
+            </span>
+            <div class="ch-nav-grid">
+              @for (n of navSuggestions; track n.label) {
+                <a class="ch-nav-pill" [routerLink]="n.route" (click)="showSuggestions = false" role="option">
+                  <span class="ch-nav-pill-icon">
+                    @switch (n.icon) {
+                      @case ('home') {
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H5a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>
+                      }
+                      @case ('users') {
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+                      }
+                      @case ('docs') {
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+                      }
+                      @case ('chart') {
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+                      }
+                      @case ('settings') {
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+                      }
+                      @case ('shield') {
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                      }
+                      @case ('trend') {
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+                      }
+                      @case ('search') {
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                      }
+                      @default {
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H5a1 1 0 01-1-1V9.5z"/></svg>
+                      }
+                    }
+                  </span>
+                  <span class="ch-nav-pill-label">{{ n.label }}</span>
+                </a>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Blogs -->
+        @if (blogSuggestions.length > 0) {
+          <div class="ch-sugg-section">
+            <div class="ch-sugg-heading-row">
+              <span class="ch-sugg-heading">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+                {{ searchQuery.trim() ? 'Blogs' : 'Recent Blogs' }}
+              </span>
+              @if (blogsRoute) {
+                <a class="ch-sugg-view-all" [routerLink]="blogsRoute" (click)="showSuggestions = false">View all →</a>
+              }
+            </div>
+            @for (b of blogSuggestions; track b._id) {
+              <a class="ch-suggestion-item ch-suggestion-item--rich"
+                 [routerLink]="['/blog', b.slug]"
+                 (click)="showSuggestions = false"
+                 role="option">
+                <span class="ch-suggestion-icon ch-suggestion-icon--blog">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                </span>
+                <span class="ch-suggestion-body">
+                  <span class="ch-suggestion-label">{{ b.title }}</span>
+                  <div class="ch-suggestion-meta">
+                    @if (b.category) {
+                      <span class="ch-meta-tag">{{ b.category }}</span>
+                    }
+                    <span class="ch-status-dot"
+                      [class.ch-status-dot--published]="b.status === 'published'"
+                      [class.ch-status-dot--draft]="b.status === 'draft'"
+                      [class.ch-status-dot--pending]="b.status === 'pending'"
+                      [class.ch-status-dot--rejected]="b.status === 'rejected'">
+                    </span>
+                    <span class="ch-meta-status">{{ b.status === 'pending' ? 'Pending' : (b.status | titlecase) }}</span>
+                    @if (b.author && isAdmin) {
+                      <span class="ch-meta-author">· {{ b.author }}</span>
+                    }
+                  </div>
+                </span>
+              </a>
+            }
+          </div>
+        }
+
+        <!-- Users — admin/super_admin only -->
+        @if (userSuggestions.length > 0) {
+          <div class="ch-sugg-section">
+            <div class="ch-sugg-heading-row">
+              <span class="ch-sugg-heading">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                {{ searchQuery.trim() ? 'Users' : 'Recent Users' }}
+              </span>
+              @if (usersRoute) {
+                <a class="ch-sugg-view-all" [routerLink]="usersRoute" (click)="showSuggestions = false">View all →</a>
+              }
+            </div>
+            @for (u of userSuggestions; track u._id) {
+              <a class="ch-suggestion-item ch-suggestion-item--rich"
+                 [routerLink]="usersRoute"
+                 (click)="showSuggestions = false"
+                 role="option">
+                <span class="ch-user-avatar" [style.background]="u.color">{{ u.initial }}</span>
+                <span class="ch-suggestion-body">
+                  <span class="ch-suggestion-label">{{ u.name }}</span>
+                  <div class="ch-suggestion-meta">
+                    <span class="ch-meta-tag ch-meta-tag--role"
+                      [class.ch-meta-tag--admin]="u.role === 'admin' || u.role === 'super_admin'">
+                      {{ u.role === 'super_admin' ? 'Super Admin' : (u.role | titlecase) }}
+                    </span>
+                    <span class="ch-status-dot"
+                      [class.ch-status-dot--published]="u.status === 'active'"
+                      [class.ch-status-dot--rejected]="u.status !== 'active'">
+                    </span>
+                    <span class="ch-meta-status">{{ u.status | titlecase }}</span>
+                    <span class="ch-meta-author">· {{ u.email }}</span>
+                  </div>
+                </span>
+              </a>
+            }
+          </div>
+        }
+
+        <!-- Categories — only when typing, only for non-admin (user explore) -->
+        @if (suggestions.length > 0 && !isAdmin) {
+          <div class="ch-sugg-section">
+            <span class="ch-sugg-heading">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><circle cx="7" cy="7" r="1" fill="currentColor"/></svg>
+              Categories
+            </span>
+            @for (s of suggestions; track s.label) {
+              <a class="ch-suggestion-item" [routerLink]="s.route" [queryParams]="s.queryParams"
+                 (click)="showSuggestions = false" role="option">
+                <span class="ch-suggestion-icon ch-suggestion-icon--cat">{{ s.emoji }}</span>
+                <span class="ch-suggestion-body">
+                  <span class="ch-suggestion-label">{{ s.label }}</span>
+                  <span class="ch-suggestion-sub">Browse {{ s.label }} stories</span>
+                </span>
+                <span class="ch-suggestion-badge">Category</span>
+              </a>
+            }
+          </div>
+        }
+
+        <!-- Search all — only when typing -->
+        @if (searchQuery.trim()) {
+          <div class="ch-sugg-footer">
+            <a class="ch-suggestion-search"
+               [routerLink]="exploreRoute"
+               [queryParams]="{ q: searchQuery }"
+               (click)="showSuggestions = false" role="option">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+              Search all stories for "<strong>{{ searchQuery }}</strong>"
+            </a>
+          </div>
+        }
+
+        <!-- Empty state -->
+        @if (!blogSuggestions.length && !userSuggestions.length && !navSuggestions.length && !suggestions.length) {
+          <div class="ch-sugg-empty">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <span>{{ searchQuery.trim() ? 'No results found' : 'No data loaded yet' }}</span>
+          </div>
+        }
+
+      </div>
     }
-  </nav>
+  </div>
 
-  <!-- Right actions — col 3 (always visible, contains hamburger on mobile) -->
-  <div class="ch-right">
-
-    <!-- Theme toggle — desktop only -->
-    <button class="ch-icon-btn ch-theme-btn"
+  <!-- Right actions -->
+  <div class="ch-actions">
+    <button class="ch-icon-btn"
             (click)="themeService.toggleTheme()"
             [title]="themeService.theme() === 'dark' ? 'Light mode' : 'Dark mode'"
             [attr.aria-label]="themeService.theme() === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'">
-      <span aria-hidden="true">{{ themeService.theme() === 'dark' ? '☀' : '☾' }}</span>
+      <span aria-hidden="true">{{ themeService.theme() === 'dark' ? '&#9728;' : '&#9790;' }}</span>
     </button>
 
-    <!-- Notification bell -->
     <app-notification-panel />
 
-    <!-- Role badge — desktop only -->
-    @if (userRole) {
-      <span class="ch-role-badge ch-role-desktop"
-            [class.ch-role--user]="userRole === 'user'"
-            [class.ch-role--admin]="userRole === 'admin'"
-            [class.ch-role--super]="userRole === 'super_admin'">
-        <span class="ch-role-icon" aria-hidden="true">{{ getRoleIcon() }}</span>
-        {{ getRoleLabel() }}
-      </span>
-    }
-
-    <!-- Profile avatar -->
-    <button class="ch-avatar" [class.ch-avatar--open]="profileOpen"
+    <button class="ch-avatar-btn"
+            [class.ch-avatar-btn--open]="profileOpen"
             (click)="openProfile($event)"
-            [attr.aria-label]="'Profile: ' + displayName"
-            [title]="displayName">
+            [attr.aria-label]="'Profile: ' + displayName">
       @if (avatarUrl) {
         <img [src]="avatarUrl" alt="" class="ch-avatar-img"/>
       } @else {
-        <span class="ch-avatar-initial" aria-hidden="true">{{ profile }}</span>
+        <span aria-hidden="true">{{ profile?.charAt(0) }}</span>
       }
     </button>
-
-    <!-- Hamburger — mobile only, inside ch-right so no grid gap -->
-    <button class="ch-hamburger" type="button"
-            (click)="toggleMenu()"
-            [class.ch-hamburger--open]="menuOpen"
-            aria-label="Toggle navigation"
-            [attr.aria-expanded]="menuOpen">
-      <span></span>
-      <span></span>
-      <span></span>
-    </button>
-
   </div>
 
-</header>
+</div>
 
-<!-- Mobile drawer -->
+<!-- Mobile drawer (keep for small screens) -->
 <div class="ch-drawer" [class.ch-drawer--open]="menuOpen"
      role="navigation" aria-label="Mobile navigation">
-
-  <!-- User card -->
   <div class="ch-drawer-user">
     <div class="ch-drawer-avatar">
       @if (avatarUrl) {
         <img [src]="avatarUrl" alt="" class="ch-drawer-avatar-img"/>
       } @else {
-        <span aria-hidden="true">{{ profile }}</span>
+        <span aria-hidden="true">{{ profile?.charAt(0) }}</span>
       }
     </div>
     <div class="ch-drawer-user-info">
@@ -90,14 +256,11 @@
               [class.ch-role--user]="userRole === 'user'"
               [class.ch-role--admin]="userRole === 'admin'"
               [class.ch-role--super]="userRole === 'super_admin'">
-          <span aria-hidden="true">{{ getRoleIcon() }}</span>
           {{ getRoleLabel() }}
         </span>
       }
     </div>
   </div>
-
-  <!-- Nav links -->
   <nav class="ch-drawer-nav">
     @for (nav of navs; track nav.label) {
       <a class="ch-drawer-link"
@@ -105,21 +268,16 @@
          routerLinkActive="ch-drawer-link--active"
          [routerLinkActiveOptions]="{ exact: true }"
          (click)="menuOpen = false">
-        {{ nav.label }}
+        <span class="ch-drawer-link-label">{{ nav.label }}</span>
       </a>
     }
   </nav>
-
-  <!-- Footer: theme toggle -->
   <div class="ch-drawer-footer">
     <button class="ch-drawer-theme" (click)="themeService.toggleTheme()">
-      <span aria-hidden="true">{{ themeService.theme() === 'dark' ? '☀' : '☾' }}</span>
+      <span aria-hidden="true">{{ themeService.theme() === 'dark' ? '&#9728;' : '&#9790;' }}</span>
       {{ themeService.theme() === 'dark' ? 'Switch to Light' : 'Switch to Dark' }}
     </button>
   </div>
-
 </div>
-
-<!-- Backdrop -->
 <div class="ch-backdrop" [class.ch-backdrop--open]="menuOpen"
      (click)="menuOpen = false" aria-hidden="true"></div>

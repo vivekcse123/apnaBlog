@@ -1,17 +1,18 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { Auth } from '../../../../core/services/auth';
-import { ActivatedRoute, Router, RouterOutlet, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
 import { UserService } from '../../../user/services/user-service';
 import { Subscription, switchMap } from 'rxjs';
 import { CommonHeader } from '../../../../shared/common-header/common-header';
 import { UserProfile } from '../../../../shared/user-profile/user-profile';
 import { User } from '../../../user/models/user.mode';
+import { Sidebar } from '../../../../shared/sidebar/sidebar';
 
 @Component({
   selector: 'app-super-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, CommonHeader, UserProfile, RouterLink],
+  imports: [CommonModule, RouterOutlet, CommonHeader, UserProfile, Sidebar],
   templateUrl: './super-admin-dashboard.html',
   styleUrl: './super-admin-dashboard.css',
 })
@@ -24,8 +25,9 @@ export class SuperAdminDashboard implements OnInit, OnDestroy {
   initial  = signal<string | null>(null);
   avatar   = signal<string | null>(null);
   userId   = signal<string | null>(null);
-  user     = signal<User | any>('');
-  isOpened = signal(false);
+  user        = signal<User | any>('');
+  isOpened    = signal(false);
+  sidebarOpen = signal(false);
 
   sub!: Subscription;
 
@@ -52,9 +54,10 @@ export class SuperAdminDashboard implements OnInit, OnDestroy {
     });
   }
 
-  openProfile():  void { this.isOpened.set(!this.isOpened()); }
-  closeProfile(): void { this.isOpened.set(false); }
-  logout():       void { this.authService.logout(); }
+  openProfile():   void { this.isOpened.set(!this.isOpened()); }
+  closeProfile():  void { this.isOpened.set(false); }
+  logout():        void { this.authService.logout(); }
+  toggleSidebar(): void { this.sidebarOpen.update(v => !v); }
 
   ngOnDestroy(): void { this.sub.unsubscribe(); }
 }

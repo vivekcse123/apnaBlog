@@ -27,12 +27,119 @@
   background: linear-gradient(135deg, #43cea2, #185a9d);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
+.cat-nav-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .cat-back-btn {
   font-size: 14px; color: var(--text-secondary); text-decoration: none;
   border: 1.5px solid var(--border); border-radius: 8px; padding: 6px 14px;
   transition: border-color 0.2s, color 0.2s;
+  white-space: nowrap;
 }
 .cat-back-btn:hover { border-color: var(--accent); color: var(--accent-text); }
+
+/* ── Category Switch Dropdown ── */
+.cat-switch-wrap { position: relative; }
+
+.cat-switch-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 14px;
+  background: var(--bg-surface-alt);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+}
+
+.cat-switch-btn:hover,
+.cat-switch-btn.active {
+  border-color: #43cea2;
+  background: color-mix(in srgb, #43cea2 8%, var(--bg-surface));
+  box-shadow: 0 0 0 3px rgba(67, 206, 162, 0.12);
+}
+
+.switch-chevron { transition: transform 0.2s ease; flex-shrink: 0; }
+.switch-chevron.open { transform: rotate(180deg); }
+
+.cat-switch-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.14), 0 2px 8px rgba(0,0,0,0.06);
+  width: 240px;
+  z-index: 1200;
+  overflow: hidden;
+  animation: dropDown 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes dropDown {
+  from { opacity: 0; transform: translateY(-8px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
+}
+
+.cat-switch-header {
+  padding: 11px 16px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+}
+
+.cat-switch-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 10px 12px 12px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.cat-switch-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-surface-alt);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.12s;
+  white-space: nowrap;
+}
+
+.cat-switch-item:hover {
+  background: color-mix(in srgb, #43cea2 14%, transparent);
+  border-color: #43cea2;
+  color: #1d9e78;
+  transform: translateY(-1px);
+}
+
+.cat-switch-item.active {
+  background: linear-gradient(135deg, #43cea2, #185a9d);
+  border-color: transparent;
+  color: #fff;
+  cursor: default;
+}
+
 
 /* BREADCRUMB */
 .cat-breadcrumb { background: var(--bg-surface); border-bottom: 1px solid var(--border); padding: 10px 5%; }
@@ -143,4 +250,42 @@
   .cat-grid { grid-template-columns: 1fr; }
   .cat-hero { padding: 32px 5% 28px; }
   .cat-footer-inner { flex-direction: column; align-items: flex-start; }
+}
+
+/* ── Mobile nav ── */
+@media (max-width: 520px) {
+  .cat-nav { padding: 0 4%; gap: 8px; }
+
+  .cat-nav-name { display: none; }
+
+  .cat-switch-btn {
+    padding: 7px 10px;
+    font-size: 13px;
+    max-width: 140px;
+  }
+
+  .cat-switch-btn span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Fixed to viewport — never causes horizontal overflow or page shift */
+  .cat-switch-dropdown {
+    position: fixed !important;
+    top: 66px !important;
+    left: 12px !important;
+    right: 12px !important;
+    width: auto !important;
+    max-height: 65vh;
+    overflow-y: auto;
+    animation: dropDownMobile 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  @keyframes dropDownMobile {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .cat-back-btn { font-size: 13px; padding: 6px 10px; }
 }
