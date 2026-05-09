@@ -381,6 +381,30 @@ html, body { height: 100%; }
 .app-logo--lg .app-logo-img  { width: 56px; height: 56px; }
 .app-logo--lg .app-logo-text { font-size: 28px; }
 
+/* ── Auth: eye-toggle button inside password inputs ── */
+.eye-btn {
+  position: absolute;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+  color: var(--text-muted);
+  border-radius: 6px;
+  line-height: 1;
+  transition: color 0.18s;
+  flex-shrink: 0;
+  z-index: 2;
+}
+.eye-btn:hover { color: var(--text-primary); }
+.eye-btn:focus-visible { outline: 2px solid #43cea2; outline-offset: 2px; }
+
+/* Extra right padding when an eye button is present */
+.input-wrap:has(.eye-btn) input { padding-right: 42px !important; }
+
 .custom-logo {
   display: flex;
   justify-content: center;

@@ -81,91 +81,146 @@
         <p>Create your account to start sharing stories</p>
       </div>
 
-      <form [formGroup]="registerForm" (ngSubmit)="register()" class="login-form">
+      <form [formGroup]="registerForm" (ngSubmit)="register()" class="login-form" novalidate>
 
+        <!-- ── Full Name ── -->
         <div class="field-group">
-          <label>Full Name</label>
+          <label for="reg-name">Full Name</label>
           <div class="input-wrap">
-            <span class="input-icon">◈</span>
-            <input type="text" placeholder="Enter your full name"
+            <span class="input-icon" aria-hidden="true">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </span>
+            <input id="reg-name" type="text"
+              placeholder="e.g. Vivek Verma"
               formControlName="name"
+              autocomplete="name"
               [class.field-error]="registerForm.get('name')?.invalid &&
                 (isSubmitted() || registerForm.get('name')?.touched)">
           </div>
-          @if(registerForm.get('name')?.invalid && (isSubmitted() || registerForm.get('name')?.touched)){
-            @if(registerForm.get('name')?.errors?.['required']){
+          @if (registerForm.get('name')?.invalid && (isSubmitted() || registerForm.get('name')?.touched)) {
+            @if (registerForm.get('name')?.errors?.['required']) {
               <small class="error">Name is required</small>
-            }
-            @if(registerForm.get('name')?.errors?.['pattern']){
-              <small class="error">Invalid name</small>
-            }
-            @if(registerForm.get('name')?.errors?.['minlength'] || registerForm.get('name')?.errors?.['maxlength']){
-              <small class="error">Name should be 5–15 characters long</small>
+            } @else if (registerForm.get('name')?.errors?.['minlength']) {
+              <small class="error">Name must be at least 3 characters</small>
+            } @else if (registerForm.get('name')?.errors?.['maxlength']) {
+              <small class="error">Name cannot exceed 30 characters</small>
+            } @else if (registerForm.get('name')?.errors?.['pattern']) {
+              <small class="error">Only letters, spaces, hyphens and apostrophes are allowed</small>
             }
           }
         </div>
 
+        <!-- ── Email ── -->
         <div class="field-group">
-          <label>Email Address</label>
+          <label for="reg-email">Email Address</label>
           <div class="input-wrap">
-            <span class="input-icon">◎</span>
-            <input type="email" placeholder="Enter your email address"
+            <span class="input-icon" aria-hidden="true">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            </span>
+            <input id="reg-email" type="email"
+              placeholder="Enter your email address"
               formControlName="email"
+              autocomplete="email"
               [class.field-error]="registerForm.get('email')?.invalid &&
                 (isSubmitted() || registerForm.get('email')?.touched)">
           </div>
-          @if(registerForm.get('email')?.invalid && (isSubmitted() || registerForm.get('email')?.touched)){
-            @if(registerForm.get('email')?.errors?.['required']){
+          @if (registerForm.get('email')?.invalid && (isSubmitted() || registerForm.get('email')?.touched)) {
+            @if (registerForm.get('email')?.errors?.['required']) {
               <small class="error">Email is required</small>
-            }
-            @if(registerForm.get('email')?.errors?.['pattern']){
-              <small class="error">Invalid email address</small>
+            } @else if (registerForm.get('email')?.errors?.['pattern']) {
+              <small class="error">Enter a valid email (e.g. name&#64;example.com)</small>
             }
           }
         </div>
 
+        <!-- ── DOB + Password ── -->
         <div class="field-row">
 
+          <!-- Date of Birth -->
           <div class="field-group">
-            <label>Date of Birth</label>
+            <label for="reg-dob">Date of Birth</label>
             <div class="input-wrap">
-              <span class="input-icon">◆</span>
-              <input type="date" formControlName="dob"
+              <span class="input-icon" aria-hidden="true">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              </span>
+              <input id="reg-dob" type="date"
+                formControlName="dob"
+                [max]="maxDob"
                 [class.field-error]="registerForm.get('dob')?.invalid &&
                   (isSubmitted() || registerForm.get('dob')?.touched)">
             </div>
-            @if(registerForm.get('dob')?.invalid && (isSubmitted() || registerForm.get('dob')?.touched)){
-              @if(registerForm.get('dob')?.errors?.['required']){
-                <small class="error">Date of Birth is required</small>
+            @if (registerForm.get('dob')?.invalid && (isSubmitted() || registerForm.get('dob')?.touched)) {
+              @if (registerForm.get('dob')?.errors?.['required']) {
+                <small class="error">Date of birth is required</small>
+              } @else if (registerForm.get('dob')?.errors?.['futureDate']) {
+                <small class="error">Date of birth cannot be in the future</small>
+              } @else if (registerForm.get('dob')?.errors?.['tooYoung']) {
+                <small class="error">You must be at least 13 years old to register</small>
+              } @else if (registerForm.get('dob')?.errors?.['tooOld'] || registerForm.get('dob')?.errors?.['invalidDate']) {
+                <small class="error">Please enter a valid date of birth</small>
               }
             }
           </div>
 
+          <!-- Password -->
           <div class="field-group">
-            <label>Password</label>
+            <label for="reg-password">Password</label>
             <div class="input-wrap">
-              <span class="input-icon">◉</span>
-              <input [type]="showPassword ? 'text' : 'password'" placeholder="Create a password"
+              <span class="input-icon" aria-hidden="true">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              </span>
+              <input id="reg-password"
+                [type]="showPassword ? 'text' : 'password'"
+                placeholder="Min 8 chars with a number"
                 formControlName="password"
+                autocomplete="new-password"
                 [class.field-error]="registerForm.get('password')?.invalid &&
                   (isSubmitted() || registerForm.get('password')?.touched)">
+              <button type="button" class="eye-btn" (click)="showPassword = !showPassword"
+                      [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'">
+                @if (showPassword) {
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                } @else {
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                }
+              </button>
             </div>
-            @if(registerForm.get('password')?.invalid && (isSubmitted() || registerForm.get('password')?.touched)){
-              @if(registerForm.get('password')?.errors?.['required']){
+            @if (registerForm.get('password')?.invalid && (isSubmitted() || registerForm.get('password')?.touched)) {
+              @if (registerForm.get('password')?.errors?.['required']) {
                 <small class="error">Password is required</small>
-              }
-              @if(registerForm.get('password')?.errors?.['minlength'] || registerForm.get('password')?.errors?.['maxlength']){
-                <small class="error">8-30 characters long</small>
+              } @else if (registerForm.get('password')?.errors?.['minlength']) {
+                <small class="error">Password must be at least 8 characters</small>
+              } @else if (registerForm.get('password')?.errors?.['maxlength']) {
+                <small class="error">Password cannot exceed 30 characters</small>
+              } @else if (registerForm.get('password')?.errors?.['pattern']) {
+                <small class="error">Must include at least one letter and one number</small>
               }
             }
-          </div>
-
-          <div class="show-password-row" style="margin-top: 10px;">
-            <input type="checkbox" id="showPwd" [(ngModel)]="showPassword" [ngModelOptions]="{standalone: true}">
-            <label for="showPwd">Show password</label>
+            @if (registerForm.get('password')?.value) {
+              <div class="pwd-strength">
+                <div class="pwd-strength-bars">
+                  <span class="pwd-bar"
+                        [class.pwd-bar--weak]="passwordStrength === 'weak'"
+                        [class.pwd-bar--fair]="passwordStrength === 'fair'"
+                        [class.pwd-bar--strong]="passwordStrength === 'strong'"></span>
+                  <span class="pwd-bar"
+                        [class.pwd-bar--fair]="passwordStrength === 'fair'"
+                        [class.pwd-bar--strong]="passwordStrength === 'strong'"></span>
+                  <span class="pwd-bar"
+                        [class.pwd-bar--strong]="passwordStrength === 'strong'"></span>
+                </div>
+                <span class="pwd-label"
+                      [class.pwd-label--weak]="passwordStrength === 'weak'"
+                      [class.pwd-label--fair]="passwordStrength === 'fair'"
+                      [class.pwd-label--strong]="passwordStrength === 'strong'">
+                  {{ passwordStrength }}
+                </span>
+              </div>
+            }
           </div>
 
         </div>
+
 
         <button type="submit" class="login-btn" [disabled]="isLoading()">
           @if (isLoading()) { Creating account… } @else { Create Account → }
@@ -176,12 +231,12 @@
           <a routerLink="/auth/login">Sign in</a>
         </p>
 
-        @if(errorMessage()){
+        @if (errorMessage()) {
           <div class="form-message error-message">
             <span>✕</span> {{ errorMessage() }}
           </div>
         }
-        @if(successMessage()){
+        @if (successMessage()) {
           <div class="form-message success-message">
             <span>✓</span> {{ successMessage() }}
           </div>

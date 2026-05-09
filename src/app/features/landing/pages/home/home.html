@@ -27,6 +27,15 @@
             routerLink="/about"
             aria-label="About ApnaInsights">About</button>
 
+    @if (historyLoaded() && readHistoryIds().size > 0) {
+      <a class="history-chip desktop-only"
+         routerLink="/history"
+         aria-label="Your reading history">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        History
+      </a>
+    }
+
     @if (isLoggedIn) {
       <a class="user-chip desktop-only"
          [routerLink]="dashboardRoute"
@@ -166,12 +175,22 @@
             <strong class="hero-stat-num">{{ totalViews() | formatCount }}</strong>
             <span class="hero-stat-label">Total Reads</span>
           </div>
+          @if (readingStreak() >= 2) {
+            <div class="hero-stat-sep" aria-hidden="true"></div>
+            <div class="hero-stat hero-stat--streak"
+                 [attr.aria-label]="readingStreak() + '-day reading streak'">
+              <strong class="hero-stat-num streak-num">🔥 {{ readingStreak() }}</strong>
+              <span class="hero-stat-label">Day Streak</span>
+            </div>
+          }
         </div>
       }
     </div>
   </section>
 
   <div class="filter-wrap" role="search" aria-label="Filter and search stories">
+
+    <!-- Row 1: Search + filter dropdowns -->
     <div class="filter-inner">
       <div class="search-wrap">
         <span class="search-icon" aria-hidden="true">🔍</span>
@@ -187,29 +206,55 @@
         <kbd class="search-shortcut" aria-label="Press / to focus search">/</kbd>
       </div>
 
-      <div class="filter-selects">
-        <select class="filter-select"
-                aria-label="Filter by category"
-                [ngModel]="selectedCategory()"
-                (ngModelChange)="selectedCategory.set($event)">
-          <option value="">All Categories</option>
-          @for (cat of categories; track trackByCategory($index, cat)) {
-            <option [value]="cat">{{ cat }}</option>
-          }
+      <div class="filter-pills">
+
+        @if (popularTags().length > 0) {
+          <select class="filter-pill"
+                  [class.filter-pill--active]="!!selectedTag()"
+                  aria-label="Filter by tag"
+                  [ngModel]="selectedTag()"
+                  (ngModelChange)="onTagSelectChange($event)">
+            <option value=""># Tags</option>
+            @for (tag of popularTags(); track tag) {
+              <option [value]="tag">#{{ tag }}</option>
+            }
+          </select>
+        }
+
+        <select class="filter-pill"
+                [class.filter-pill--active]="!!selectedReadingTime()"
+                aria-label="Filter by reading time"
+                [ngModel]="selectedReadingTime()"
+                (ngModelChange)="onTimeSelectChange($event)">
+          <option value="">⏱ Any Length</option>
+          <option value="quick">⚡ Quick &lt;5 min</option>
+          <option value="medium">📖 Medium 5–9 min</option>
+          <option value="long">📚 Long 10+ min</option>
         </select>
 
-        <select class="filter-select"
+        <select class="filter-pill"
+                [class.filter-pill--active]="selectedSort() !== 'newest'"
                 aria-label="Sort stories by"
                 [ngModel]="selectedSort()"
                 (ngModelChange)="selectedSort.set($event)">
-          <option value="newest">Newest</option>
-          <option value="liked">Most Liked</option>
-          <option value="viewed">Most Viewed</option>
-          <option value="comments">Most Comments</option>
+          <option value="newest">↕ Newest</option>
+          <option value="liked">❤️ Most Liked</option>
+          <option value="viewed">👁 Most Viewed</option>
+          <option value="comments">💬 Most Comments</option>
         </select>
+
+        @if (isFiltering()) {
+          <button class="filter-clear-pill"
+                  (click)="selectedCategory.set(''); selectedTag.set(''); selectedReadingTime.set(''); selectedSort.set('newest')"
+                  aria-label="Clear all filters">
+            ✕ Clear
+          </button>
+        }
+
       </div>
     </div>
 
+    <!-- Row 2: Category chips -->
     <nav class="category-bar"
          role="navigation"
          aria-label="Browse by topic">
@@ -242,6 +287,7 @@
         </button>
       }
     </nav>
+
   </div>
 
   <ng-template #skeletonGrid>
@@ -267,16 +313,19 @@
   @if (isFiltering()) {
     <section class="section" aria-labelledby="results-heading">
       <div class="section-header">
-        <h2 class="section-title" id="results-heading">🔍 Results</h2>
+        <h2 class="section-title" id="results-heading">
+          @if (selectedTag()) { 🏷 #{{ selectedTag() }}
+          } @else { 🔍 Results }
+        </h2>
         <span class="result-count"
               role="status"
               aria-live="polite"
               aria-atomic="true">
           {{ filteredPosts().length }} found
         </span>
-        @if (selectedCategory()) {
+        @if (selectedCategory() || selectedTag() || selectedReadingTime()) {
           <button class="clear-filter-btn"
-                  (click)="selectedCategory.set(''); selectedSort.set('newest')"
+                  (click)="selectedCategory.set(''); selectedTag.set(''); selectedReadingTime.set(''); selectedSort.set('newest')"
                   aria-label="Clear all active filters">
             ✕ Clear filters
           </button>
@@ -288,7 +337,7 @@
             <span class="no-results-icon" aria-hidden="true">🔍</span>
             <span>No stories match your filters.</span>
             <button class="clear-filter-btn"
-                    (click)="selectedCategory.set(''); selectedSort.set('newest')"
+                    (click)="selectedCategory.set(''); selectedTag.set(''); selectedReadingTime.set(''); selectedSort.set('newest')"
                     aria-label="Clear filters to see all stories">
               Clear filters
             </button>
@@ -502,11 +551,23 @@
           </div>
         }
         <span class="card-cat" aria-hidden="true">{{ blog.categories[0] }}</span>
-        @if (isNew(blog)) {
+        @if (isTrending(blog._id)) {
+          <span class="trending-badge" aria-label="Trending story">🔥 Trending</span>
+        } @else if (isNew(blog)) {
           <span class="new-badge" aria-label="New story — published in the last 48 hours">NEW</span>
         }
         @if (historyLoaded() && isRead(blog._id)) {
-          <span class="continue-badge" aria-label="You've read this story — continue reading">↩ Continue</span>
+          @if (getSavedProgress(blog._id) > 0) {
+            <span class="continue-badge continue-badge--progress"
+                  [attr.aria-label]="getSavedProgress(blog._id) + '% read — continue'">
+              ↩ {{ getSavedProgress(blog._id) }}% read
+              <span class="continue-progress-bar"
+                    [style.width.%]="getSavedProgress(blog._id)"
+                    aria-hidden="true"></span>
+            </span>
+          } @else {
+            <span class="continue-badge" aria-label="You've read this story — continue reading">↩ Continue</span>
+          }
         }
       </div>
 
@@ -522,6 +583,21 @@
         <h3 itemprop="name">{{ blog.title }}</h3>
         <p itemprop="abstract">{{ blog.description }}</p>
         <span class="card-reading-time">⏱ {{ getReadingTime(blog) }} min read</span>
+
+        @if (blog.tags?.length) {
+          <div class="card-tags" aria-label="Story tags">
+            @for (tag of blog.tags.slice(0, 3); track tag) {
+              <a class="card-tag-chip"
+                 [href]="'/tag/' + tag"
+                 (click)="$event.preventDefault(); $event.stopPropagation(); selectTag(tag)"
+                 [class.active]="selectedTag() === tag"
+                 [attr.aria-label]="'Filter by tag: ' + tag"
+                 [attr.aria-pressed]="selectedTag() === tag">
+                #{{ tag }}
+              </a>
+            }
+          </div>
+        }
       </div>
 
       <div class="card-footer">

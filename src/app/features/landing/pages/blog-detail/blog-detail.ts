@@ -570,11 +570,25 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   ngOnDestroy(): void {
     this.stopCarousel();
     this.lockScroll(false);
-    // Remove the preload link so it doesn't linger with a stale href
-    // after SPA navigation to a page that has no featured image.
+    this.saveReadingProgress();
     if (isPlatformBrowser(this.platformId)) {
       this.document.querySelector('link[data-blog-preload]')?.remove();
     }
+  }
+
+  private saveReadingProgress(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    const id  = this.post()?._id;
+    const pct = this.readingProgress();
+    if (!id) return;
+    try {
+      if (pct >= 90) {
+        // Fully read — clear any saved progress so card doesn't show "Continue"
+        localStorage.removeItem(`apna_progress_${id}`);
+      } else if (pct >= 5) {
+        localStorage.setItem(`apna_progress_${id}`, String(Math.round(pct)));
+      }
+    } catch { /* quota */ }
   }
 
   // ══════════════════════════════════════════════════════════════════════════

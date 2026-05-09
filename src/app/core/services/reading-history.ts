@@ -82,6 +82,18 @@ export class ReadingHistory {
       .map(([cat]) => cat);
   }
 
+  remove(id: string): void {
+    this._entries = this._entries.filter(e => e.id !== id);
+    this._ids.delete(id);
+    this._persist();
+  }
+
+  clear(): void {
+    this._entries = [];
+    this._ids.clear();
+    this._persist();
+  }
+
   private _persist(): void {
     try {
       if (typeof localStorage === 'undefined') return;

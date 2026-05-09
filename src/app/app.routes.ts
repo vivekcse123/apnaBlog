@@ -54,6 +54,11 @@ export const routes: Routes = [
         title: 'Tag | ApnaInsights'
     },
     {
+        path: 'history',
+        loadComponent: () => import('./features/landing/pages/history/history').then(m => m.HistoryPage),
+        title: 'Reading History | ApnaInsights'
+    },
+    {
         path: 'contact',
         redirectTo: 'about',
         pathMatch: 'full'

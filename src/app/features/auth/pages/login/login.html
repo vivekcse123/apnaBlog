@@ -84,44 +84,50 @@
       <form [formGroup]="loginForm" (ngSubmit)="login()" class="login-form">
 
         <div class="field-group">
-          <label>Email / Username</label>
+          <label for="login-email">Email / Username</label>
           <div class="input-wrap">
-            <span class="input-icon">◎</span>
-            <input type="text" placeholder="Enter your email or username"
-              formControlName="email"
+            <span class="input-icon" aria-hidden="true">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            </span>
+            <input id="login-email" type="text" placeholder="Enter your email or username"
+              formControlName="email" autocomplete="email"
               [class.field-error]="loginForm.get('email')?.invalid &&
                 (isSubmitted() || loginForm.get('email')?.touched)">
           </div>
           @if(loginForm.get('email')?.invalid && (isSubmitted() || loginForm.get('email')?.touched)){
             @if(loginForm.get('email')?.errors?.['required']){
               <small class="error">Email / Username is required</small>
-            }
-            @if(loginForm.get('email')?.errors?.['pattern']){
-              <small class="error">Invalid email address</small>
+            } @else if(loginForm.get('email')?.errors?.['pattern']){
+              <small class="error">Enter a valid email address</small>
             }
           }
         </div>
 
         <div class="field-group">
-          <label>Password</label>
+          <label for="login-pwd">Password</label>
           <div class="input-wrap">
-            <span class="input-icon">◉</span>
-            <input [type]="showPassword ? 'text' : 'password'"
+            <span class="input-icon" aria-hidden="true">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </span>
+            <input id="login-pwd" [type]="showPassword ? 'text' : 'password'"
               placeholder="Enter your password"
-              formControlName="password"
+              formControlName="password" autocomplete="current-password"
               [class.field-error]="loginForm.get('password')?.invalid &&
                 (isSubmitted() || loginForm.get('password')?.touched)">
+            <button type="button" class="eye-btn" (click)="togglePasswordVisibility()"
+                    [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'">
+              @if (showPassword) {
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+              } @else {
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              }
+            </button>
           </div>
           @if(loginForm.get('password')?.invalid && (isSubmitted() || loginForm.get('password')?.touched)){
             @if(loginForm.get('password')?.errors?.['required']){
               <small class="error">Password is required</small>
             }
           }
-        </div>
-
-        <div class="show-password-row">
-          <input type="checkbox" id="showPwd" [(ngModel)]="showPassword" [ngModelOptions]="{standalone: true}">
-          <label for="showPwd">Show password</label>
         </div>
 
         <div class="forgot-row">

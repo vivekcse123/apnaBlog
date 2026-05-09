@@ -70,7 +70,9 @@ export class Home implements OnInit, OnDestroy {
   menuOpen: WritableSignal<boolean> = signal(false);
   searchQuery      = signal('');
   selectedCategory = signal('');
-  selectedSort     = signal('newest');
+  selectedTag          = signal('');
+  selectedReadingTime  = signal<'' | 'quick' | 'medium' | 'long'>('');
+  selectedSort         = signal('newest');
   showScrollTop    = signal(false);
 
   showWelcomeModal  = signal(false);
@@ -84,8 +86,10 @@ export class Home implements OnInit, OnDestroy {
   bookmarkedPostIds = signal<Set<string>>(new Set());
 
   // ── Personalization signals (browser-only — always false/empty on SSR) ──────
-  historyLoaded  = signal(false);
-  readHistoryIds = signal<Set<string>>(new Set());
+  historyLoaded    = signal(false);
+  readHistoryIds   = signal<Set<string>>(new Set());
+  progressMap      = signal<Map<string, number>>(new Map());
+  readingStreak    = signal(0);
 
   commentDrawerPostId   = signal<string | null>(null);
   commentText           = signal('');
@@ -162,11 +166,21 @@ export class Home implements OnInit, OnDestroy {
 
   filteredPosts = computed(() => {
     const cat  = this.selectedCategory();
+    const tag  = this.selectedTag();
+    const rt   = this.selectedReadingTime();
     const q    = this.searchQuery().trim().toLowerCase();
     const sort = this.selectedSort();
     let posts: PostWithTs[] = this.allPosts();
 
     if (cat) posts = posts.filter(p => p.categories.includes(cat));
+    if (tag) posts = posts.filter(p => p.tags?.includes(tag));
+    if (rt)  posts = posts.filter(p => {
+      const mins = this.getReadingTime(p);
+      if (rt === 'quick')  return mins <= 4;
+      if (rt === 'medium') return mins >= 5 && mins <= 9;
+      if (rt === 'long')   return mins >= 10;
+      return true;
+    });
     if (q)   posts = posts.filter(p =>
       p.title.toLowerCase().includes(q) || p.description.toLowerCase().includes(q)
     );
@@ -190,8 +204,30 @@ export class Home implements OnInit, OnDestroy {
   });
 
   isFiltering = computed(() =>
-    !!this.selectedCategory() || !!this.searchQuery().trim() || this.selectedSort() !== 'newest'
+    !!this.selectedCategory() || !!this.selectedTag() || !!this.selectedReadingTime() ||
+    !!this.searchQuery().trim() || this.selectedSort() !== 'newest'
   );
+
+  /** Top 15 tags by frequency across all posts. */
+  popularTags = computed(() => {
+    const counts = new Map<string, number>();
+    for (const post of this.allPosts()) {
+      for (const tag of (post.tags ?? [])) {
+        if (tag) counts.set(tag, (counts.get(tag) ?? 0) + 1);
+      }
+    }
+    return [...counts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 15)
+      .map(([tag]) => tag);
+  });
+
+  /** IDs of the top-5 trending posts — used to show the 🔥 badge on cards. */
+  private trendingTopIds = computed(() =>
+    new Set(this.trendingPool().slice(0, 5).map(p => p._id))
+  );
+
+  isTrending(postId: string): boolean { return this.trendingTopIds().has(postId); }
 
   publishedCount = computed(() =>
     this.allPosts().filter(p => p.status === 'published').length
@@ -293,6 +329,9 @@ export class Home implements OnInit, OnDestroy {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(params => {
         this.selectedCategory.set(params.get('category') ?? '');
+        this.selectedTag.set(params.get('tag') ?? '');
+        const rt = params.get('rt') ?? '';
+        this.selectedReadingTime.set(['quick','medium','long'].includes(rt) ? rt as any : '');
         const q = params.get('q');
         if (q) {
           this.searchQuery.set(q);
@@ -576,6 +615,45 @@ export class Home implements OnInit, OnDestroy {
     });
   }
 
+  selectTag(tag: string): void {
+    const next = this.selectedTag() === tag ? '' : tag;
+    this.selectedTag.set(next);
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: next ? { tag: next } : {},
+      replaceUrl: true,
+    });
+  }
+
+  selectReadingTime(rt: '' | 'quick' | 'medium' | 'long'): void {
+    const next = this.selectedReadingTime() === rt ? '' : rt;
+    this.selectedReadingTime.set(next);
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: next ? { rt: next } : {},
+      replaceUrl: true,
+    });
+  }
+
+  // Used by <select> elements — sets directly (no toggle)
+  onTagSelectChange(tag: string): void {
+    this.selectedTag.set(tag);
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: tag ? { tag } : {},
+      replaceUrl: true,
+    });
+  }
+
+  onTimeSelectChange(rt: string): void {
+    this.selectedReadingTime.set(rt as any);
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: rt ? { rt } : {},
+      replaceUrl: true,
+    });
+  }
+
   prevPage(page: WritableSignal<number>): void {
     if (page() > 0) page.set(page() - 1);
   }
@@ -669,10 +747,41 @@ export class Home implements OnInit, OnDestroy {
 
   private restoreReadHistory(): void {
     if (!isPlatformBrowser(this.platformId)) return;
-    const ids = new Set(this.readingHistory.getEntries().map(e => e.id));
+    const entries = this.readingHistory.getEntries();
+    const ids     = new Set(entries.map(e => e.id));
     this.readHistoryIds.set(ids);
     this.historyLoaded.set(true);
+
+    // Load per-post reading progress saved by blog-detail on leave
+    const map = new Map<string, number>();
+    for (const e of entries) {
+      try {
+        const saved = localStorage.getItem(`apna_progress_${e.id}`);
+        if (saved) map.set(e.id, parseInt(saved, 10));
+      } catch { /* quota */ }
+    }
+    this.progressMap.set(map);
+
+    // Reading streak: count distinct calendar days in read history
+    this.readingStreak.set(this.computeStreak(entries));
   }
+
+  private computeStreak(entries: { readAt: number }[]): number {
+    if (!entries.length) return 0;
+    const today     = new Date(); today.setHours(0, 0, 0, 0);
+    const days      = new Set(entries.map(e => {
+      const d = new Date(e.readAt); d.setHours(0, 0, 0, 0); return d.getTime();
+    }));
+    let streak = 0;
+    let cursor = today.getTime();
+    while (days.has(cursor)) {
+      streak++;
+      cursor -= 86_400_000;
+    }
+    return streak;
+  }
+
+  getSavedProgress(postId: string): number { return this.progressMap().get(postId) ?? 0; }
 
   isRead(postId: string): boolean { return this.readHistoryIds().has(postId); }
 
@@ -841,4 +950,5 @@ export class Home implements OnInit, OnDestroy {
 
   trackByPostId(_index: number, post: Post): string { return post._id; }
   trackByCategory(_index: number, cat: string): string { return cat; }
+  trackByTag(_index: number, tag: string): string { return tag; }
 }

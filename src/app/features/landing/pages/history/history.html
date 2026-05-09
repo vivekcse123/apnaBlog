@@ -1,0 +1,101 @@
+<main class="history-page" role="main">
+
+  <div class="history-header">
+    <div class="history-header-left">
+      <a class="history-back" routerLink="/" aria-label="Back to home">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+      </a>
+      <h1 class="history-title">
+        <span class="history-icon" aria-hidden="true">📖</span>
+        Reading History
+      </h1>
+    </div>
+
+    @if (isLoaded() && entries().length > 0) {
+      <button class="clear-all-btn"
+              (click)="showClear.set(!showClear())"
+              aria-label="Clear reading history">
+        Clear all
+      </button>
+    }
+  </div>
+
+  @if (showClear()) {
+    <div class="clear-confirm" role="alert">
+      <p>Remove all {{ entries().length }} articles from your history?</p>
+      <div class="clear-confirm-actions">
+        <button class="confirm-yes" (click)="clearAll()">Yes, clear all</button>
+        <button class="confirm-no"  (click)="showClear.set(false)">Cancel</button>
+      </div>
+    </div>
+  }
+
+  @if (!isLoaded()) {
+    <!-- SSR / first paint — skeleton -->
+    <div class="history-skeleton" aria-busy="true" aria-label="Loading history">
+      @for (i of [1,2,3,4,5]; track i) {
+        <div class="hsk-row">
+          <div class="hsk-body">
+            <div class="hsk-line hsk-title"></div>
+            <div class="hsk-line hsk-meta"></div>
+          </div>
+          <div class="hsk-action"></div>
+        </div>
+      }
+    </div>
+  } @else if (entries().length === 0) {
+    <div class="history-empty" role="status">
+      <span class="empty-icon" aria-hidden="true">📭</span>
+      <h2>No reading history yet</h2>
+      <p>Articles you read will appear here so you can easily find them again.</p>
+      <a class="browse-btn" routerLink="/" aria-label="Browse stories">Browse Stories →</a>
+    </div>
+  } @else {
+    <p class="history-count">{{ entries().length }} article{{ entries().length !== 1 ? 's' : '' }} read</p>
+
+    <ul class="history-list" role="list">
+      @for (entry of entries(); track trackById($index, entry)) {
+        <li class="history-item" role="listitem">
+
+          <div class="history-item-body">
+            <div class="history-cats" aria-label="Categories">
+              @for (cat of entry.categories.slice(0, 2); track cat) {
+                <span class="history-cat">{{ cat }}</span>
+              }
+              @for (tag of entry.tags.slice(0, 1); track tag) {
+                <span class="history-tag">#{{ tag }}</span>
+              }
+            </div>
+
+            <a class="history-item-title"
+               [href]="'/blog/' + (entry.slug || entry.id)"
+               [routerLink]="['/blog', entry.slug || entry.id]"
+               [attr.aria-label]="'Read again: ' + entry.title">
+              {{ entry.title }}
+            </a>
+
+            <time class="history-item-time"
+                  [attr.datetime]="entry.readAt | date:'yyyy-MM-ddTHH:mm'">
+              Read {{ entry.readAt | date:'mediumDate' }}
+            </time>
+          </div>
+
+          <div class="history-item-actions">
+            <a class="history-read-btn"
+               [routerLink]="['/blog', entry.slug || entry.id]"
+               aria-label="Read again">
+              Read →
+            </a>
+            <button class="history-remove-btn"
+                    (click)="remove(entry.id)"
+                    [attr.aria-label]="'Remove ' + entry.title + ' from history'">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+
+        </li>
+      }
+    </ul>
+  }
+
+</main>
