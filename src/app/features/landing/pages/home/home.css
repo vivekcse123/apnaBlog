@@ -157,6 +157,18 @@ body {
 }
 .crt-btn { background: linear-gradient(135deg, #43cea2, #185a9d); color: white; border-color: transparent; }
 .drawer-link:hover { background: var(--accent-subtle); border-color: var(--accent); color: var(--accent-text); }
+
+.drawer-history-count {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--bg-surface-alt);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 1px 8px;
+  border-radius: 99px;
+  line-height: 1.6;
+}
 .crt-btn:hover { opacity: 0.9; }
 
 .drawer-backdrop {

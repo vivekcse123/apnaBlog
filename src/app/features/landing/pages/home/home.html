@@ -82,6 +82,15 @@
      routerLink="/about"
      (click)="menuOpen.set(false)"
      aria-label="About ApnaInsights">About</a>
+  @if (historyLoaded() && readHistoryIds().size > 0) {
+    <a class="drawer-link"
+       routerLink="/history"
+       (click)="menuOpen.set(false)"
+       aria-label="Your reading history">
+      🕐 Reading History
+      <span class="drawer-history-count">{{ readHistoryIds().size }}</span>
+    </a>
+  }
   @if (isLoggedIn) {
     <a class="drawer-link crt-btn"
        [routerLink]="dashboardRoute"
