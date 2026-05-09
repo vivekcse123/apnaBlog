@@ -630,7 +630,7 @@
     box-shadow: none;
     border: none;
     background: transparent;
-    overflow: visible;
+    overflow: hidden;
   }
 
   /* Brand panel — transparent, content floats over page gradient */
@@ -638,7 +638,7 @@
     background: transparent !important;
     width: 100%;
     flex: none;
-    padding: 52px 24px 24px;
+    padding: 36px 24px 16px;
     overflow: visible;
     align-items: center;
     animation: m-brand-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
@@ -651,7 +651,7 @@
   .brand-content {
     align-items: center;
     text-align: center;
-    gap: 14px;
+    gap: 10px;
     width: 100%;
   }
 
@@ -659,14 +659,14 @@
   .brand-logo {
     flex-direction: column;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
   }
 
   /* Glass-morphism logo icon */
   .brand-logo-icon {
-    width: 72px;
-    height: 72px;
-    border-radius: 24px;
+    width: 58px;
+    height: 58px;
+    border-radius: 18px;
     background: rgba(255, 255, 255, 0.12);
     border: 1.5px solid rgba(255, 255, 255, 0.25);
     backdrop-filter: blur(24px);
@@ -676,10 +676,10 @@
       inset 0 1px 0 rgba(255, 255, 255, 0.2);
   }
 
-  .brand-logo-icon .app-logo-img { width: 40px; height: 40px; }
+  .brand-logo-icon .app-logo-img { width: 34px; height: 34px; }
 
   .brand-name {
-    font-size: 26px;
+    font-size: 22px;
     letter-spacing: 0.1px;
     background: linear-gradient(135deg, #43cea2, #185a9d);
     -webkit-background-clip: text;
@@ -689,11 +689,11 @@
 
   /* Subtitle — softer white */
   .brand-headline h3 {
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 400;
     color: rgba(255, 255, 255, 0.65);
     margin-bottom: 0;
-    line-height: 1.6;
+    line-height: 1.4;
     letter-spacing: 0.01em;
   }
 
@@ -706,8 +706,9 @@
   .form-panel {
     width: 100%;
     flex: 1;
-    border-radius: 32px 32px 0 0;
-    padding: 0 24px 36px;
+    min-height: 0;
+    border-radius: 28px 28px 0 0;
+    padding: 0 22px 28px;
     overflow-y: auto;
     justify-content: flex-start;
     box-shadow:
@@ -724,19 +725,19 @@
     height: 4px;
     border-radius: 2px;
     background: var(--border-strong, rgba(0, 0, 0, 0.18));
-    margin: 12px auto 24px;
+    margin: 10px auto 18px;
     flex-shrink: 0;
   }
 
-  .form-header    { margin-bottom: 24px; }
-  .form-header h2 { font-size: 23px; font-weight: 700; }
-  .form-header p  { font-size: 13.5px; color: var(--text-muted); }
+  .form-header    { margin-bottom: 18px; }
+  .form-header h2 { font-size: 21px; font-weight: 700; }
+  .form-header p  { font-size: 13px; color: var(--text-muted); }
 
-  /* Taller, more touchable inputs */
-  .input-wrap input { padding: 15px 14px 15px 46px; font-size: 15px; border-radius: 14px; }
+  /* Compact but touchable inputs */
+  .input-wrap input { padding: 13px 14px 13px 44px; font-size: 14.5px; border-radius: 12px; }
 
   /* Prominent CTA */
-  .login-btn { padding: 16px; font-size: 15px; border-radius: 14px; }
+  .login-btn { padding: 14px; font-size: 15px; border-radius: 14px; }
 
-  .login-form { gap: 16px; }
+  .login-form { gap: 14px; }
 }
