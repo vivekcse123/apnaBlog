@@ -2,7 +2,10 @@
 
   <!-- Bell trigger -->
   <button class="bell-btn" (click)="togglePanel($event)" aria-label="Notifications">
-    <mat-icon>notifications</mat-icon>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/>
+    </svg>
     @if (unreadCount() > 0) {
       <span class="badge">{{ unreadCount() > 99 ? '99+' : unreadCount() }}</span>
     }
@@ -22,44 +25,39 @@
 
         <div class="actions">
           <!-- Refresh -->
-          <button
-            type="button"
-            class="icon-btn"
-            [class.spinning]="refreshing()"
-            (click)="onRefresh($event)"
-            title="Refresh"
-            aria-label="Refresh notifications"
-          >
-            <mat-icon>refresh</mat-icon>
+          <button type="button" class="icon-btn" [class.spinning]="refreshing()"
+                  (click)="onRefresh($event)" title="Refresh" aria-label="Refresh notifications">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="23 4 23 10 17 10"/>
+              <path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/>
+            </svg>
           </button>
 
-          <!-- Mark all read — only when there are unread -->
+          <!-- Mark all read -->
           @if (unreadCount() > 0) {
-            <button
-              type="button"
-              class="icon-btn"
-              (click)="onMarkAllRead($event)"
-              title="Mark all read"
-              aria-label="Mark all notifications as read"
-            >
-              <mat-icon>done_all</mat-icon>
+            <button type="button" class="icon-btn" (click)="onMarkAllRead($event)"
+                    title="Mark all read" aria-label="Mark all notifications as read">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="20 6 9 17 4 12"/>
+                <polyline points="14 6 9 11"/>
+              </svg>
             </button>
           }
 
-          <!-- Clear All — only when there are notifications -->
+          <!-- Clear all -->
           @if (notifications().length > 0) {
-            <button
-              type="button"
-              class="icon-btn danger"
-              [class.busy]="clearingAll()"
-              (click)="onClearAll($event)"
-              title="Clear all notifications"
-              aria-label="Clear all notifications"
-            >
+            <button type="button" class="icon-btn danger" [class.busy]="clearingAll()"
+                    (click)="onClearAll($event)" title="Clear all" aria-label="Clear all notifications">
               @if (clearingAll()) {
-                <mat-icon class="spin-once">hourglass_empty</mat-icon>
+                <span class="css-spinner" aria-hidden="true"></span>
               } @else {
-                <mat-icon>delete_sweep</mat-icon>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+                  <path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+                </svg>
               }
             </button>
           }
@@ -71,14 +69,18 @@
 
         @if (loading()) {
           <div class="loader-wrap">
-            <mat-spinner diameter="28"></mat-spinner>
+            <span class="css-spinner css-spinner--lg" aria-label="Loading" role="status"></span>
           </div>
         }
 
         @if (!loading() && notifications().length === 0) {
           <div class="empty-state">
             <div class="empty-icon-wrap">
-              <mat-icon>notifications_none</mat-icon>
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/>
+                <line x1="1" y1="1" x2="23" y2="23"/>
+              </svg>
             </div>
             <p class="empty-title">You're all caught up!</p>
             <p class="empty-sub">New notifications will appear here.</p>
@@ -87,18 +89,17 @@
 
         @if (!loading() && notifications().length > 0) {
           @for (n of notifications(); track n.id ?? $index) {
-            <div
-              class="notification-item"
-              [class.unread]="!n.isRead"
-              [class.navigable]="isNavigable(n.type)"
-              (click)="onNotificationClick(n)"
-              [attr.role]="isNavigable(n.type) ? 'button' : 'listitem'"
-            >
-              <!-- Type icon -->
+            <div class="notification-item"
+                 [class.unread]="!n.isRead"
+                 [class.navigable]="isNavigable(n.type)"
+                 (click)="onNotificationClick(n)"
+                 [attr.role]="isNavigable(n.type) ? 'button' : 'listitem'">
+
+              <!-- Type icon (emoji) -->
               <div class="notif-icon" [style.background]="getMeta(n.type).color + '22'">
-                <mat-icon [style.color]="getMeta(n.type).color">
+                <span class="notif-emoji" [style.color]="getMeta(n.type).color" aria-hidden="true">
                   {{ getMeta(n.type).icon }}
-                </mat-icon>
+                </span>
               </div>
 
               <!-- Content -->
@@ -113,26 +114,23 @@
                 </div>
               </div>
 
-              <!-- Unread indicator dot -->
               @if (!n.isRead) {
                 <span class="unread-dot" aria-label="Unread"></span>
               }
 
-              <!-- Delete button -->
-              <button
-                class="delete-btn"
-                (click)="onDelete($event, n.id)"
-                title="Dismiss"
-                aria-label="Dismiss notification"
-              >
-                <mat-icon>close</mat-icon>
+              <!-- Delete -->
+              <button class="delete-btn" (click)="onDelete($event, n.id)"
+                      title="Dismiss" aria-label="Dismiss notification">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
               </button>
             </div>
           }
         }
 
       </div>
-
     </div>
   }
 

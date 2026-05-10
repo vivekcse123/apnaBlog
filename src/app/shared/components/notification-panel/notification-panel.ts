@@ -3,7 +3,6 @@ import {
   ElementRef, inject, ChangeDetectionStrategy, signal
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { filter, Subject, take, takeUntil } from 'rxjs';
 
 import {
@@ -11,7 +10,6 @@ import {
 } from '../../models/notification.model';
 import { NotificationService } from '../../../core/services/notification-service';
 import { NotificationNavigationService, NON_NAVIGABLE_TYPES } from '../../../core/services/open-notification/notification-navigation';
-import { MatIconModule } from '@angular/material/icon';
 
 // These notification types are only triggered by admin/super-admin actions.
 // Display the actor as "Admin" to avoid revealing names.
@@ -25,7 +23,7 @@ const ADMIN_ONLY_TYPES = new Set<NotificationType>([
 @Component({
   selector: 'app-notification-panel',
   standalone: true,
-  imports: [CommonModule, MatProgressSpinnerModule, MatIconModule],
+  imports: [CommonModule],
   templateUrl: './notification-panel.html',
   styleUrls: ['./notification-panel.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,

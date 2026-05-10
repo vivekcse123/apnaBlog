@@ -155,17 +155,25 @@
 }
 
 /* ── Spinner animations ─────────────────────────────────────────────────────── */
-.spinning mat-icon {
+.spinning svg {
   animation: spin 0.7s linear infinite;
 }
 
-.spin-once {
-  animation: spin 1s linear infinite;
-}
+@keyframes spin { to { transform: rotate(360deg); } }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
+/* Pure-CSS spinner replacing mat-spinner */
+.css-spinner {
+  display: inline-block;
+  width: 18px; height: 18px;
+  border: 2.5px solid var(--border);
+  border-top-color: #43cea2;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
 }
+.css-spinner--lg { width: 28px; height: 28px; border-width: 3px; }
+
+/* Emoji icon in notification type badge */
+.notif-emoji { font-size: 16px; line-height: 1; }
 
 /* ── Notification list ──────────────────────────────────────────────────────── */
 .notification-list {

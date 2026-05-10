@@ -41,20 +41,6 @@ interface Feature {
           <h2 id="wm-title" class="wm-title">Welcome to ApnaInsights</h2>
           <p class="wm-sub">Your community hub for real stories from real people.</p>
 
-          <!-- ── Write & Earn Banner ── -->
-          <div class="wm-earn-banner" role="note" aria-label="Write and Earn program">
-            <div class="wm-earn-icon" aria-hidden="true">💰</div>
-            <div class="wm-earn-content">
-              <p class="wm-earn-title">Write &amp; Earn Real Money</p>
-              <p class="wm-earn-desc">Every view on your blog counts — get rewarded for your words</p>
-              <div class="wm-earn-tiers" role="list" aria-label="Earning tiers">
-                <span class="wm-earn-tier" role="listitem">100 views → ₹10</span>
-                <span class="wm-earn-tier" role="listitem">500 views → ₹50</span>
-                <span class="wm-earn-tier wm-earn-tier--gold" role="listitem">1K views → ₹100</span>
-              </div>
-            </div>
-          </div>
-
           <ul class="wm-features" role="list">
             @for (f of features; track f.label) {
               <li class="wm-feat">
@@ -186,65 +172,6 @@ interface Feature {
     .wm-sub {
       font-size: 13px; color: var(--text-secondary);
       line-height: 1.5; margin: 0 0 14px;
-    }
-
-    /* ── Write & Earn Banner ── */
-    .wm-earn-banner {
-      display: flex;
-      gap: 10px;
-      align-items: flex-start;
-      background: linear-gradient(135deg,
-        rgba(67, 206, 162, 0.10) 0%,
-        rgba(245, 158, 11, 0.08) 100%);
-      border: 1.5px solid rgba(67, 206, 162, 0.40);
-      border-radius: 12px;
-      padding: 12px 14px;
-      margin-bottom: 14px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .wm-earn-banner::before {
-      content: '';
-      position: absolute; top: 0; left: 0; right: 0;
-      height: 2px;
-      background: linear-gradient(90deg, #43cea2, #f59e0b, #43cea2);
-      background-size: 200% 100%;
-      animation: earnShimmer 2.5s linear infinite;
-    }
-
-    @keyframes earnShimmer {
-      from { background-position: 200% 0; }
-      to   { background-position: -200% 0; }
-    }
-
-    .wm-earn-icon { font-size: 22px; flex-shrink: 0; line-height: 1; margin-top: 2px; }
-
-    .wm-earn-content { flex: 1; min-width: 0; }
-
-    .wm-earn-title {
-      font-size: 13px; font-weight: 700;
-      color: var(--text-primary); margin: 0 0 2px;
-    }
-
-    .wm-earn-desc {
-      font-size: 11px; color: var(--text-muted);
-      line-height: 1.4; margin: 0 0 8px;
-    }
-
-    .wm-earn-tiers { display: flex; flex-wrap: wrap; gap: 5px; }
-
-    .wm-earn-tier {
-      background: linear-gradient(135deg, #43cea2, #185a9d);
-      color: #fff;
-      font-size: 10px; font-weight: 600;
-      font-family: 'DM Sans', sans-serif;
-      padding: 3px 9px; border-radius: 999px;
-      white-space: nowrap; letter-spacing: 0.02em;
-    }
-
-    .wm-earn-tier--gold {
-      background: linear-gradient(135deg, #f59e0b, #d97706);
     }
 
     /* ── Feature list ── */

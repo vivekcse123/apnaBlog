@@ -2,7 +2,6 @@ import { Component, ElementRef, EventEmitter, HostListener, Input, OnInit, Outpu
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { MatIconModule } from '@angular/material/icon';
 import { NotificationPanel } from '../components/notification-panel/notification-panel';
 import { NotificationService } from '../../core/services/notification-service';
 import { ThemeService } from '../../core/services/theme-service';
@@ -15,7 +14,7 @@ interface Suggestion { label: string; emoji: string; route: string; queryParams?
 @Component({
   selector: 'app-common-header',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, CommonModule, MatIconModule, NotificationPanel, FormsModule],
+  imports: [RouterLink, RouterLinkActive, CommonModule, NotificationPanel, FormsModule],
   templateUrl: './common-header.html',
   styleUrls: ['./common-header.css'],
 })
