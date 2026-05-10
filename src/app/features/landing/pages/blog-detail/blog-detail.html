@@ -16,7 +16,7 @@
   <!-- Right — actions -->
   <div class="header-right">
 
-    <!-- Reading progress ring -->
+    <!-- Reading progress ring + time left -->
     <div class="progress-ring-wrap" [title]="(readingProgress() | number:'1.0-0') + '% read'"
          [class.progress-ring-wrap--visible]="readingProgress() > 0">
       <svg viewBox="0 0 36 36" width="32" height="32" class="progress-ring-svg" aria-hidden="true">
@@ -36,6 +36,11 @@
       </svg>
       <span class="progress-ring-pct">{{ readingProgress() | number:'1.0-0' }}</span>
     </div>
+    @if (readingProgress() > 5 && minutesLeft() > 0) {
+      <span class="mins-left" aria-live="polite">{{ minutesLeft() }} min left</span>
+    } @else if (readingProgress() >= 95) {
+      <span class="mins-left mins-left--done">✓ Done</span>
+    }
 
     <!-- Back -->
     <button class="hdr-back-btn" (click)="goBack()" aria-label="Go back">
@@ -126,7 +131,7 @@
     <button class="float-btn" (click)="printArticle()" title="Print">
       <span class="float-icon">🖨️</span>
     </button>
-    <button class="float-btn" (click)="toggleShareMenu()" [class.active]="shareMenuOpen()" title="Share">
+    <button class="float-btn" (click)="nativeSharePost()" [class.active]="shareMenuOpen()" title="Share">
       <span class="float-icon">↗</span>
       @if (shareCount() > 0) {
         <span class="share-count-badge">{{ shareCount() }}</span>
@@ -657,204 +662,247 @@
     </div>
   }
 
-<!-- ── Comment Drawer (same pattern as home page) ── -->
-@if (commentDrawerOpen()) {
-  <div class="comment-backdrop" (click)="closeCommentDrawer()" role="presentation" aria-hidden="true"></div>
-}
+<!-- ══════════════════════════════════════════════════════════════
+     INLINE DISCUSSION SECTION
+══════════════════════════════════════════════════════════════ -->
+<section id="discussion" class="discussion-section" aria-labelledby="discussion-heading">
 
-<div class="comment-drawer"
-     [class.open]="commentDrawerOpen()"
-     role="dialog" aria-modal="true"
-     aria-labelledby="bd-comment-drawer-title"
-     [attr.aria-hidden]="!commentDrawerOpen()">
-
-  <div class="drawer-header">
-    <div class="drawer-title-group">
-      <span class="drawer-icon" aria-hidden="true">💬</span>
-      <h2 class="drawer-title" id="bd-comment-drawer-title">Comments</h2>
+  <div class="disc-header">
+    <h2 class="disc-title" id="discussion-heading">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+      </svg>
+      Discussion
       @if (totalCommentsCount() > 0) {
-        <span class="drawer-count-badge">{{ totalCommentsCount() }}</span>
+        <span class="disc-count">{{ totalCommentsCount() }}</span>
       }
-    </div>
-    <button class="drawer-close-btn" (click)="closeCommentDrawer()" aria-label="Close comments">✕</button>
+    </h2>
+    @if (!commentDrawerOpen()) {
+      <button class="disc-load-btn" (click)="openCommentDrawer()">
+        Load comments
+      </button>
+    }
   </div>
 
-  <div class="comment-input-area">
-    <div class="user-identity-chip" [class.guest]="!isLoggedIn">
-      @if (isLoggedIn) {
-        <span class="identity-avatar logged-in">{{ loggedInUserName.charAt(0).toUpperCase() }}</span>
-        <span class="identity-label">Commenting as <strong>{{ loggedInUserName }}</strong></span>
-        <span class="identity-badge member">Member</span>
-      } @else {
-        <span class="identity-avatar guest-avatar">👤</span>
-        <span class="identity-label">Commenting as <strong>Anonymous</strong></span>
-        <span class="identity-badge guest-badge">Guest</span>
-      }
+  <!-- Compose box -->
+  <div class="disc-compose" (click)="!commentDrawerOpen() && openCommentDrawer()">
+    <div class="disc-compose-avatar" aria-hidden="true">
+      @if (isLoggedIn) { {{ loggedInUserName.charAt(0).toUpperCase() }}
+      } @else { ? }
     </div>
-    <div class="textarea-wrap">
-      <label class="visually-hidden" for="bd-comment-textarea">Write a comment</label>
-      <textarea id="bd-comment-textarea" class="comment-textarea"
-        placeholder="Share your thoughts…" rows="3"
+    <div class="disc-compose-body">
+      <div class="disc-identity">
+        @if (isLoggedIn) {
+          <span class="disc-identity-name">{{ loggedInUserName }}</span>
+          <span class="disc-badge disc-badge--member">Member</span>
+        } @else {
+          <span class="disc-identity-name">Anonymous</span>
+          <span class="disc-badge disc-badge--guest">Guest</span>
+        }
+      </div>
+      <label class="visually-hidden" for="disc-textarea">Write a comment</label>
+      <textarea id="disc-textarea" class="disc-textarea"
+        placeholder="Share your thoughts, ask a question, or start a discussion…"
+        rows="3"
         [ngModel]="commentText()" (ngModelChange)="commentText.set($event)"
+        (focus)="!commentDrawerOpen() && openCommentDrawer()"
         (keydown.enter)="$any($event).ctrlKey && submitComment()"
         maxlength="500"></textarea>
-      <span class="char-count" [class.warn]="commentText().length > 450" aria-live="polite">
-        {{ commentText().length }}/500
-      </span>
-    </div>
-    @if (commentFeedback()) {
-      <div class="comment-feedback" role="alert"
-        [class.success]="commentFeedback()!.type === 'success'"
-        [class.error]="commentFeedback()!.type === 'error'">
-        {{ commentFeedback()!.type === 'success' ? '✅' : '❌' }} {{ commentFeedback()!.msg }}
-      </div>
-    }
-    @if (commentLimitReached()) {
-      <div class="comment-limit-notice">
-        🚫 You've reached the 10-comment limit for this session.
-      </div>
-    } @else {
-      <div class="comment-actions">
-        <span class="ctrl-enter-hint">
-          @if (sessionCommentCount() > 0) {
-            {{ commentsRemaining() }} left this session
-          } @else { Ctrl + Enter to send }
-        </span>
-        <button class="submit-comment-btn"
-          [disabled]="!commentText().trim() || commentSubmitting()"
-          (click)="submitComment()">
-          @if (commentSubmitting()) { <span class="btn-spinner"></span> Posting… }
-          @else { Post Comment ✦ }
-        </button>
-      </div>
-    }
-  </div>
 
-  <div class="drawer-divider">
-    <span>{{ drawerComments().length }}
-      @if (hasMoreComments()) { of {{ totalCommentsCount() }} }
-      comment{{ totalCommentsCount() !== 1 ? 's' : '' }}
-    </span>
-  </div>
-
-  <div class="comments-list" role="list">
-    @if (drawerCommentsLoading()) {
-      <div class="comments-loading" role="status">
-        <div class="loading-dots"><span></span><span></span><span></span></div>
-      </div>
-    } @else if (drawerComments().length === 0) {
-      <div class="no-comments" role="status">
-        <span class="no-comments-icon">💭</span>
-        <p>No comments yet. Be the first!</p>
-      </div>
-    } @else {
-      @for (c of drawerComments(); track c._id ?? $index) {
-        <div class="comment-item" role="listitem">
-          <div class="comment-avatar">{{ c.name.charAt(0).toUpperCase() }}</div>
-          <div class="comment-content">
-            <div class="comment-meta">
-              <span class="comment-author">{{ c.name }}</span>
-              @if (c.createdAt) {
-                <time class="comment-time" [attr.datetime]="c.createdAt">{{ c.createdAt | date:'MMM d, y' }}</time>
-              }
-            </div>
-            <p class="comment-text">{{ c.comment }}</p>
-
-            <div class="comment-footer">
-              @if (c._id) {
-                <button class="reply-toggle-btn" [class.active]="replyingToId() === c._id"
-                  (click)="startReply(c._id!)">
-                  ↩ {{ replyingToId() === c._id ? 'Cancel' : 'Reply' }}
-                </button>
-              }
-              @if ((c.replies?.length ?? 0) > 0) {
-                <button class="view-replies-btn" (click)="toggleReplies(c._id!)">
-                  {{ c.showReplies ? '▴ Hide' : '▾ Show' }}
-                  {{ c.replies!.length }} repl{{ c.replies!.length === 1 ? 'y' : 'ies' }}
-                </button>
-              }
-            </div>
-
-            @if (replyingToId() === c._id) {
-              <div class="reply-form">
-                <div class="reply-form-avatar">{{ (isLoggedIn ? loggedInUserName : 'A').charAt(0).toUpperCase() }}</div>
-                <div class="reply-form-body">
-                  <textarea class="reply-textarea" [ngModel]="replyText()" (ngModelChange)="replyText.set($event)"
-                    placeholder="Write a reply…" rows="2" maxlength="500"
-                    (keydown.enter)="$any($event).ctrlKey && submitReply(c._id!)"></textarea>
-                  <div class="reply-form-actions">
-                    <span class="char-count" [class.warn]="replyText().length > 450">{{ replyText().length }}/500</span>
-                    @if (replyFeedback()) {
-                      <span class="reply-feedback" [class.error]="replyFeedback()!.type === 'error'">{{ replyFeedback()!.msg }}</span>
-                    }
-                    <div class="reply-btns">
-                      <button class="reply-cancel-btn" type="button" (click)="cancelReply()">Cancel</button>
-                      <button class="reply-submit-btn" type="button"
-                        [disabled]="!replyText().trim() || replySubmitting()"
-                        (click)="submitReply(c._id!)">
-                        @if (replySubmitting()) { <span class="btn-spinner"></span> } @else { Reply }
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            }
-
-            @if (c.showReplies && (c.replies?.length ?? 0) > 0) {
-              <div class="replies-list">
-                @for (r of c.replies!; track r._id) {
-                  <div class="reply-item">
-                    <div class="reply-avatar">{{ r.name.charAt(0).toUpperCase() }}</div>
-                    <div class="reply-content">
-                      <div class="comment-meta">
-                        <span class="comment-author">{{ r.name }}</span>
-                        @if (r.createdAt) { <time class="comment-time">{{ r.createdAt | date:'MMM d, y' }}</time> }
-                      </div>
-                      <p class="comment-text">{{ r.comment }}</p>
-                    </div>
-                    @if (isPostOwner() && r._id) {
-                      <button class="comment-delete-btn" [class.deleting]="deletingReplyId() === r._id"
-                        [disabled]="deletingReplyId() === r._id"
-                        (click)="deleteReply(c._id!, r._id!, $event)" aria-label="Delete reply">
-                        @if (deletingReplyId() === r._id) { <span class="btn-spinner"></span> } @else { 🗑 }
-                      </button>
-                    }
-                  </div>
-                }
-              </div>
-            }
+      @if (commentDrawerOpen()) {
+        @if (commentFeedback()) {
+          <div class="disc-feedback" role="alert"
+            [class.success]="commentFeedback()!.type === 'success'"
+            [class.error]="commentFeedback()!.type === 'error'">
+            {{ commentFeedback()!.type === 'success' ? '✅' : '❌' }} {{ commentFeedback()!.msg }}
           </div>
-          @if (isPostOwner() && c._id) {
-            <button class="comment-delete-btn" [class.deleting]="deletingCommentId() === c._id"
-              [disabled]="deletingCommentId() === c._id"
-              (click)="deleteComment(c, $event)" aria-label="Delete comment">
-              @if (deletingCommentId() === c._id) { <span class="btn-spinner"></span> } @else { 🗑 }
-            </button>
-          }
-        </div>
-      }
-
-      @if (hasMoreComments()) {
-        <div class="load-more-wrap">
-          <button class="load-more-btn" [disabled]="loadingMoreComments()" (click)="loadMoreComments()">
-            @if (loadingMoreComments()) { <span class="btn-spinner"></span> Loading… }
-            @else {
-              Load more comments
-              <span class="load-more-count">({{ totalCommentsCount() - commentFetchedCount() }} remaining)</span>
-            }
+        }
+        <div class="disc-compose-footer">
+          <span class="disc-char-count" [class.warn]="commentText().length > 450">
+            {{ commentText().length }}/500
+          </span>
+          <span class="disc-hint">
+            @if (commentLimitReached()) { 🚫 Session limit reached }
+            @else if (sessionCommentCount() > 0) { {{ commentsRemaining() }} left this session }
+            @else { Ctrl+Enter to post }
+          </span>
+          <button class="disc-post-btn"
+            [disabled]="!commentText().trim() || commentSubmitting() || commentLimitReached()"
+            (click)="submitComment()">
+            @if (commentSubmitting()) { <span class="btn-spinner"></span> Posting… }
+            @else { Post }
           </button>
         </div>
       }
-    }
+    </div>
   </div>
 
-</div>
+  <!-- Thread -->
+  @if (commentDrawerOpen()) {
+    <div class="disc-thread" role="list">
+
+      @if (drawerCommentsLoading()) {
+        <div class="disc-loading" role="status">
+          <div class="loading-dots"><span></span><span></span><span></span></div>
+          <span>Loading discussion…</span>
+        </div>
+
+      } @else if (drawerComments().length === 0) {
+        <div class="disc-empty" role="status">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+          </svg>
+          <p>No comments yet — start the discussion!</p>
+        </div>
+
+      } @else {
+        @for (c of drawerComments(); track c._id ?? $index) {
+          <div class="disc-comment" role="listitem">
+
+            <!-- Avatar -->
+            <div class="disc-avatar" aria-hidden="true">{{ c.name.charAt(0).toUpperCase() }}</div>
+
+            <div class="disc-comment-body">
+              <!-- Header -->
+              <div class="disc-comment-header">
+                <span class="disc-commenter">{{ c.name }}</span>
+                @if (c.createdAt) {
+                  <time class="disc-time" [attr.datetime]="c.createdAt">{{ c.createdAt | date:'MMM d, y' }}</time>
+                }
+                @if (isPostOwner() && c._id) {
+                  <button class="disc-delete-btn"
+                    [disabled]="deletingCommentId() === c._id"
+                    (click)="deleteComment(c, $event)" aria-label="Delete comment">
+                    @if (deletingCommentId() === c._id) { <span class="btn-spinner"></span> } @else { 🗑 }
+                  </button>
+                }
+              </div>
+
+              <!-- Text -->
+              <p class="disc-text">{{ c.comment }}</p>
+
+              <!-- Actions -->
+              <div class="disc-actions">
+                @if (c._id) {
+                  <button class="disc-reply-btn" [class.active]="replyingToId() === c._id"
+                    (click)="startReply(c._id!)">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+                      <polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 00-4-4H4"/>
+                    </svg>
+                    {{ replyingToId() === c._id ? 'Cancel' : 'Reply' }}
+                  </button>
+                }
+                @if ((c.replies?.length ?? 0) > 0) {
+                  <button class="disc-toggle-replies" (click)="toggleReplies(c._id!)">
+                    {{ c.showReplies ? '▴ Hide' : '▾' }}
+                    {{ c.replies!.length }} repl{{ c.replies!.length === 1 ? 'y' : 'ies' }}
+                  </button>
+                }
+              </div>
+
+              <!-- Reply compose -->
+              @if (replyingToId() === c._id) {
+                <div class="disc-reply-compose">
+                  <div class="disc-avatar disc-avatar--sm" aria-hidden="true">
+                    {{ (isLoggedIn ? loggedInUserName : 'A').charAt(0).toUpperCase() }}
+                  </div>
+                  <div class="disc-reply-body">
+                    <textarea class="disc-reply-textarea"
+                      [ngModel]="replyText()" (ngModelChange)="replyText.set($event)"
+                      placeholder="Write a reply…" rows="2" maxlength="500"
+                      (keydown.enter)="$any($event).ctrlKey && submitReply(c._id!)"></textarea>
+                    <div class="disc-reply-footer">
+                      <span class="disc-char-count" [class.warn]="replyText().length > 450">{{ replyText().length }}/500</span>
+                      @if (replyFeedback()) {
+                        <span class="disc-reply-err">{{ replyFeedback()!.msg }}</span>
+                      }
+                      <div class="disc-reply-btns">
+                        <button class="disc-cancel-btn" (click)="cancelReply()">Cancel</button>
+                        <button class="disc-post-btn disc-post-btn--sm"
+                          [disabled]="!replyText().trim() || replySubmitting()"
+                          (click)="submitReply(c._id!)">
+                          @if (replySubmitting()) { <span class="btn-spinner"></span> } @else { Reply }
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              }
+
+              <!-- Nested replies -->
+              @if (c.showReplies && (c.replies?.length ?? 0) > 0) {
+                <div class="disc-replies" role="list">
+                  @for (r of c.replies!; track r._id) {
+                    <div class="disc-reply" role="listitem">
+                      <div class="disc-avatar disc-avatar--sm" aria-hidden="true">{{ r.name.charAt(0).toUpperCase() }}</div>
+                      <div class="disc-comment-body">
+                        <div class="disc-comment-header">
+                          <span class="disc-commenter">{{ r.name }}</span>
+                          @if (r.createdAt) {
+                            <time class="disc-time">{{ r.createdAt | date:'MMM d, y' }}</time>
+                          }
+                          @if (isPostOwner() && r._id) {
+                            <button class="disc-delete-btn"
+                              [disabled]="deletingReplyId() === r._id"
+                              (click)="deleteReply(c._id!, r._id!, $event)" aria-label="Delete reply">
+                              @if (deletingReplyId() === r._id) { <span class="btn-spinner"></span> } @else { 🗑 }
+                            </button>
+                          }
+                        </div>
+                        <p class="disc-text">{{ r.comment }}</p>
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+
+          </div>
+        }
+
+        @if (hasMoreComments()) {
+          <div class="disc-load-more">
+            <button class="disc-load-more-btn" [disabled]="loadingMoreComments()" (click)="loadMoreComments()">
+              @if (loadingMoreComments()) { <span class="btn-spinner"></span> Loading… }
+              @else { Show {{ totalCommentsCount() - commentFetchedCount() }} more comments }
+            </button>
+          </div>
+        }
+      }
+    </div>
+  }
+
+</section>
 
 <!-- ── Image Lightbox ── -->
 @if (lightboxSrc()) {
   <div class="lightbox-overlay" (click)="closeLightbox()" role="dialog" aria-modal="true" aria-label="Image preview">
     <button class="lightbox-close" (click)="closeLightbox()" aria-label="Close image">✕</button>
     <img class="lightbox-img" [src]="lightboxSrc()!" [alt]="lightboxAlt()" (click)="$event.stopPropagation()" />
+  </div>
+}
+
+<!-- ── Quote Share Popover ── -->
+@if (quotePopover()) {
+  <div class="quote-popover"
+       [style.left.px]="quotePopover()!.x"
+       [style.top.px]="quotePopover()!.y"
+       role="dialog"
+       aria-label="Share selected quote">
+    <button class="quote-share-btn" (click)="shareQuote()" title="Share quote on X / Twitter">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+      </svg>
+      Quote this
+    </button>
+    <button class="quote-dismiss-btn" (click)="dismissQuotePopover()" aria-label="Dismiss">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
   </div>
 }
 

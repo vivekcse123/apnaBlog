@@ -1,21 +1,84 @@
 @if (standalone) {
 
 <header class="header" role="banner">
+
+  <!-- Left — logo -->
   <div class="header-left">
-    <a class="app-logo" routerLink="/"
-       aria-label="ApnaInsights — Go to homepage">
-      <img class="app-logo-img"
-           src="/logo-96.png"
-           alt="ApnaInsights"
-           width="32"
-           height="32"
-           loading="eager"
-           fetchpriority="high" />
+    <a class="app-logo" routerLink="/" aria-label="ApnaInsights — Go to homepage">
+      <img class="app-logo-img" src="/logo-96.png" alt="ApnaInsights"
+           width="32" height="32" loading="eager" fetchpriority="high" />
       <span class="app-logo-text">ApnaInsights</span>
     </a>
   </div>
 
+  <!-- Center — nav links (desktop only) -->
+  <nav class="header-nav" aria-label="Main navigation">
+    <a class="nav-link nav-link--active" routerLink="/" aria-label="Explore stories">Explore</a>
+
+    <!-- Categories dropdown -->
+    <div class="nav-cat-wrap" (click)="$event.stopPropagation()">
+      <button class="nav-link nav-link--cat"
+              (click)="toggleNavCat()"
+              [class.open]="navCatOpen()"
+              aria-haspopup="true"
+              [attr.aria-expanded]="navCatOpen()">
+        Categories
+        <svg class="nav-chevron" [class.open]="navCatOpen()"
+             width="12" height="12" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+          <path d="M6 9l6 6 6-6"/>
+        </svg>
+      </button>
+      @if (navCatOpen()) {
+        <div class="nav-cat-dropdown" role="menu">
+          @for (cat of categories; track cat) {
+            <a class="nav-cat-item" role="menuitem"
+               [routerLink]="['/category', cat.toLowerCase()]"
+               (click)="navCatOpen.set(false)">
+              <span class="nav-cat-emoji">{{ categoryEmojis[cat] }}</span>
+              {{ cat }}
+            </a>
+          }
+        </div>
+      }
+    </div>
+
+    <a class="nav-link" routerLink="/search" [queryParams]="{q: 'trending'}" aria-label="Trending stories">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
+        <polyline points="16 7 22 7 22 13"/>
+      </svg>
+      Trending
+    </a>
+
+    <a class="nav-link" routerLink="/about" aria-label="About ApnaInsights">About</a>
+  </nav>
+
+  <!-- Right — search + write + theme + avatar -->
   <div class="header-right">
+
+    <!-- Search icon → /search page -->
+    <a class="hdr-search-icon desktop-only" routerLink="/search" aria-label="Search stories" title="Search stories">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
+        <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+      </svg>
+    </a>
+
+    <!-- Write button -->
+    <a class="write-btn desktop-only"
+       [routerLink]="writeRoute"
+       aria-label="{{ isLoggedIn ? 'Go to dashboard to write' : 'Sign in to write a story' }}">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+        <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+      </svg>
+      Write
+    </a>
+
+    <!-- Theme toggle -->
     <button class="theme-toggle"
             (click)="themeService.toggleTheme()"
             [attr.aria-label]="themeService.theme() === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
@@ -23,43 +86,25 @@
       <span class="theme-icon" aria-hidden="true">{{ themeService.theme() === 'dark' ? '☀' : '☾' }}</span>
     </button>
 
-    <button class="about-btn desktop-only"
-            routerLink="/about"
-            aria-label="About ApnaInsights">About</button>
-
-    @if (historyLoaded() && readHistoryIds().size > 0) {
-      <a class="history-chip desktop-only"
-         routerLink="/history"
-         aria-label="Your reading history">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        History
-      </a>
-    }
-
+    <!-- User avatar / sign-up -->
     @if (isLoggedIn) {
-      <a class="user-chip desktop-only"
+      <a class="hdr-avatar desktop-only"
          [routerLink]="dashboardRoute"
-         [attr.aria-label]="'Go to dashboard — ' + loggedInFirstName">
-        <div class="user-chip-avatar">
-          @if (loggedInAvatar) {
-            <img [src]="loggedInAvatar" [alt]="loggedInFirstName" />
-          } @else {
-            {{ loggedInFirstName.charAt(0).toUpperCase() }}
-          }
-        </div>
-        <span class="user-chip-name">{{ loggedInFirstName }}</span>
+         [attr.aria-label]="'Dashboard — ' + loggedInFirstName"
+         [title]="loggedInFirstName">
+        @if (loggedInAvatar) {
+          <img [src]="loggedInAvatar" [alt]="loggedInFirstName" />
+        } @else {
+          {{ loggedInFirstName.charAt(0).toUpperCase() }}
+        }
       </a>
     } @else {
-      <button class="create-btn desktop-only"
-              routerLink="/auth/login"
-              aria-label="Sign in to write a story on ApnaInsights">
-        <span aria-hidden="true">✦</span> Write a Story
-      </button>
       <button class="signup-btn desktop-only"
               routerLink="/auth/register"
               aria-label="Create a free ApnaInsights account">Sign Up</button>
     }
 
+    <!-- Hamburger -->
     <button class="hamburger"
             (click)="menuOpen.set(!menuOpen())"
             [class.open]="menuOpen()"
@@ -71,6 +116,7 @@
       <span aria-hidden="true"></span>
     </button>
   </div>
+
 </header>
 
 <nav id="mobile-drawer"
@@ -82,6 +128,18 @@
      routerLink="/about"
      (click)="menuOpen.set(false)"
      aria-label="About ApnaInsights">About</a>
+  <a class="drawer-link"
+     routerLink="/search"
+     (click)="menuOpen.set(false)"
+     aria-label="Search stories">
+    🔍 Search Stories
+  </a>
+  <a class="drawer-link"
+     routerLink="/bookmarks"
+     (click)="menuOpen.set(false)"
+     aria-label="My bookmarks">
+    🔖 My Bookmarks
+  </a>
   @if (historyLoaded() && readHistoryIds().size > 0) {
     <a class="drawer-link"
        routerLink="/history"
@@ -131,70 +189,134 @@
            itemscope
            itemtype="https://schema.org/Blog">
 
+    <div class="hero-dots" aria-hidden="true"></div>
+
     <meta itemprop="name" content="ApnaInsights — Community Stories" />
     <meta itemprop="description" content="Discover real stories from real people across India on technology, lifestyle, health, business, education and village life." />
     <link itemprop="url" href="https://apnainsights.com" />
 
-    <div class="hero-content">
-      <span class="hero-pill" aria-hidden="true">✦ Free Community Blogging Platform</span>
-      <h1 class="hero-title" id="hero-heading">
-        Real Stories. <span class="hero-gradient">Every Topic.</span>
-      </h1>
-      <p class="hero-sub">
-        From village life to tech breakthroughs, cricket to cooking, health to business - 
-        explore authentic blogs across <strong>14 topics</strong> written by real people from around the world.
-      </p>
+    <div class="hero-layout">
 
-      <nav class="hero-cats" aria-label="Browse by category">
-        <a class="hero-cat-chip" routerLink="/category/news">📰 News</a>
-        <a class="hero-cat-chip" routerLink="/category/technology">💻 Technology</a>
-        <a class="hero-cat-chip" routerLink="/category/health">❤️ Health</a>
-        <a class="hero-cat-chip" routerLink="/category/sports">🏏 Sports</a>
-        <a class="hero-cat-chip" routerLink="/category/village">🌾 Village</a>
-        <a class="hero-cat-chip" routerLink="/category/business">💼 Business</a>
-        <a class="hero-cat-chip" routerLink="/category/entertainment">🎭 Entertainment</a>
-        <a class="hero-cat-chip" routerLink="/category/education">📚 Education</a>
-        <a class="hero-cat-chip" routerLink="/category/lifestyle">🌿 Lifestyle</a>
-        <a class="hero-cat-chip" routerLink="/category/cooking">🍳 Cooking</a>
-        <a class="hero-cat-chip" routerLink="/category/exercise">🏋️ Exercise</a>
-        <a class="hero-cat-chip" routerLink="/category/social">🤝 Social</a>
-        <a class="hero-cat-chip" routerLink="/category/quotes">💬 Quotes</a>
-        <a class="hero-cat-chip" routerLink="/category/update">📢 Update</a>
-      </nav>
+      <!-- Left: content -->
+      <div class="hero-content">
+        <span class="hero-pill" aria-hidden="true">✦ Free Community Blogging Platform</span>
+        <h1 class="hero-title" id="hero-heading">
+          Real Stories.<br><span class="hero-gradient">Every Topic.</span>
+        </h1>
+        <p class="hero-sub">
+          From village life to tech breakthroughs, cricket to cooking, health to business - 
+          explore authentic blogs across <strong>14 topics</strong> written by real people from around the world.
+        </p>
 
-      @if (!isLoading() && allPosts().length > 0) {
-        <div class="hero-stats"
-             role="region"
-             aria-label="Platform statistics">
-          <div class="hero-stat">
-            <strong class="hero-stat-num"
-                    itemprop="numberOfItems"
-                    [attr.content]="publishedCount()">
-              {{ publishedCount() }}
-            </strong>
-            <span class="hero-stat-label">Stories</span>
-          </div>
-          <div class="hero-stat-sep" aria-hidden="true"></div>
-          <div class="hero-stat">
-            <strong class="hero-stat-num">{{ activeTopicsCount() }}</strong>
-            <span class="hero-stat-label">Topics</span>
-          </div>
-          <div class="hero-stat-sep" aria-hidden="true"></div>
-          <div class="hero-stat">
-            <strong class="hero-stat-num">{{ totalViews() | formatCount }}</strong>
-            <span class="hero-stat-label">Total Reads</span>
-          </div>
-          @if (readingStreak() >= 2) {
-            <div class="hero-stat-sep" aria-hidden="true"></div>
-            <div class="hero-stat hero-stat--streak"
-                 [attr.aria-label]="readingStreak() + '-day reading streak'">
-              <strong class="hero-stat-num streak-num">🔥 {{ readingStreak() }}</strong>
-              <span class="hero-stat-label">Day Streak</span>
+        <nav class="hero-cats" aria-label="Browse by category">
+          <a class="hero-cat-chip" routerLink="/category/news">📰 News</a>
+          <a class="hero-cat-chip" routerLink="/category/technology">💻 Technology</a>
+          <a class="hero-cat-chip" routerLink="/category/health">❤️ Health</a>
+          <a class="hero-cat-chip" routerLink="/category/sports">🏏 Sports</a>
+          <a class="hero-cat-chip" routerLink="/category/village">🌾 Village</a>
+          <a class="hero-cat-chip" routerLink="/category/business">💼 Business</a>
+          <a class="hero-cat-chip" routerLink="/category/entertainment">🎭 Entertainment</a>
+          <a class="hero-cat-chip" routerLink="/category/education">📚 Education</a>
+          <a class="hero-cat-chip" routerLink="/category/lifestyle">🌿 Lifestyle</a>
+          <a class="hero-cat-chip" routerLink="/category/cooking">🍳 Cooking</a>
+          <a class="hero-cat-chip" routerLink="/category/exercise">🏋️ Exercise</a>
+          <a class="hero-cat-chip" routerLink="/category/social">🤝 Social</a>
+          <a class="hero-cat-chip" routerLink="/category/quotes">💬 Quotes</a>
+          <a class="hero-cat-chip" routerLink="/category/update">📢 Update</a>
+        </nav>
+
+        @if (!isLoading() && allPosts().length > 0) {
+          <div class="hero-stats" role="region" aria-label="Platform statistics">
+            <div class="hero-stat-box">
+              <div class="hero-stat-icon hero-stat-icon--teal">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>
+                  <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+                </svg>
+              </div>
+              <div class="hero-stat-info">
+                <strong class="hero-stat-num" itemprop="numberOfItems" [attr.content]="publishedCount()">
+                  {{ publishedCount() }}
+                </strong>
+                <span class="hero-stat-label">STORIES</span>
+              </div>
             </div>
-          }
+
+            <div class="hero-stat-box">
+              <div class="hero-stat-icon hero-stat-icon--blue">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                  <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+                </svg>
+              </div>
+              <div class="hero-stat-info">
+                <strong class="hero-stat-num">{{ activeTopicsCount() }}</strong>
+                <span class="hero-stat-label">TOPICS</span>
+              </div>
+            </div>
+
+            <div class="hero-stat-box">
+              <div class="hero-stat-icon hero-stat-icon--purple">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                </svg>
+              </div>
+              <div class="hero-stat-info">
+                <strong class="hero-stat-num">{{ totalViews() | formatCount }}</strong>
+                <span class="hero-stat-label">TOTAL READS</span>
+              </div>
+            </div>
+
+            @if (readingStreak() >= 2) {
+              <div class="hero-stat-box" [attr.aria-label]="readingStreak() + '-day reading streak'">
+                <div class="hero-stat-icon hero-stat-icon--orange">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M12 2c0 6-6 8-6 14a6 6 0 0012 0c0-6-6-8-6-14z"/><path d="M12 18a3 3 0 01-3-3c0-3 3-4 3-6 0 2 3 3 3 6a3 3 0 01-3 3z"/>
+                  </svg>
+                </div>
+                <div class="hero-stat-info">
+                  <strong class="hero-stat-num">{{ readingStreak() }}</strong>
+                  <span class="hero-stat-label">DAY STREAK</span>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Right: decorative illustration -->
+      <div class="hero-illustration" aria-hidden="true">
+        <div class="illus-device">
+          <div class="illus-device-inner">
+            <div class="illus-mock-img"></div>
+            <div class="illus-mock-line illus-mock-line--title"></div>
+            <div class="illus-mock-line illus-mock-line--sub"></div>
+            <div class="illus-mock-line illus-mock-line--sub illus-mock-line--short"></div>
+            <div class="illus-mock-author">
+              <div class="illus-mock-avatar"></div>
+              <div class="illus-mock-meta">
+                <div class="illus-mock-line illus-mock-line--xs"></div>
+                <div class="illus-mock-line illus-mock-line--xs illus-mock-line--short"></div>
+              </div>
+            </div>
+          </div>
         </div>
-      }
-    </div>
+        <!-- Floating interaction badges -->
+        <div class="illus-badge illus-badge--heart">
+          <span class="illus-badge-emoji">❤️</span>
+          <span>2.4k likes</span>
+        </div>
+        <div class="illus-badge illus-badge--msg">
+          <span class="illus-badge-emoji">💬</span>
+          <span>348 comments</span>
+        </div>
+        <div class="illus-badge illus-badge--pen">
+          <span class="illus-badge-emoji">✍️</span>
+          <span>Write a story</span>
+        </div>
+      </div>
+
+    </div><!-- /hero-layout -->
   </section>
 
   <div class="filter-wrap" role="search" aria-label="Filter and search stories">
@@ -205,7 +327,7 @@
         <span class="search-icon" aria-hidden="true">🔍</span>
         <input
           #searchInput
-          type="search"
+          type="text"
           class="search-box"
           placeholder="Search stories…"
           aria-label="Search community stories"
@@ -352,11 +474,20 @@
             </button>
           </div>
         }
-        @for (blog of filteredPosts(); track blog._id) {
+        @for (blog of visibleFilteredPosts(); track blog._id) {
           <ng-container [ngTemplateOutlet]="blogCard"
                         [ngTemplateOutletContext]="{ $implicit: blog }"></ng-container>
         }
       </div>
+      @if (filteredPageCount() > 1) {
+        <nav class="pagination-btns" aria-label="Filter results pagination">
+          <button class="page-btn" [disabled]="filteredPage() === 0"
+                  (click)="prevPage(filteredPage)" aria-label="Previous page">‹</button>
+          <span class="page-info">{{ filteredPage() + 1 }} / {{ filteredPageCount() }}</span>
+          <button class="page-btn" [disabled]="filteredPage() >= filteredPageCount() - 1"
+                  (click)="nextPage(filteredPage, filteredPageCount())" aria-label="Next page">›</button>
+        </nav>
+      }
     </section>
   }
 
@@ -402,20 +533,13 @@
       <span class="section-pill trending" aria-hidden="true">HOT</span>
       <h2 class="section-title" id="trending-heading">🔥 Trending Stories</h2>
       <nav class="pagination-btns" aria-label="Trending stories pagination">
-        <button class="page-btn"
-                [disabled]="trendingPage() === 0"
-                (click)="prevPage(trendingPage)"
-                aria-label="Previous page of trending stories">‹</button>
-        <span class="page-info"
-              aria-live="polite"
-              aria-atomic="true">{{ trendingPage() + 1 }} / {{ trendingPageCount() }}</span>
-        <button class="page-btn"
-                [disabled]="trendingPage() >= trendingPageCount() - 1"
-                (click)="nextPage(trendingPage, trendingPageCount())"
-                aria-label="Next page of trending stories">›</button>
+        <button class="page-btn" [disabled]="trendingPage() === 0"
+                (click)="prevPage(trendingPage)" aria-label="Previous">‹</button>
+        <span class="page-info">{{ trendingPage() + 1 }} / {{ trendingPageCount() }}</span>
+        <button class="page-btn" [disabled]="trendingPage() >= trendingPageCount() - 1"
+                (click)="nextPage(trendingPage, trendingPageCount())" aria-label="Next">›</button>
       </nav>
     </div>
-
     @if (isLoading()) {
       <ng-container [ngTemplateOutlet]="skeletonGrid"></ng-container>
     } @else {
@@ -442,21 +566,14 @@
     <div class="section-header">
       <span class="section-pill hot" aria-hidden="true">VIEWS</span>
       <h2 class="section-title" id="hot-heading">👁 Most Viewed</h2>
-      <nav class="pagination-btns" aria-label="Most viewed stories pagination">
-        <button class="page-btn"
-                [disabled]="hotPage() === 0"
-                (click)="prevPage(hotPage)"
-                aria-label="Previous page of most viewed stories">‹</button>
-        <span class="page-info"
-              aria-live="polite"
-              aria-atomic="true">{{ hotPage() + 1 }} / {{ hotPageCount() }}</span>
-        <button class="page-btn"
-                [disabled]="hotPage() >= hotPageCount() - 1"
-                (click)="nextPage(hotPage, hotPageCount())"
-                aria-label="Next page of most viewed stories">›</button>
+      <nav class="pagination-btns" aria-label="Most viewed pagination">
+        <button class="page-btn" [disabled]="hotPage() === 0"
+                (click)="prevPage(hotPage)" aria-label="Previous">‹</button>
+        <span class="page-info">{{ hotPage() + 1 }} / {{ hotPageCount() }}</span>
+        <button class="page-btn" [disabled]="hotPage() >= hotPageCount() - 1"
+                (click)="nextPage(hotPage, hotPageCount())" aria-label="Next">›</button>
       </nav>
     </div>
-
     @if (isLoading()) {
       <ng-container [ngTemplateOutlet]="skeletonGrid"></ng-container>
     } @else {
@@ -484,20 +601,17 @@
       <span class="section-pill new" aria-hidden="true">NEW</span>
       <h2 class="section-title" id="latest-heading">✨ Latest Stories</h2>
       <nav class="pagination-btns" aria-label="Latest stories pagination">
+        <button class="page-btn" [disabled]="latestPage() === 0"
+                (click)="prevPage(latestPage)" aria-label="Previous">‹</button>
+        <span class="page-info">
+          {{ latestPage() + 1 }} / {{ latestPageCount() }}
+          @if (isFetchingMore()) { <span class="page-loading">…</span> }
+        </span>
         <button class="page-btn"
-                [disabled]="latestPage() === 0"
-                (click)="prevPage(latestPage)"
-                aria-label="Previous page of latest stories">‹</button>
-        <span class="page-info"
-              aria-live="polite"
-              aria-atomic="true">{{ latestPage() + 1 }} / {{ latestPageCount() }}</span>
-        <button class="page-btn"
-                [disabled]="latestPage() >= latestPageCount() - 1"
-                (click)="nextPage(latestPage, latestPageCount())"
-                aria-label="Next page of latest stories">›</button>
+                [disabled]="latestPage() >= latestPageCount() - 1 && !hasMoreOnServer()"
+                (click)="nextPage(latestPage, latestPageCount())" aria-label="Next">›</button>
       </nav>
     </div>
-
     @if (isLoading()) {
       <ng-container [ngTemplateOutlet]="skeletonGrid"></ng-container>
     } @else {
@@ -619,12 +733,10 @@
             <span class="stat-icon" aria-hidden="true">{{ isLiked(blog._id) ? '❤️' : '🤍' }}</span>
             <span class="stat-count" aria-hidden="true">{{ blog.likesCount }}</span>
           </button>
-          <button class="stat-btn comment-btn"
-                  (click)="openCommentDrawer(blog, $event)"
-                  [attr.aria-label]="'Open comments for ' + blog.title + ', ' + blog.commentsCount + ' comments'">
+          <span class="stat-display" [attr.aria-label]="blog.commentsCount + ' comments'">
             <span class="stat-icon" aria-hidden="true">💬</span>
             <span class="stat-count" aria-hidden="true">{{ blog.commentsCount }}</span>
-          </button>
+          </span>
           <span class="stat-display"
                 [attr.aria-label]="(blog.views | formatCount) + ' views'">
             <span class="stat-icon" aria-hidden="true">👁</span>
@@ -661,173 +773,6 @@
 
 </main>
 
-@if (commentDrawerPostId()) {
-  <div class="comment-backdrop"
-       (click)="closeCommentDrawer()"
-       role="presentation"
-       aria-hidden="true"></div>
-}
-
-<div class="comment-drawer"
-     [class.open]="!!commentDrawerPostId()"
-     role="dialog"
-     aria-modal="true"
-     aria-labelledby="comment-drawer-title"
-     [attr.aria-hidden]="!commentDrawerPostId()">
-
-  <div class="drawer-header">
-    <div class="drawer-title-group">
-      <span class="drawer-icon" aria-hidden="true">💬</span>
-      <h2 class="drawer-title" id="comment-drawer-title">Comments</h2>
-      @if (totalCommentsCount() > 0) {
-        <span class="drawer-count-badge"
-              aria-label="{{ totalCommentsCount() }} total comments">
-          {{ totalCommentsCount() }}
-        </span>
-      }
-    </div>
-    <button class="drawer-close-btn"
-            (click)="closeCommentDrawer()"
-            aria-label="Close comments drawer">✕</button>
-  </div>
-
-  <div class="comment-input-area">
-    <div class="user-identity-chip" [class.guest]="!isLoggedIn">
-      @if (isLoggedIn) {
-        <span class="identity-avatar logged-in" aria-hidden="true">{{ loggedInUserName.charAt(0).toUpperCase() }}</span>
-        <span class="identity-label">Commenting as <strong>{{ loggedInUserName }}</strong></span>
-        <span class="identity-badge member">Member</span>
-      } @else {
-        <span class="identity-avatar guest-avatar" aria-hidden="true">👤</span>
-        <span class="identity-label">Commenting as <strong>Anonymous</strong></span>
-        <span class="identity-badge guest-badge">Guest</span>
-      }
-    </div>
-
-    <div class="textarea-wrap">
-      <label class="visually-hidden" for="comment-textarea">Write a comment</label>
-      <textarea
-        id="comment-textarea"
-        class="comment-textarea"
-        placeholder="Share your thoughts…"
-        rows="3"
-        [ngModel]="commentText()"
-        (ngModelChange)="commentText.set($event)"
-        (keydown.enter)="$any($event).ctrlKey && submitComment()"
-        maxlength="500"
-        aria-describedby="char-count-hint"
-      ></textarea>
-      <span id="char-count-hint"
-            class="char-count"
-            [class.warn]="commentText().length > 450"
-            aria-live="polite"
-            aria-atomic="true">
-        {{ commentText().length }}/500
-      </span>
-    </div>
-
-    @if (commentFeedback()) {
-      <div class="comment-feedback"
-           role="alert"
-           aria-live="assertive"
-           [class.success]="commentFeedback()!.type === 'success'"
-           [class.error]="commentFeedback()!.type === 'error'">
-        {{ commentFeedback()!.type === 'success' ? '✅' : '❌' }} {{ commentFeedback()!.msg }}
-      </div>
-    }
-
-    <div class="comment-actions">
-      <span class="ctrl-enter-hint" aria-hidden="true">Ctrl + Enter to send</span>
-      <button
-        class="submit-comment-btn"
-        [disabled]="!commentText().trim() || commentSubmitting()"
-        (click)="submitComment()"
-        aria-label="Submit comment">
-        @if (commentSubmitting()) {
-          <span class="btn-spinner" aria-hidden="true"></span>
-          <span>Posting…</span>
-        } @else {
-          Post Comment ✦
-        }
-      </button>
-    </div>
-  </div>
-
-  <div class="drawer-divider" aria-hidden="true">
-    <span>{{ drawerComments().length }}
-      @if (hasMoreComments()) { of {{ totalCommentsCount() }} }
-      comment{{ totalCommentsCount() !== 1 ? 's' : '' }}
-    </span>
-  </div>
-
-  <div class="comments-list" role="list">
-    @if (drawerCommentsLoading()) {
-      <div class="comments-loading" role="status" aria-label="Loading comments">
-        <div class="loading-dots" aria-hidden="true">
-          <span></span><span></span><span></span>
-        </div>
-      </div>
-    } @else if (drawerComments().length === 0) {
-      <div class="no-comments" role="status">
-        <span class="no-comments-icon" aria-hidden="true">💭</span>
-        <p>No comments yet. Be the first!</p>
-      </div>
-    } @else {
-      @for (c of drawerComments(); track c._id ?? $index) {
-        <div class="comment-item" role="listitem" itemprop="comment" itemscope itemtype="https://schema.org/Comment">
-          <div class="comment-avatar" aria-hidden="true">{{ c.name.charAt(0).toUpperCase() }}</div>
-
-          <div class="comment-content">
-            <div class="comment-meta">
-              <span class="comment-author" itemprop="author">{{ c.name }}</span>
-              @if (c.createdAt) {
-                <time class="comment-time"
-                      itemprop="dateCreated"
-                      [attr.datetime]="c.createdAt">
-                  {{ c.createdAt | date:'MMM d, y' }}
-                </time>
-              }
-            </div>
-            <p class="comment-text" itemprop="text">{{ c.comment }}</p>
-          </div>
-
-          @if (isDrawerPostOwner() && c._id) {
-            <button
-              class="comment-delete-btn"
-              [class.deleting]="deletingCommentId() === c._id"
-              [disabled]="deletingCommentId() === c._id"
-              (click)="deleteComment(c, $event)"
-              [attr.aria-label]="'Delete comment by ' + c.name">
-              @if (deletingCommentId() === c._id) {
-                <span class="btn-spinner" aria-hidden="true"></span>
-              } @else {
-                <span aria-hidden="true">🗑</span>
-              }
-            </button>
-          }
-        </div>
-      }
-
-      @if (hasMoreComments()) {
-        <div class="load-more-wrap">
-          <button
-            class="load-more-btn"
-            [disabled]="loadingMoreComments()"
-            (click)="loadMoreComments()"
-            aria-label="Load more comments">
-            @if (loadingMoreComments()) {
-              <span class="btn-spinner" aria-hidden="true"></span> Loading…
-            } @else {
-              Load more comments
-              <span class="load-more-count" aria-hidden="true">({{ totalCommentsCount() - commentFetchedCount() }} remaining)</span>
-            }
-          </button>
-        </div>
-      }
-    }
-  </div>
-
-</div>
 
 <button
   class="scroll-top-fab"

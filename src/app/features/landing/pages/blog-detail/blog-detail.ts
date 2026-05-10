@@ -222,6 +222,14 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   readingTime     = signal(0);
   showToc         = signal(false);
 
+  minutesLeft = computed(() => {
+    const pct   = this.readingProgress();
+    const total = this.readingTime();
+    if (pct <= 0 || total <= 0) return total;
+    if (pct >= 95)              return 0;
+    return Math.max(1, Math.ceil(total * (1 - pct / 100)));
+  });
+
   // ── Text resize ───────────────────────────────────────────────────────────
   fontSize = signal<'sm' | 'md' | 'lg'>('md');
 
@@ -270,6 +278,9 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   shareCount      = signal(0);
   shareMenuOpen   = signal(false);
   copyLinkSuccess = signal(false);
+
+  // ── Quote share ───────────────────────────────────────────────────────────
+  quotePopover = signal<{ text: string; x: number; y: number } | null>(null);
 
   // ── Header visibility ─────────────────────────────────────────────────────
   headerHidden    = signal(false);
@@ -552,10 +563,13 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
           if (this.showAuthorPostsModal()) { this.closeAuthorPostsModal();    return; }
           if (this.showAuthorModal())      { this.closeAuthorModal();         return; }
           if (this.commentDrawerOpen())    { this.closeCommentDrawer();       return; }
+          if (this.quotePopover())         { this.quotePopover.set(null);     return; }
           this.shareMenuOpen.set(false);
           this.showCatDropdown.set(false);
           this.showToc.set(false);
         });
+
+      this.initQuoteShare();
     }
   }
 
@@ -975,20 +989,25 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   }
 
   openCommentDrawer(): void {
+    if (this.commentDrawerOpen()) {
+      // Already loaded — just scroll
+      this.document.getElementById('discussion')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
     this.commentText.set('');
     this.commentFeedback.set(null);
     this.drawerComments.set([]);
     this.commentFetchedCount.set(0);
     this.totalCommentsCount.set(this.post()?.commentsCount ?? 0);
     this.commentDrawerOpen.set(true);
-    this.lockScroll(true);
     const postId = this.post()?._id;
     if (postId) this.loadComments(postId, 0);
+    setTimeout(() => {
+      this.document.getElementById('discussion')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 80);
   }
 
   closeCommentDrawer(): void {
-    this.commentDrawerOpen.set(false);
-    this.lockScroll(false);
     this.commentText.set('');
     this.commentFeedback.set(null);
     this.replyingToId.set(null);
@@ -1509,6 +1528,60 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   }
 
   toggleShareMenu(): void { this.shareMenuOpen.set(!this.shareMenuOpen()); }
+
+  async nativeSharePost(): Promise<void> {
+    const p = this.post();
+    if (!p || !isPlatformBrowser(this.platformId)) return;
+    if ('share' in navigator) {
+      try {
+        await (navigator as any).share({ title: p.title, text: p.description || p.title, url: this.shareUrl() });
+        this.incrementShareCount();
+      } catch (err: any) {
+        if (err?.name !== 'AbortError') this.shareMenuOpen.set(true);
+      }
+    } else {
+      this.shareMenuOpen.set(true);
+    }
+  }
+
+  shareQuote(): void {
+    const q = this.quotePopover();
+    const p = this.post();
+    if (!q || !p || !isPlatformBrowser(this.platformId)) return;
+    const tweet = `"${q.text}" — ${p.title} ${this.shareUrl()}`;
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(tweet)}`, '_blank');
+    this.quotePopover.set(null);
+    window.getSelection()?.removeAllRanges();
+  }
+
+  dismissQuotePopover(): void { this.quotePopover.set(null); }
+
+  private initQuoteShare(): void {
+    fromEvent(this.document, 'mouseup')
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        const selection = window.getSelection();
+        if (!selection || selection.isCollapsed) { this.quotePopover.set(null); return; }
+        const text = selection.toString().trim();
+        if (text.length < 10 || text.length > 280) { this.quotePopover.set(null); return; }
+        const range = selection.getRangeAt(0);
+        const contentEl = this.elementRef.nativeElement.querySelector('.blog-content');
+        if (!contentEl?.contains(range.commonAncestorContainer)) { this.quotePopover.set(null); return; }
+        const rect = range.getBoundingClientRect();
+        this.quotePopover.set({
+          text,
+          x: rect.left + rect.width / 2 + window.scrollX,
+          y: rect.top + window.scrollY - 52,
+        });
+      });
+
+    fromEvent(this.document, 'selectionchange')
+      .pipe(throttleTime(200), takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        const selection = window.getSelection();
+        if (!selection || selection.isCollapsed) this.quotePopover.set(null);
+      });
+  }
 
   shareOnTwitter(): void {
     const p = this.post();

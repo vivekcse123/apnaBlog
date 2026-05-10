@@ -59,6 +59,16 @@ export const routes: Routes = [
         title: 'Reading History | ApnaInsights'
     },
     {
+        path: 'search',
+        loadComponent: () => import('./features/landing/pages/search/search').then(m => m.SearchPage),
+        title: 'Search Stories | ApnaInsights'
+    },
+    {
+        path: 'bookmarks',
+        loadComponent: () => import('./features/landing/pages/bookmarks/bookmarks').then(m => m.BookmarksPage),
+        title: 'My Bookmarks | ApnaInsights'
+    },
+    {
         path: 'contact',
         redirectTo: 'about',
         pathMatch: 'full'

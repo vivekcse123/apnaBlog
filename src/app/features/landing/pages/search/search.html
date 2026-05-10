@@ -1,0 +1,133 @@
+<div class="search-page">
+
+  <!-- Hero search bar -->
+  <section class="search-hero">
+    <div class="search-hero-inner">
+      <h1 class="search-hero-title">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+        </svg>
+        Search Stories
+      </h1>
+      <p class="search-hero-sub">Find articles by title, topic, or keyword</p>
+
+      <div class="search-input-wrap">
+        <svg class="search-input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+        </svg>
+        <input
+          class="search-input"
+          type="text"
+          placeholder="Search by title, category, or tag…"
+          [ngModel]="query()"
+          (ngModelChange)="onInput($event)"
+          autofocus
+          autocomplete="off"
+          aria-label="Search articles"
+        />
+        @if (hasQuery()) {
+          <button class="search-clear-btn" (click)="clearSearch()" aria-label="Clear search">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        }
+      </div>
+
+      @if (!isLoading()) {
+        <p class="search-count" aria-live="polite">
+          @if (hasQuery()) {
+            <strong>{{ results().length }}</strong> result{{ results().length !== 1 ? 's' : '' }} for
+            "<em>{{ query() }}</em>"
+          } @else {
+            <strong>{{ allPosts().length }}</strong> published stories
+          }
+        </p>
+      }
+    </div>
+  </section>
+
+  <!-- Results -->
+  <section class="search-results">
+
+    @if (isLoading()) {
+      <div class="search-skeleton-grid">
+        @for (i of [1,2,3,4,5,6]; track i) {
+          <div class="search-skeleton-card">
+            <div class="sk-img"></div>
+            <div class="sk-body">
+              <div class="sk-line sk-line--short"></div>
+              <div class="sk-line"></div>
+              <div class="sk-line sk-line--med"></div>
+              <div class="sk-line sk-line--xs"></div>
+            </div>
+          </div>
+        }
+      </div>
+
+    } @else if (results().length === 0) {
+      <div class="search-empty">
+        <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="1.2" stroke-linecap="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+          <line x1="8" y1="11" x2="14" y2="11"/>
+        </svg>
+        <h2>No results found</h2>
+        <p>Try a different keyword, or <a routerLink="/" class="search-empty-link">browse all stories</a></p>
+      </div>
+
+    } @else {
+      <div class="search-grid">
+        @for (post of results(); track post._id) {
+          <article class="search-card" [routerLink]="['/blog', post.slug || post._id]">
+
+            @if (post.featuredImage) {
+              <div class="search-card-img-wrap">
+                <img [src]="post.featuredImage" [alt]="post.title"
+                     class="search-card-img" loading="lazy" width="360" height="200"/>
+              </div>
+            } @else {
+              <div class="search-card-img-wrap search-card-img-wrap--placeholder">
+                <span class="search-card-letter">{{ post.title.charAt(0).toUpperCase() }}</span>
+              </div>
+            }
+
+            <div class="search-card-body">
+              @if (post.categories.length) {
+                <span class="search-card-cat">{{ post.categories[0] }}</span>
+              }
+              <h2 class="search-card-title">{{ post.title }}</h2>
+              <p class="search-card-desc">{{ post.description }}</p>
+              <div class="search-card-meta">
+                <span>{{ readingTime(post) }} min read</span>
+                <span class="meta-dot" aria-hidden="true">·</span>
+                <span>{{ post.createdAt | timeAgo }}</span>
+                <span class="meta-dot" aria-hidden="true">·</span>
+                <span>{{ post.views }} views</span>
+              </div>
+              @if (post.tags.length) {
+                <div class="search-card-tags">
+                  @for (tag of post.tags.slice(0, 3); track tag) {
+                    <span class="search-card-tag">#{{ tag }}</span>
+                  }
+                </div>
+              }
+            </div>
+
+          </article>
+        }
+      </div>
+    }
+
+  </section>
+
+  <a routerLink="/" class="search-back-btn">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+      <polyline points="15 18 9 12 15 6"/>
+    </svg>
+    Back to Home
+  </a>
+
+</div>

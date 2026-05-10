@@ -8,7 +8,7 @@ import { CommonModule, isPlatformBrowser, NgTemplateOutlet } from '@angular/comm
 import { FormsModule } from '@angular/forms';
 import { Meta, Title } from '@angular/platform-browser';
 import { DOCUMENT } from '@angular/common';
-import { forkJoin, of, Subject } from 'rxjs';
+import { of, Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, catchError } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { PostService } from '../../../post/services/post-service';
@@ -24,18 +24,8 @@ import { TimeAgoPipe }     from '../../../../shared/pipes/time-ago-pipe';
 import { PostCache, PostWithTs } from '../../../post/services/post-cache';
 import { ReadingHistory }        from '../../../../core/services/reading-history';
 
-interface DrawerComment {
-  _id?: string;
-  name: string;
-  comment: string;
-  user: string | null;
-  createdAt: string;
-}
-
-const PAGE_SIZE         = 8;
-const COMMENT_PAGE_SIZE = 5;
-
-const FETCH_LIMIT = 100;
+const PAGE_SIZE   = 8;
+const FETCH_LIMIT = 20;   // posts per server page — keeps initial payload small
 
 @Component({
   selector: 'app-home',
@@ -78,9 +68,19 @@ export class Home implements OnInit, OnDestroy {
   showWelcomeModal  = signal(false);
   private welcomeTimerId: ReturnType<typeof setTimeout> | null = null;
 
+  // Server-side pagination state
+  private serverPage    = signal(1);
+  hasMoreOnServer       = signal(false);
+  isFetchingMore        = signal(false);
+
+  // Server-reported totals — used for hero stats so they're always accurate
+  private serverTotal      = signal(0);
+  private serverTotalViews = signal(0);
+
   trendingPage = signal(0);
   hotPage      = signal(0);
   latestPage   = signal(0);
+  filteredPage = signal(0);
 
   likedPostIds      = signal<Set<string>>(new Set());
   bookmarkedPostIds = signal<Set<string>>(new Set());
@@ -91,17 +91,6 @@ export class Home implements OnInit, OnDestroy {
   progressMap      = signal<Map<string, number>>(new Map());
   readingStreak    = signal(0);
 
-  commentDrawerPostId   = signal<string | null>(null);
-  commentText           = signal('');
-  commentSubmitting     = signal(false);
-  commentFeedback       = signal<{ type: 'success' | 'error'; msg: string } | null>(null);
-
-  drawerComments        = signal<DrawerComment[]>([]);
-  drawerCommentsLoading = signal(false);
-  loadingMoreComments   = signal(false);
-  totalCommentsCount    = signal(0);
-  commentFetchedCount   = signal(0);
-  deletingCommentId     = signal<string | null>(null);
 
   private currentUserData = signal<User | null>(null);
   private searchInput$    = new Subject<string>();
@@ -134,35 +123,28 @@ export class Home implements OnInit, OnDestroy {
     [...this.allPosts()].sort((a, b) => b._ts - a._ts)
   );
 
-  private trendingPool = computed(() => this.byLikes());
-  private hotPool = computed(() => {
-    const trendingIds = new Set(this.trendingPool().slice(0, PAGE_SIZE).map(p => p._id));
-    return this.byViews().filter(p => !trendingIds.has(p._id));
-  });
-  private latestPool = computed(() => {
-    const usedIds = new Set([
-      ...this.trendingPool().slice(0, PAGE_SIZE).map(p => p._id),
-      ...this.hotPool().slice(0, PAGE_SIZE).map(p => p._id),
-    ]);
-    return this.byDate().filter(p => !usedIds.has(p._id));
-  });
-
   trendingPosts = computed(() => {
     const start = this.trendingPage() * PAGE_SIZE;
-    return this.trendingPool().slice(start, start + PAGE_SIZE);
+    return this.byLikes().slice(start, start + PAGE_SIZE);
   });
   hotPosts = computed(() => {
     const start = this.hotPage() * PAGE_SIZE;
-    return this.hotPool().slice(start, start + PAGE_SIZE);
+    return this.byViews().slice(start, start + PAGE_SIZE);
   });
   latestPosts = computed(() => {
     const start = this.latestPage() * PAGE_SIZE;
-    return this.latestPool().slice(start, start + PAGE_SIZE);
+    return this.byDate().slice(start, start + PAGE_SIZE);
   });
 
-  trendingPageCount = computed(() => Math.max(1, Math.ceil(this.trendingPool().length / PAGE_SIZE)));
-  hotPageCount      = computed(() => Math.max(1, Math.ceil(this.hotPool().length / PAGE_SIZE)));
-  latestPageCount   = computed(() => Math.max(1, Math.ceil(this.latestPool().length / PAGE_SIZE)));
+  trendingPageCount = computed(() => Math.max(1, Math.ceil(this.allPosts().length / PAGE_SIZE)));
+  hotPageCount      = computed(() => Math.max(1, Math.ceil(this.allPosts().length / PAGE_SIZE)));
+  latestPageCount   = computed(() => Math.max(1, Math.ceil(this.allPosts().length / PAGE_SIZE)));
+
+  filteredPageCount = computed(() => Math.max(1, Math.ceil(this.filteredPosts().length / PAGE_SIZE)));
+  visibleFilteredPosts = computed(() => {
+    const start = this.filteredPage() * PAGE_SIZE;
+    return this.filteredPosts().slice(start, start + PAGE_SIZE);
+  });
 
   filteredPosts = computed(() => {
     const cat  = this.selectedCategory();
@@ -224,13 +206,15 @@ export class Home implements OnInit, OnDestroy {
 
   /** IDs of the top-5 trending posts — used to show the 🔥 badge on cards. */
   private trendingTopIds = computed(() =>
-    new Set(this.trendingPool().slice(0, 5).map(p => p._id))
+    new Set(this.byLikes().slice(0, 5).map((p: PostWithTs) => p._id))
   );
 
   isTrending(postId: string): boolean { return this.trendingTopIds().has(postId); }
 
   publishedCount = computed(() =>
-    this.allPosts().filter(p => p.status === 'published').length
+    this.serverTotal() > 0
+      ? this.serverTotal()
+      : this.allPosts().filter(p => p.status === 'published').length
   );
 
   activeTopicsCount = computed(() => {
@@ -244,24 +228,18 @@ export class Home implements OnInit, OnDestroy {
   });
 
   totalViews = computed(() =>
-    this.allPosts()
-      .filter(p => p.status === 'published')
-      .reduce((sum, p) => sum + (p.views ?? 0), 0)
+    this.serverTotalViews() > 0
+      ? this.serverTotalViews()
+      : this.allPosts()
+          .filter(p => p.status === 'published')
+          .reduce((sum, p) => sum + (p.views ?? 0), 0)
   );
 
   isDrawerPostOwner = computed(() => {
-    const postId = this.commentDrawerPostId();
-    const userId = this.currentUserData()?._id;
-    if (!postId || !userId) return false;
-    const post = this.allPosts().find(p => p._id === postId);
-    if (!post) return false;
-    const postOwnerId = (post.user as any)?._id ?? (post.user as any);
-    return postOwnerId?.toString() === userId.toString();
+    return false;
   });
 
-  hasMoreComments = computed(() =>
-    this.commentFetchedCount() < this.totalCommentsCount()
-  );
+;
 
   // ── Personalization computeds ────────────────────────────────────────────────
 
@@ -287,6 +265,19 @@ export class Home implements OnInit, OnDestroy {
   showFavorites   = computed(() => this.favoritePosts().length > 0);
   showRecommended = computed(() => this.recommendedPosts().length > 0);
 
+  navCatOpen = signal(false);
+
+  get writeRoute(): string { return this.isLoggedIn ? this.dashboardRoute : '/auth/login'; }
+
+  toggleNavCat(): void { this.navCatOpen.set(!this.navCatOpen()); }
+
+  @HostListener('document:click', ['$event'])
+  onDocClick(e: MouseEvent): void {
+    if (!(e.target as HTMLElement).closest('.nav-cat-wrap')) {
+      this.navCatOpen.set(false);
+    }
+  }
+
   @HostListener('document:keydown', ['$event'])
   onKeydown(event: KeyboardEvent): void {
     const tag = (event.target as Element).tagName;
@@ -295,8 +286,8 @@ export class Home implements OnInit, OnDestroy {
       this.searchInputEl?.nativeElement?.focus();
     }
     if (event.key === 'Escape') {
-      if (this.commentDrawerPostId()) this.closeCommentDrawer();
       if (this.menuOpen()) this.menuOpen.set(false);
+      if (this.navCatOpen()) this.navCatOpen.set(false);
       if (this.showWelcomeModal()) this.dismissWelcomeModal();
     }
   }
@@ -380,6 +371,9 @@ export class Home implements OnInit, OnDestroy {
     if (cached?.length) {
       this.allPosts.set(cached);
       this.isLoading.set(false);
+      // Cache has all posts already fetched — no more server pages needed
+      this.hasMoreOnServer.set(false);
+      
 
       const age = this.postCache.getAge();
       if (age === null || age > this.STALE_THRESHOLD_MS) {
@@ -404,49 +398,53 @@ export class Home implements OnInit, OnDestroy {
           return of(null);
         })
       )
-      .subscribe(firstRes => {
-        if (!firstRes) return;
+      .subscribe(res => {
+        if (!res) return;
+        const posts: Post[]      = res.data        ?? [];
+        const totalPages: number = res.totalPages   ?? 1;
+        const total: number      = res.totalBlogs   ?? res.total ?? 0;
+        const views: number      = res.totalViews   ?? 0;
 
-        const firstBatch: Post[] = firstRes.data       ?? [];
-        const totalPages: number = firstRes.totalPages ?? 1;
+        if (total > 0)  this.serverTotal.set(total);
+        if (views > 0)  this.serverTotalViews.set(views);
 
-        if (totalPages <= 1) {
-          this.commitPosts(firstBatch);
-          this.isLoading.set(false);
-          setTimeout(() => this.pushHomeAds(), 300);
-          return;
-        }
+        this.commitPosts(posts);
+        this.serverPage.set(1);
+        this.hasMoreOnServer.set(totalPages > 1);
+        this.isLoading.set(false);
+        setTimeout(() => this.pushHomeAds(), 300);
+      });
+  }
 
-        const pageNums = Array.from({ length: totalPages - 1 }, (_, i) => i + 2);
+  loadNextServerPage(): void {
+    if (this.isFetchingMore() || !this.hasMoreOnServer()) return;
+    this.isFetchingMore.set(true);
+    const nextPage = this.serverPage() + 1;
 
-        forkJoin(
-          pageNums.map(page =>
-            this.postService.getAllPost(page, FETCH_LIMIT).pipe(
-              catchError(err => {
-                console.error(`[Home] page ${page} failed:`, err);
-                return of({
-                  data: [] as Post[],
-                  totalPages,
-                  total: 0,
-                  page,
-                  limit: FETCH_LIMIT,
-                  status: 200,
-                  message: '',
-                });
-              })
-            )
-          )
-        )
-        .pipe(takeUntilDestroyed(this.destroyRef))
-        .subscribe(restResponses => {
-          const allRaw: Post[] = [
-            ...firstBatch,
-            ...restResponses.flatMap(r => r.data ?? []),
-          ];
-          this.commitPosts(allRaw);
-          this.isLoading.set(false);
-          setTimeout(() => this.pushHomeAds(), 300);
-        });
+    this.postService.getAllPost(nextPage, FETCH_LIMIT)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        catchError(err => {
+          console.error(`[Home] page ${nextPage} failed:`, err);
+          this.isFetchingMore.set(false);
+          return of(null);
+        })
+      )
+      .subscribe(res => {
+        if (!res) return;
+        const newPosts: Post[]   = res.data        ?? [];
+        const totalPages: number = res.totalPages   ?? nextPage;
+        const views: number      = res.totalViews   ?? 0;
+
+        if (views > 0) this.serverTotalViews.set(views);
+
+        this.commitPosts([...this.allPosts(), ...newPosts]);
+        this.serverPage.set(nextPage);
+        this.hasMoreOnServer.set(nextPage < totalPages);
+        this.isFetchingMore.set(false);
+
+        // Re-attach observer to any new sentinels that appeared
+        
       });
   }
 
@@ -565,6 +563,7 @@ export class Home implements OnInit, OnDestroy {
 
   onSearchInput(value: string): void {
     this.searchInput$.next(value);
+    this.resetVisibleCounts();
   }
 
   isNew(post: Post): boolean {
@@ -615,6 +614,10 @@ export class Home implements OnInit, OnDestroy {
     });
   }
 
+  private resetVisibleCounts(): void {
+    this.filteredPage.set(0);
+  }
+
   selectTag(tag: string): void {
     const next = this.selectedTag() === tag ? '' : tag;
     this.selectedTag.set(next);
@@ -638,6 +641,7 @@ export class Home implements OnInit, OnDestroy {
   // Used by <select> elements — sets directly (no toggle)
   onTagSelectChange(tag: string): void {
     this.selectedTag.set(tag);
+    this.resetVisibleCounts();
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: tag ? { tag } : {},
@@ -647,6 +651,7 @@ export class Home implements OnInit, OnDestroy {
 
   onTimeSelectChange(rt: string): void {
     this.selectedReadingTime.set(rt as any);
+    this.resetVisibleCounts();
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: rt ? { rt } : {},
@@ -655,10 +660,18 @@ export class Home implements OnInit, OnDestroy {
   }
 
   prevPage(page: WritableSignal<number>): void {
-    if (page() > 0) page.set(page() - 1);
+    if (page() > 0) { page.update(p => p - 1); scrollTo({ top: 0, behavior: 'smooth' }); }
   }
+
   nextPage(page: WritableSignal<number>, total: number): void {
-    if (page() < total - 1) page.set(page() + 1);
+    if (page() < total - 1) {
+      page.update(p => p + 1);
+      scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    // Last page of memory — transparently fetch more from server
+    if (page() >= total - 2 && this.hasMoreOnServer()) {
+      this.loadNextServerPage();
+    }
   }
 
   readBlog(id: string): void {
@@ -794,68 +807,12 @@ export class Home implements OnInit, OnDestroy {
     this.persistBookmarkedIds(newSet);
   }
 
-  openCommentDrawer(post: Post, event: Event): void {
-    event.stopPropagation();
-    this.commentText.set('');
-    this.commentFeedback.set(null);
-    this.drawerComments.set([]);
-    this.commentFetchedCount.set(0);
-    this.totalCommentsCount.set(post.commentsCount ?? 0);
-    this.commentDrawerPostId.set(post._id);
-    this.loadComments(post._id, 0);
-  }
 
-  closeCommentDrawer(): void {
-    this.commentDrawerPostId.set(null);
-    this.commentText.set('');
-    this.commentFeedback.set(null);
-    this.drawerComments.set([]);
-    this.commentFetchedCount.set(0);
-    this.totalCommentsCount.set(0);
-  }
-
-  private loadComments(postId: string, skip: number): void {
-    const isFirst = skip === 0;
-    isFirst
-      ? this.drawerCommentsLoading.set(true)
-      : this.loadingMoreComments.set(true);
-
-    this.postService.getComments(postId, skip, COMMENT_PAGE_SIZE).subscribe({
-      next: (res) => {
-        const incoming: DrawerComment[] = (res.comments ?? []) as DrawerComment[];
-
-        const total: number = res.totalComments ?? incoming.length;
-
-        this.drawerComments.set(
-          isFirst ? incoming : [...this.drawerComments(), ...incoming]
-        );
-        this.commentFetchedCount.set(this.commentFetchedCount() + incoming.length);
-        this.totalCommentsCount.set(total);
-
-        isFirst
-          ? this.drawerCommentsLoading.set(false)
-          : this.loadingMoreComments.set(false);
-      },
-      error: () => {
-        this.drawerCommentsLoading.set(false);
-        this.loadingMoreComments.set(false);
-      },
-    });
-  }
-
-  loadMoreComments(): void {
-    const postId = this.commentDrawerPostId();
-    if (!postId || this.loadingMoreComments() || !this.hasMoreComments()) return;
-    this.loadComments(postId, this.commentFetchedCount());
-  }
-
-  get currentUser(): User | null { return this.currentUserData(); }
-  get isLoggedIn(): boolean      { return this.auth.isAuthorized() && !!this.currentUserData(); }
-  get loggedInUserName(): string { return this.currentUserData()?.name ?? 'Anonymous'; }
-  get loggedInFirstName(): string {
-    return this.currentUserData()?.name?.split(' ')[0] ?? 'Me';
-  }
-  get loggedInAvatar(): string   { return (this.currentUserData() as any)?.avatar ?? ''; }
+  get currentUser(): User | null    { return this.currentUserData(); }
+  get isLoggedIn(): boolean         { return this.auth.isAuthorized() && !!this.currentUserData(); }
+  get loggedInUserName(): string    { return this.currentUserData()?.name ?? 'Anonymous'; }
+  get loggedInFirstName(): string   { return this.currentUserData()?.name?.split(' ')[0] ?? 'Me'; }
+  get loggedInAvatar(): string      { return (this.currentUserData() as any)?.avatar ?? ''; }
   get dashboardRoute(): string {
     const u = this.currentUserData();
     if (!u) return '/';
@@ -864,82 +821,6 @@ export class Home implements OnInit, OnDestroy {
     if (role === 'admin')       return `/admin/${id}`;
     if (role === 'super_admin') return `/super-admin/${id}`;
     return `/user/${id}`;
-  }
-
-
-  submitComment(): void {
-    const text = this.commentText().trim();
-    if (!text) {
-      this.commentFeedback.set({ type: 'error', msg: 'Please write something before posting.' });
-      return;
-    }
-    if (this.commentSubmitting()) return;
-
-    const postId = this.commentDrawerPostId();
-    if (!postId) return;
-
-    this.commentSubmitting.set(true);
-    this.commentFeedback.set(null);
-
-    const userId: string | undefined = this.currentUserData()?._id ?? undefined;
-
-    this.postService.commentPost(postId, text, userId).subscribe({
-      next: (res: any) => {
-        this.commentSubmitting.set(false);
-        this.commentText.set('');
-        this.commentFeedback.set({ type: 'success', msg: 'Comment posted!' });
-
-        const newComment: DrawerComment = {
-          _id:       res.data?.comment?._id,
-          name:      this.currentUserData()?.name ?? 'Anonymous',
-          comment:   text,
-          user:      this.currentUserData()?._id ?? null,
-          createdAt: new Date().toISOString(),
-        };
-
-        this.drawerComments.set([newComment, ...this.drawerComments()]);
-        this.commentFetchedCount.set(this.commentFetchedCount() + 1);
-        this.totalCommentsCount.set(this.totalCommentsCount() + 1);
-
-        const post = this.allPosts().find(p => p._id === postId);
-        if (post) this.patchPost(postId, { commentsCount: post.commentsCount + 1 });
-
-        setTimeout(() => this.commentFeedback.set(null), 3000);
-      },
-      error: (err: any) => {
-        this.commentSubmitting.set(false);
-        this.commentFeedback.set({
-          type: 'error',
-          msg:  err?.error?.message ?? 'Failed to post comment.',
-        });
-      },
-    });
-  }
-
-  deleteComment(comment: DrawerComment, event: Event): void {
-    event.stopPropagation();
-    const postId    = this.commentDrawerPostId();
-    const commentId = comment._id;
-    if (!postId || !commentId || this.deletingCommentId()) return;
-
-    this.deletingCommentId.set(commentId);
-
-    this.postService.deleteComment(postId, commentId).subscribe({
-      next: () => {
-        this.drawerComments.set(this.drawerComments().filter(c => c._id !== commentId));
-        this.commentFetchedCount.set(Math.max(0, this.commentFetchedCount() - 1));
-        this.totalCommentsCount.set(Math.max(0, this.totalCommentsCount() - 1));
-
-        const post = this.allPosts().find(p => p._id === postId);
-        if (post) this.patchPost(postId, { commentsCount: Math.max(0, post.commentsCount - 1) });
-
-        this.deletingCommentId.set(null);
-      },
-      error: (err: any) => {
-        console.error('Delete comment failed:', err?.error?.message);
-        this.deletingCommentId.set(null);
-      },
-    });
   }
 
   private patchPost(postId: string, updates: Partial<Post>): void {

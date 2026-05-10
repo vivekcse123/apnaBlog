@@ -21,11 +21,20 @@ export class ThemeService {
 
   constructor() {
     if (this.isBrowser) {
-      // For guest users: restore saved preference or fall back to time-based default
-      const saved   = localStorage.getItem('app-theme') as Theme | null;
-      const initial = saved ?? (this.isNightTime() ? 'dark' : 'light');
+      const saved = localStorage.getItem('app-theme') as Theme | null;
+      // Priority: 1) user saved preference  2) OS preference  3) time-based
+      const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const initial = saved ?? (systemDark ? 'dark' : (this.isNightTime() ? 'dark' : 'light'));
       this.theme.set(initial);
       document.documentElement.setAttribute('data-theme', initial);
+
+      // Follow OS changes only when user hasn't manually set a preference
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+        if (!localStorage.getItem('app-theme')) {
+          this.theme.set(e.matches ? 'dark' : 'light');
+        }
+      });
+
       this.startAutoTheme();
     }
 
