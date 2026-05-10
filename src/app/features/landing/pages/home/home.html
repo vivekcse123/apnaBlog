@@ -227,6 +227,8 @@
 
         @if (!isLoading() && allPosts().length > 0) {
           <div class="hero-stats" role="region" aria-label="Platform statistics">
+
+            <!-- Stories -->
             <div class="hero-stat-box">
               <div class="hero-stat-icon hero-stat-icon--teal">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -242,6 +244,7 @@
               </div>
             </div>
 
+            <!-- Topics -->
             <div class="hero-stat-box">
               <div class="hero-stat-icon hero-stat-icon--blue">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -255,17 +258,20 @@
               </div>
             </div>
 
-            <div class="hero-stat-box">
-              <div class="hero-stat-icon hero-stat-icon--purple">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
-                </svg>
+            <!-- Total Reads — shown only when all posts are loaded so the number is accurate -->
+            @if (statsReady()) {
+              <div class="hero-stat-box">
+                <div class="hero-stat-icon hero-stat-icon--purple">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                  </svg>
+                </div>
+                <div class="hero-stat-info">
+                  <strong class="hero-stat-num">{{ totalViews() | formatCount }}</strong>
+                  <span class="hero-stat-label">TOTAL READS</span>
+                </div>
               </div>
-              <div class="hero-stat-info">
-                <strong class="hero-stat-num">{{ totalViews() | formatCount }}</strong>
-                <span class="hero-stat-label">TOTAL READS</span>
-              </div>
-            </div>
+            }
 
             @if (readingStreak() >= 2) {
               <div class="hero-stat-box" [attr.aria-label]="readingStreak() + '-day reading streak'">

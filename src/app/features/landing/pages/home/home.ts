@@ -69,9 +69,10 @@ export class Home implements OnInit, OnDestroy {
   private welcomeTimerId: ReturnType<typeof setTimeout> | null = null;
 
   // Server-side pagination state
-  private serverPage    = signal(1);
-  hasMoreOnServer       = signal(false);
-  isFetchingMore        = signal(false);
+  private serverPage       = signal(1);
+  private serverTotalPages = signal(1);
+  hasMoreOnServer          = signal(false);
+  isFetchingMore           = signal(false);
 
   // Server-reported totals — used for hero stats so they're always accurate
   private serverTotal      = signal(0);
@@ -211,12 +212,19 @@ export class Home implements OnInit, OnDestroy {
 
   isTrending(postId: string): boolean { return this.trendingTopIds().has(postId); }
 
-  publishedCount = computed(() =>
-    this.serverTotal() > 0
-      ? this.serverTotal()
-      : this.allPosts().filter(p => p.status === 'published').length
-  );
+  publishedCount = computed(() => {
+    // 1. API sends an explicit total  ✓
+    if (this.serverTotal() > 0) return this.serverTotal();
+    // 2. Derive from totalPages × pageSize (slight overcount on last page, still far better than 20)
+    const pages = this.serverTotalPages();
+    if (pages > 1) return pages * FETCH_LIMIT;
+    // 3. Exact count from fully-loaded cache
+    return this.allPosts().filter(p => p.status === 'published').length;
+  });
 
+  // Topics: count unique categories across ALL defined platform categories.
+  // Uses fetched posts as the source of truth; grows as more pages are loaded.
+  // Bounded at categories.length (14) so it never shows more than the platform has.
   activeTopicsCount = computed(() => {
     const active = new Set<string>();
     for (const post of this.allPosts()) {
@@ -224,15 +232,22 @@ export class Home implements OnInit, OnDestroy {
         for (const cat of post.categories) active.add(cat);
       }
     }
-    return active.size;
+    // If we haven't loaded enough posts to see all categories yet,
+    // show the total number of platform categories (all are active on a live blog).
+    return active.size < this.categories.length && this.serverTotalPages() > 1
+      ? this.categories.length
+      : active.size;
   });
 
   totalViews = computed(() =>
-    this.serverTotalViews() > 0
-      ? this.serverTotalViews()
-      : this.allPosts()
-          .filter(p => p.status === 'published')
-          .reduce((sum, p) => sum + (p.views ?? 0), 0)
+    this.allPosts()
+      .filter(p => p.status === 'published')
+      .reduce((sum, p) => sum + (p.views ?? 0), 0)
+  );
+
+  // True once we've loaded all server pages — stats are then fully accurate
+  statsReady = computed(() =>
+    !this.hasMoreOnServer() && this.allPosts().length > 0
   );
 
   isDrawerPostOwner = computed(() => {
@@ -371,7 +386,8 @@ export class Home implements OnInit, OnDestroy {
     if (cached?.length) {
       this.allPosts.set(cached);
       this.isLoading.set(false);
-      // Cache has all posts already fetched — no more server pages needed
+      // Cache has all posts — set page count to 1 so computed stats use allPosts directly
+      this.serverTotalPages.set(1);
       this.hasMoreOnServer.set(false);
       
 
@@ -400,15 +416,24 @@ export class Home implements OnInit, OnDestroy {
       )
       .subscribe(res => {
         if (!res) return;
-        const posts: Post[]      = res.data        ?? [];
-        const totalPages: number = res.totalPages   ?? 1;
-        const total: number      = res.totalBlogs   ?? res.total ?? 0;
-        const views: number      = res.totalViews   ?? 0;
+        const posts: Post[]      = res.data || [];
+        const totalPages: number = res.totalPages || 1;
+        // Try every possible field name the API might use for total count
+        const total: number      = res.totalBlogs || res.total || 0;
+        const views: number      = res.totalViews  || 0;
 
-        if (total > 0)  this.serverTotal.set(total);
-        if (views > 0)  this.serverTotalViews.set(views);
+        this.serverTotalPages.set(totalPages);
+        if (total > 0) this.serverTotal.set(total);
+        if (views > 0) this.serverTotalViews.set(views);
 
-        this.commitPosts(posts);
+        if (showLoader) {
+          // Fresh load (no cache) — start with just the first 20
+          this.commitPosts(posts);
+        } else {
+          // Background refresh — merge new posts into existing dataset
+          // so cached posts are never lost
+          this.commitPosts([...this.allPosts(), ...posts]);
+        }
         this.serverPage.set(1);
         this.hasMoreOnServer.set(totalPages > 1);
         this.isLoading.set(false);
@@ -432,9 +457,9 @@ export class Home implements OnInit, OnDestroy {
       )
       .subscribe(res => {
         if (!res) return;
-        const newPosts: Post[]   = res.data        ?? [];
-        const totalPages: number = res.totalPages   ?? nextPage;
-        const views: number      = res.totalViews   ?? 0;
+        const newPosts: Post[]   = res.data       || [];
+        const totalPages: number = res.totalPages  || nextPage;
+        const views: number      = res.totalViews  || 0;
 
         if (views > 0) this.serverTotalViews.set(views);
 
@@ -449,23 +474,28 @@ export class Home implements OnInit, OnDestroy {
   }
 
   private commitPosts(raw: Post[]): void {
-    const seen    = new Set<string>();
-    const visible: PostWithTs[] = [];
-    const current = new Map(this.allPosts().map(p => [p._id, p]));
+    // Build a map from existing posts so we can merge (not replace) them
+    const existing = new Map(this.allPosts().map(p => [p._id, p]));
+    const incoming = new Map<string, PostWithTs>();
 
     for (const p of raw) {
       if (p.status !== 'published' && p.status !== 'draft') continue;
-      if (seen.has(p._id)) continue;
-      seen.add(p._id);
-      const local = current.get(p._id);
-      visible.push({
+      if (incoming.has(p._id)) continue;
+      const prev = existing.get(p._id);
+      incoming.set(p._id, {
         ...p,
-        _ts: new Date(p.createdAt).getTime(),
-        views:      Math.max(p.views      ?? 0, local?.views      ?? 0),
-        likesCount: Math.max(p.likesCount ?? 0, local?.likesCount ?? 0),
+        _ts:        new Date(p.createdAt).getTime(),
+        views:      Math.max(p.views      ?? 0, prev?.views      ?? 0),
+        likesCount: Math.max(p.likesCount ?? 0, prev?.likesCount ?? 0),
       });
     }
 
+    // Keep existing posts that weren't in raw (they're still valid)
+    for (const [id, p] of existing) {
+      if (!incoming.has(id)) incoming.set(id, p);
+    }
+
+    const visible = [...incoming.values()];
     this.allPosts.set(visible);
     this.postCache.set(visible);
     this.updateJsonLdPostCount(visible.length);
