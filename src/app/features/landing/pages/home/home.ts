@@ -613,39 +613,31 @@ export class Home implements OnInit, OnDestroy {
   selectCategory(cat: string): void {
     const next = this.selectedCategory() === cat ? '' : cat;
     this.selectedCategory.set(next);
+    this.resetVisibleCounts();
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: next ? { category: next } : {},
       replaceUrl: true,
     });
-    if (!isPlatformBrowser(this.platformId)) return;
-
-    // Double rAF — waits for Angular to render filtered results into DOM
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        const filterWrap  = this.document.querySelector('.filter-wrap') as HTMLElement;
-        const resultsEl   = this.document.getElementById('results-heading')
-                              ?.closest('section') as HTMLElement | null;
-
-        if (next && resultsEl) {
-          // Scroll so results appear just below the sticky filter bar
-          const filterBottom = filterWrap
-            ? filterWrap.getBoundingClientRect().bottom
-            : 66;
-          const resultsTop = resultsEl.getBoundingClientRect().top + window.scrollY
-                             - filterBottom - 12;
-          window.scrollTo({ top: Math.max(0, resultsTop), behavior: 'smooth' });
-        } else if (filterWrap) {
-          // Category cleared — bring filter into view without going to page top
-          const filterTop = filterWrap.getBoundingClientRect().top + window.scrollY - 70;
-          window.scrollTo({ top: Math.max(0, filterTop), behavior: 'smooth' });
-        }
-      });
-    });
+    if (next) this.scrollToResults();
   }
 
   private resetVisibleCounts(): void {
     this.filteredPage.set(0);
+  }
+
+  private scrollToResults(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const filterWrap = this.document.querySelector('.filter-wrap') as HTMLElement;
+        const resultsEl  = this.document.getElementById('filtered-results') as HTMLElement | null;
+        if (!resultsEl) return;
+        const filterBottom = filterWrap ? filterWrap.getBoundingClientRect().bottom : 66;
+        const top = resultsEl.getBoundingClientRect().top + window.scrollY - filterBottom - 12;
+        window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+      });
+    });
   }
 
   selectTag(tag: string): void {
@@ -677,6 +669,7 @@ export class Home implements OnInit, OnDestroy {
       queryParams: tag ? { tag } : {},
       replaceUrl: true,
     });
+    if (tag) this.scrollToResults();
   }
 
   onTimeSelectChange(rt: string): void {
@@ -687,6 +680,13 @@ export class Home implements OnInit, OnDestroy {
       queryParams: rt ? { rt } : {},
       replaceUrl: true,
     });
+    if (rt) this.scrollToResults();
+  }
+
+  onSortChange(sort: string): void {
+    this.selectedSort.set(sort);
+    this.resetVisibleCounts();
+    if (this.isFiltering()) this.scrollToResults();
   }
 
   prevPage(page: WritableSignal<number>): void {

@@ -327,8 +327,9 @@
 
   <div class="filter-wrap" role="search" aria-label="Filter and search stories">
 
-    <!-- Row 1: Search + filter dropdowns -->
+    <!-- Row 1: Search + filter dropdowns + pinned Clear -->
     <div class="filter-inner">
+      <div class="filter-inner-scroll">
       <div class="search-wrap">
         <span class="search-icon" aria-hidden="true">🔍</span>
         <input
@@ -373,22 +374,23 @@
                 [class.filter-pill--active]="selectedSort() !== 'newest'"
                 aria-label="Sort stories by"
                 [ngModel]="selectedSort()"
-                (ngModelChange)="selectedSort.set($event)">
+                (ngModelChange)="onSortChange($event)">
           <option value="newest">↕ Newest</option>
           <option value="liked">❤️ Most Liked</option>
           <option value="viewed">👁 Most Viewed</option>
           <option value="comments">💬 Most Comments</option>
         </select>
 
-        @if (isFiltering()) {
-          <button class="filter-clear-pill"
-                  (click)="selectedCategory.set(''); selectedTag.set(''); selectedReadingTime.set(''); selectedSort.set('newest')"
-                  aria-label="Clear all filters">
-            ✕ Clear
-          </button>
-        }
-
       </div>
+      </div><!-- /filter-inner-scroll -->
+
+      @if (isFiltering()) {
+        <button class="cat-clear-btn"
+                (click)="selectedCategory.set(''); selectedTag.set(''); selectedReadingTime.set(''); selectedSort.set('newest'); searchQuery.set('')"
+                aria-label="Clear all filters">
+          ✕ Clear
+        </button>
+      }
     </div>
 
     <!-- Row 2: Category chips -->
@@ -448,7 +450,7 @@
   </ng-template>
 
   @if (isFiltering()) {
-    <section class="section" aria-labelledby="results-heading">
+    <section class="section" id="filtered-results" aria-labelledby="results-heading">
       <div class="section-header">
         <h2 class="section-title" id="results-heading">
           @if (selectedTag()) { 🏷 #{{ selectedTag() }}
@@ -460,13 +462,6 @@
               aria-atomic="true">
           {{ filteredPosts().length }} found
         </span>
-        @if (selectedCategory() || selectedTag() || selectedReadingTime()) {
-          <button class="clear-filter-btn"
-                  (click)="selectedCategory.set(''); selectedTag.set(''); selectedReadingTime.set(''); selectedSort.set('newest')"
-                  aria-label="Clear all active filters">
-            ✕ Clear filters
-          </button>
-        }
       </div>
       <div class="blog-grid">
         @if (filteredPosts().length === 0) {
