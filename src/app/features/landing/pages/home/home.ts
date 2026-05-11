@@ -8,8 +8,8 @@ import { CommonModule, isPlatformBrowser, NgTemplateOutlet } from '@angular/comm
 import { FormsModule } from '@angular/forms';
 import { Meta, Title } from '@angular/platform-browser';
 import { DOCUMENT } from '@angular/common';
-import { of, Subject } from 'rxjs';
-import { debounceTime, distinctUntilChanged, catchError } from 'rxjs/operators';
+import { of, Subject, EMPTY } from 'rxjs';
+import { debounceTime, distinctUntilChanged, catchError, expand, reduce } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { PostService } from '../../../post/services/post-service';
 import { Post } from '../../../../core/models/post.model';
@@ -27,27 +27,36 @@ import { ReadingHistory }        from '../../../../core/services/reading-history
 const PAGE_SIZE   = 8;
 const FETCH_LIMIT = 20;   // posts per server page — keeps initial payload small
 
-const STATS_KEY     = 'apna_site_stats';
-const STATS_TTL_MS  = 30 * 60 * 1000; // refresh stats every 30 min
+const STATS_KEY    = 'apna_site_stats_v3'; // v3 — includes accurate category counts
+const STATS_TTL_MS = 30 * 60 * 1000;
 
-function readPersistedStats(): { total: number; totalViews: number; ts: number } {
-  try {
-    if (typeof localStorage === 'undefined') return { total: 0, totalViews: 0, ts: 0 };
-    const raw = localStorage.getItem(STATS_KEY);
-    if (!raw) return { total: 0, totalViews: 0, ts: 0 };
-    const parsed = JSON.parse(raw);
-    return {
-      total:      Number(parsed.total)      || 0,
-      totalViews: Number(parsed.totalViews) || 0,
-      ts:         Number(parsed.ts)         || 0,
-    };
-  } catch { return { total: 0, totalViews: 0, ts: 0 }; }
+interface PersistedStats {
+  total: number;
+  totalViews: number;
+  categoryCounts: Record<string, number>;
+  ts: number;
 }
 
-function persistStats(total: number, totalViews: number): void {
+function readPersistedStats(): PersistedStats {
+  const empty: PersistedStats = { total: 0, totalViews: 0, categoryCounts: {}, ts: 0 };
+  try {
+    if (typeof localStorage === 'undefined') return empty;
+    const raw = localStorage.getItem(STATS_KEY);
+    if (!raw) return empty;
+    const p = JSON.parse(raw);
+    return {
+      total:           Number(p.total)      || 0,
+      totalViews:      Number(p.totalViews) || 0,
+      categoryCounts:  (p.categoryCounts && typeof p.categoryCounts === 'object') ? p.categoryCounts : {},
+      ts:              Number(p.ts)         || 0,
+    };
+  } catch { return empty; }
+}
+
+function persistStats(total: number, totalViews: number, categoryCounts: Record<string, number>): void {
   try {
     if (typeof localStorage !== 'undefined') {
-      localStorage.setItem(STATS_KEY, JSON.stringify({ total, totalViews, ts: Date.now() }));
+      localStorage.setItem(STATS_KEY, JSON.stringify({ total, totalViews, categoryCounts, ts: Date.now() }));
     }
   } catch { /* quota */ }
 }
@@ -104,7 +113,9 @@ export class Home implements OnInit, OnDestroy {
   private serverTotal      = signal(this._persistedStats.total);
   private serverTotalViews = signal(this._persistedStats.totalViews);
   // Monotonically increasing total views — never decreases to prevent flicker
-  private _maxSeenViews    = signal(this._persistedStats.totalViews);
+  private _maxSeenViews       = signal(this._persistedStats.totalViews);
+  // Accurate category counts from full stats fetch — persisted across sessions
+  private _allCategoryCounts  = signal<Record<string, number>>(this._persistedStats.categoryCounts);
 
   trendingPage = signal(0);
   hotPage      = signal(0);
@@ -181,7 +192,8 @@ export class Home implements OnInit, OnDestroy {
     const rt   = this.selectedReadingTime();
     const q    = this.searchQuery().trim().toLowerCase();
     const sort = this.selectedSort();
-    let posts: PostWithTs[] = this.allPosts();
+    // Only published posts on the public home page
+    let posts: PostWithTs[] = this.allPosts().filter(p => p.status === 'published');
 
     if (cat) posts = posts.filter(p => p.categories.includes(cat));
     if (tag) posts = posts.filter(p => p.tags?.includes(tag));
@@ -204,9 +216,15 @@ export class Home implements OnInit, OnDestroy {
     }
   });
 
+  // Use full-dataset counts when available (from fetchAccurateStats),
+  // fall back to loaded posts only while stats are still fetching
   categoryCounts = computed((): Record<string, number> => {
+    const accurate = this._allCategoryCounts();
+    if (Object.keys(accurate).length > 0) return accurate;
+    // Fallback: count from currently loaded posts
     const counts: Record<string, number> = {};
     for (const post of this.allPosts()) {
+      if (post.status !== 'published') continue;
       for (const cat of post.categories) {
         counts[cat] = (counts[cat] ?? 0) + 1;
       }
@@ -219,10 +237,11 @@ export class Home implements OnInit, OnDestroy {
     !!this.searchQuery().trim() || this.selectedSort() !== 'newest'
   );
 
-  /** Top 15 tags by frequency across all posts. */
+  /** Top 15 tags by frequency across published posts only. */
   popularTags = computed(() => {
     const counts = new Map<string, number>();
     for (const post of this.allPosts()) {
+      if (post.status !== 'published') continue;
       for (const tag of (post.tags ?? [])) {
         if (tag) counts.set(tag, (counts.get(tag) ?? 0) + 1);
       }
@@ -406,28 +425,49 @@ export class Home implements OnInit, OnDestroy {
     this.fetchAccurateStats();
   }
 
-  /** Fetch ALL posts once per session to compute accurate total views/stories. */
+  /**
+   * Paginate through ALL server pages (100/page) to get 100% accurate stats.
+   * Runs once per 30-min TTL window. Persists results to localStorage so
+   * every subsequent visit loads the correct numbers instantly.
+   */
   private fetchAccurateStats(): void {
     if (!isPlatformBrowser(this.platformId)) return;
     const { ts, total, totalViews } = this._persistedStats;
     const age = Date.now() - ts;
-    // Skip only if stats are fresh AND both values are present
     if (ts > 0 && age < STATS_TTL_MS && total > 0 && totalViews > 0) return;
 
-    this.postService.getAllPostsForStats()
+    // Seed: fetch page 1, then expand into all remaining pages
+    this.postService.getStatsPage(1)
       .pipe(
+        expand(res => {
+          const fetched = Number(res.page ?? 1);
+          const total   = res.totalPages ?? 1;
+          return fetched < total
+            ? this.postService.getStatsPage(fetched + 1)
+            : EMPTY;
+        }),
+        reduce((acc: Post[], res) => acc.concat(res.data ?? []), [] as Post[]),
+        catchError(() => of([] as Post[])),
         takeUntilDestroyed(this.destroyRef),
-        catchError(() => of(null))
       )
-      .subscribe(res => {
-        if (!res?.data) return;
-        const posts = res.data as Post[];
-        const published = posts.filter(p => p.status === 'published');
-        const total = published.length;
+      .subscribe((allPosts: Post[]) => {
+        if (!allPosts.length) return;
+        const published  = allPosts.filter(p => p.status === 'published');
+        const total      = published.length;
         const totalViews = published.reduce((s, p) => s + ((p as any).views ?? 0), 0);
+
+        // Compute accurate category counts from ALL published posts
+        const catCounts: Record<string, number> = {};
+        for (const post of published) {
+          for (const cat of (post.categories ?? [])) {
+            catCounts[cat] = (catCounts[cat] ?? 0) + 1;
+          }
+        }
+
         if (total > 0) this.serverTotal.set(total);
-        this.bumpMaxViews(totalViews);
-        persistStats(total > 0 ? total : this.serverTotal(), this._maxSeenViews());
+        if (totalViews > 0) this.bumpMaxViews(totalViews);
+        if (Object.keys(catCounts).length > 0) this._allCategoryCounts.set(catCounts);
+        persistStats(this.serverTotal(), this._maxSeenViews(), catCounts);
       });
   }
 
@@ -447,19 +487,9 @@ export class Home implements OnInit, OnDestroy {
         if (!res) return;
         const posts: Post[]      = res.data || [];
         const totalPages: number = res.totalPages || 1;
-        // Try every possible field name the API might use for total count
-        const total: number      = res.totalBlogs || res.total || 0;
-        const views: number      = res.totalViews  || 0;
-
+        // Use totalPages for pagination only — serverTotal is set by fetchAccurateStats
+        // which counts only published posts (single source of truth for stats)
         this.serverTotalPages.set(totalPages);
-        if (total > 0) {
-          this.serverTotal.set(total);
-          persistStats(total, this._maxSeenViews());
-        }
-        if (views > 0) {
-          this.serverTotalViews.set(views);
-          this.bumpMaxViews(views);
-        }
 
         if (showLoader) {
           // Fresh load (no cache) — start with just the first 20
@@ -494,12 +524,6 @@ export class Home implements OnInit, OnDestroy {
         if (!res) return;
         const newPosts: Post[]   = res.data       || [];
         const totalPages: number = res.totalPages  || nextPage;
-        const views: number      = res.totalViews  || 0;
-
-        if (views > 0) {
-          this.serverTotalViews.set(views);
-          this.bumpMaxViews(views);
-        }
 
         this.commitPosts([...this.allPosts(), ...newPosts]);
         this.serverPage.set(nextPage);
@@ -512,12 +536,12 @@ export class Home implements OnInit, OnDestroy {
   }
 
   private commitPosts(raw: Post[]): void {
-    // Build a map from existing posts so we can merge (not replace) them
     const existing = new Map(this.allPosts().map(p => [p._id, p]));
     const incoming = new Map<string, PostWithTs>();
 
     for (const p of raw) {
-      if (p.status !== 'published' && p.status !== 'draft') continue;
+      // Home page is public — only published posts, never drafts/pending
+      if (p.status !== 'published') continue;
       if (incoming.has(p._id)) continue;
       const prev = existing.get(p._id);
       incoming.set(p._id, {
@@ -528,7 +552,7 @@ export class Home implements OnInit, OnDestroy {
       });
     }
 
-    // Keep existing posts that weren't in raw (they're still valid)
+    // Keep existing published posts not present in this batch
     for (const [id, p] of existing) {
       if (!incoming.has(id)) incoming.set(id, p);
     }
@@ -538,10 +562,8 @@ export class Home implements OnInit, OnDestroy {
     this.postCache.set(visible);
     this.updateJsonLdPostCount(visible.length);
 
-    // Update max-seen views from summed post data (never decrease)
-    const summed = visible
-      .filter(p => p.status === 'published')
-      .reduce((s, p) => s + (p.views ?? 0), 0);
+    // Bump max-seen views — all items in visible are already published
+    const summed = visible.reduce((s, p) => s + (p.views ?? 0), 0);
     this.bumpMaxViews(summed);
   }
 
@@ -550,7 +572,7 @@ export class Home implements OnInit, OnDestroy {
     const current = this._maxSeenViews();
     if (candidate > current) {
       this._maxSeenViews.set(candidate);
-      persistStats(this.serverTotal(), candidate);
+      persistStats(this.serverTotal(), candidate, this._allCategoryCounts());
     }
   }
 

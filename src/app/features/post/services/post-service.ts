@@ -71,9 +71,9 @@ export class PostService {
     );
   }
 
-  /** Lightweight stats fetch — gets all published posts to compute accurate totals. */
-  getAllPostsForStats(): Observable<apiResponse<Post[]>> {
-    return this.http.get<apiResponse<Post[]>>(`${this.endPoint}?page=1&limit=2000`);
+  /** Single page fetch for stats — caller must paginate through all pages. */
+  getStatsPage(page: number): Observable<apiResponse<Post[]>> {
+    return this.http.get<apiResponse<Post[]>>(`${this.endPoint}?page=${page}&limit=100`);
   }
 
   getAllPostAdmin(page = 1, limit = 10): Observable<apiResponse<Post[]>> {
