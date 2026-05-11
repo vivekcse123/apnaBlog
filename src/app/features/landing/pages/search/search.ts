@@ -54,7 +54,7 @@ export class SearchPage implements OnInit {
   ngOnInit(): void {
     this.titleSvc.setTitle('Search Stories — ApnaInsights');
     this.meta.updateTag({ name: 'description', content: 'Search thousands of articles on ApnaInsights.' });
-    this.meta.updateTag({ name: 'robots', content: 'index, follow' });
+    this.meta.updateTag({ name: 'robots', content: 'noindex, follow' });
 
     this.route.queryParamMap
       .pipe(takeUntilDestroyed(this.destroyRef))

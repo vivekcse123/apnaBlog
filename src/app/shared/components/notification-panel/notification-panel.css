@@ -5,7 +5,7 @@
   align-items: center;
 }
 
-/* ── Bell button (always on dark gradient header — intentionally no CSS vars) ── */
+/* ── Bell button ── */
 .bell-btn {
   position: relative;
   background: none;
@@ -16,12 +16,13 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  color: #fff;
-  transition: background 0.2s;
+  color: var(--text-secondary);
+  transition: background 0.2s, color 0.2s;
 }
 
 .bell-btn:hover {
-  background: rgba(255, 255, 255, 0.14);
+  background: var(--bg-hover);
+  color: var(--text-primary);
 }
 
 .bell-btn mat-icon {

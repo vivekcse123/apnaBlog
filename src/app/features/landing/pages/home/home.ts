@@ -27,6 +27,29 @@ import { ReadingHistory }        from '../../../../core/services/reading-history
 const PAGE_SIZE   = 8;
 const FETCH_LIMIT = 20;   // posts per server page — keeps initial payload small
 
+const STATS_KEY = 'apna_site_stats';
+
+function readPersistedStats(): { total: number; totalViews: number } {
+  try {
+    if (typeof localStorage === 'undefined') return { total: 0, totalViews: 0 };
+    const raw = localStorage.getItem(STATS_KEY);
+    if (!raw) return { total: 0, totalViews: 0 };
+    const parsed = JSON.parse(raw);
+    return {
+      total:      Number(parsed.total)      || 0,
+      totalViews: Number(parsed.totalViews) || 0,
+    };
+  } catch { return { total: 0, totalViews: 0 }; }
+}
+
+function persistStats(total: number, totalViews: number): void {
+  try {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(STATS_KEY, JSON.stringify({ total, totalViews }));
+    }
+  } catch { /* quota */ }
+}
+
 @Component({
   selector: 'app-home',
   standalone: true,
@@ -74,9 +97,12 @@ export class Home implements OnInit, OnDestroy {
   hasMoreOnServer          = signal(false);
   isFetchingMore           = signal(false);
 
-  // Server-reported totals — used for hero stats so they're always accurate
-  private serverTotal      = signal(0);
-  private serverTotalViews = signal(0);
+  // Server-reported totals — hydrated from localStorage so stats show immediately
+  private _persistedStats  = readPersistedStats();
+  private serverTotal      = signal(this._persistedStats.total);
+  private serverTotalViews = signal(this._persistedStats.totalViews);
+  // Monotonically increasing total views — never decreases to prevent flicker
+  private _maxSeenViews    = signal(this._persistedStats.totalViews);
 
   trendingPage = signal(0);
   hotPage      = signal(0);
@@ -225,30 +251,13 @@ export class Home implements OnInit, OnDestroy {
   // Topics: count unique categories across ALL defined platform categories.
   // Uses fetched posts as the source of truth; grows as more pages are loaded.
   // Bounded at categories.length (14) so it never shows more than the platform has.
-  activeTopicsCount = computed(() => {
-    const active = new Set<string>();
-    for (const post of this.allPosts()) {
-      if (post.status === 'published') {
-        for (const cat of post.categories) active.add(cat);
-      }
-    }
-    // If we haven't loaded enough posts to see all categories yet,
-    // show the total number of platform categories (all are active on a live blog).
-    return active.size < this.categories.length && this.serverTotalPages() > 1
-      ? this.categories.length
-      : active.size;
-  });
+  // Always show the full platform category count — all topics are always active
+  activeTopicsCount = computed(() => this.categories.length);
 
-  totalViews = computed(() =>
-    this.allPosts()
-      .filter(p => p.status === 'published')
-      .reduce((sum, p) => sum + (p.views ?? 0), 0)
-  );
+  // Always the highest total views seen — never flickers down
+  totalViews = computed(() => this._maxSeenViews());
 
-  // True once we've loaded all server pages — stats are then fully accurate
-  statsReady = computed(() =>
-    !this.hasMoreOnServer() && this.allPosts().length > 0
-  );
+  statsReady = computed(() => !this.isLoading() && this.allPosts().length > 0);
 
   isDrawerPostOwner = computed(() => {
     return false;
@@ -423,8 +432,14 @@ export class Home implements OnInit, OnDestroy {
         const views: number      = res.totalViews  || 0;
 
         this.serverTotalPages.set(totalPages);
-        if (total > 0) this.serverTotal.set(total);
-        if (views > 0) this.serverTotalViews.set(views);
+        if (total > 0) {
+          this.serverTotal.set(total);
+          persistStats(total, this._maxSeenViews());
+        }
+        if (views > 0) {
+          this.serverTotalViews.set(views);
+          this.bumpMaxViews(views);
+        }
 
         if (showLoader) {
           // Fresh load (no cache) — start with just the first 20
@@ -461,7 +476,10 @@ export class Home implements OnInit, OnDestroy {
         const totalPages: number = res.totalPages  || nextPage;
         const views: number      = res.totalViews  || 0;
 
-        if (views > 0) this.serverTotalViews.set(views);
+        if (views > 0) {
+          this.serverTotalViews.set(views);
+          this.bumpMaxViews(views);
+        }
 
         this.commitPosts([...this.allPosts(), ...newPosts]);
         this.serverPage.set(nextPage);
@@ -499,6 +517,21 @@ export class Home implements OnInit, OnDestroy {
     this.allPosts.set(visible);
     this.postCache.set(visible);
     this.updateJsonLdPostCount(visible.length);
+
+    // Update max-seen views from summed post data (never decrease)
+    const summed = visible
+      .filter(p => p.status === 'published')
+      .reduce((s, p) => s + (p.views ?? 0), 0);
+    this.bumpMaxViews(summed);
+  }
+
+  private bumpMaxViews(candidate: number): void {
+    if (candidate <= 0) return;
+    const current = this._maxSeenViews();
+    if (candidate > current) {
+      this._maxSeenViews.set(candidate);
+      persistStats(this.serverTotal(), candidate);
+    }
   }
 
   private fetchCurrentUser(): void {

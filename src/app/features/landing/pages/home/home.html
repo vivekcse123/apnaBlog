@@ -258,7 +258,7 @@
               </div>
             </div>
 
-            <!-- Total Reads — shown only when all posts are loaded so the number is accurate -->
+            <!-- Total Reads — API value when available, else summed from loaded posts -->
             @if (statsReady()) {
               <div class="hero-stat-box">
                 <div class="hero-stat-icon hero-stat-icon--purple">
