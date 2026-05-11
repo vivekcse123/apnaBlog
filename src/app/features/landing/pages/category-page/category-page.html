@@ -132,7 +132,7 @@
                 <span class="meta-dot" aria-hidden="true">·</span>
                 <time [attr.datetime]="post.createdAt | date:'yyyy-MM-dd'">{{ post.createdAt | timeAgo }}</time>
                 <span class="meta-dot" aria-hidden="true">·</span>
-                <span>{{ readingTime(post.content) }} min read</span>
+                <span>{{ readingTime(post) }} min read</span>
               </div>
             </div>
 

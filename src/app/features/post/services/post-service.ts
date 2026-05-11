@@ -1,5 +1,6 @@
 import { inject, Injectable } from '@angular/core';
-import { Observable, of, shareReplay, finalize, tap } from 'rxjs';
+import { Observable, of, shareReplay, finalize, tap, EMPTY } from 'rxjs';
+import { expand, reduce } from 'rxjs/operators';
 import { apiResponse } from '../../../core/models/api-response.model';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Post } from '../../../core/models/post.model';
@@ -71,9 +72,21 @@ export class PostService {
     );
   }
 
-  /** Single page fetch for stats — caller must paginate through all pages. */
+  /** Single page fetch — caller paginates through all pages. */
   getStatsPage(page: number): Observable<apiResponse<Post[]>> {
     return this.http.get<apiResponse<Post[]>>(`${this.endPoint}?page=${page}&limit=100`);
+  }
+
+  /** Fetches ALL published posts by paginating through every server page. */
+  getAllPublished(): Observable<Post[]> {
+    return this.getStatsPage(1).pipe(
+      expand(res => {
+        const fetched = Number(res.page ?? 1);
+        const total   = res.totalPages ?? 1;
+        return fetched < total ? this.getStatsPage(fetched + 1) : EMPTY;
+      }),
+      reduce((acc: Post[], res) => acc.concat(res.data ?? []), [] as Post[]),
+    );
   }
 
   getAllPostAdmin(page = 1, limit = 10): Observable<apiResponse<Post[]>> {

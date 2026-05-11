@@ -9,8 +9,10 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
 import { Meta, Title } from '@angular/platform-browser';
 import { PostService } from '../../../post/services/post-service';
-import { PostCache } from '../../../post/services/post-cache';
+import { AllPostsCache } from '../../../../core/services/all-posts-cache';
 import { Post } from '../../../../core/models/post.model';
+import { catchError } from 'rxjs/operators';
+import { of } from 'rxjs';
 import { TimeAgoPipe } from '../../../../shared/pipes/time-ago-pipe';
 
 @Component({
@@ -24,8 +26,8 @@ import { TimeAgoPipe } from '../../../../shared/pipes/time-ago-pipe';
 export class SearchPage implements OnInit {
   private route       = inject(ActivatedRoute);
   private router      = inject(Router);
-  private postService = inject(PostService);
-  private postCache   = inject(PostCache);
+  private postService    = inject(PostService);
+  private allPostsCache  = inject(AllPostsCache);
   private destroyRef  = inject(DestroyRef);
   private platformId  = inject(PLATFORM_ID);
   private meta        = inject(Meta);
@@ -84,25 +86,22 @@ export class SearchPage implements OnInit {
   }
 
   private loadPosts(): void {
-    const cached = this.postCache.get();
-    if (cached?.length) {
+    const cached = this.allPostsCache.get();
+    if (cached.length) {
       this.allPosts.set(cached.filter(p => p.status === 'published'));
       this.isLoading.set(false);
       return;
     }
-
-    this.postService.getAllPost(1, 100)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (res) => {
-          const posts = (res.data ?? []).filter((p: Post) => p.status === 'published');
-          this.allPosts.set(posts);
-          this.isLoading.set(false);
-          if (posts.length) {
-            this.postCache.set(posts.map((p: Post) => ({ ...p, _ts: Date.now() })));
-          }
-        },
-        error: () => this.isLoading.set(false),
+    this.postService.getAllPublished()
+      .pipe(
+        catchError(() => of([] as Post[])),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe(posts => {
+        const published = posts.filter(p => p.status === 'published');
+        this.allPostsCache.set(published);
+        this.allPosts.set(published);
+        this.isLoading.set(false);
       });
   }
 

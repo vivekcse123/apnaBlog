@@ -462,11 +462,20 @@
               role="status"
               aria-live="polite"
               aria-atomic="true">
-          {{ filteredPosts().length }} found
+          @if (!filterPoolLoading()) { {{ filteredPosts().length }} found }
         </span>
       </div>
       <div class="blog-grid">
-        @if (filteredPosts().length === 0) {
+        @if (filterPoolLoading()) {
+          @for (s of skeletonItems; track $index) {
+            <div class="skeleton-card" role="status" aria-label="Loading story">
+              <div class="skeleton-img-block"></div>
+              <div class="skeleton-line skeleton-line--title"></div>
+              <div class="skeleton-line skeleton-line--sub"></div>
+              <div class="skeleton-line skeleton-line--sub" style="width:55%"></div>
+            </div>
+          }
+        } @else if (filteredPosts().length === 0) {
           <div class="no-results" role="status">
             <span class="no-results-icon" aria-hidden="true">🔍</span>
             <span>No stories match your filters.</span>
@@ -476,10 +485,11 @@
               Clear filters
             </button>
           </div>
-        }
-        @for (blog of visibleFilteredPosts(); track blog._id) {
-          <ng-container [ngTemplateOutlet]="blogCard"
-                        [ngTemplateOutletContext]="{ $implicit: blog }"></ng-container>
+        } @else {
+          @for (blog of visibleFilteredPosts(); track blog._id) {
+            <ng-container [ngTemplateOutlet]="blogCard"
+                          [ngTemplateOutletContext]="{ $implicit: blog }"></ng-container>
+          }
         }
       </div>
       @if (filteredPageCount() > 1) {

@@ -9,7 +9,7 @@ import { FormsModule } from '@angular/forms';
 import { Meta, Title } from '@angular/platform-browser';
 import { DOCUMENT } from '@angular/common';
 import { of, Subject, EMPTY } from 'rxjs';
-import { debounceTime, distinctUntilChanged, catchError, expand, reduce } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, catchError, expand, reduce, timeout } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { PostService } from '../../../post/services/post-service';
 import { Post } from '../../../../core/models/post.model';
@@ -23,6 +23,7 @@ import { FormatCountPipe } from '../../../../shared/pipes/format-count-pipe';
 import { TimeAgoPipe }     from '../../../../shared/pipes/time-ago-pipe';
 import { PostCache, PostWithTs } from '../../../post/services/post-cache';
 import { ReadingHistory }        from '../../../../core/services/reading-history';
+import { AllPostsCache }         from '../../../../core/services/all-posts-cache';
 
 const PAGE_SIZE   = 8;
 const FETCH_LIMIT = 20;   // posts per server page — keeps initial payload small
@@ -72,6 +73,7 @@ function persistStats(total: number, totalViews: number, categoryCounts: Record<
 export class Home implements OnInit, OnDestroy {
   private postService     = inject(PostService);
   private postCache       = inject(PostCache);
+  private allPostsCache   = inject(AllPostsCache);
   private readingHistory  = inject(ReadingHistory);
   private destroyRef     = inject(DestroyRef);
   private route          = inject(ActivatedRoute);
@@ -116,6 +118,11 @@ export class Home implements OnInit, OnDestroy {
   private _maxSeenViews       = signal(this._persistedStats.totalViews);
   // Accurate category counts from full stats fetch — persisted across sessions
   private _allCategoryCounts  = signal<Record<string, number>>(this._persistedStats.categoryCounts);
+  // ALL published posts from the full paginated fetch — used for filtering so
+  // category/tag/search results are never limited to the 20-post display page
+  private _fullPostPool       = signal<PostWithTs[]>([]);
+  // True while fetchAccurateStats is in flight (shows skeleton in filter results)
+  filterPoolLoading           = signal(true);
 
   trendingPage = signal(0);
   hotPage      = signal(0);
@@ -192,8 +199,10 @@ export class Home implements OnInit, OnDestroy {
     const rt   = this.selectedReadingTime();
     const q    = this.searchQuery().trim().toLowerCase();
     const sort = this.selectedSort();
-    // Only published posts on the public home page
-    let posts: PostWithTs[] = this.allPosts().filter(p => p.status === 'published');
+    // Use full pool (all published posts) when available so filters show all matches,
+    // not just the 20 currently loaded for display
+    const pool = this._fullPostPool();
+    let posts: PostWithTs[] = pool.length > 0 ? pool : this.allPosts().filter(p => p.status === 'published');
 
     if (cat) posts = posts.filter(p => p.categories.includes(cat));
     if (tag) posts = posts.filter(p => p.tags?.includes(tag));
@@ -426,37 +435,53 @@ export class Home implements OnInit, OnDestroy {
   }
 
   /**
-   * Paginate through ALL server pages (100/page) to get 100% accurate stats.
-   * Runs once per 30-min TTL window. Persists results to localStorage so
-   * every subsequent visit loads the correct numbers instantly.
+   * Always runs on every page load to populate _fullPostPool (needed for accurate
+   * category/tag/search filtering). Paginates through ALL server pages (100/page).
+   * Only re-persists stats to localStorage when TTL has expired.
    */
   private fetchAccurateStats(): void {
     if (!isPlatformBrowser(this.platformId)) return;
-    const { ts, total, totalViews } = this._persistedStats;
-    const age = Date.now() - ts;
-    if (ts > 0 && age < STATS_TTL_MS && total > 0 && totalViews > 0) return;
+    this.filterPoolLoading.set(true);
 
-    // Seed: fetch page 1, then expand into all remaining pages
+    const { ts, total, totalViews, categoryCounts } = this._persistedStats;
+    const statsAreFresh = ts > 0
+      && (Date.now() - ts) < STATS_TTL_MS
+      && total > 0
+      && totalViews > 0
+      && Object.keys(categoryCounts).length > 0;
+
     this.postService.getStatsPage(1)
       .pipe(
         expand(res => {
           const fetched = Number(res.page ?? 1);
-          const total   = res.totalPages ?? 1;
-          return fetched < total
+          const pages   = res.totalPages ?? 1;
+          return fetched < pages
             ? this.postService.getStatsPage(fetched + 1)
             : EMPTY;
         }),
         reduce((acc: Post[], res) => acc.concat(res.data ?? []), [] as Post[]),
-        catchError(() => of([] as Post[])),
+        timeout(30_000),
+        catchError(() => { this.filterPoolLoading.set(false); return of([] as Post[]); }),
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe((allPosts: Post[]) => {
+        this.filterPoolLoading.set(false);
         if (!allPosts.length) return;
+
         const published  = allPosts.filter(p => p.status === 'published');
         const total      = published.length;
         const totalViews = published.reduce((s, p) => s + ((p as any).views ?? 0), 0);
 
-        // Compute accurate category counts from ALL published posts
+        // Full post pool — always rebuilt so filtering is always accurate
+        const fullPool: PostWithTs[] = published.map(p => ({
+          ...p,
+          _ts:        new Date(p.createdAt).getTime(),
+          views:      (p as any).views      ?? 0,
+          likesCount: (p as any).likesCount ?? 0,
+        }));
+        this._fullPostPool.set(fullPool);
+
+        // Category counts from ALL published posts
         const catCounts: Record<string, number> = {};
         for (const post of published) {
           for (const cat of (post.categories ?? [])) {
@@ -464,10 +489,17 @@ export class Home implements OnInit, OnDestroy {
           }
         }
 
+        // Populate shared cache so category/tag pages load instantly
+        this.allPostsCache.set(published);
+
         if (total > 0) this.serverTotal.set(total);
         if (totalViews > 0) this.bumpMaxViews(totalViews);
         if (Object.keys(catCounts).length > 0) this._allCategoryCounts.set(catCounts);
-        persistStats(this.serverTotal(), this._maxSeenViews(), catCounts);
+
+        // Only re-persist when TTL has expired (avoids unnecessary localStorage writes)
+        if (!statsAreFresh) {
+          persistStats(this.serverTotal(), this._maxSeenViews(), catCounts);
+        }
       });
   }
 

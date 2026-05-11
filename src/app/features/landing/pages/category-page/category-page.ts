@@ -6,8 +6,10 @@ import { CommonModule, DatePipe, isPlatformBrowser } from '@angular/common';
 import { Meta, Title } from '@angular/platform-browser';
 import { DOCUMENT } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { catchError } from 'rxjs/operators';
+import { of } from 'rxjs';
 import { PostService } from '../../../post/services/post-service';
-import { PostCache } from '../../../post/services/post-cache';
+import { AllPostsCache } from '../../../../core/services/all-posts-cache';
 import { Post } from '../../../../core/models/post.model';
 import { TimeAgoPipe } from '../../../../shared/pipes/time-ago-pipe';
 
@@ -24,11 +26,11 @@ const CATEGORIES: string[] = [
   styleUrl: './category-page.css',
 })
 export class CategoryPage implements OnInit {
-  private route      = inject(ActivatedRoute);
-  private router     = inject(Router);
-  private postService = inject(PostService);
-  private postCache   = inject(PostCache);
-  private destroyRef  = inject(DestroyRef);
+  private route          = inject(ActivatedRoute);
+  private router         = inject(Router);
+  private postService    = inject(PostService);
+  private allPostsCache  = inject(AllPostsCache);
+  private destroyRef     = inject(DestroyRef);
   private platformId  = inject(PLATFORM_ID);
   private meta        = inject(Meta);
   private titleSvc    = inject(Title);
@@ -85,24 +87,26 @@ export class CategoryPage implements OnInit {
   }
 
   private loadPosts(): void {
-    this.isLoading.set(true);
-    const cached = this.postCache.get();
-    if (cached?.length) {
-      this.allPosts.set(cached as unknown as Post[]);
+    // Instant render from shared cache (populated by home page fetchAccurateStats)
+    const cached = this.allPostsCache.get();
+    if (cached.length) {
+      this.allPosts.set(cached);
       this.isLoading.set(false);
       return;
     }
-    this.postService.getAllPost(1, 100).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (res) => {
-        const posts = res.data ?? [];
-        if (posts.length) {
-          this.postCache.set(posts.map(p => ({ ...p, _ts: Date.now() })));
-        }
+
+    // Direct navigation / hard refresh — fetch all pages ourselves
+    this.isLoading.set(true);
+    this.postService.getAllPublished()
+      .pipe(
+        catchError(() => of([] as Post[])),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe(posts => {
+        this.allPostsCache.set(posts);   // populate for future navigations
         this.allPosts.set(posts);
         this.isLoading.set(false);
-      },
-      error: () => this.isLoading.set(false),
-    });
+      });
   }
 
   private setMeta(name: string): void {
@@ -161,7 +165,14 @@ export class CategoryPage implements OnInit {
     return (post.user as any)?.name ?? 'Anonymous';
   }
 
-  readingTime(content: string): number {
-    return Math.max(1, Math.ceil(content.replace(/<[^>]*>/g, '').trim().split(/\s+/).length / 200));
+  private rtCache = new Map<string, number>();
+  readingTime(post: Post): number {
+    const id = post._id;
+    if (this.rtCache.has(id)) return this.rtCache.get(id)!;
+    const mins = Math.max(1, Math.ceil(
+      (post.content ?? '').replace(/<[^>]*>/g, '').trim().split(/\s+/).length / 200
+    ));
+    this.rtCache.set(id, mins);
+    return mins;
   }
 }
