@@ -27,25 +27,27 @@ import { ReadingHistory }        from '../../../../core/services/reading-history
 const PAGE_SIZE   = 8;
 const FETCH_LIMIT = 20;   // posts per server page — keeps initial payload small
 
-const STATS_KEY = 'apna_site_stats';
+const STATS_KEY     = 'apna_site_stats';
+const STATS_TTL_MS  = 30 * 60 * 1000; // refresh stats every 30 min
 
-function readPersistedStats(): { total: number; totalViews: number } {
+function readPersistedStats(): { total: number; totalViews: number; ts: number } {
   try {
-    if (typeof localStorage === 'undefined') return { total: 0, totalViews: 0 };
+    if (typeof localStorage === 'undefined') return { total: 0, totalViews: 0, ts: 0 };
     const raw = localStorage.getItem(STATS_KEY);
-    if (!raw) return { total: 0, totalViews: 0 };
+    if (!raw) return { total: 0, totalViews: 0, ts: 0 };
     const parsed = JSON.parse(raw);
     return {
       total:      Number(parsed.total)      || 0,
       totalViews: Number(parsed.totalViews) || 0,
+      ts:         Number(parsed.ts)         || 0,
     };
-  } catch { return { total: 0, totalViews: 0 }; }
+  } catch { return { total: 0, totalViews: 0, ts: 0 }; }
 }
 
 function persistStats(total: number, totalViews: number): void {
   try {
     if (typeof localStorage !== 'undefined') {
-      localStorage.setItem(STATS_KEY, JSON.stringify({ total, totalViews }));
+      localStorage.setItem(STATS_KEY, JSON.stringify({ total, totalViews, ts: Date.now() }));
     }
   } catch { /* quota */ }
 }
@@ -238,26 +240,18 @@ export class Home implements OnInit, OnDestroy {
 
   isTrending(postId: string): boolean { return this.trendingTopIds().has(postId); }
 
-  publishedCount = computed(() => {
-    // 1. API sends an explicit total  ✓
-    if (this.serverTotal() > 0) return this.serverTotal();
-    // 2. Derive from totalPages × pageSize (slight overcount on last page, still far better than 20)
-    const pages = this.serverTotalPages();
-    if (pages > 1) return pages * FETCH_LIMIT;
-    // 3. Exact count from fully-loaded cache
-    return this.allPosts().filter(p => p.status === 'published').length;
-  });
+  // Only show stories count once we have an accurate server-side total
+  publishedCount = computed(() => this.serverTotal());
 
-  // Topics: count unique categories across ALL defined platform categories.
-  // Uses fetched posts as the source of truth; grows as more pages are loaded.
-  // Bounded at categories.length (14) so it never shows more than the platform has.
-  // Always show the full platform category count — all topics are always active
+  // Always 14 — all platform categories are always active
   activeTopicsCount = computed(() => this.categories.length);
 
-  // Always the highest total views seen — never flickers down
+  // Always the highest total views seen — never decreases
   totalViews = computed(() => this._maxSeenViews());
 
-  statsReady = computed(() => !this.isLoading() && this.allPosts().length > 0);
+  // True once stats-fetch has returned accurate data
+  storiesReady   = computed(() => this.serverTotal() > 0);
+  totalReadsReady = computed(() => this._maxSeenViews() > 0);
 
   isDrawerPostOwner = computed(() => {
     return false;
@@ -409,6 +403,32 @@ export class Home implements OnInit, OnDestroy {
     }
 
     this.fetchCurrentUser();
+    this.fetchAccurateStats();
+  }
+
+  /** Fetch ALL posts once per session to compute accurate total views/stories. */
+  private fetchAccurateStats(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    const { ts, total, totalViews } = this._persistedStats;
+    const age = Date.now() - ts;
+    // Skip only if stats are fresh AND both values are present
+    if (ts > 0 && age < STATS_TTL_MS && total > 0 && totalViews > 0) return;
+
+    this.postService.getAllPostsForStats()
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        catchError(() => of(null))
+      )
+      .subscribe(res => {
+        if (!res?.data) return;
+        const posts = res.data as Post[];
+        const published = posts.filter(p => p.status === 'published');
+        const total = published.length;
+        const totalViews = published.reduce((s, p) => s + ((p as any).views ?? 0), 0);
+        if (total > 0) this.serverTotal.set(total);
+        this.bumpMaxViews(totalViews);
+        persistStats(total > 0 ? total : this.serverTotal(), this._maxSeenViews());
+      });
   }
 
   private loadFresh(showLoader: boolean): void {

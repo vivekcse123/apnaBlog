@@ -416,6 +416,19 @@ body {
 
 .hero-stat-info { display: flex; flex-direction: column; gap: 2px; }
 
+.hero-stat-skel {
+  display: inline-block;
+  width: 52px; height: 22px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--border) 25%, var(--bg-surface-alt) 50%, var(--border) 75%);
+  background-size: 200% 100%;
+  animation: statShimmer 1.4s ease infinite;
+}
+@keyframes statShimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
 .hero-stat-num {
   font-size: 22px; font-weight: 800; line-height: 1;
   color: var(--text-primary);
