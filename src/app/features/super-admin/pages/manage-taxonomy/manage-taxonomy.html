@@ -137,7 +137,7 @@
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19M1 1l22 22"/></svg>
                     }
                   </button>
-                  <button class="tax-icon-btn tax-icon-btn--delete" title="Delete" (click)="delete(item)">
+                  <button class="tax-icon-btn tax-icon-btn--delete" title="Delete" (click)="confirmDelete(item)">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
                   </button>
                 </div>
@@ -173,5 +173,36 @@
       }
     </section>
   </div>
+
+  <!-- ── Delete Confirmation Modal ── -->
+  @if (deleteTarget()) {
+    <div class="tax-modal-backdrop" (click)="cancelDelete()" role="dialog" aria-modal="true"
+         [attr.aria-label]="'Confirm delete ' + deleteTarget()!.name">
+      <div class="tax-modal" (click)="$event.stopPropagation()">
+        <div class="tax-modal-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6l-1 14H6L5 6M10 11v6M14 11v6"/>
+            <path d="M9 6V4h6v2"/>
+          </svg>
+        </div>
+        <h3 class="tax-modal-title">Delete {{ deleteTarget()!.type === 'category' ? 'Category' : 'Tag' }}?</h3>
+        <p class="tax-modal-msg">
+          You are about to permanently delete
+          <strong>"{{ deleteTarget()!.name }}"</strong>.
+          @if (postCounts()[deleteTarget()!.name]) {
+            It is used in <strong>{{ postCounts()[deleteTarget()!.name] }} published post{{ postCounts()[deleteTarget()!.name] !== 1 ? 's' : '' }}</strong>.
+          }
+          This action cannot be undone.
+        </p>
+        <div class="tax-modal-actions">
+          <button class="tax-btn tax-btn--ghost" (click)="cancelDelete()">Cancel</button>
+          <button class="tax-btn tax-btn--danger" (click)="executeDelete()" [disabled]="saving()">
+            @if (saving()) { Deleting… } @else { Yes, Delete }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
 
 </div>

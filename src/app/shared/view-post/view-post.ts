@@ -1033,19 +1033,57 @@ export class ViewPost implements OnInit, OnDestroy {
   }
 
   toggleBlockquote(): void {
+    const sel   = window.getSelection();
+    const range = sel && sel.rangeCount > 0 ? sel.getRangeAt(0).cloneRange() : null;
+
     this.contentEditorRef.nativeElement.focus();
-    document.execCommand('formatBlock', false, this.isBlockquoteActive() ? 'p' : 'blockquote');
+    if (range && sel) { sel.removeAllRanges(); sel.addRange(range); }
+
+    const inBq = this.isBlockquoteActive();
+
+    if (inBq) {
+      let node: Node | null = sel?.getRangeAt(0).commonAncestorContainer ?? null;
+      while (node && node !== this.contentEditorRef.nativeElement) {
+        if ((node as Element).tagName === 'BLOCKQUOTE') {
+          const bq     = node as HTMLElement;
+          const parent = bq.parentNode!;
+          while (bq.firstChild) parent.insertBefore(bq.firstChild, bq);
+          parent.removeChild(bq);
+          break;
+        }
+        node = node?.parentNode ?? null;
+      }
+    } else {
+      let blockNode: HTMLElement | null = null;
+      let node: Node | null = sel?.getRangeAt(0).commonAncestorContainer ?? null;
+      while (node && node !== this.contentEditorRef.nativeElement) {
+        if (node.nodeType === Node.ELEMENT_NODE) {
+          const tag = (node as Element).tagName;
+          if (['P', 'DIV', 'H1', 'H2', 'H3', 'H4', 'LI'].includes(tag)) blockNode = node as HTMLElement;
+        }
+        node = node?.parentNode ?? null;
+      }
+      if (blockNode) {
+        const bq = document.createElement('blockquote');
+        blockNode.parentNode!.insertBefore(bq, blockNode);
+        bq.appendChild(blockNode);
+      } else if (range) {
+        try { const bq = document.createElement('blockquote'); range.surroundContents(bq); } catch { /* skip */ }
+      }
+    }
+
     this.updateEditorFormats();
-    const html = this.contentEditorRef.nativeElement.innerHTML;
-    this.editForm.patchValue({ content: html }, { emitEvent: false });
+    this.editForm.patchValue({ content: this.contentEditorRef.nativeElement.innerHTML }, { emitEvent: false });
   }
 
   insertHR(): void {
+    const sel   = window.getSelection();
+    const range = sel && sel.rangeCount > 0 ? sel.getRangeAt(0).cloneRange() : null;
     this.contentEditorRef.nativeElement.focus();
+    if (range && sel) { sel.removeAllRanges(); sel.addRange(range); }
     document.execCommand('insertHTML', false, '<hr><p><br></p>');
     this.updateEditorFormats();
-    const html = this.contentEditorRef.nativeElement.innerHTML;
-    this.editForm.patchValue({ content: html }, { emitEvent: false });
+    this.editForm.patchValue({ content: this.contentEditorRef.nativeElement.innerHTML }, { emitEvent: false });
   }
 
   openLinkInput(): void {

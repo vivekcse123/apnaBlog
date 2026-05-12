@@ -37,23 +37,27 @@ export class ManageTaxonomy implements OnInit {
   error     = signal('');
   success   = signal('');
 
-  // Add form state
+  // Add form
   newName  = signal('');
   newEmoji = signal('');
   newOrder = signal(0);
 
-  // Edit state — null means not editing
+  // Edit state
   editState = signal<EditState | null>(null);
+
+  // Delete confirmation modal
+  deleteTarget = signal<TaxonomyItem | null>(null);
 
   items = computed(() => {
     const tab = this.activeTab();
-    return this.allItems().filter(i => i.type === tab).sort((a, b) => a.order - b.order || a.name.localeCompare(b.name));
+    return this.allItems()
+      .filter(i => i.type === tab)
+      .sort((a, b) => a.order - b.order || a.name.localeCompare(b.name));
   });
 
   categoryCount = computed(() => this.allItems().filter(i => i.type === 'category').length);
   tagCount      = computed(() => this.allItems().filter(i => i.type === 'tag').length);
 
-  /** Category/tag name → published post count (from shared AllPostsCache). */
   postCounts = computed<Record<string, number>>(() => {
     const posts = this.allPostsCache.get();
     if (!posts?.length) return {};
@@ -66,16 +70,14 @@ export class ManageTaxonomy implements OnInit {
     return counts;
   });
 
-  ngOnInit(): void {
-    this.fetchAll();
-  }
+  ngOnInit(): void { this.fetchAll(); }
 
   private fetchAll(): void {
     this.isLoading.set(true);
     this.taxonomyService.loadAll()
       .pipe(
         catchError(() => of({ status: 200, data: [] as TaxonomyItem[] })),
-        takeUntilDestroyed(this.destroyRef)
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe((res: any) => {
         this.allItems.set(res.data ?? []);
@@ -86,6 +88,7 @@ export class ManageTaxonomy implements OnInit {
   setTab(tab: Tab): void {
     this.activeTab.set(tab);
     this.editState.set(null);
+    this.deleteTarget.set(null);
     this.clearMessages();
   }
 
@@ -107,7 +110,7 @@ export class ManageTaxonomy implements OnInit {
         this.saving.set(false);
         return of(null);
       }),
-      takeUntilDestroyed(this.destroyRef)
+      takeUntilDestroyed(this.destroyRef),
     ).subscribe(res => {
       if (!res) return;
       this.success.set(`"${name}" added successfully`);
@@ -143,10 +146,10 @@ export class ManageTaxonomy implements OnInit {
           this.saving.set(false);
           return of(null);
         }),
-        takeUntilDestroyed(this.destroyRef)
+        takeUntilDestroyed(this.destroyRef),
       ).subscribe(res => {
         if (!res) return;
-        this.success.set(`"${name}" updated successfully`);
+        this.success.set(`"${name}" updated`);
         this.editState.set(null);
         this.saving.set(false);
         this.taxonomyService.invalidateCache();
@@ -156,20 +159,28 @@ export class ManageTaxonomy implements OnInit {
 
   toggleActive(item: TaxonomyItem): void {
     this.taxonomyService.update(item._id, { isActive: !item.isActive })
-      .pipe(
-        catchError(() => of(null)),
-        takeUntilDestroyed(this.destroyRef)
-      ).subscribe(res => {
+      .pipe(catchError(() => of(null)), takeUntilDestroyed(this.destroyRef))
+      .subscribe(res => {
         if (!res) return;
         this.taxonomyService.invalidateCache();
         this.fetchAll();
       });
   }
 
-  delete(item: TaxonomyItem): void {
-    if (!confirm(`Delete "${item.name}"? This cannot be undone.`)) return;
+  // ── Delete flow — modal instead of browser confirm() ─────────────────────
+  confirmDelete(item: TaxonomyItem): void {
+    this.deleteTarget.set(item);
+    this.clearMessages();
+  }
+
+  cancelDelete(): void { this.deleteTarget.set(null); }
+
+  executeDelete(): void {
+    const item = this.deleteTarget();
+    if (!item) return;
 
     this.saving.set(true);
+    this.deleteTarget.set(null);
     this.clearMessages();
 
     this.taxonomyService.remove(item._id)
@@ -179,7 +190,7 @@ export class ManageTaxonomy implements OnInit {
           this.saving.set(false);
           return of(null);
         }),
-        takeUntilDestroyed(this.destroyRef)
+        takeUntilDestroyed(this.destroyRef),
       ).subscribe(res => {
         if (!res) return;
         this.success.set(`"${item.name}" deleted`);
@@ -193,8 +204,5 @@ export class ManageTaxonomy implements OnInit {
   updateEditEmoji(val: string): void { this.editState.update(s => s ? { ...s, emoji: val } : s); }
   updateEditOrder(val: string): void { this.editState.update(s => s ? { ...s, order: +val } : s); }
 
-  private clearMessages(): void {
-    this.error.set('');
-    this.success.set('');
-  }
+  private clearMessages(): void { this.error.set(''); this.success.set(''); }
 }

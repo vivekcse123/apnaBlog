@@ -210,6 +210,67 @@
 }
 .tax-btn--ghost:hover:not(:disabled) { background: var(--border, #ddd); }
 
+.tax-btn--danger { background: #ef4444; color: #fff; }
+.tax-btn--danger:hover:not(:disabled) { background: #dc2626; }
+
+/* ── Delete confirmation modal ── */
+.tax-modal-backdrop {
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(3px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.15s ease;
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.tax-modal {
+  background: var(--surface, #fff);
+  border: 1px solid var(--border, #e8e8e8);
+  border-radius: 16px;
+  padding: 28px 28px 24px;
+  max-width: 420px; width: 100%;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  animation: slideUp 0.18s ease;
+  text-align: center;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(12px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.tax-modal-icon {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: rgba(239,68,68,0.1);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 16px;
+}
+
+.tax-modal-title {
+  font-size: 1.1rem; font-weight: 700;
+  color: var(--text-primary, #111);
+  margin: 0 0 10px;
+}
+
+.tax-modal-msg {
+  font-size: 0.875rem; color: var(--text-muted, #666);
+  line-height: 1.6; margin: 0 0 24px;
+}
+
+.tax-modal-actions {
+  display: flex; gap: 10px; justify-content: center;
+}
+.tax-modal-actions .tax-btn { min-width: 110px; justify-content: center; }
+
+@media (prefers-color-scheme: dark) {
+  .tax-modal { background: #1e1e1e; border-color: #333; }
+  .tax-modal-title { color: #f0f0f0; }
+  .tax-modal-msg { color: #aaa; }
+  .tax-modal-icon { background: rgba(239,68,68,0.15); }
+}
+
 .tax-btn--sm { padding: 6px 12px; font-size: 0.8rem; }
 
 /* List */

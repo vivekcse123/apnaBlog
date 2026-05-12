@@ -598,17 +598,72 @@ export class CreatePost implements OnInit, OnDestroy {
   }
 
   toggleBlockquote(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+
+    // Save selection before focus() can shift it
+    const sel   = window.getSelection();
+    const range = sel && sel.rangeCount > 0 ? sel.getRangeAt(0).cloneRange() : null;
+
     this.editorRef.nativeElement.focus();
-    if (this.isBlockquoteActive()) {
-      document.execCommand('formatBlock', false, 'p');
-    } else {
-      document.execCommand('formatBlock', false, 'blockquote');
+
+    // Restore selection after focus
+    if (range && sel) {
+      sel.removeAllRanges();
+      sel.addRange(range);
     }
+
+    const inBq = this.isBlockquoteActive();
+
+    if (inBq) {
+      // Unwrap: replace blockquote with its inner content
+      let node: Node | null = sel?.getRangeAt(0).commonAncestorContainer ?? null;
+      while (node && node !== this.editorRef.nativeElement) {
+        if ((node as Element).tagName === 'BLOCKQUOTE') {
+          const bq     = node as HTMLElement;
+          const parent = bq.parentNode!;
+          // Move each child out of the blockquote, then delete the empty wrapper
+          while (bq.firstChild) parent.insertBefore(bq.firstChild, bq);
+          parent.removeChild(bq);
+          break;
+        }
+        node = node?.parentNode ?? null;
+      }
+    } else {
+      // Wrap selection's block ancestor in a <blockquote>
+      let blockNode: HTMLElement | null = null;
+      let node: Node | null = sel?.getRangeAt(0).commonAncestorContainer ?? null;
+      while (node && node !== this.editorRef.nativeElement) {
+        if (node.nodeType === Node.ELEMENT_NODE) {
+          const tag = (node as Element).tagName;
+          if (['P', 'DIV', 'H1', 'H2', 'H3', 'H4', 'LI'].includes(tag)) {
+            blockNode = node as HTMLElement;
+          }
+        }
+        node = node?.parentNode ?? null;
+      }
+
+      if (blockNode) {
+        const bq = document.createElement('blockquote');
+        blockNode.parentNode!.insertBefore(bq, blockNode);
+        bq.appendChild(blockNode);
+      } else {
+        // Fallback: no block found — wrap selected text directly
+        try {
+          const bq = document.createElement('blockquote');
+          if (range) { range.surroundContents(bq); }
+        } catch { /* partial selection across nodes — skip */ }
+      }
+    }
+
     this.onEditorInput();
   }
 
   insertHR(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    const sel   = window.getSelection();
+    const range = sel && sel.rangeCount > 0 ? sel.getRangeAt(0).cloneRange() : null;
     this.editorRef.nativeElement.focus();
+    if (range && sel) { sel.removeAllRanges(); sel.addRange(range); }
     document.execCommand('insertHTML', false, '<hr><p><br></p>');
     this.onEditorInput();
   }
