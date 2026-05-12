@@ -4,10 +4,11 @@
     [isOpen]="sidebarOpen()"
     (close)="sidebarOpen.set(false)"
     [navLinks]="[
-      { label: 'Home',    routerLink: '/user/' + userId(),                    icon: 'home',     exact: true  },
-      { label: 'Blogs',   routerLink: '/user/' + userId() + '/manage-blogs',  icon: 'docs',     exact: false },
-      { label: 'Read Stories', routerLink: '/user/' + userId() + '/explore-blogs', icon: 'search',   exact: false },
-      { label: 'Settings',routerLink: '/user/' + userId() + '/settings',      icon: 'settings', exact: false }
+      { label: 'Home',         routerLink: '/user/' + userId(),                         icon: 'home',     exact: true  },
+      { label: 'Blogs',        routerLink: '/user/' + userId() + '/manage-blogs',       icon: 'docs',     exact: false },
+      { label: 'Bookmarks',    routerLink: '/bookmarks',                                icon: 'bookmark', exact: true  },
+      { label: 'Read Stories', routerLink: '/user/' + userId() + '/explore-blogs',      icon: 'search',   exact: false },
+      { label: 'Settings',     routerLink: '/user/' + userId() + '/settings',           icon: 'settings', exact: false }
     ]"
     [shortcuts]="[
       { label: 'Write a Story', routerLink: '/user/' + userId() + '/manage-blogs', icon: 'write' },

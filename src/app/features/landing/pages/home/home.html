@@ -31,11 +31,11 @@
       </button>
       @if (navCatOpen()) {
         <div class="nav-cat-dropdown" role="menu">
-          @for (cat of categories; track cat) {
+          @for (cat of categories(); track cat) {
             <a class="nav-cat-item" role="menuitem"
                [routerLink]="['/category', cat.toLowerCase()]"
                (click)="navCatOpen.set(false)">
-              <span class="nav-cat-emoji">{{ categoryEmojis[cat] }}</span>
+              <span class="nav-cat-emoji">{{ categoryEmojis()[cat] }}</span>
               {{ cat }}
             </a>
           }
@@ -406,7 +406,7 @@
               aria-label="Show all categories">
         All
       </button>
-      @for (cat of categories; track trackByCategory($index, cat)) {
+      @for (cat of categories(); track trackByCategory($index, cat)) {
         <button
           class="cat-tag"
           [class.active]="selectedCategory() === cat"
@@ -421,7 +421,7 @@
           @if (cat === 'News') {
             <span class="live-dot live-dot--red" aria-hidden="true"></span>
           }
-          <span class="cat-emoji" aria-hidden="true">{{ categoryEmojis[cat] }}</span> {{ cat }}
+          <span class="cat-emoji" aria-hidden="true">{{ categoryEmojis()[cat] }}</span> {{ cat }}
           @if (getCatCount(cat) > 0) {
             <span class="cat-pill-count" aria-hidden="true">{{ getCatCount(cat) }}</span>
           }

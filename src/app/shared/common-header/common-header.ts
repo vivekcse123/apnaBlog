@@ -4,9 +4,10 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { NotificationPanel } from '../components/notification-panel/notification-panel';
 import { NotificationService } from '../../core/services/notification-service';
-import { ThemeService } from '../../core/services/theme-service';
-import { DashboardCache } from '../../core/services/dashboard-cache';
-import { Auth } from '../../core/services/auth';
+import { ThemeService }        from '../../core/services/theme-service';
+import { DashboardCache }      from '../../core/services/dashboard-cache';
+import { Auth }                from '../../core/services/auth';
+import { TaxonomyService }     from '../../core/services/taxonomy.service';
 
 interface NavItem { label: string; routerLink: string; icon?: string; }
 interface Suggestion { label: string; emoji: string; route: string; queryParams?: any; type: string; }
@@ -39,29 +40,29 @@ export class CommonHeader implements OnInit {
   searchQuery     = '';
   showSuggestions = false;
 
-  private readonly CATEGORIES = [
-    { label: 'Technology', emoji: '📱' },
-    { label: 'Health',     emoji: '❤️' },
-    { label: 'Lifestyle',  emoji: '🌿' },
-    { label: 'Education',  emoji: '📚' },
-    { label: 'Business',   emoji: '💼' },
-    { label: 'Sports',     emoji: '🏏' },
-    { label: 'Village',    emoji: '🌾' },
-    { label: 'Cooking',    emoji: '🍳' },
-    { label: 'Quotes',     emoji: '💬' },
-    { label: 'Exercise',   emoji: '🏋️' },
-    { label: 'Social',     emoji: '🤝' },
-    { label: 'Entertainment', emoji: '🎭' },
-    { label: 'News',       emoji: '📰' },
-    { label: 'Update',     emoji: '📢' },
-  ];
+  private get dynamicCategories(): { label: string; emoji: string }[] {
+    const items = this.taxonomyService.categories();
+    if (items.length) return items.map(c => ({ label: c.name, emoji: c.emoji || '' }));
+    return [
+      { label: 'Technology',    emoji: '💻' }, { label: 'Health',         emoji: '🏥' },
+      { label: 'Lifestyle',     emoji: '🌿' }, { label: 'Education',      emoji: '🎓' },
+      { label: 'Business',      emoji: '💼' }, { label: 'Sports',         emoji: '🏏' },
+      { label: 'Village',       emoji: '🌾' }, { label: 'Cooking',        emoji: '🍳' },
+      { label: 'Quotes',        emoji: '💬' }, { label: 'Exercise',       emoji: '🏋️' },
+      { label: 'Social',        emoji: '🤝' }, { label: 'Entertainment',  emoji: '🎬' },
+      { label: 'News',          emoji: '📰' }, { label: 'Update',         emoji: '📢' },
+    ];
+  }
 
-  private notifSvc      = inject(NotificationService);
-  private dashboardCache = inject(DashboardCache);
-  private auth           = inject(Auth);
-  themeService           = inject(ThemeService);
+  private notifSvc        = inject(NotificationService);
+  private dashboardCache  = inject(DashboardCache);
+  private auth            = inject(Auth);
+  private taxonomyService = inject(TaxonomyService);
+  themeService            = inject(ThemeService);
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.taxonomyService.load().subscribe();
+  }
 
   getRoleLabel(): string {
     if (this.userRole === 'super_admin') return 'Super Admin';
@@ -194,7 +195,7 @@ export class CommonHeader implements OnInit {
     const q = this.searchQuery.trim().toLowerCase();
     if (!q) return [];
     const exploreRoute = this.exploreRoute;
-    return this.CATEGORIES
+    return this.dynamicCategories
       .filter(c => c.label.toLowerCase().includes(q))
       .slice(0, 4)
       .map(c => ({

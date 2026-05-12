@@ -1,5 +1,6 @@
 import {
-  Component, OnInit, inject, signal, computed, DestroyRef, PLATFORM_ID, HostListener
+  Component, OnInit, inject, signal, computed, DestroyRef, PLATFORM_ID, HostListener,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule, DatePipe, isPlatformBrowser } from '@angular/common';
@@ -8,12 +9,13 @@ import { DOCUMENT } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
-import { PostService } from '../../../post/services/post-service';
-import { AllPostsCache } from '../../../../core/services/all-posts-cache';
-import { Post } from '../../../../core/models/post.model';
-import { TimeAgoPipe } from '../../../../shared/pipes/time-ago-pipe';
+import { PostService }    from '../../../post/services/post-service';
+import { AllPostsCache }  from '../../../../core/services/all-posts-cache';
+import { TaxonomyService } from '../../../../core/services/taxonomy.service';
+import { Post }           from '../../../../core/models/post.model';
+import { TimeAgoPipe }    from '../../../../shared/pipes/time-ago-pipe';
 
-const CATEGORIES: string[] = [
+const FALLBACK_CATEGORIES: string[] = [
   'Update', 'News', 'Sports', 'Entertainment', 'Health', 'Technology', 'Business',
   'Lifestyle', 'Education', 'Exercise', 'Cooking', 'Social', 'Quotes', 'Village',
 ];
@@ -26,11 +28,12 @@ const CATEGORIES: string[] = [
   styleUrl: './category-page.css',
 })
 export class CategoryPage implements OnInit {
-  private route          = inject(ActivatedRoute);
-  private router         = inject(Router);
-  private postService    = inject(PostService);
-  private allPostsCache  = inject(AllPostsCache);
-  private destroyRef     = inject(DestroyRef);
+  private route           = inject(ActivatedRoute);
+  private router          = inject(Router);
+  private postService     = inject(PostService);
+  private allPostsCache   = inject(AllPostsCache);
+  private taxonomyService = inject(TaxonomyService);
+  private destroyRef      = inject(DestroyRef);
   private platformId  = inject(PLATFORM_ID);
   private meta        = inject(Meta);
   private titleSvc    = inject(Title);
@@ -42,7 +45,15 @@ export class CategoryPage implements OnInit {
   isLoading       = signal(true);
   showCatDropdown = signal(false);
 
-  readonly ALL_CATEGORIES = CATEGORIES;
+  ALL_CATEGORIES = computed<string[]>(() => {
+    const names = this.taxonomyService.categoryNames();
+    return names.length ? names : FALLBACK_CATEGORIES;
+  });
+
+  categoryEmoji = computed<string>(() => {
+    const map = this.taxonomyService.categoryEmojiMap();
+    return map[this.categoryName()] ?? '';
+  });
 
   @HostListener('document:click', ['$event'])
   onDocClick(e: MouseEvent): void {
@@ -73,10 +84,14 @@ export class CategoryPage implements OnInit {
   currentYear = new Date().getFullYear();
 
   ngOnInit(): void {
+    // Load taxonomy so ALL_CATEGORIES() is populated from API
+    this.taxonomyService.load().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
+
     this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
       const slug = params.get('category') ?? '';
       // Resolve slug to canonical category name (case-insensitive match)
-      const matched = CATEGORIES.find(c => c.toLowerCase() === slug.toLowerCase());
+      const matched = this.ALL_CATEGORIES().find(c => c.toLowerCase() === slug.toLowerCase())
+        ?? FALLBACK_CATEGORIES.find(c => c.toLowerCase() === slug.toLowerCase());
       if (!matched) { this.router.navigate(['/']); return; }
 
       this.categorySlug.set(slug.toLowerCase());

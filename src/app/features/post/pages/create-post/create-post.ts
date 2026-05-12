@@ -8,10 +8,11 @@ import {
   AbstractControl, FormArray, FormBuilder,
   FormGroup, ReactiveFormsModule, Validators,
 } from '@angular/forms';
-import { Post }          from '../../../../core/models/post.model';
-import { Auth }          from '../../../../core/services/auth';
-import { PostService }   from '../../services/post-service';
-import { UploadService } from '../../services/upload-service';
+import { Post }              from '../../../../core/models/post.model';
+import { Auth }              from '../../../../core/services/auth';
+import { PostService }       from '../../services/post-service';
+import { UploadService }     from '../../services/upload-service';
+import { TaxonomyService }   from '../../../../core/services/taxonomy.service';
 import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
@@ -22,14 +23,15 @@ import { ActivatedRoute, Router } from '@angular/router';
   styleUrl: './create-post.css',
 })
 export class CreatePost implements OnInit, OnDestroy {
-  private fb            = inject(FormBuilder);
-  private authService   = inject(Auth);
-  private postService   = inject(PostService);
-  private uploadService = inject(UploadService);
-  private platformId    = inject(PLATFORM_ID);
-  private ngZone        = inject(NgZone);
-  private route         = inject(ActivatedRoute);
-  private router        = inject(Router);
+  private fb              = inject(FormBuilder);
+  private authService     = inject(Auth);
+  private postService     = inject(PostService);
+  private uploadService   = inject(UploadService);
+  private taxonomyService = inject(TaxonomyService);
+  private platformId      = inject(PLATFORM_ID);
+  private ngZone          = inject(NgZone);
+  private route           = inject(ActivatedRoute);
+  private router          = inject(Router);
 
   @ViewChild('editorRef')    editorRef!: ElementRef<HTMLDivElement>;
   @ViewChild('cropImageElC') cropImageElC!: ElementRef<HTMLImageElement>;
@@ -115,15 +117,14 @@ export class CreatePost implements OnInit, OnDestroy {
     return role === 'admin' || role === 'super_admin';
   });
 
-  categoryOptions = [
-    'Update', 'News',
-    'Sports', 'Technology', 'Lifestyle', 'Education', 'Health', 'Business',
-    'Entertainment', 'Social', 'Village', 'Cooking', 'Quotes', 'Exercise',
-  ];
+  // Hydrated from localStorage cache synchronously — updated after API load
+  categoryOptions: string[] = this.taxonomyService.categoryNames().length
+    ? this.taxonomyService.categoryNames()
+    : ['Update','News','Sports','Technology','Lifestyle','Education','Health','Business','Entertainment','Social','Village','Cooking','Quotes','Exercise'];
 
-  tagOptions = [
-    'Trending', 'Motivation', 'Tips', 'News', 'Opinion', 'Guide', 'Update',
-  ];
+  tagOptions: string[] = this.taxonomyService.tagNames().length
+    ? this.taxonomyService.tagNames()
+    : ['Trending','Motivation','Tips','News','Opinion','Guide','Update'];
 
   createBlogForm: FormGroup = this.fb.group({
     title:       ['', [Validators.required, Validators.minLength(5), Validators.maxLength(100)]],
@@ -148,6 +149,26 @@ export class CreatePost implements OnInit, OnDestroy {
     return arr.controls.some((c: AbstractControl) => c.value === true);
   }
 
+  /** Rebuild a FormArray in-place when taxonomy options change. */
+  private rebuildTaxonomyArrays(newCats: string[], newTags: string[]): void {
+    const catsChanged = JSON.stringify(newCats) !== JSON.stringify(this.categoryOptions);
+    const tagsChanged = JSON.stringify(newTags) !== JSON.stringify(this.tagOptions);
+
+    if (catsChanged) {
+      this.categoryOptions = newCats;
+      const arr = this.categoriesArray;
+      while (arr.length) arr.removeAt(0);
+      newCats.forEach(() => arr.push(this.fb.control(false)));
+    }
+
+    if (tagsChanged) {
+      this.tagOptions = newTags;
+      const arr = this.tagsArray;
+      while (arr.length) arr.removeAt(0);
+      newTags.forEach(() => arr.push(this.fb.control(false)));
+    }
+  }
+
   // ── Lifecycle ────────────────────────────────────────────────────────────────
   ngOnInit(): void {
     if (!isPlatformBrowser(this.platformId)) return;
@@ -158,6 +179,14 @@ export class CreatePost implements OnInit, OnDestroy {
         if (d.title || d.description || d.content) this.hasDraft.set(true);
       }
     } catch { /* ignore corrupt data */ }
+
+    // Load fresh taxonomy from API and rebuild form arrays if options changed
+    this.taxonomyService.load().subscribe(() => {
+      this.rebuildTaxonomyArrays(
+        this.taxonomyService.categoryNames(),
+        this.taxonomyService.tagNames(),
+      );
+    });
   }
 
   ngOnDestroy(): void {
@@ -554,6 +583,34 @@ export class CreatePost implements OnInit, OnDestroy {
 
   isActive(command: string): boolean {
     return this.activeFormats().has(command);
+  }
+
+  isBlockquoteActive(): boolean {
+    if (!isPlatformBrowser(this.platformId)) return false;
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return false;
+    let node: Node | null = sel.getRangeAt(0).commonAncestorContainer;
+    while (node && node !== this.editorRef?.nativeElement) {
+      if ((node as Element).tagName === 'BLOCKQUOTE') return true;
+      node = node.parentNode;
+    }
+    return false;
+  }
+
+  toggleBlockquote(): void {
+    this.editorRef.nativeElement.focus();
+    if (this.isBlockquoteActive()) {
+      document.execCommand('formatBlock', false, 'p');
+    } else {
+      document.execCommand('formatBlock', false, 'blockquote');
+    }
+    this.onEditorInput();
+  }
+
+  insertHR(): void {
+    this.editorRef.nativeElement.focus();
+    document.execCommand('insertHTML', false, '<hr><p><br></p>');
+    this.onEditorInput();
   }
 
   openLinkInput(): void {

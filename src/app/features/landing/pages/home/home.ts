@@ -24,6 +24,8 @@ import { TimeAgoPipe }     from '../../../../shared/pipes/time-ago-pipe';
 import { PostCache, PostWithTs } from '../../../post/services/post-cache';
 import { ReadingHistory }        from '../../../../core/services/reading-history';
 import { AllPostsCache }         from '../../../../core/services/all-posts-cache';
+import { TaxonomyService }       from '../../../../core/services/taxonomy.service';
+import { BookmarkService }       from '../../../../core/services/bookmark.service';
 
 const PAGE_SIZE   = 8;
 const FETCH_LIMIT = 20;   // posts per server page — keeps initial payload small
@@ -75,6 +77,8 @@ export class Home implements OnInit, OnDestroy {
   private postCache       = inject(PostCache);
   private allPostsCache   = inject(AllPostsCache);
   private readingHistory  = inject(ReadingHistory);
+  taxonomyService         = inject(TaxonomyService);
+  bookmarkService         = inject(BookmarkService);
   private destroyRef     = inject(DestroyRef);
   private route          = inject(ActivatedRoute);
   private router         = inject(Router);
@@ -130,7 +134,7 @@ export class Home implements OnInit, OnDestroy {
   filteredPage = signal(0);
 
   likedPostIds      = signal<Set<string>>(new Set());
-  bookmarkedPostIds = signal<Set<string>>(new Set());
+  bookmarkedPostIds = this.bookmarkService.bookmarkedIds;
 
   // ── Personalization signals (browser-only — always false/empty on SSR) ──────
   historyLoaded    = signal(false);
@@ -144,19 +148,20 @@ export class Home implements OnInit, OnDestroy {
 
   readonly skeletonItems: null[] = new Array(8).fill(null);
 
-  readonly categories: string[] = [
-    'Update', 'News',
-    'Sports', 'Entertainment', 'Health', 'Technology', 'Business',
-    'Lifestyle', 'Education', 'Exercise', 'Cooking',
-    'Social', 'Quotes', 'Village',
+  // Fallback list used before taxonomy API responds (avoids empty UI flash)
+  private readonly FALLBACK_CATEGORIES = [
+    'Update','News','Sports','Entertainment','Health','Technology','Business',
+    'Lifestyle','Education','Exercise','Cooking','Social','Quotes','Village',
   ];
 
-  readonly categoryEmojis: Record<string, string> = {
-    Update: '📢', News: '📰',
-    Sports: '🏏', Entertainment: '🎬', Health: '🏥', Technology: '💻', Business: '💼',
-    Lifestyle: '🌿', Education: '🎓', Exercise: '🏋️', Cooking: '🍳',
-    Social: '🤝', Quotes: '💬', Village: '🌾',
-  };
+  categories = computed<string[]>(() => {
+    const names = this.taxonomyService.categoryNames();
+    return names.length ? names : this.FALLBACK_CATEGORIES;
+  });
+
+  categoryEmojis = computed<Record<string, string>>(() =>
+    this.taxonomyService.categoryEmojiMap()
+  );
 
   private readingTimeCache = new Map<string, number>();
 
@@ -271,8 +276,7 @@ export class Home implements OnInit, OnDestroy {
   // Only show stories count once we have an accurate server-side total
   publishedCount = computed(() => this.serverTotal());
 
-  // Always 14 — all platform categories are always active
-  activeTopicsCount = computed(() => this.categories.length);
+  activeTopicsCount = computed(() => this.categories().length);
 
   // Always the highest total views seen — never decreases
   totalViews = computed(() => this._maxSeenViews());
@@ -351,7 +355,7 @@ export class Home implements OnInit, OnDestroy {
     this.injectJsonLd();
 
     this.restoreLikedIds();
-    this.restoreBookmarkedIds();
+    this.bookmarkService.syncFromServer();
     this.restoreReadHistory();
 
     if (isPlatformBrowser(this.platformId)) {
@@ -386,6 +390,7 @@ export class Home implements OnInit, OnDestroy {
     ).subscribe(val => this.searchQuery.set(val));
 
     this.loadInitialData();
+    this.taxonomyService.load().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
   }
 
   ngOnDestroy(): void {
@@ -880,20 +885,7 @@ export class Home implements OnInit, OnDestroy {
     }
   }
 
-  private restoreBookmarkedIds(): void {
-    if (!isPlatformBrowser(this.platformId)) return;
-    try {
-      const stored = localStorage.getItem('apna_bookmarked_posts');
-      if (stored) this.bookmarkedPostIds.set(new Set(JSON.parse(stored)));
-    } catch { }
-  }
-
-  private persistBookmarkedIds(ids: Set<string>): void {
-    if (!isPlatformBrowser(this.platformId)) return;
-    try { localStorage.setItem('apna_bookmarked_posts', JSON.stringify([...ids])); } catch { }
-  }
-
-  isBookmarked(postId: string): boolean { return this.bookmarkedPostIds().has(postId); }
+  isBookmarked(postId: string): boolean { return this.bookmarkService.isBookmarked(postId); }
 
   private restoreReadHistory(): void {
     if (!isPlatformBrowser(this.platformId)) return;
@@ -937,11 +929,7 @@ export class Home implements OnInit, OnDestroy {
 
   toggleBookmark(postId: string, event: Event): void {
     event.stopPropagation();
-    const newSet = new Set(this.bookmarkedPostIds());
-    if (newSet.has(postId)) newSet.delete(postId);
-    else newSet.add(postId);
-    this.bookmarkedPostIds.set(newSet);
-    this.persistBookmarkedIds(newSet);
+    this.bookmarkService.toggle(postId);
   }
 
 

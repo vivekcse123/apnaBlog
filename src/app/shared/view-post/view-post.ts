@@ -5,11 +5,12 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Subject, takeUntil, finalize } from 'rxjs';
-import { PostService } from '../../features/post/services/post-service';
-import { UploadService } from '../../features/post/services/upload-service';
-import { Auth } from '../../core/services/auth';
-import { Post } from '../../core/models/post.model';
-import { ToastService } from '../../core/services/toast.service';
+import { PostService }    from '../../features/post/services/post-service';
+import { UploadService }  from '../../features/post/services/upload-service';
+import { Auth }           from '../../core/services/auth';
+import { Post }           from '../../core/models/post.model';
+import { ToastService }   from '../../core/services/toast.service';
+import { TaxonomyService } from '../../core/services/taxonomy.service';
 
 interface ImageItem {
   url: string;
@@ -25,13 +26,14 @@ interface ImageItem {
   styleUrl: './view-post.css'
 })
 export class ViewPost implements OnInit, OnDestroy {
-  private fb            = inject(FormBuilder);
-  private postService   = inject(PostService);
-  private uploadService = inject(UploadService);
-  private authService   = inject(Auth);
-  private toastService  = inject(ToastService);
-  private ngZone        = inject(NgZone);
-  private destroy$      = new Subject<void>();
+  private fb              = inject(FormBuilder);
+  private postService     = inject(PostService);
+  private uploadService   = inject(UploadService);
+  private authService     = inject(Auth);
+  private toastService    = inject(ToastService);
+  private taxonomyService = inject(TaxonomyService);
+  private ngZone          = inject(NgZone);
+  private destroy$        = new Subject<void>();
 
   isAdmin = computed(() => this.authService.getCurrentUser()?.role?.toLowerCase() === 'admin');
 
@@ -126,16 +128,22 @@ export class ViewPost implements OnInit, OnDestroy {
   @ViewChild('cropFrameEl')        cropFrameEl!: ElementRef<HTMLDivElement>;
   @ViewChild('commentsSectionRef') commentsSectionRef?: ElementRef<HTMLDivElement>;
 
-  categoryOptions = [
-    'Update', 'News',
-    'Sports', 'Technology', 'Lifestyle', 'Education',
-    'Health', 'Business', 'Entertainment', 'Social',
-    'Village', 'Cooking', 'Quotes', 'Exercise'
+  // Hydrated from localStorage cache; falls back to defaults if API not yet loaded
+  private readonly FALLBACK_CATS = [
+    'Update','News','Sports','Technology','Lifestyle','Education',
+    'Health','Business','Entertainment','Social','Village','Cooking','Quotes','Exercise',
   ];
+  private readonly FALLBACK_TAGS = ['Trending','Motivation','Tips','News','Opinion','Guide','Update'];
 
-  tagOptions = [
-    'Trending', 'Motivation', 'Tips', 'News', 'Opinion', 'Guide', 'Update'
-  ];
+  categoryOptions = computed<string[]>(() => {
+    const names = this.taxonomyService.categoryNames();
+    return names.length ? names : this.FALLBACK_CATS;
+  });
+
+  tagOptions = computed<string[]>(() => {
+    const names = this.taxonomyService.tagNames();
+    return names.length ? names : this.FALLBACK_TAGS;
+  });
 
   /**
    * Returns "Admin" for admin/super_admin editors or unpopulated refs (string IDs),
@@ -148,7 +156,10 @@ export class ViewPost implements OnInit, OnDestroy {
     return (editor?.name ?? '').trim() || 'Admin';
   }
 
-  ngOnInit(): void { this.loadPost(); }
+  ngOnInit(): void {
+    this.loadPost();
+    this.taxonomyService.load().pipe(takeUntil(this.destroy$)).subscribe();
+  }
 
   ngOnDestroy(): void {
     this.destroy$.next();
@@ -1008,6 +1019,33 @@ export class ViewPost implements OnInit, OnDestroy {
 
   isFormatActive(command: string): boolean {
     return this.activeFormats().has(command);
+  }
+
+  isBlockquoteActive(): boolean {
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return false;
+    let node: Node | null = sel.getRangeAt(0).commonAncestorContainer;
+    while (node && node !== this.contentEditorRef?.nativeElement) {
+      if ((node as Element).tagName === 'BLOCKQUOTE') return true;
+      node = node.parentNode;
+    }
+    return false;
+  }
+
+  toggleBlockquote(): void {
+    this.contentEditorRef.nativeElement.focus();
+    document.execCommand('formatBlock', false, this.isBlockquoteActive() ? 'p' : 'blockquote');
+    this.updateEditorFormats();
+    const html = this.contentEditorRef.nativeElement.innerHTML;
+    this.editForm.patchValue({ content: html }, { emitEvent: false });
+  }
+
+  insertHR(): void {
+    this.contentEditorRef.nativeElement.focus();
+    document.execCommand('insertHTML', false, '<hr><p><br></p>');
+    this.updateEditorFormats();
+    const html = this.contentEditorRef.nativeElement.innerHTML;
+    this.editForm.patchValue({ content: html }, { emitEvent: false });
   }
 
   openLinkInput(): void {

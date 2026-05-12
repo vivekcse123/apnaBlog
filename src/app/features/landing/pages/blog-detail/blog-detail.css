@@ -705,8 +705,38 @@ body {
 .blog-content li { margin-bottom: 8px; }
 
 .blog-content blockquote {
-  border-left: 4px solid #43cea2; padding-left: 20px;
-  margin: 24px 0; font-style: italic; color: var(--text-secondary);
+  position: relative;
+  margin: 32px 0;
+  padding: 20px 24px 20px 28px;
+  background: linear-gradient(135deg, rgba(67,206,162,0.07) 0%, rgba(24,90,157,0.05) 100%);
+  border-left: 4px solid #43cea2;
+  border-radius: 0 10px 10px 0;
+  font-style: italic;
+  font-size: 1.08em;
+  color: var(--text-secondary);
+  line-height: 1.75;
+}
+.blog-content blockquote::before {
+  content: '\201C';
+  position: absolute;
+  top: -8px; left: 10px;
+  font-size: 3.5rem;
+  line-height: 1;
+  color: #43cea2;
+  opacity: 0.35;
+  font-family: Georgia, serif;
+  font-style: normal;
+}
+.blog-content blockquote p:last-child { margin-bottom: 0; }
+
+.blog-content hr {
+  border: none;
+  height: 2px;
+  margin: 36px auto;
+  width: 60%;
+  background: linear-gradient(90deg, transparent, #43cea2 30%, #185a9d 70%, transparent);
+  border-radius: 2px;
+  opacity: 0.6;
 }
 
 .blog-content img {

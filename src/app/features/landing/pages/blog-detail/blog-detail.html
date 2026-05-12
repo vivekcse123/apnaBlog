@@ -79,7 +79,7 @@
         <div class="cat-dropdown" role="menu">
           <div class="cat-dropdown-header">Browse by category</div>
           <div class="cat-dropdown-list">
-            @for (cat of ALL_CATEGORIES; track cat) {
+            @for (cat of ALL_CATEGORIES(); track cat) {
               <button class="cat-dropdown-item"
                       role="menuitem"
                       [class.active]="post()?.categories?.includes(cat)"

@@ -12,14 +12,15 @@ import { Meta, Title, DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { TimeAgoPipe } from '../../../../shared/pipes/time-ago-pipe';
 import { TransferState, makeStateKey } from '@angular/core';
 
-import { PostService } from '../../../post/services/post-service';
-import { PostCache } from '../../../post/services/post-cache';
-import { Post } from '../../../../core/models/post.model';
-import { ThemeService } from '../../../../core/services/theme-service';
-import { Auth } from '../../../../core/services/auth';
-import { UserService } from '../../../user/services/user-service';
-import { User } from '../../../user/models/user.mode';
-import { ToastService } from '../../../../core/services/toast.service';
+import { PostService }    from '../../../post/services/post-service';
+import { PostCache }      from '../../../post/services/post-cache';
+import { Post }           from '../../../../core/models/post.model';
+import { ThemeService }   from '../../../../core/services/theme-service';
+import { Auth }           from '../../../../core/services/auth';
+import { UserService }    from '../../../user/services/user-service';
+import { User }           from '../../../user/models/user.mode';
+import { ToastService }   from '../../../../core/services/toast.service';
+import { TaxonomyService } from '../../../../core/services/taxonomy.service';
 
 // ── Transfer-state key: SSR writes the post here; browser reads it instantly ──
 const POST_STATE_KEY = makeStateKey<Post | null>('blogDetailPost');
@@ -86,6 +87,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   private transferState = inject(TransferState);
   themeService          = inject(ThemeService);
   private toastService  = inject(ToastService);
+  taxonomyService       = inject(TaxonomyService);
 
   // ── Post state ────────────────────────────────────────────────────────────
   post         = signal<Post | null>(null);
@@ -261,11 +263,14 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   // ── Categories dropdown ───────────────────────────────────────────────────
   showCatDropdown = signal(false);
 
-  readonly ALL_CATEGORIES = [
-    'Update', 'News', 'Sports', 'Technology', 'Lifestyle',
-    'Education', 'Health', 'Business', 'Entertainment',
-    'Social', 'Village', 'Cooking', 'Quotes', 'Exercise',
-  ];
+  readonly ALL_CATEGORIES = computed<string[]>(() => {
+    const names = this.taxonomyService.categoryNames();
+    return names.length ? names : [
+      'Update','News','Sports','Technology','Lifestyle',
+      'Education','Health','Business','Entertainment',
+      'Social','Village','Cooking','Quotes','Exercise',
+    ];
+  });
 
   toggleCatDropdown(): void { this.showCatDropdown.set(!this.showCatDropdown()); }
 
@@ -474,6 +479,8 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   // ══════════════════════════════════════════════════════════════════════════
 
   ngOnInit(): void {
+    this.taxonomyService.load().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
+
     this.route.paramMap
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(params => {

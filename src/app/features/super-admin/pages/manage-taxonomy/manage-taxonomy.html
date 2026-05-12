@@ -1,0 +1,177 @@
+<div class="tax-page">
+
+  <!-- Header -->
+  <header class="tax-header">
+    <div>
+      <h1 class="tax-title">Taxonomy Manager</h1>
+      <p class="tax-subtitle">Manage categories and tags used across the platform</p>
+    </div>
+    <div class="tax-counts">
+      <span class="tax-count-pill cat">{{ categoryCount() }} categories</span>
+      <span class="tax-count-pill tag">{{ tagCount() }} tags</span>
+    </div>
+  </header>
+
+  <!-- Alerts -->
+  @if (error()) {
+    <div class="tax-alert tax-alert--error" role="alert">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+      {{ error() }}
+    </div>
+  }
+  @if (success()) {
+    <div class="tax-alert tax-alert--success" role="status">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+      {{ success() }}
+    </div>
+  }
+
+  <!-- Tabs -->
+  <div class="tax-tabs">
+    <button class="tax-tab" [class.active]="activeTab() === 'category'" (click)="setTab('category')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><circle cx="7" cy="7" r="1.5" fill="currentColor" stroke="none"/></svg>
+      Categories
+    </button>
+    <button class="tax-tab" [class.active]="activeTab() === 'tag'" (click)="setTab('tag')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/></svg>
+      Tags
+    </button>
+  </div>
+
+  <div class="tax-body">
+
+    <!-- Add form -->
+    <section class="tax-add-card">
+      <h2 class="tax-section-title">
+        Add {{ activeTab() === 'category' ? 'Category' : 'Tag' }}
+      </h2>
+      <div class="tax-add-form">
+        <div class="tax-field">
+          <label class="tax-label">Name *</label>
+          <input class="tax-input"
+                 type="text"
+                 placeholder="e.g. {{ activeTab() === 'category' ? 'Technology' : 'Trending' }}"
+                 [value]="newName()"
+                 (input)="newName.set($any($event.target).value)"
+                 (keydown.enter)="add()" />
+        </div>
+        @if (activeTab() === 'category') {
+          <div class="tax-field tax-field--sm">
+            <label class="tax-label">Emoji</label>
+            <input class="tax-input"
+                   type="text"
+                   placeholder="💻"
+                   maxlength="4"
+                   [value]="newEmoji()"
+                   (input)="newEmoji.set($any($event.target).value)" />
+          </div>
+        }
+        <div class="tax-field tax-field--sm">
+          <label class="tax-label">Order</label>
+          <input class="tax-input"
+                 type="number"
+                 min="0"
+                 [value]="newOrder()"
+                 (input)="newOrder.set(+$any($event.target).value)" />
+        </div>
+        <button class="tax-btn tax-btn--primary" (click)="add()" [disabled]="saving()">
+          @if (saving()) { Saving… } @else {
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            Add
+          }
+        </button>
+      </div>
+    </section>
+
+    <!-- List -->
+    <section class="tax-list-card">
+      <h2 class="tax-section-title">
+        All {{ activeTab() === 'category' ? 'Categories' : 'Tags' }}
+        <span class="tax-count-badge">{{ items().length }}</span>
+      </h2>
+
+      @if (isLoading()) {
+        <div class="tax-skeleton-list">
+          @for (_ of [1,2,3,4,5]; track $index) {
+            <div class="tax-skeleton-row shimmer"></div>
+          }
+        </div>
+
+      } @else if (items().length === 0) {
+        <div class="tax-empty">
+          <p>No {{ activeTab() === 'category' ? 'categories' : 'tags' }} yet. Add your first one above.</p>
+        </div>
+
+      } @else {
+        <div class="tax-list">
+          @for (item of items(); track item._id) {
+            <div class="tax-row" [class.tax-row--inactive]="!item.isActive">
+
+              @if (editState()?.id !== item._id) {
+                <!-- View mode -->
+                <div class="tax-row-info">
+                  @if (item.emoji) {
+                    <span class="tax-emoji">{{ item.emoji }}</span>
+                  }
+                  <span class="tax-name">{{ item.name }}</span>
+                  <span class="tax-slug">{{ item.slug }}</span>
+                  @if (!item.isActive) {
+                    <span class="tax-inactive-badge">Inactive</span>
+                  }
+                </div>
+                @if (postCounts()[item.name]) {
+                  <span class="tax-post-count" title="Published posts using this {{ item.type }}">
+                    {{ postCounts()[item.name] }} posts
+                  </span>
+                }
+                <div class="tax-row-order">{{ item.order }}</div>
+                <div class="tax-row-actions">
+                  <button class="tax-icon-btn tax-icon-btn--edit" title="Edit" (click)="startEdit(item)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  </button>
+                  <button class="tax-icon-btn" [class.tax-icon-btn--toggle-on]="item.isActive" [class.tax-icon-btn--toggle-off]="!item.isActive"
+                          [title]="item.isActive ? 'Deactivate' : 'Activate'" (click)="toggleActive(item)">
+                    @if (item.isActive) {
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    } @else {
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19M1 1l22 22"/></svg>
+                    }
+                  </button>
+                  <button class="tax-icon-btn tax-icon-btn--delete" title="Delete" (click)="delete(item)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                  </button>
+                </div>
+
+              } @else {
+                <!-- Edit mode -->
+                <div class="tax-edit-row">
+                  @if (activeTab() === 'category') {
+                    <input class="tax-input tax-input--sm"
+                           type="text" maxlength="4" placeholder="Emoji"
+                           [value]="editState()!.emoji"
+                           (input)="updateEditEmoji($any($event.target).value)" />
+                  }
+                  <input class="tax-input"
+                         type="text" placeholder="Name"
+                         [value]="editState()!.name"
+                         (input)="updateEditName($any($event.target).value)"
+                         (keydown.enter)="saveEdit()"
+                         (keydown.escape)="cancelEdit()" />
+                  <input class="tax-input tax-input--xs"
+                         type="number" min="0" placeholder="Order"
+                         [value]="editState()!.order"
+                         (input)="updateEditOrder($any($event.target).value)" />
+                  <div class="tax-edit-actions">
+                    <button class="tax-btn tax-btn--primary tax-btn--sm" (click)="saveEdit()" [disabled]="saving()">Save</button>
+                    <button class="tax-btn tax-btn--ghost tax-btn--sm"  (click)="cancelEdit()">Cancel</button>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+    </section>
+  </div>
+
+</div>

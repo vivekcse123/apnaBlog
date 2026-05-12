@@ -80,4 +80,20 @@ export class UserService {
       `${this.endPoint}${authorId}/unfollow`
     );
   }
+
+  getBookmarkedPosts(userId: string, page = 1, limit = 20): Observable<any> {
+    return this.http.get<any>(`${this.endPoint}${userId}/bookmarks?page=${page}&limit=${limit}`);
+  }
+
+  getBookmarkIds(userId: string): Observable<{ status: number; data: string[] }> {
+    return this.http.get<{ status: number; data: string[] }>(`${this.endPoint}${userId}/bookmark-ids`);
+  }
+
+  addBookmark(userId: string, postId: string): Observable<any> {
+    return this.http.post(`${this.endPoint}${userId}/bookmark/${postId}`, {});
+  }
+
+  removeBookmark(userId: string, postId: string): Observable<any> {
+    return this.http.delete(`${this.endPoint}${userId}/bookmark/${postId}`);
+  }
 }

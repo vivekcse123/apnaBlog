@@ -56,44 +56,43 @@
 
 /* Links */
 .sb-link {
-  display: flex; align-items: center; gap: 11px;
+  display: flex; align-items: center; gap: 10px;
   padding: 9px 12px;
   border-radius: 10px;
   text-decoration: none;
-  color: var(--text-secondary);
+  color: var(--text-primary);
   font-size: 13.5px; font-weight: 500;
-  transition: background 0.18s, color 0.18s;
+  transition: background 0.18s, color 0.18s, transform 0.12s;
   white-space: nowrap;
+  cursor: pointer;
 }
 .sb-link:hover {
-  background: rgba(67,206,162,0.08);
+  background: rgba(67,206,162,0.1);
   color: var(--text-primary);
+  transform: translateX(2px);
 }
 .sb-link--active {
-  background: rgba(67,206,162,0.12);
-  color: #43cea2;
+  background: linear-gradient(90deg, rgba(67,206,162,0.18), rgba(24,90,157,0.08));
+  color: #2ea88a;
   font-weight: 600;
 }
 .sb-link--active .sb-link-icon { color: #43cea2; }
 
 .sb-link-icon {
-  width: 34px; height: 34px;
-  border-radius: 9px;
-  background: var(--bg-base);
-  border: 1px solid var(--border);
+  width: 32px; height: 32px;
+  border-radius: 8px;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
-  color: var(--text-muted);
-  transition: background 0.18s, border-color 0.18s, color 0.18s;
+  color: var(--text-secondary);
+  transition: color 0.18s, background 0.18s;
 }
 .sb-link:hover .sb-link-icon {
-  background: rgba(67,206,162,0.1);
-  border-color: rgba(67,206,162,0.3);
-  color: var(--text-primary);
+  color: #43cea2;
+  background: rgba(67,206,162,0.12);
 }
 .sb-link--active .sb-link-icon {
+  color: #43cea2;
   background: rgba(67,206,162,0.15);
-  border-color: rgba(67,206,162,0.4);
 }
 
 .sb-link-label { flex: 1; }
@@ -108,7 +107,7 @@
   padding: 8px 12px 4px;
 }
 .sb-shortcut .sb-link-icon {
-  width: 30px; height: 30px; border-radius: 8px;
+  width: 28px; height: 28px; border-radius: 7px;
 }
 
 /* Spacer */

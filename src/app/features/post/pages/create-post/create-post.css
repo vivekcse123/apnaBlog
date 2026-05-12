@@ -1094,8 +1094,32 @@ form input[type="file"]::file-selector-button:hover {
   font-size: 12.5px;
 }
 
-.code-btn svg {
-  stroke: currentColor;
+.code-btn svg { stroke: currentColor; }
+
+.editor-content blockquote {
+  position: relative;
+  margin: 20px 0;
+  padding: 14px 18px 14px 22px;
+  background: linear-gradient(135deg, rgba(67,206,162,0.07) 0%, rgba(24,90,157,0.05) 100%);
+  border-left: 4px solid #43cea2;
+  border-radius: 0 8px 8px 0;
+  font-style: italic;
+  color: var(--text-secondary, #555);
+  line-height: 1.7;
+}
+.editor-content blockquote::before {
+  content: '\201C';
+  position: absolute;
+  top: -6px; left: 8px;
+  font-size: 2.8rem; line-height: 1;
+  color: #43cea2; opacity: 0.3;
+  font-family: Georgia, serif; font-style: normal;
+}
+
+.editor-content hr {
+  border: none; height: 2px; margin: 24px auto; width: 60%;
+  background: linear-gradient(90deg, transparent, #43cea2 30%, #185a9d 70%, transparent);
+  border-radius: 2px; opacity: 0.55;
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }

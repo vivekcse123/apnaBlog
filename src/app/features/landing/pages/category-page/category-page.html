@@ -32,7 +32,7 @@
           <div class="cat-switch-dropdown" role="menu">
             <div class="cat-switch-header">Switch Category</div>
             <div class="cat-switch-list">
-              @for (cat of ALL_CATEGORIES; track cat) {
+              @for (cat of ALL_CATEGORIES(); track cat) {
                 <button class="cat-switch-item"
                         role="menuitem"
                         [class.active]="cat === categoryName()"
@@ -72,10 +72,13 @@
 
   <!-- HERO -->
   <section class="cat-hero">
+    @if (categoryEmoji()) {
+      <span class="cat-hero-emoji" aria-hidden="true">{{ categoryEmoji() }}</span>
+    }
     <h1 class="cat-title">{{ categoryName() }}</h1>
     <p class="cat-subtitle">
       @if (!isLoading()) {
-        {{ posts().length }} blogs {{ posts().length === 1 ? '' : 's' }} in this category
+        {{ posts().length }} blog{{ posts().length === 1 ? '' : 's' }} in this category
       } @else {
         Exploring stories…
       }
