@@ -66,6 +66,26 @@ export default async function handler(req, res) {
     // Dynamic blog routes — published posts only
     const publishedPosts = allPosts.filter(post => post.status === 'published' && post.title);
 
+    // Collect unique tags (2+ posts) and author IDs
+    const tagCounts = new Map();
+    const authorIds = new Set();
+    for (const post of publishedPosts) {
+      for (const tag of (post.tags ?? [])) {
+        tagCounts.set(tag, (tagCounts.get(tag) ?? 0) + 1);
+      }
+      if (post.user?._id) {
+        authorIds.add(post.user._id);
+      }
+    }
+
+    const tagLinks = [...tagCounts.entries()]
+      .filter(([, count]) => count >= 2)
+      .map(([tag]) => ({ url: `/tag/${encodeURIComponent(tag)}`, changefreq: 'weekly', priority: 0.6 }));
+
+    // Use MongoDB _id for author URLs — author-page.ts fetches by getUserById(id)
+    const authorLinks = [...authorIds]
+      .map(id => ({ url: `/author/${id}`, changefreq: 'weekly', priority: 0.6 }));
+
     const postLinks = publishedPosts.map(post => {
       const entry = {
         url: `/blog/${post.slug || post._id}`,
@@ -88,7 +108,7 @@ export default async function handler(req, res) {
     });
 
     const xmlData = await streamToPromise(
-      Readable.from([...staticLinks, ...postLinks]).pipe(stream)
+      Readable.from([...staticLinks, ...tagLinks, ...authorLinks, ...postLinks]).pipe(stream)
     );
 
     res.setHeader('Content-Type', 'application/xml');

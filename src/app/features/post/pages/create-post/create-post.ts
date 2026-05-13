@@ -6,8 +6,19 @@ import {
 import { isPlatformBrowser, DecimalPipe } from '@angular/common';
 import {
   AbstractControl, FormArray, FormBuilder,
-  FormGroup, ReactiveFormsModule, Validators,
+  FormGroup, ReactiveFormsModule, ValidatorFn, ValidationErrors, Validators,
 } from '@angular/forms';
+
+const MIN_WORDS = 150;
+
+function minWordCountValidator(min: number): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    const html   = control.value ?? '';
+    const text   = html.replace(/<[^>]*>/g, ' ').replace(/&[a-z]+;/gi, ' ');
+    const words  = text.trim().split(/\s+/).filter((w: string) => w.length > 0);
+    return words.length >= min ? null : { minWords: { required: min, actual: words.length } };
+  };
+}
 import { Post }              from '../../../../core/models/post.model';
 import { Auth }              from '../../../../core/services/auth';
 import { PostService }       from '../../services/post-service';
@@ -129,7 +140,7 @@ export class CreatePost implements OnInit, OnDestroy {
   createBlogForm: FormGroup = this.fb.group({
     title:       ['', [Validators.required, Validators.minLength(5), Validators.maxLength(100)]],
     description: ['', [Validators.required, Validators.minLength(10)]],
-    content:     ['', [Validators.required, Validators.minLength(20)]],
+    content:     ['', [Validators.required, minWordCountValidator(MIN_WORDS)]],
     categories:  this.fb.array(this.categoryOptions.map(() => this.fb.control(false))),
     tags:        this.fb.array(this.tagOptions.map(() => this.fb.control(false))),
     comments:    [''],

@@ -17,7 +17,7 @@
       "source": "/robots.txt",
       "headers": [
         { "key": "Content-Type", "value": "text/plain" },
-        { "key": "Cache-Control", "value": "public, max-age=86400" }
+        { "key": "Cache-Control", "value": "public, max-age=3600" }
       ]
     }
   ],
@@ -47,20 +47,8 @@
       "destination": "/api/news-sitemap"
     },
     {
-      "source": "/blog/:path*",
+      "source": "/((?!ads\\.txt|robots\\.txt|favicon\\.ico|logo.*\\.png|apple-touch-icon\\.png|web-app-manifest.*\\.png|og-image\\.png|site\\.webmanifest|api/).*)",
       "destination": "/api/ssr"
-    },
-    {
-      "source": "/author/:path*",
-      "destination": "/api/ssr"
-    },
-    {
-      "source": "/tag/:path*",
-      "destination": "/api/ssr"
-    },
-    {
-      "source": "/((?!ads\\.txt|robots\\.txt|sitemap\\.xml|api/).*)",
-      "destination": "/index.csr.html"
     }
   ]
 }

@@ -3,6 +3,7 @@ import {
   NgZone, OnDestroy, OnInit, output, signal, ViewChild
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Subject, takeUntil, finalize } from 'rxjs';
 import { PostService }    from '../../features/post/services/post-service';
@@ -33,7 +34,12 @@ export class ViewPost implements OnInit, OnDestroy {
   private toastService    = inject(ToastService);
   private taxonomyService = inject(TaxonomyService);
   private ngZone          = inject(NgZone);
+  private sanitizer       = inject(DomSanitizer);
   private destroy$        = new Subject<void>();
+
+  safeContent = computed<SafeHtml>(() =>
+    this.sanitizer.bypassSecurityTrustHtml(this.post()?.content ?? '')
+  );
 
   isAdmin = computed(() => this.authService.getCurrentUser()?.role?.toLowerCase() === 'admin');
 

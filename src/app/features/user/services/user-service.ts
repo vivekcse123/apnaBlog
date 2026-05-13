@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, of, shareReplay, finalize, tap, throwError } from 'rxjs';
 import { apiResponse } from '../../../core/models/api-response.model';
 import { User } from '../models/user.mode';
-import { environment } from '../../../../environments/environments.prod';
+import { environment } from '../../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class UserService {

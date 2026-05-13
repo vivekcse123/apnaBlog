@@ -43,12 +43,24 @@ let sitemapCache: Buffer | null = null;
 let sitemapCachedAt = 0;
 const SITEMAP_TTL = 60 * 60 * 1000; // 1 hour
 
+const ALL_CATEGORIES = [
+  'News', 'Technology', 'Health', 'Sports', 'Village', 'Business',
+  'Entertainment', 'Education', 'Lifestyle', 'Cooking', 'Exercise',
+  'Social', 'Quotes', 'Update',
+];
+
 const STATIC_PAGES = [
   { url: '/',               changefreq: 'daily',   priority: 1.0 },
   { url: '/about',          changefreq: 'monthly',  priority: 0.7 },
   { url: '/privacy-policy', changefreq: 'yearly',   priority: 0.3 },
   { url: '/terms',          changefreq: 'yearly',   priority: 0.3 },
   { url: '/disclaimer',     changefreq: 'yearly',   priority: 0.3 },
+  // Category landing pages — one per topic
+  ...ALL_CATEGORIES.map(cat => ({
+    url:        `/category/${cat.toLowerCase()}`,
+    changefreq: 'daily' as const,
+    priority:   0.8,
+  })),
 ];
 
 app.get('/sitemap.xml', async (_req: Request, res: Response) => {
@@ -60,7 +72,7 @@ app.get('/sitemap.xml', async (_req: Request, res: Response) => {
     }
 
     // Fetch all posts — paginate until exhausted
-    const posts: { slug?: string; _id?: string; updatedAt?: string }[] = [];
+    const posts: { slug?: string; _id?: string; updatedAt?: string; tags?: string[]; user?: { name?: string; _id?: string } }[] = [];
     let page = 1;
     while (true) {
       const r = await fetch(`${API_BASE}/post?page=${page}&limit=100`, {
@@ -75,8 +87,32 @@ app.get('/sitemap.xml', async (_req: Request, res: Response) => {
       page++;
     }
 
+    // Collect unique tags and author slugs from posts
+    const tagCounts = new Map<string, number>();
+    const authorSlugs = new Map<string, string>(); // _id → name slug
+    for (const p of posts) {
+      for (const tag of (p.tags ?? [])) {
+        tagCounts.set(tag, (tagCounts.get(tag) ?? 0) + 1);
+      }
+      if (p.user?._id && p.user?.name) {
+        const slug = encodeURIComponent(p.user.name.toLowerCase().replace(/\s+/g, '-'));
+        authorSlugs.set(p.user._id, slug);
+      }
+    }
+
+    // Include tags that appear on 2+ posts to avoid one-off thin tag pages
+    const tagPages = [...tagCounts.entries()]
+      .filter(([, count]) => count >= 2)
+      .map(([tag]) => ({ url: `/tag/${encodeURIComponent(tag)}`, changefreq: 'weekly' as const, priority: 0.6 }));
+
+    const authorPages = [...authorSlugs.values()].map(slug => ({
+      url: `/author/${slug}`, changefreq: 'weekly' as const, priority: 0.6,
+    }));
+
     const links = [
       ...STATIC_PAGES,
+      ...tagPages,
+      ...authorPages,
       ...posts.map(p => ({
         url:        `/blog/${p.slug || p._id}`,
         lastmod:    p.updatedAt,
@@ -192,9 +228,8 @@ app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
  * Start the server if this module is the main entry point, or it is ran via PM2.
  * The server listens on the port defined by the `PORT` environment variable, or defaults to 4000.
  */
-// Fire-and-forget warmup: when Vercel cold-starts this function module,
-// immediately kick a request to the Render backend so it starts waking up.
-// Doesn't guarantee SSR succeeds on this cold request, but the next one will.
+// Fire-and-forget warmup: immediately kick the Render backend so it starts
+// waking up on Vercel cold-start. The next SSR request will succeed.
 fetch(`${API_BASE}/post?page=1&limit=1`, { signal: AbortSignal.timeout(30000) }).catch(() => {});
 
 if (isMainModule(import.meta.url) || process.env['pm_id']) {
@@ -204,6 +239,13 @@ if (isMainModule(import.meta.url) || process.env['pm_id']) {
       throw error;
     }
   });
+
+  // Keepalive: ping the backend every 10 minutes so Render's free-tier instance
+  // stays warm and doesn't cold-start during AdSense / Googlebot crawls.
+  setInterval(() => {
+    fetch(`${API_BASE}/post?page=1&limit=1`, { signal: AbortSignal.timeout(15000) })
+      .catch(() => {});
+  }, 10 * 60 * 1000);
 }
 
 /**

@@ -4,7 +4,7 @@ import { expand, reduce } from 'rxjs/operators';
 import { apiResponse } from '../../../core/models/api-response.model';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Post } from '../../../core/models/post.model';
-import { environment } from '../../../../environments/environments.prod';
+import { environment } from '../../../../environments/environment';
 
 type CreatePostPayload = Omit<
   Post,

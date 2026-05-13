@@ -20,7 +20,7 @@
   <nav class="about-nav" role="navigation" aria-label="Main navigation">
     <div class="about-nav-inner">
 
-      <button class="back-btn" routerLink="/welcome" aria-label="Back to Home">
+      <button class="back-btn" routerLink="/" aria-label="Back to Home">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M19 12H5M5 12l7 7M5 12l7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
@@ -80,13 +80,12 @@
 
       <div class="hero-stats" role="region" aria-label="Platform statistics">
         <div class="stat-item">
-          <span class="stat-num" aria-label="Two thousand plus">2K+</span>
+          @if (totalStories() !== null) {
+            <span class="stat-num">{{ totalStories() }}</span>
+          } @else {
+            <span class="stat-num stat-num--loading" aria-label="Loading">—</span>
+          }
           <span class="stat-label">Stories Published</span>
-        </div>
-        <div class="stat-divider" aria-hidden="true"></div>
-        <div class="stat-item">
-          <span class="stat-num" aria-label="Eight hundred plus">800+</span>
-          <span class="stat-label">Active Writers</span>
         </div>
         <div class="stat-divider" aria-hidden="true"></div>
         <div class="stat-item">
@@ -95,8 +94,8 @@
         </div>
         <div class="stat-divider" aria-hidden="true"></div>
         <div class="stat-item">
-          <span class="stat-num" aria-label="Twelve thousand plus">12K+</span>
-          <span class="stat-label">Monthly Readers</span>
+          <span class="stat-num">Free</span>
+          <span class="stat-label">Always Free</span>
         </div>
       </div>
     </div>
@@ -183,7 +182,7 @@
       <div class="section-label-wrap">
         <span class="section-eyebrow">The Team</span>
         <h2 class="section-title" id="team-heading">People behind<br><span class="gradient-text">ApnaInsights</span></h2>
-        <p class="section-sub">A small, passionate team of engineers who believe great stories deserve a great home.</p>
+        <p class="section-sub">Two engineers who built ApnaInsights from scratch and keep it running.</p>
       </div>
 
       <div class="team-grid">
@@ -203,9 +202,8 @@
               <span class="meta-tag">B.Tech Graduate</span>
             </div>
             <p class="team-bio" itemprop="description">
-              Vivek is the visionary behind ApnaInsights. A passionate full-stack engineer with a love for building
-              products that solve real problems. He architected the entire platform from the Angular frontend
-              to the backend APIs — with a focus on performance, scalability, and user experience.
+              Vivek built ApnaInsights end-to-end — from the Angular frontend and Node.js APIs to the
+              deployment pipeline on Vercel. He handles all engineering decisions on the platform.
             </p>
             <div class="team-skills" role="list" aria-label="Technical skills">
               <span class="skill-chip" itemprop="knowsAbout" role="listitem">Angular</span>
@@ -232,9 +230,8 @@
               <span class="meta-tag">B.Tech Graduate</span>
             </div>
             <p class="team-bio" itemprop="description">
-              Revathi drives the strategic vision and operational excellence of ApnaInsights. With a sharp technical
-              mind and a talent for leadership, she ensures the platform delivers value to every user from
-              content strategy to team management and product roadmap decisions.
+              Revathi co-founded ApnaInsights and oversees product direction, community operations,
+              and day-to-day decisions that keep the platform running for writers and readers.
             </p>
             <div class="team-skills" role="list" aria-label="Technical skills">
               <span class="skill-chip" itemprop="knowsAbout" role="listitem">HTML</span>
@@ -257,7 +254,7 @@
         <span class="section-eyebrow">Our Inspiration</span>
         <h2 class="section-title" id="inspiration-heading">The foundation of<br><span class="gradient-text">our values</span></h2>
         <p class="section-sub" style="margin: 0 auto; text-align: center;">
-          Behind every vision is a guiding force that turns dreams into reality.
+          The person whose belief in free knowledge shaped what we built.
         </p>
       </div>
 
@@ -297,11 +294,10 @@
             </div>
 
             <p class="inspiration-bio" itemprop="description">
-              Mr. Bhanu Pratap Verma stands as the pillar of our journey the visionary whose dreams laid the foundation of everything we strive to build today. A devoted farming specialist with a profound connection to the land and its people, he believed that true progress comes when knowledge is shared freely and every voice is given the dignity to be heard.
-              <br>
-              His life has been a testament to selfless contribution, empowering communities through wisdom, experience, and unwavering dedication. He inspired us to see beyond limitations to build a platform where stories, ideas, and knowledge flow without barriers.
-              <br>
-              ApnaInsights is not just a blogging platform; it is a reflection of his dream a space where learning is free, voices are valued, and communities grow stronger together. His values continue to guide us, reminding us that real impact begins when we uplift others.
+              Mr. Bhanu Pratap Verma is a farming specialist from rural India who spent his life working
+              with agricultural communities. He believed that knowledge shared freely is more valuable than
+              knowledge kept. That belief — that every person's experience is worth sharing — is what
+              ApnaInsights is built on.
             </p>
 
             <div class="inspiration-values" role="list" aria-label="Core values">
@@ -410,54 +406,6 @@
     </div>
   </section>
 
-  <section class="testimonials-section" aria-labelledby="testimonials-heading">
-    <div class="section-inner">
-      <div class="section-label-wrap center">
-        <span class="section-eyebrow">Community Voices</span>
-        <h2 class="section-title" id="testimonials-heading">Writers love<br><span class="gradient-text">ApnaInsights</span></h2>
-        <p class="section-sub" style="margin: 0 auto; text-align: center;">Real stories from real writers across India who found their voice on our platform.</p>
-      </div>
-      <div class="testimonials-carousel"
-           (mouseenter)="stopCarousel()"
-           (mouseleave)="startCarousel()"
-           role="region"
-           aria-label="Writer testimonials">
-
-        <div class="testimonials-track"
-             [style.transform]="'translateX(-' + activeTestimonial() * 100 + '%)'">
-          @for (t of testimonials; track t.name) {
-            <div class="testimonial-slide">
-              <blockquote class="testimonial-card">
-                <div class="testimonial-stars" aria-label="5 out of 5 stars">★★★★★</div>
-                <p>"{{ t.quote }}"</p>
-                <footer class="testimonial-author">
-                  <div class="testimonial-avatar" aria-hidden="true">{{ t.initials }}</div>
-                  <div>
-                    <cite class="t-name">{{ t.name }}</cite>
-                    <span class="t-location">{{ t.location }}</span>
-                  </div>
-                </footer>
-              </blockquote>
-            </div>
-          }
-        </div>
-
-        <div class="carousel-dots" role="tablist" aria-label="Select testimonial">
-          @for (t of testimonials; track t.name; let i = $index) {
-            <button
-              class="carousel-dot"
-              [class.active]="activeTestimonial() === i"
-              (click)="goToTestimonial(i)"
-              [attr.aria-label]="'View testimonial from ' + t.name"
-              role="tab"
-              [attr.aria-selected]="activeTestimonial() === i">
-            </button>
-          }
-        </div>
-
-      </div>
-    </div>
-  </section>
 
   <section class="stack-section" aria-labelledby="stack-heading">
     <div class="section-inner">
@@ -762,7 +710,7 @@
         <span class="dot" aria-hidden="true">·</span>
         <a (click)="scrollToContact()" class="footer-link" role="button" tabindex="0" aria-label="Contact Us">Contact Us</a>
         <span class="dot" aria-hidden="true">·</span>
-        <a routerLink="/welcome" class="footer-link" aria-label="Browse all stories">Browse Stories</a>
+        <a routerLink="/" class="footer-link" aria-label="Browse all stories">Browse Stories</a>
         <span class="dot" aria-hidden="true">·</span>
         <a routerLink="/auth/register" class="footer-link" aria-label="Start writing on ApnaInsights for free">Start Writing</a>
       </nav>

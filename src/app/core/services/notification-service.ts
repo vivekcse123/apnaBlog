@@ -9,7 +9,7 @@ import {
 } from 'rxjs';
 import { NotificationResponse, Notification } from '../../shared/models/notification.model';
 import { Auth } from './auth';
-import { environment } from '../../../environments/environments.prod';
+import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class NotificationService implements OnDestroy {

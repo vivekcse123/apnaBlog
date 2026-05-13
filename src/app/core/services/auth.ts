@@ -5,7 +5,7 @@ import { Router } from '@angular/router';
 import { apiResponse } from '../models/api-response.model';
 import { User } from '../../features/user/models/user.mode';
 import { isPlatformBrowser } from '@angular/common';
-import { environment } from '../../../environments/environments.prod';
+import { environment } from '../../../environments/environment';
 
 export interface ActiveSession {
   sessionId:  string;

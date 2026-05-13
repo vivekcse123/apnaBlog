@@ -317,7 +317,18 @@ export class Home implements OnInit, OnDestroy {
 
   navCatOpen = signal(false);
 
-  get writeRoute(): string { return this.isLoggedIn ? this.dashboardRoute : '/auth/login'; }
+  // Use synchronous auth signals (localStorage) so the button routes correctly
+  // even before the API call resolves — avoids the timing gap where
+  // isLoggedIn=false while the token is valid but currentUserData() is still null.
+  get writeRoute(): string {
+    if (!this.auth.isAuthorized()) return '/auth/login';
+    const id   = this.auth.userId();
+    const role = this.auth.userRole();
+    if (!id) return '/auth/login';
+    if (role === 'admin')       return `/admin/${id}`;
+    if (role === 'super_admin') return `/super-admin/${id}`;
+    return `/user/${id}`;
+  }
 
   toggleNavCat(): void { this.navCatOpen.set(!this.navCatOpen()); }
 
@@ -633,7 +644,7 @@ export class Home implements OnInit, OnDestroy {
     this.meta.updateTag({ name: 'author',         content: 'ApnaInsights Community' });
     this.meta.updateTag({ property: 'og:type',         content: 'website' });
     this.meta.updateTag({ property: 'og:title',        content: 'ApnaInsights — Community Stories from Every Corner of India' });
-    this.meta.updateTag({ property: 'og:description',  content: 'Discover real stories from real people across India. 10K+ blogs on Technology, Lifestyle, Health, Business, Village Life and more. Free to read, free to write.' });
+    this.meta.updateTag({ property: 'og:description',  content: 'Discover real stories from real people across India. Blogs on Technology, Lifestyle, Health, Business, Village Life and more. Free to read, free to write.' });
     this.meta.updateTag({ property: 'og:url',          content: 'https://apnainsights.com/' });
     this.meta.updateTag({ property: 'og:site_name',    content: 'ApnaInsights' });
     this.meta.updateTag({ property: 'og:image',        content: 'https://apnainsights.com/og-image.png' });
@@ -643,7 +654,7 @@ export class Home implements OnInit, OnDestroy {
     this.meta.updateTag({ property: 'og:locale',       content: 'en_IN' });
     this.meta.updateTag({ name: 'twitter:card',        content: 'summary_large_image' });
     this.meta.updateTag({ name: 'twitter:title',       content: 'ApnaInsights — Community Stories from India' });
-    this.meta.updateTag({ name: 'twitter:description', content: 'Real stories from real people. 10K+ blogs on technology, lifestyle, health, village life. Free community platform.' });
+    this.meta.updateTag({ name: 'twitter:description', content: 'Real stories from real people. Blogs on technology, lifestyle, health, village life and more. Free community platform.' });
     this.meta.updateTag({ name: 'twitter:image',       content: 'https://apnainsights.com/og-image.png' });
     this.meta.updateTag({ name: 'twitter:site',        content: '@apnainsights' });
 
@@ -939,10 +950,9 @@ export class Home implements OnInit, OnDestroy {
   get loggedInFirstName(): string   { return this.currentUserData()?.name?.split(' ')[0] ?? 'Me'; }
   get loggedInAvatar(): string      { return (this.currentUserData() as any)?.avatar ?? ''; }
   get dashboardRoute(): string {
-    const u = this.currentUserData();
-    if (!u) return '/';
-    const role = (u as any).role;
-    const id   = (u as any)._id;
+    const id   = this.auth.userId();
+    const role = this.auth.userRole();
+    if (!id) return '/';
     if (role === 'admin')       return `/admin/${id}`;
     if (role === 'super_admin') return `/super-admin/${id}`;
     return `/user/${id}`;

@@ -339,7 +339,12 @@
         ></div>
 
         <div class="editor-statusbar">
-          <span class="word-count">{{ wordCount() }} {{ wordCount() === 1 ? 'word' : 'words' }}</span>
+          <span class="word-count" [class.word-count--warn]="wordCount() > 0 && wordCount() < 150" [class.word-count--ok]="wordCount() >= 150">
+            {{ wordCount() }} {{ wordCount() === 1 ? 'word' : 'words' }}
+            @if (wordCount() > 0 && wordCount() < 150) {
+              <span class="word-count-hint"> · {{ 150 - wordCount() }} more for minimum</span>
+            }
+          </span>
           <span class="autosave-indicator" [class.visible]="autosaveStatus() !== ''">
             @if (autosaveStatus() === 'saving') {
               <svg class="spin" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
@@ -354,10 +359,13 @@
 
       @if (createBlogForm.get('content')?.invalid && (isSubmitted() || createBlogForm.get('content')?.touched)) {
         @if (createBlogForm.get('content')?.errors?.['required']) {
-          <small class="error editor-field-error">Content is required...!</small>
+          <small class="error editor-field-error">Content is required.</small>
         }
-        @if (createBlogForm.get('content')?.errors?.['minlength']) {
-          <small class="error editor-field-error">Content should be at least 20 characters long...!</small>
+        @if (createBlogForm.get('content')?.errors?.['minWords']) {
+          <small class="error editor-field-error">
+            Content must be at least 150 words to maintain quality standards.
+            You have {{ wordCount() }} word{{ wordCount() === 1 ? '' : 's' }} — {{ 150 - wordCount() }} more needed.
+          </small>
         }
       }
 

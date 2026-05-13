@@ -9,7 +9,7 @@ import { interval, Subscription, forkJoin, of } from 'rxjs';
 import { switchMap, catchError, filter } from 'rxjs/operators';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { environment } from '../../../../../environments/environments.prod';
+import { environment } from '../../../../../environments/environment';
 
 Chart.register(...registerables);
 

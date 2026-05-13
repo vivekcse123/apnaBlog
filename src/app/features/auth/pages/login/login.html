@@ -146,7 +146,7 @@
         @if(errorMessage()){
           <div class="form-message error-message">
             <span>✕</span> {{ errorMessage() }}
-            <a href="welcome/about/">Contact our support team</a>
+            <a routerLink="/about" fragment="contact">Contact our support team</a>
           </div>
         }
 

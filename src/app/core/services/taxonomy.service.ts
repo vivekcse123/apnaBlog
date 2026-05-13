@@ -1,7 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of, tap, catchError, shareReplay, finalize, map } from 'rxjs';
-import { environment } from '../../../environments/environments.prod';
+import { environment } from '../../../environments/environment';
 
 export interface TaxonomyItem {
   _id:      string;

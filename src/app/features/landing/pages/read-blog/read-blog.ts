@@ -12,6 +12,7 @@ import {
 } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { PostService } from '../../../post/services/post-service';
 import { Post } from '../../../../core/models/post.model';
 
@@ -23,10 +24,16 @@ import { Post } from '../../../../core/models/post.model';
 })
 export class ReadBlog implements OnInit, OnDestroy {
   private postService = inject(PostService);
+  private sanitizer   = inject(DomSanitizer);
   private destroyRef  = inject(DestroyRef);
 
   postId    = input('');
   post      = signal<Post | null>(null);
+
+  safeContent = computed<SafeHtml>(() => {
+    const content = this.post()?.content ?? '';
+    return this.sanitizer.bypassSecurityTrustHtml(content);
+  });
   isLoading = signal(true);
   isVisible = signal(false);
 

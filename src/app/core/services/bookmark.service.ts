@@ -2,7 +2,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of, catchError, tap } from 'rxjs';
 import { Auth } from './auth';
-import { environment } from '../../../environments/environments.prod';
+import { environment } from '../../../environments/environment';
 
 const LS_KEY = 'apna_bookmarked_posts';
 

@@ -3,7 +3,7 @@ import { map, Observable, tap } from 'rxjs';
 import { apiResponse } from '../../../core/models/api-response.model';
 import { User } from '../../user/models/user.mode';
 import { HttpClient } from '@angular/common/http';
-import { environment } from '../../../../environments/environments.prod';
+import { environment } from '../../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',

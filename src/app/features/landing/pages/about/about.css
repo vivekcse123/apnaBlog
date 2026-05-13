@@ -501,6 +501,9 @@
   background-clip: text;
   line-height: 1;
 }
+.stat-num--loading {
+  opacity: 0.4;
+}
 
 .stat-label {
   font-size: 12px;

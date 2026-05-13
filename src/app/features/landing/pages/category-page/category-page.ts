@@ -20,6 +20,65 @@ const FALLBACK_CATEGORIES: string[] = [
   'Lifestyle', 'Education', 'Exercise', 'Cooking', 'Social', 'Quotes', 'Village',
 ];
 
+const CATEGORY_DESCRIPTIONS: Record<string, { description: string; intro: string }> = {
+  'News':          {
+    description: 'Stay updated with the latest news, current events, and breaking stories from across India and the world, written by real community journalists on ApnaInsights.',
+    intro:       'Real news and current events written by community voices — from local happenings to national headlines, unfiltered and authentic.'
+  },
+  'Update':        {
+    description: 'Platform announcements, new features, and community news from the ApnaInsights team. Stay informed about what\'s new on the platform.',
+    intro:       'The latest announcements, feature updates, and community highlights straight from the ApnaInsights team.'
+  },
+  'Technology':    {
+    description: 'Explore technology trends, software reviews, AI insights, coding tutorials, and tech innovations written by Indian developers and tech enthusiasts on ApnaInsights.',
+    intro:       'From AI breakthroughs to coding tutorials and gadget reviews — technology stories written by developers and enthusiasts who live and breathe tech.'
+  },
+  'Health':        {
+    description: 'Discover health tips, wellness advice, fitness guides, mental health stories, and medical insights from real people sharing their health journeys on ApnaInsights.',
+    intro:       'Real health journeys, expert wellness tips, mental health stories, and everyday health advice written by people who\'ve been there.'
+  },
+  'Sports':        {
+    description: 'Read cricket, football, kabaddi, and all sports stories, match analyses, player profiles, and sports news from passionate fans on ApnaInsights.',
+    intro:       'Cricket, football, kabaddi and beyond — match analyses, player profiles, and sports opinions from fans who live for the game.'
+  },
+  'Village':       {
+    description: 'Real stories from rural India — village life, farming wisdom, local culture, traditions, and authentic voices from the heartland of India on ApnaInsights.',
+    intro:       'Authentic stories from rural India — farming wisdom, village traditions, local culture, and the heartbeat of communities you rarely hear about.'
+  },
+  'Business':      {
+    description: 'Entrepreneurship, startup stories, career advice, investment tips, and business insights from Indian professionals, founders and working professionals on ApnaInsights.',
+    intro:       'Startup journeys, entrepreneurship lessons, career advice, and real business stories from founders and professionals building India\'s future.'
+  },
+  'Entertainment': {
+    description: 'Bollywood reviews, movie recommendations, web series opinions, celebrity stories, and Indian entertainment news written by passionate fans on ApnaInsights.',
+    intro:       'Bollywood, OTT reviews, celebrity stories, and entertainment opinions written by fans who take their pop culture seriously.'
+  },
+  'Education':     {
+    description: 'Study tips, career guidance, exam preparation strategies, and school and college experiences written by students, teachers, and learners on ApnaInsights.',
+    intro:       'Study strategies, exam tips, college life, career guidance and real experiences from students and educators navigating India\'s education system.'
+  },
+  'Lifestyle':     {
+    description: 'Personal growth, travel diaries, fashion, home décor, relationships, and everyday lifestyle stories from people living their best lives across India on ApnaInsights.',
+    intro:       'Travel diaries, personal growth journeys, home décor ideas, relationship advice, and the real story of everyday life across India.'
+  },
+  'Cooking':       {
+    description: 'Authentic Indian recipes, cooking tips, food stories, regional cuisines, and kitchen adventures from home cooks and food lovers across India on ApnaInsights.',
+    intro:       'Authentic recipes, regional cuisines, kitchen hacks, and food stories from home cooks who believe every meal tells a story.'
+  },
+  'Exercise':      {
+    description: 'Workout routines, gym tips, yoga guides, running stories, and personal fitness journeys from health-conscious writers sharing their experiences on ApnaInsights.',
+    intro:       'Gym routines, yoga guides, running diaries, and personal fitness transformations from people who chose to make health a priority.'
+  },
+  'Social':        {
+    description: 'Social issues, community stories, cultural observations, human interest pieces, and important conversations about modern Indian society on ApnaInsights.',
+    intro:       'Social issues, community voices, cultural observations, and human interest stories that spark the conversations modern India needs to have.'
+  },
+  'Quotes':        {
+    description: 'Inspiring quotes, motivational sayings, life wisdom, and thought-provoking words with context and reflection from writers across India on ApnaInsights.',
+    intro:       'Inspiring quotes and motivational wisdom — not just words, but the stories and reflections behind them from writers across India.'
+  },
+};
+
 @Component({
   selector: 'app-category-page',
   standalone: true,
@@ -41,6 +100,7 @@ export class CategoryPage implements OnInit {
 
   categorySlug    = signal('');
   categoryName    = signal('');
+  categoryIntro   = signal('');
   allPosts        = signal<Post[]>([]);
   isLoading       = signal(true);
   showCatDropdown = signal(false);
@@ -107,6 +167,7 @@ export class CategoryPage implements OnInit {
     if (cached.length) {
       this.allPosts.set(cached);
       this.isLoading.set(false);
+      this.applyRobotsForCount();
       return;
     }
 
@@ -118,19 +179,34 @@ export class CategoryPage implements OnInit {
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe(posts => {
-        this.allPostsCache.set(posts);   // populate for future navigations
+        this.allPostsCache.set(posts);
         this.allPosts.set(posts);
         this.isLoading.set(false);
+        this.applyRobotsForCount();
       });
   }
 
+  // Mark thin category pages noindex so they don't hurt AdSense review.
+  // Categories with fewer than 5 published posts don't have enough content
+  // to provide value to a visitor — indexing them works against us.
+  private applyRobotsForCount(): void {
+    const count = this.posts().length;
+    const robots = count >= 5 ? 'index, follow' : 'noindex, follow';
+    this.meta.updateTag({ name: 'robots', content: robots });
+  }
+
   private setMeta(name: string): void {
-    const url = `https://apnainsights.com/category/${name.toLowerCase()}`;
+    const url   = `https://apnainsights.com/category/${name.toLowerCase()}`;
+    const info  = CATEGORY_DESCRIPTIONS[name];
+    const desc  = info?.description ?? `Read the latest ${name} stories, blogs, and insights from real writers on ApnaInsights. Community-driven content on ${name}.`;
+    const intro = info?.intro ?? '';
+
+    this.categoryIntro.set(intro);
     this.titleSvc.setTitle(`${name} Stories & Blogs | ApnaInsights`);
-    this.meta.updateTag({ name: 'description', content: `Read the latest ${name} stories, blogs, and insights from real writers on ApnaInsights. Community-driven content on ${name}.` });
-    this.meta.updateTag({ name: 'robots', content: 'index, follow' });
+    this.meta.updateTag({ name: 'description',        content: desc });
+    this.meta.updateTag({ name: 'robots',             content: 'index, follow' }); // may be overridden after load
     this.meta.updateTag({ property: 'og:title',       content: `${name} Stories & Blogs | ApnaInsights` });
-    this.meta.updateTag({ property: 'og:description', content: `Explore ${name} content written by real people on ApnaInsights.` });
+    this.meta.updateTag({ property: 'og:description', content: desc });
     this.meta.updateTag({ property: 'og:url',         content: url });
     this.meta.updateTag({ property: 'og:type',        content: 'website' });
 

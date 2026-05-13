@@ -1227,7 +1227,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
 
     // Pending and draft posts must not be indexed
     const robotsValue = (post.status === 'published')
-      ? 'index, follow, max-image-preview:large, max-snippet:-1'
+      ? 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'
       : 'noindex, nofollow';
 
     this.setMeta('name',     'description',              desc);

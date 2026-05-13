@@ -76,6 +76,9 @@
       <span class="cat-hero-emoji" aria-hidden="true">{{ categoryEmoji() }}</span>
     }
     <h1 class="cat-title">{{ categoryName() }}</h1>
+    @if (categoryIntro()) {
+      <p class="cat-intro">{{ categoryIntro() }}</p>
+    }
     <p class="cat-subtitle">
       @if (!isLoading()) {
         {{ posts().length }} blog{{ posts().length === 1 ? '' : 's' }} in this category
