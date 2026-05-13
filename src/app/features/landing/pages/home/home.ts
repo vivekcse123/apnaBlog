@@ -457,7 +457,6 @@ export class Home implements OnInit, OnDestroy {
    */
   private fetchAccurateStats(): void {
     if (!isPlatformBrowser(this.platformId)) return;
-    this.filterPoolLoading.set(true);
 
     const { ts, total, totalViews, categoryCounts } = this._persistedStats;
     const statsAreFresh = ts > 0
@@ -465,6 +464,27 @@ export class Home implements OnInit, OnDestroy {
       && total > 0
       && totalViews > 0
       && Object.keys(categoryCounts).length > 0;
+
+    // If stats are fresh and allPostsCache has posts (populated on previous visit),
+    // restore _fullPostPool instantly from cache — no API call needed.
+    // This makes category filter results appear immediately when navigating back.
+    const cachedPosts = this.allPostsCache.get();
+    if (statsAreFresh && cachedPosts.length) {
+      const fullPool: PostWithTs[] = cachedPosts.map(p => ({
+        ...p,
+        _ts:        new Date(p.createdAt).getTime(),
+        views:      (p as any).views      ?? 0,
+        likesCount: (p as any).likesCount ?? 0,
+      }));
+      this._fullPostPool.set(fullPool);
+      this._allCategoryCounts.set(categoryCounts);
+      if (total > 0) this.serverTotal.set(total);
+      if (totalViews > 0) this.bumpMaxViews(totalViews);
+      this.filterPoolLoading.set(false);
+      return;
+    }
+
+    this.filterPoolLoading.set(true);
 
     this.postService.getStatsPage(1)
       .pipe(
