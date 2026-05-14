@@ -1,4 +1,4 @@
-import { Component, effect, inject, input, OnDestroy, output, signal, untracked } from '@angular/core';
+import { Component, effect, inject, input, OnDestroy, OnInit, output, signal, untracked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Subject, takeUntil, finalize } from 'rxjs';
@@ -14,7 +14,7 @@ import { ToastService } from '../../core/services/toast.service';
   templateUrl: './view-user.html',
   styleUrl: './view-user.css'
 })
-export class ViewUser implements OnDestroy {
+export class ViewUser implements OnDestroy, OnInit {
   private fb           = inject(FormBuilder);
   private userService  = inject(UserService);
   private adminService = inject(AdminService);
@@ -22,12 +22,12 @@ export class ViewUser implements OnDestroy {
   private destroy$     = new Subject<void>();
 
   userId        = input<string>('');
-  preloadedUser = input<any>(null);   // passed from list for zero-wait first render
+  preloadedUser = input<any>(null);  
   message       = input<string>('');
   close         = output<void>();
   userUpdated   = output<User>();
 
-  user      = signal<any>(null);
+user = signal<User | null>(null);
   isLoading = signal(false);
   isEditing = signal(false);
   isSaving  = signal(false);
@@ -41,23 +41,21 @@ export class ViewUser implements OnDestroy {
     effect(() => {
       const id = this.userId();
       if (!id) return;
-      // Read preloadedUser without tracking it — prevents the effect from
-      // re-firing when the parent nulls out selectedUserObj during close.
+
       const preload = untracked(() => this.preloadedUser());
       this.loadUser(id, preload);
     });
   }
 
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
+  ngOnInit(): void {
+    console.log(this.user()?.dob);
   }
+
 
   loadUser(id: string, preload: any = null): void {
     this.isEditing.set(false);
     this.errorMessage.set('');
 
-    // Show preloaded row data instantly — no spinner for the first paint.
     if (preload && (preload._id === id || preload.id === id)) {
       this.user.set(preload);
       this.isLoading.set(false);
@@ -68,12 +66,17 @@ export class ViewUser implements OnDestroy {
       this.isLoading.set(true);
     }
 
-    // Always fetch fresh data (picks up latest stats; UserService TTL-caches it).
     this.userService.getUserById(id)
       .pipe(takeUntil(this.destroy$), finalize(() => this.isLoading.set(false)))
       .subscribe({
         next: res => {
-          this.user.set(res.data ?? res);
+          const apiUser = res.data ?? res;
+          const currentUser = this.user();
+          this.user.set({
+            ...currentUser, 
+            ...apiUser,
+            dob: apiUser?.dob ?? currentUser?.dob
+          });
           this.totalBlogs.set((res as any).totalBlogs ?? 0);
           this.totalViews.set((res as any).totalViews ?? 0);
           this.isLoading.set(false);
@@ -113,7 +116,8 @@ export class ViewUser implements OnDestroy {
     this.errorMessage.set('');
 
     const uid = this.user()?._id;
-    this.adminService.updateUser(uid, this.editForm.value)
+    if (!uid) return;
+    this.adminService.updateUser(uid, this.editForm.getRawValue())
       .pipe(takeUntil(this.destroy$), finalize(() => this.isSaving.set(false)))
       .subscribe({
         next: (res) => {
@@ -130,18 +134,24 @@ export class ViewUser implements OnDestroy {
       });
   }
 
-  calculateAge(dob: string | undefined): string {
+calculateAge(dob: string | Date | undefined): string {
     if (!dob) return 'N/A';
     const diff = Date.now() - new Date(dob).getTime();
     return Math.floor(diff / (1000 * 60 * 60 * 24 * 365.25)) + ' years';
   }
 
-  formatDate(date: string | undefined): string {
-    if (!date) return '';
-    return new Date(date).toISOString().split('T')[0];
-  }
+  formatDate(date: string | Date | undefined): string {
+  if (!date) return '';
+
+  return new Date(date).toISOString().split('T')[0];
+}
 
   closeModal(): void {
     this.close.emit();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }
