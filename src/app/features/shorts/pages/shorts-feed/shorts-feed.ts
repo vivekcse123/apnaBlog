@@ -53,20 +53,22 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
   // tracks which YouTube cards the user has tapped "play" on
   playedYtIds  = signal<Set<string>>(new Set());
   likedIds     = signal<Set<string>>(this.loadLikedFromStorage());
-  isMuted             = signal(true);   // start muted — reliable autoplay on all browsers
+  isMuted             = signal(false);
   pauseIndicatorIdx   = signal(-1);
+  indicatorIsPlaying  = signal(false); // true = just resumed, false = just paused
   private piTimer: ReturnType<typeof setTimeout> | null = null;
 
-  private page               = 1;
-  private observer!:         IntersectionObserver;
-  private viewedSet          = new Set<string>();
-  private viewTimers         = new Map<number, ReturnType<typeof setTimeout>>();
-  private scrollRafId        = 0;
-  private pendingPlayIdx     = -1;
-  private tapStart           = { x: 0, y: 0, t: 0 };
-  private adsPushedCount     = 0;
-  private manuallyPausedSet  = new Set<number>(); // cards the user deliberately paused
-  private lastTouchToggle    = 0;                 // prevents synthetic click double-toggle
+  private page                  = 1;
+  private observer!:            IntersectionObserver;
+  private viewedSet             = new Set<string>();
+  private viewTimers            = new Map<number, ReturnType<typeof setTimeout>>();
+  private scrollRafId           = 0;
+  private pendingPlayIdx        = -1;
+  private adObserver!:          IntersectionObserver;
+  private manuallyPausedSet     = new Set<number>();
+  private manuallyPausedYtIds   = new Set<string>();
+  private touchStartPos         = { x: 0, y: 0 };
+  private lastTouchToggleTime   = 0;
 
   readonly LIKED_KEY   = 'apna_liked_shorts';
   readonly VIEWED_PREFIX = 'apna_viewed_short_';
@@ -89,12 +91,14 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
   ngAfterViewInit(): void {
     if (!isPlatformBrowser(this.platformId)) return;
     this.setupObserver();
+    this.initAdObserver();
     this.cardRefs.changes.subscribe(() => this.observeAll());
     this.setupGestureUnlock();
   }
 
   ngOnDestroy(): void {
     this.observer?.disconnect();
+    this.adObserver?.disconnect();
     this.viewTimers.forEach(t => clearTimeout(t));
     if (this.scrollRafId) cancelAnimationFrame(this.scrollRafId);
     if (this.piTimer) clearTimeout(this.piTimer);
@@ -102,14 +106,24 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
 
   // Unlock autoplay after first user touch/click (required by iOS Safari & some Android)
   private setupGestureUnlock(): void {
+    // touchstart is the safest unlock trigger — fires before click and doesn't
+    // interfere with the click handler that handles pause/play.
     const unlock = () => {
-      if (this.pendingPlayIdx >= 0) {
-        this.ngZone.run(() => this.autoPlayVideo(this.pendingPlayIdx));
-        this.pendingPlayIdx = -1;
-      }
+      this.ngZone.run(() => {
+        if (this.pendingPlayIdx >= 0) {
+          this.autoPlayVideo(this.pendingPlayIdx);
+          this.pendingPlayIdx = -1;
+        }
+        if (!this.isMuted()) {
+          const vid = this.getVideoAt(this.activeIndex());
+          if (vid && !vid.paused) vid.muted = false;
+        }
+      });
     };
+    // Listen on both touchstart (mobile) and click (desktop) so autoplay is
+    // unlocked on the first user gesture regardless of input type.
     document.addEventListener('touchstart', unlock, { once: true, passive: true });
-    document.addEventListener('click',      unlock, { once: true });
+    document.addEventListener('click', unlock, { once: true, passive: true });
   }
 
   // ── Data ───────────────────────────────────────────────────────────────────
@@ -132,7 +146,7 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
         setTimeout(() => {
           this.observeAll();
           if (reset) this.autoPlayVideo(0);
-          this.pushAdsense();
+          this.observeAdCards();
         }, 120);
       },
       error: () => {
@@ -151,6 +165,9 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     this.viewedSet.clear();
     this.viewTimers.forEach(t => clearTimeout(t));
     this.viewTimers.clear();
+    this.manuallyPausedSet.clear();
+    this.manuallyPausedYtIds.clear();
+    this.initAdObserver();
     this.loadShorts(true);
     this.scrollRef?.nativeElement.scrollTo({ top: 0, behavior: 'instant' });
   }
@@ -166,26 +183,38 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  /** Returns true for the index that should have an ad card rendered after it (every 5th short). */
+  /** First ad after the 7th short, then every 8 — keeps early feed clean. */
   isAdSlot(i: number): boolean {
-    return (i + 1) % 5 === 0;
+    return i >= 6 && (i - 6) % 8 === 0;
   }
 
-  /** Push un-initialized AdSense slots into the adsbygoogle queue. */
-  private pushAdsense(): void {
+  /** Set up a dedicated IntersectionObserver that initialises each ad slot
+   *  exactly once, only when the card is actually visible. */
+  private initAdObserver(): void {
     if (!isPlatformBrowser(this.platformId)) return;
-    try {
-      const ads: any[] = (window as any).adsbygoogle ?? [];
-      (window as any).adsbygoogle = ads;
-      // Only push slots that haven't been initialised yet
-      const uninit = document.querySelectorAll<HTMLElement>(
-        'ins.adsbygoogle:not([data-adsbygoogle-status])'
-      );
-      uninit.forEach(() => {
-        ads.push({});
-        this.adsPushedCount++;
-      });
-    } catch (_) { /* ignore */ }
+    this.adObserver?.disconnect();
+    this.adObserver = new IntersectionObserver(entries => {
+      for (const e of entries) {
+        if (!e.isIntersecting) continue;
+        const ins = e.target.querySelector<HTMLElement>('ins.adsbygoogle');
+        // Skip if already initialised (guard against re-render)
+        if (!ins || ins.dataset['adLoaded']) continue;
+        ins.dataset['adLoaded'] = 'true';
+        this.adObserver.unobserve(e.target);
+        try {
+          const ads: any[] = (window as any).adsbygoogle ?? [];
+          (window as any).adsbygoogle = ads;
+          ads.push({});
+        } catch (_) { /* ignore — slot already initialised */ }
+      }
+    }, { threshold: 0.5 });
+  }
+
+  private observeAdCards(): void {
+    if (!this.adObserver || !this.scrollRef) return;
+    this.scrollRef.nativeElement
+      .querySelectorAll<HTMLElement>('.short-ad-card')
+      .forEach(card => this.adObserver.observe(card));
   }
 
   // ── IntersectionObserver ───────────────────────────────────────────────────
@@ -197,23 +226,23 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
           const idx = Number(e.target.getAttribute('data-idx'));
           if (isNaN(idx)) continue;
 
-          if (!e.isIntersecting || e.intersectionRatio < 0.55) {
+          if (!e.isIntersecting || e.intersectionRatio < 0.8) {
             const short = this.shorts()[idx];
-            // Stop YouTube immediately as card leaves
-            if (short?.videoType === 'youtube') {
-              this.ngZone.run(() =>
-                this.playedYtIds.update(s => { const n = new Set(s); n.delete(short._id); return n; })
+            if (short?.videoType === 'youtube' && short._id) {
+              // Keep iframe mounted — just pause via postMessage (no reload, no seek-to-start)
+              const card = this.scrollRef?.nativeElement.querySelector<HTMLElement>(`[data-idx="${idx}"]`);
+              const iframe = card?.querySelector<HTMLIFrameElement>('.short-iframe');
+              iframe?.contentWindow?.postMessage(
+                JSON.stringify({ event: 'command', func: 'pauseVideo', args: '' }), '*'
               );
             }
             if (short?.videoType === 'upload') {
               const card = this.scrollRef?.nativeElement.querySelector<HTMLElement>(`[data-idx="${idx}"]`);
               card?.querySelector<HTMLVideoElement>('.short-video')?.pause();
-              this.manuallyPausedSet.delete(idx); // clear so next entry autoplays
             }
             continue;
           }
 
-          // Enter NgZone only for the card that just became active
           this.ngZone.run(() => {
             this.activeIndex.set(idx);
             this.scheduleView(idx);
@@ -221,7 +250,7 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
           });
         }
       },
-      { threshold: [0, 0.55] }
+      { threshold: [0, 0.8] }
     );
   }
 
@@ -265,84 +294,124 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     if (!short) return;
 
     if (short.videoType === 'youtube' && short._id) {
-      this.playedYtIds.update(s => new Set([...s, short._id]));
-      const sendMuteCmd = () => {
-        const card = this.scrollRef?.nativeElement.querySelector<HTMLElement>(`[data-idx="${cardIdx}"]`);
+      if (this.manuallyPausedYtIds.has(short._id)) return;
+
+      const alreadyMounted = this.playedYtIds().has(short._id);
+      if (!alreadyMounted) {
+        // First time — add to signal so Angular renders the iframe
+        this.playedYtIds.update(s => new Set([...s, short._id]));
+      }
+
+      // Send play + mute state via postMessage (works on first load and on re-entry)
+      const sendCmds = () => {
+        const card   = this.scrollRef?.nativeElement.querySelector<HTMLElement>(`[data-idx="${cardIdx}"]`);
         const iframe = card?.querySelector<HTMLIFrameElement>('.short-iframe');
-        iframe?.contentWindow?.postMessage(
+        if (!iframe?.contentWindow) return;
+        if (alreadyMounted) {
+          iframe.contentWindow.postMessage(
+            JSON.stringify({ event: 'command', func: 'playVideo', args: '' }), '*'
+          );
+        }
+        iframe.contentWindow.postMessage(
           JSON.stringify({ event: 'command', func: this.isMuted() ? 'mute' : 'unMute', args: '' }), '*'
         );
       };
-      setTimeout(sendMuteCmd, 1000);
-      setTimeout(sendMuteCmd, 2000);
+      setTimeout(sendCmds, 800);
+      setTimeout(sendCmds, 1600);
       return;
     }
 
-    // Upload video — skip if the user deliberately paused this card
+    // Skip if the user deliberately paused this card
     if (this.manuallyPausedSet.has(cardIdx)) return;
 
     const vid = this.getVideoAt(cardIdx);
     if (!vid) return;
-    // Start muted (reliable autoplay). If user already unmuted via button, keep that preference.
-    vid.muted = this.isMuted();
+
+    // Step 1: always play muted — guaranteed to succeed on every browser
+    vid.muted = true;
     const p = vid.play();
-    if (p !== undefined) {
-      p.catch(() => {
-        // Unmuted autoplay blocked — fall back to muted silently
-        vid.muted = true;
-        this.isMuted.set(true);
-        vid.play().catch(() => { this.pendingPlayIdx = cardIdx; });
-      });
-    }
+    if (p === undefined) return; // older browsers — synchronous, already playing
+
+    p.then(() => {
+      // Step 2: video is playing — now attempt to unmute per user preference
+      if (!this.isMuted()) {
+        vid.muted = false;
+        // Some browsers revoke unmute outside a direct user gesture; catch silently
+        // If the property is reset by the browser, the icon will still show sound
+      }
+    }).catch(() => {
+      // Autoplay itself failed — wait for first user gesture
+      this.pendingPlayIdx = cardIdx;
+    });
   }
 
-  onCardTouchStart(event: TouchEvent): void {
-    const t = event.touches[0];
-    this.tapStart = { x: t.clientX, y: t.clientY, t: Date.now() };
+  onCardTouchStart(e: TouchEvent): void {
+    this.touchStartPos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
   }
 
-  onCardTouchEnd(cardIdx: number, event: TouchEvent): void {
-    const t  = event.changedTouches[0];
-    const dx = Math.abs(t.clientX - this.tapStart.x);
-    const dy = Math.abs(t.clientY - this.tapStart.y);
-    const dt = Date.now() - this.tapStart.t;
-    if (dx < 22 && dy < 22 && dt < 500) {
-      const target = event.target as HTMLElement;
-      if (target.closest('button, a, input, [role="button"], .short-actions, .short-info')) return;
-      this.lastTouchToggle = Date.now();
-      // preventDefault suppresses the synthetic click in non-passive contexts
-      try { event.preventDefault(); } catch (_) { /* passive — synthetic click handled via lastTouchToggle */ }
-      this.toggleVideo(cardIdx);
-    }
+  onCardTouchEnd(cardIdx: number, e: TouchEvent): void {
+    const t  = e.changedTouches[0];
+    const dx = Math.abs(t.clientX - this.touchStartPos.x);
+    const dy = Math.abs(t.clientY - this.touchStartPos.y);
+    // > 10 px movement = scroll gesture, not a tap
+    if (dx > 10 || dy > 10) return;
+    const target = e.target as HTMLElement;
+    if (target.closest('button, a, input, .short-actions, .short-info')) return;
+    this.lastTouchToggleTime = Date.now();
+    this.doToggle(cardIdx, e.currentTarget as HTMLElement);
   }
 
   onCardClick(cardIdx: number, event: Event): void {
-    // Ignore synthetic click generated right after a touch we already handled
-    if (Date.now() - this.lastTouchToggle < 600) return;
+    // Suppress synthetic click that fires after a touch we already handled
+    if (Date.now() - this.lastTouchToggleTime < 600) return;
     const target = event.target as HTMLElement;
-    if (target.closest('button, a, input, [role="button"], .short-actions, .short-info')) return;
-    this.toggleVideo(cardIdx);
+    if (target.closest('button, a, input, .short-actions, .short-info')) return;
+    this.doToggle(cardIdx, event.currentTarget as HTMLElement);
   }
 
-  toggleVideo(cardIdx: number): void {
-    const vid = this.getVideoAt(cardIdx);
+  private doToggle(cardIdx: number, cardEl: HTMLElement): void {
+    const short = this.shorts()[cardIdx];
+
+    // ── YouTube: postMessage play/pause (iframe stays mounted) ──
+    if (short?.videoType === 'youtube' && short._id && this.playedYtIds().has(short._id)) {
+      const iframe = cardEl.querySelector<HTMLIFrameElement>('.short-iframe');
+      if (this.manuallyPausedYtIds.has(short._id)) {
+        this.manuallyPausedYtIds.delete(short._id);
+        iframe?.contentWindow?.postMessage(
+          JSON.stringify({ event: 'command', func: 'playVideo', args: '' }), '*'
+        );
+        this.indicatorIsPlaying.set(true);
+      } else {
+        this.manuallyPausedYtIds.add(short._id);
+        iframe?.contentWindow?.postMessage(
+          JSON.stringify({ event: 'command', func: 'pauseVideo', args: '' }), '*'
+        );
+        this.indicatorIsPlaying.set(false);
+      }
+      this.flashIndicator(cardIdx);
+      return;
+    }
+
+    // ── Upload video ──
+    const vid = cardEl.querySelector<HTMLVideoElement>('video');
     if (!vid) return;
     if (vid.paused) {
       this.manuallyPausedSet.delete(cardIdx);
-      vid.muted = true; // muted = always playable; user can unmute via button
-      vid.play().catch(() => {});
+      vid.muted = true;
+      vid.play().then(() => { if (!this.isMuted()) vid.muted = false; }).catch(() => {});
+      this.indicatorIsPlaying.set(true);
     } else {
       this.manuallyPausedSet.add(cardIdx);
       vid.pause();
+      this.indicatorIsPlaying.set(false);
     }
+    this.flashIndicator(cardIdx);
+  }
+
+  private flashIndicator(cardIdx: number): void {
     this.pauseIndicatorIdx.set(cardIdx);
     if (this.piTimer) clearTimeout(this.piTimer);
     this.piTimer = setTimeout(() => this.pauseIndicatorIdx.set(-1), 700);
-  }
-
-  /** Used by template to decide which icon to show in the pause indicator. */
-  getVideoAt_paused(cardIdx: number): boolean {
-    return this.getVideoAt(cardIdx)?.paused ?? true;
   }
 
   toggleMute(event: Event): void {
