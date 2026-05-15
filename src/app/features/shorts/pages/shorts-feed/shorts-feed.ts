@@ -136,16 +136,25 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
       entries => {
         this.ngZone.run(() => {
           for (const e of entries) {
-            if (!e.isIntersecting || e.intersectionRatio < 0.55) continue;
             const idx = Number(e.target.getAttribute('data-idx'));
             if (isNaN(idx)) continue;
+
+            if (!e.isIntersecting || e.intersectionRatio < 0.55) {
+              // Card leaving viewport — stop YouTube iframe by collapsing it to thumbnail
+              const short = this.shorts()[idx];
+              if (short?.videoType === 'youtube') {
+                this.playedYtIds.update(s => { const n = new Set(s); n.delete(short._id); return n; });
+              }
+              continue;
+            }
+
             this.activeIndex.set(idx);
             this.scheduleView(idx);
             this.autoPlayVideo(idx);
           }
         });
       },
-      { threshold: 0.55 }
+      { threshold: [0, 0.55] }
     );
   }
 
