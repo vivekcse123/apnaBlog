@@ -1,0 +1,241 @@
+<div class="ms-page">
+
+  <!-- ── Header ── -->
+  <div class="ms-header">
+    <div>
+      <h2 class="ms-title">Manage Shorts</h2>
+      <p class="ms-sub">Review, publish and delete video shorts</p>
+    </div>
+    <a class="ms-preview-link" routerLink="/shorts" target="_blank">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+      View Shorts Feed
+    </a>
+  </div>
+
+  <!-- ── Stats ── -->
+  <div class="ms-stats">
+    <div class="ms-stat">
+      <span class="ms-stat-val">{{ totalShorts() }}</span>
+      <span class="ms-stat-label">Total</span>
+    </div>
+    <div class="ms-stat">
+      <span class="ms-stat-val ms-stat-val--green">{{ publishedCount() }}</span>
+      <span class="ms-stat-label">Published</span>
+    </div>
+    <div class="ms-stat">
+      <span class="ms-stat-val ms-stat-val--red">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.2 8.2 0 004.79 1.53V6.74a4.85 4.85 0 01-1.02-.05z"/></svg>
+        YouTube
+      </span>
+      <span class="ms-stat-label">{{ youtubeCount() }} shorts</span>
+    </div>
+    <div class="ms-stat">
+      <span class="ms-stat-val ms-stat-val--blue">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Uploaded
+      </span>
+      <span class="ms-stat-label">{{ uploadCount() }} shorts</span>
+    </div>
+  </div>
+
+  <!-- ── Filters ── -->
+  <div class="ms-filters">
+    <div class="ms-search">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+      </svg>
+      <input type="text" placeholder="Search by title…"
+             [value]="searchQuery"
+             (input)="onSearch($any($event.target).value)" />
+    </div>
+
+    <select [(ngModel)]="selectedCategory" (change)="onFilter()" class="ms-select">
+      <option value="">All Categories</option>
+      @for (cat of categories; track cat) {
+        <option [value]="cat">{{ cat }}</option>
+      }
+    </select>
+
+    <select [(ngModel)]="selectedStatus" (change)="onFilter()" class="ms-select">
+      <option value="">All Status</option>
+      <option value="published">Published</option>
+      <option value="pending">Pending</option>
+    </select>
+
+    <select [(ngModel)]="selectedType" (change)="onFilter()" class="ms-select">
+      <option value="">All Types</option>
+      <option value="youtube">YouTube</option>
+      <option value="upload">Uploaded</option>
+    </select>
+  </div>
+
+  <!-- ── Table ── -->
+  @if (isLoading()) {
+    <div class="ms-skeletons">
+      @for (i of [1,2,3,4,5]; track i) {
+        <div class="ms-skeleton-row">
+          <div class="sk sk-thumb"></div>
+          <div class="sk sk-line sk-lg"></div>
+          <div class="sk sk-line sk-sm"></div>
+          <div class="sk sk-line sk-sm"></div>
+          <div class="sk sk-line sk-xs"></div>
+        </div>
+      }
+    </div>
+  } @else if (shorts().length === 0) {
+    <div class="ms-empty">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--border-strong)" stroke-width="1.5" stroke-linecap="round">
+        <path d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.9L15 14v-4z"/>
+        <rect x="3" y="6" width="12" height="12" rx="2"/>
+      </svg>
+      <p>No shorts found</p>
+      @if (searchQuery || selectedCategory() || selectedStatus() || selectedType()) {
+        <button class="ms-clear-btn" (click)="searchQuery=''; selectedCategory.set(''); selectedStatus.set(''); selectedType.set(''); load(1)">
+          Clear filters
+        </button>
+      }
+    </div>
+  } @else {
+    <div class="ms-table-wrap">
+      <table class="ms-table">
+        <thead>
+          <tr>
+            <th>Short</th>
+            <th>Category</th>
+            <th>Type</th>
+            <th>Stats</th>
+            <th>Status</th>
+            <th>Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (s of shorts(); track trackById($index, s)) {
+            <tr [class.ms-row--pending]="s.status === 'pending'">
+              <!-- Short info -->
+              <td class="ms-td-short">
+                <div class="ms-thumb-wrap">
+                  @if (thumbnail(s)) {
+                    <img [src]="thumbnail(s)" [alt]="s.title" class="ms-thumb" loading="lazy" />
+                  } @else {
+                    <div class="ms-thumb ms-thumb--placeholder">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="1.5"><path d="M8 5v14l11-7z"/></svg>
+                    </div>
+                  }
+                  @if (s.videoType === 'youtube') {
+                    <span class="ms-yt-badge">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="#ff0000"><path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 00.5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 002.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 002.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.8 15.5V8.5l6.2 3.5-6.2 3.5z"/></svg>
+                    </span>
+                  }
+                </div>
+                <div class="ms-short-info">
+                  <span class="ms-short-title">{{ s.title }}</span>
+                  @if (s.caption) {
+                    <span class="ms-short-caption">{{ s.caption }}</span>
+                  }
+                  <span class="ms-short-author">@{{ s.user?.name }}</span>
+                </div>
+              </td>
+
+              <!-- Category -->
+              <td><span class="ms-cat-badge">{{ s.category }}</span></td>
+
+              <!-- Type -->
+              <td>
+                <span class="ms-type-badge" [class.ms-type-badge--yt]="s.videoType === 'youtube'">
+                  {{ s.videoType === 'youtube' ? 'YouTube' : 'Upload' }}
+                </span>
+              </td>
+
+              <!-- Stats -->
+              <td class="ms-td-stats">
+                <div class="ms-stats-row">
+                  <span title="Views">👁 {{ formatCount(s.views) }}</span>
+                  <span title="Likes">❤️ {{ formatCount(s.likesCount) }}</span>
+                  <span title="Comments">💬 {{ formatCount(s.commentsCount) }}</span>
+                </div>
+              </td>
+
+              <!-- Status -->
+              <td>
+                <button
+                  class="ms-status-btn"
+                  [class.ms-status-btn--published]="s.status === 'published'"
+                  [class.ms-status-btn--pending]="s.status === 'pending'"
+                  [disabled]="togglingId() === s._id"
+                  (click)="toggleStatus(s)"
+                  [title]="'Click to mark as ' + (s.status === 'published' ? 'pending' : 'published')">
+                  @if (togglingId() === s._id) {
+                    <span class="ms-spin"></span>
+                  } @else {
+                    {{ s.status === 'published' ? 'Published' : 'Pending' }}
+                  }
+                </button>
+              </td>
+
+              <!-- Date -->
+              <td class="ms-td-date">{{ timeAgo(s.createdAt) }}</td>
+
+              <!-- Actions -->
+              <td class="ms-td-actions">
+                <a class="ms-action-btn ms-action-btn--preview"
+                   [routerLink]="['/shorts']"
+                   [fragment]="s._id"
+                   title="Preview">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                </a>
+                <button
+                  class="ms-action-btn ms-action-btn--delete"
+                  (click)="confirmDelete(s._id)"
+                  title="Delete">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6"/>
+                    <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+                    <path d="M10 11v6M14 11v6"/>
+                    <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+                  </svg>
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ── Pagination ── -->
+    @if (totalPages() > 1) {
+      <div class="ms-pagination">
+        <button class="ms-page-btn" [disabled]="currentPage() === 1" (click)="prevPage()">← Prev</button>
+        <span class="ms-page-info">Page {{ currentPage() }} of {{ totalPages() }} &middot; {{ totalShorts() }} shorts</span>
+        <button class="ms-page-btn" [disabled]="currentPage() === totalPages()" (click)="nextPage()">Next →</button>
+      </div>
+    }
+  }
+
+</div>
+
+<!-- ── Delete confirm modal ── -->
+@if (pendingDeleteId()) {
+  <div class="ms-modal-backdrop" (click)="cancelDelete()">
+    <div class="ms-modal" (click)="$event.stopPropagation()">
+      <div class="ms-modal-icon">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+          <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+        </svg>
+      </div>
+      <h3>Delete Short?</h3>
+      <p>This will permanently remove the short. This cannot be undone.</p>
+      <div class="ms-modal-actions">
+        <button class="ms-modal-cancel" [disabled]="isDeleting()" (click)="cancelDelete()">Cancel</button>
+        <button class="ms-modal-delete" [disabled]="isDeleting()" (click)="proceedDelete()">
+          @if (isDeleting()) { <span class="ms-spin"></span> Deleting… } @else { Yes, Delete }
+        </button>
+      </div>
+    </div>
+  </div>
+}

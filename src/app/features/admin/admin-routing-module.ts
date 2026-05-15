@@ -8,6 +8,7 @@ import { CreatePost } from '../post/pages/create-post/create-post';
 import { CreateUser } from './pages/create-user/create-user';
 import { Settings } from './pages/settings/settings';
 import { Visitor } from './pages/visitor/visitor';
+import { ManageShorts } from './pages/manage-shorts/manage-shorts';
 
 const routes: Routes = [
   {
@@ -48,6 +49,11 @@ const routes: Routes = [
         path: 'visitor',
         component: Visitor,
         title: "ApnaInsights - Visitor"
+      },
+      {
+        path: 'manage-shorts',
+        component: ManageShorts,
+        title: 'ApnaInsights - Manage Shorts'
       }
     ]
   }

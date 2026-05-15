@@ -141,35 +141,33 @@ export class CreatePost implements OnInit, OnDestroy {
     title:       ['', [Validators.required, Validators.minLength(5), Validators.maxLength(100)]],
     description: ['', [Validators.required, Validators.minLength(10)]],
     content:     ['', [Validators.required, minWordCountValidator(MIN_WORDS)]],
-    categories:  this.fb.array(this.categoryOptions.map(() => this.fb.control(false))),
+    category:    ['', Validators.required],
     tags:        this.fb.array(this.tagOptions.map(() => this.fb.control(false))),
     comments:    [''],
     status:      ['', Validators.required],
   });
 
-  get categoriesArray(): FormArray {
-    return this.createBlogForm.get('categories') as FormArray;
-  }
-
   get tagsArray(): FormArray {
     return this.createBlogForm.get('tags') as FormArray;
   }
 
-  hasAtLeastOneChecked(arrayName: 'categories' | 'tags'): boolean {
+  hasAtLeastOneChecked(arrayName: 'tags'): boolean {
     const arr = this.createBlogForm.get(arrayName) as FormArray;
     return arr.controls.some((c: AbstractControl) => c.value === true);
   }
 
-  /** Rebuild a FormArray in-place when taxonomy options change. */
+  /** Rebuild tag FormArray in-place when taxonomy options change. */
   private rebuildTaxonomyArrays(newCats: string[], newTags: string[]): void {
     const catsChanged = JSON.stringify(newCats) !== JSON.stringify(this.categoryOptions);
     const tagsChanged = JSON.stringify(newTags) !== JSON.stringify(this.tagOptions);
 
     if (catsChanged) {
       this.categoryOptions = newCats;
-      const arr = this.categoriesArray;
-      while (arr.length) arr.removeAt(0);
-      newCats.forEach(() => arr.push(this.fb.control(false)));
+      // Reset category selection when options change
+      const currentCat = this.createBlogForm.get('category')?.value;
+      if (currentCat && !newCats.includes(currentCat)) {
+        this.createBlogForm.get('category')?.setValue('');
+      }
     }
 
     if (tagsChanged) {
@@ -1045,13 +1043,14 @@ export class CreatePost implements OnInit, OnDestroy {
       this.createBlogForm.patchValue({ status: 'pending' });
     }
 
-    const categorySelected = this.hasAtLeastOneChecked('categories');
-    if (this.createBlogForm.invalid || !categorySelected) {
-      if (!categorySelected) this.errorMessage.set('Please select at least one category.');
+    if (this.createBlogForm.invalid) {
+      if (!this.createBlogForm.get('category')?.value) {
+        this.errorMessage.set('Please select a category.');
+      }
       return;
     }
 
-    const selectedCategories = this.categoryOptions.filter((_, i) => this.categoriesArray.at(i).value);
+    const selectedCategories = [this.createBlogForm.value.category];
     const selectedTags       = this.tagOptions.filter((_, i) => this.tagsArray.at(i).value);
 
     const allImages    = this.blogImages();
@@ -1093,6 +1092,7 @@ export class CreatePost implements OnInit, OnDestroy {
           this.createBlogForm.reset();
           this.createBlogForm.get('status')?.setValidators(Validators.required);
           this.createBlogForm.get('status')?.updateValueAndValidity();
+          this.createBlogForm.get('category')?.setValue('');
           if (this.editorRef?.nativeElement) this.editorRef.nativeElement.innerHTML = '';
           this.closeModal();
         }, 1500);

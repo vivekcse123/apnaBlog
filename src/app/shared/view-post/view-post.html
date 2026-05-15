@@ -564,13 +564,13 @@
           <div class="edit-field full">
             <div class="form-section-label">
               <span class="form-section-icon">🗂️</span> Category <span class="required-star">*</span>
-              <span class="field-hint-text">Pick one or more</span>
+              <span class="field-hint-text">Pick one</span>
             </div>
             <div class="pill-selector">
               @for (cat of categoryOptions(); track cat) {
                 <span class="pill selectable"
                   [class.selected]="isCategorySelected(cat)"
-                  (click)="toggleCategory(cat)">
+                  (click)="selectCategory(cat)">
                   {{ cat }}
                 </span>
               }

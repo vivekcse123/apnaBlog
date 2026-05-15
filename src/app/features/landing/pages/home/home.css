@@ -66,6 +66,87 @@ body {
 }
 .nav-link--cat { padding-right: 8px; }
 
+.nav-link--shorts {
+  color: #ef4444;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.nav-link--shorts:hover { color: #dc2626; background: rgba(239,68,68,.08); }
+
+/* ── Shorts pill: hidden on desktop, shown in header when nav is hidden ── */
+.shorts-mobile-pill {
+  display: none;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border-radius: 99px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: 'DM Sans', sans-serif;
+  text-decoration: none;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(239,68,68,.35);
+  transition: background .15s, transform .15s;
+  flex-shrink: 0;
+}
+.shorts-mobile-pill:hover  { background: #dc2626; }
+.shorts-mobile-pill:active { transform: scale(.96); }
+
+/* Very small phones: icon only, no text label */
+@media (max-width: 360px) {
+  .shorts-mobile-pill span { display: none; }
+  .shorts-mobile-pill { padding: 7px 9px; gap: 0; }
+}
+
+/* ── Drawer Shorts card ── */
+.drawer-shorts-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 8px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #ef4444, #b91c1c);
+  color: #fff;
+  text-decoration: none;
+  box-shadow: 0 4px 14px rgba(239,68,68,.35);
+  transition: opacity .15s, transform .15s;
+}
+.drawer-shorts-card:hover { opacity: .92; transform: translateY(-1px); }
+.drawer-shorts-card:active { transform: scale(.98); }
+
+.drawer-shorts-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.drawer-shorts-label {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.drawer-shorts-label strong {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+}
+.drawer-shorts-label span {
+  font-size: 12px;
+  opacity: .8;
+  font-weight: 400;
+}
+
 .nav-chevron { transition: transform 0.2s; }
 .nav-chevron.open { transform: rotate(180deg); }
 
@@ -1419,17 +1500,27 @@ body {
   .hero-wrap { padding: 64px 6% 60px; }
 }
 
+/* ── Tablet & mobile header (≤1024px) ─────────────────────────────────────
+   Single master breakpoint for all header responsive behaviour.
+   768px block below only overrides padding/height/drawer-top.
+   ─────────────────────────────────────────────────────────────────────── */
 @media (max-width: 1024px) {
-  .header { grid-template-columns: auto auto; padding: 0 24px; }
-  .header-nav { display: none; }
+  /* 2-column grid: logo | [1fr spacer + right-actions] */
+  .header          { grid-template-columns: auto 1fr; padding: 0 20px; }
+  .header-nav      { display: none; }
+  .desktop-only    { display: none !important; }
+  .hamburger       { display: flex; }
+  .mobile-drawer   { display: flex; top: 64px; }
+  .drawer-backdrop { display: block; }
+  /* Right side now has only 3 items: theme + pill + hamburger */
+  .header-right    { gap: 8px; }
+  .shorts-mobile-pill { display: inline-flex; }
 }
 
 @media (max-width: 768px) {
+  /* Header shrinks to 60px — drawer top follows */
   .header { padding: 0 16px; height: 60px; }
-  .desktop-only { display: none !important; }
-  .hamburger { display: flex; }
-  .mobile-drawer { display: flex; top: 60px; }
-  .drawer-backdrop { display: block; }
+  .mobile-drawer { top: 60px; }
   .filter-wrap { top: 0px; }
 
   .hero-wrap { padding: 48px 5% 44px; }

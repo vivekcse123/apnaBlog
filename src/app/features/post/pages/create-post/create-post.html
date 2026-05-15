@@ -26,7 +26,7 @@
       </div>
     }
 
-    <form [formGroup]="createBlogForm" (ngSubmit)="createBlog()">
+    <form [formGroup]="createBlogForm" (ngSubmit)="createBlog()" class="form-grid">
 
       <!-- ── Title ── -->
       <div class="form-field">
@@ -64,6 +64,7 @@
       </div>
 
       <!-- ── Content ── -->
+      <div class="form-field">
       <div class="form-section-label">
         <span class="form-section-icon">✍️</span> Content <span class="required-star">*</span>
         <span class="shortcut-hint">Ctrl+B · Ctrl+I · Ctrl+U · Ctrl+K</span>
@@ -368,23 +369,24 @@
           </small>
         }
       }
+      </div>
 
       <!-- ── Categories ── -->
       <div class="form-field">
         <div class="form-section-label">
           <span class="form-section-icon">🗂️</span> Category <span class="required-star">*</span>
-          <span class="field-hint-text">Pick one or more</span>
+          <span class="field-hint-text">Pick one</span>
         </div>
-        <div class="pill-row" formArrayName="categories">
-          @for (category of categoryOptions; track category; let i = $index) {
+        <div class="pill-row">
+          @for (category of categoryOptions; track category) {
             <label class="pill-check">
-              <input type="checkbox" [formControlName]="i" class="pill-check-input" />
+              <input type="radio" formControlName="category" [value]="category" class="pill-check-input" />
               <span class="pill-check-label">{{ category }}</span>
             </label>
           }
         </div>
-        @if (isSubmitted() && !hasAtLeastOneChecked('categories')) {
-          <small class="error" style="margin-top:20px;display:block;">Select at least one category</small>
+        @if (isSubmitted() && !createBlogForm.get('category')?.value) {
+          <small class="error" style="margin-top:20px;display:block;">Select a category</small>
         }
       </div>
 
@@ -474,16 +476,18 @@
 
       <!-- ── Status: admin only ── -->
       @if (isAdmin()) {
-        <select formControlName="status" style="margin-top: 10px;">
-          <option value="" disabled selected>Select Status</option>
-          <option value="draft">Draft</option>
-          <option value="published">Published</option>
-        </select>
-        @if (createBlogForm.get('status')?.invalid && (isSubmitted() || createBlogForm.get('status')?.touched)) {
-          @if (createBlogForm.get('status')?.errors?.['required']) {
-            <small class="error">Status is required...!</small>
+        <div class="form-field">
+          <select formControlName="status">
+            <option value="" disabled selected>Select Status</option>
+            <option value="draft">Draft</option>
+            <option value="published">Published</option>
+          </select>
+          @if (createBlogForm.get('status')?.invalid && (isSubmitted() || createBlogForm.get('status')?.touched)) {
+            @if (createBlogForm.get('status')?.errors?.['required']) {
+              <small class="error">Status is required</small>
+            }
           }
-        }
+        </div>
       } @else {
         <!-- Non-admin: show info banner instead -->
         <div class="pending-notice">

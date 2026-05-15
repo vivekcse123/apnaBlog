@@ -1,4 +1,5 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { RouterOutlet, Router, NavigationStart, NavigationEnd, NavigationCancel, NavigationError } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { Loader } from './shared/loader/loader';
@@ -7,6 +8,7 @@ import { CookieConsent } from './shared/cookie-consent/cookie-consent';
 import { LoaderService } from './core/services/loader-service';
 import { AliveService } from './core/services/alive-server/alive-service';
 import { VisitorService } from './core/services/visitor';
+import { Auth } from './core/services/auth';
 
 @Component({
   selector: 'app-root',
@@ -21,12 +23,18 @@ export class App implements OnInit, OnDestroy {
   private routerSub!:    Subscription;
   private aliveService   = inject(AliveService);
   private visitorService = inject(VisitorService);
+  private authService    = inject(Auth);
+  private platformId     = inject(PLATFORM_ID);
   private aliveStarted   = false;
   private isFirstNav     = true;
 
   constructor(private router: Router) {}
 
   ngOnInit(): void {
+    if (isPlatformBrowser(this.platformId) && this.authService.isTokenExpired()) {
+      this.authService.logout();
+    }
+
     this.routerSub = this.router.events.subscribe(event => {
       if (event instanceof NavigationStart) {
         if (!this.isFirstNav) {

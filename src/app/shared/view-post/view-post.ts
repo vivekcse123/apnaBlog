@@ -1228,13 +1228,8 @@ export class ViewPost implements OnInit, OnDestroy {
     });
   }
 
-  toggleCategory(category: string): void {
-    const current: string[] = this.editForm.get('categories')?.value ?? [];
-    this.editForm.patchValue({
-      categories: current.includes(category)
-        ? current.filter(c => c !== category)
-        : [...current, category]
-    });
+  selectCategory(category: string): void {
+    this.editForm.patchValue({ categories: [category] });
   }
 
   toggleTag(tag: string): void {

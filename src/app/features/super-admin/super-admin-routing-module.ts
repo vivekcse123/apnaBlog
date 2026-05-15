@@ -8,6 +8,7 @@ import { ManageUsers } from '../admin/pages/manage-users/manage-users';
 import { PostLists } from '../post/pages/post-lists/post-lists';
 import { Settings } from '../admin/pages/settings/settings';
 import { Visitor } from '../admin/pages/visitor/visitor';
+import { ManageShorts } from '../admin/pages/manage-shorts/manage-shorts';
 
 const routes: Routes = [
   {
@@ -18,6 +19,7 @@ const routes: Routes = [
       { path: 'role-management', component: RoleManagement, title: 'ApnaInsights - Role Management' },
       { path: 'manage-users', component: ManageUsers, title: 'ApnaInsights - Manage Users' },
       { path: 'manage-blogs', component: PostLists, title: 'ApnaInsights - Manage Blogs' },
+      { path: 'manage-shorts', component: ManageShorts, title: 'ApnaInsights - Manage Shorts' },
       { path: 'taxonomy', component: ManageTaxonomy, title: 'ApnaInsights - Taxonomy Manager' },
       { path: 'settings', component: Settings, title: 'ApnaInsights - Settings' },
       { path: 'visitor', component: Visitor, title: 'ApnaInsights - Visitor' },

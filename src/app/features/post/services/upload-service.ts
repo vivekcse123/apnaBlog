@@ -33,4 +33,13 @@ export class UploadService {
       `${this.uploadEndpoint}/${encodeURIComponent(publicId)}`
     );
   }
+
+  uploadVideo(file: File): Observable<UploadResponse> {
+    const formData = new FormData();
+    formData.append('video', file);
+    return this.http.post<UploadResponse>(
+      environment.apiVideoUploadEndpoint,
+      formData
+    );
+  }
 }
