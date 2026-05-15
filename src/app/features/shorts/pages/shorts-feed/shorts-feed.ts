@@ -55,7 +55,7 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
   likedIds     = signal<Set<string>>(this.loadLikedFromStorage());
   isMuted             = signal(false);
   pauseIndicatorIdx   = signal(-1);
-  indicatorIsPlaying  = signal(false); // true = just resumed, false = just paused
+  indicatorIsPlaying  = signal(false);
   private piTimer: ReturnType<typeof setTimeout> | null = null;
 
   private page                  = 1;
@@ -69,7 +69,7 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
   private manuallyPausedYtIds   = new Set<string>();
   private touchStartPos         = { x: 0, y: 0 };
   private lastTouchToggleTime   = 0;
-  private gestureUnlocked       = false; // true after first user touch/click
+  private gestureUnlocked       = true;  // navigation click is itself a user gesture
 
   readonly LIKED_KEY   = 'apna_liked_shorts';
   readonly VIEWED_PREFIX = 'apna_viewed_short_';
@@ -109,11 +109,13 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     const unlock = () => {
       this.gestureUnlocked = true;
       this.ngZone.run(() => {
-        // Unmute whatever is playing right now — user has gestured so browser allows it
         const vid = this.getVideoAt(this.activeIndex());
-        if (vid && !vid.paused) vid.muted = false;
+        if (vid && !vid.paused) {
+          vid.muted = false;
+          this.isMuted.set(false);
+        }
 
-        // Also unmute any active YouTube iframe
+        // Unmute active YouTube iframe
         const activeCard = this.scrollRef?.nativeElement
           .querySelector<HTMLElement>(`[data-idx="${this.activeIndex()}"]`);
         activeCard?.querySelector<HTMLIFrameElement>('.short-iframe')
@@ -121,7 +123,6 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
             JSON.stringify({ event: 'command', func: 'unMute', args: '' }), '*'
           );
 
-        // Retry a pending autoplay that was blocked before gesture
         if (this.pendingPlayIdx >= 0) {
           this.autoPlayVideo(this.pendingPlayIdx);
           this.pendingPlayIdx = -1;
@@ -340,18 +341,23 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     // Before that, start muted (guaranteed to succeed) and attempt to unmute
     // in the resolved callback — works on most Android browsers; iOS Safari
     // will stay muted until gestureUnlock fires and sets vid.muted = false.
-    vid.muted = !this.gestureUnlocked || this.isMuted();
+    // After gesture: play unmuted directly. Before gesture: start muted,
+    // icon shows muted so the user isn't confused by silent "unmuted" state.
+    const wantMuted = !this.gestureUnlocked || this.isMuted();
+    vid.muted = wantMuted;
 
     const p = vid.play();
     if (p === undefined) return;
 
     p.then(() => {
-      // If we started muted and user preference is unmuted, try to unmute now
-      if (vid.muted && !this.isMuted()) vid.muted = false;
+      this.ngZone.run(() => {
+        this.isMuted.set(vid.muted); // sync icon with actual state
+      });
     }).catch(() => {
       if (!vid.muted) {
-        // Unmuted play was blocked — fall back to muted
+        // Unmuted play blocked — fall back to muted silently
         vid.muted = true;
+        this.ngZone.run(() => this.isMuted.set(true));
         vid.play().catch(() => { this.pendingPlayIdx = cardIdx; });
       } else {
         this.pendingPlayIdx = cardIdx;

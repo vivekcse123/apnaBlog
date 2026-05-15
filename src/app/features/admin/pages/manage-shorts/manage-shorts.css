@@ -456,26 +456,46 @@
 /* ── Responsive ── */
 @media (max-width: 768px) {
   .ms-page {
-    padding: 16px 12px;
-    min-height: 100vh;
+    padding: 14px 12px 32px;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
   }
 
-  .ms-stats { gap: 8px; }
-  .ms-stat  { min-width: 0; padding: 12px 14px; }
+  /* Header: stack title and button */
+  .ms-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .ms-preview-link { align-self: flex-start; font-size: 12px; padding: 7px 14px; }
 
-  /* Make the table horizontally scrollable instead of clipping */
+  /* Stats: 2×2 grid */
+  .ms-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .ms-stat { min-width: 0; padding: 12px 14px; }
+  .ms-stat-val { font-size: 18px; }
+
+  /* Filters: stack vertically, full width */
+  .ms-filters { flex-direction: column; gap: 8px; }
+  .ms-search, .ms-select { width: 100%; box-sizing: border-box; }
+  .ms-search input { width: 100%; }
+
+  /* Table: horizontally scrollable */
   .ms-table-wrap {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    border-radius: 12px;
+    border-radius: 10px;
+    /* Hint that content scrolls */
+    -ms-overflow-style: -ms-autohiding-scrollbar;
   }
+  .ms-table { min-width: 620px; } /* prevent columns from collapsing */
+  .ms-table th, .ms-table td { padding: 10px 10px; font-size: 12px; white-space: nowrap; }
+  .ms-short-title  { max-width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ms-short-caption { display: none; } /* hide on mobile to save space */
 
-  .ms-table th, .ms-table td { padding: 10px 12px; font-size: 13px; }
-  .ms-short-title, .ms-short-caption { max-width: 110px; }
+  /* Thumb smaller */
+  .ms-thumb { width: 44px; height: 58px; }
 
-  /* Filters stack vertically */
-  .ms-filters { flex-direction: column; gap: 8px; }
-  .ms-filter-select, .ms-search-input { width: 100%; }
+  /* Pagination: center and wrap */
+  .ms-pagination { flex-wrap: wrap; justify-content: center; gap: 6px; }
+  .ms-page-btn { min-width: 34px; height: 34px; font-size: 12px; }
 }
