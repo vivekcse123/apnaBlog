@@ -455,7 +455,27 @@
 
 /* ── Responsive ── */
 @media (max-width: 768px) {
-  .ms-page { padding: 20px 16px; }
-  .ms-table th, .ms-table td { padding: 10px 12px; }
-  .ms-short-title, .ms-short-caption { max-width: 130px; }
+  .ms-page {
+    padding: 16px 12px;
+    min-height: 100vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .ms-stats { gap: 8px; }
+  .ms-stat  { min-width: 0; padding: 12px 14px; }
+
+  /* Make the table horizontally scrollable instead of clipping */
+  .ms-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 12px;
+  }
+
+  .ms-table th, .ms-table td { padding: 10px 12px; font-size: 13px; }
+  .ms-short-title, .ms-short-caption { max-width: 110px; }
+
+  /* Filters stack vertically */
+  .ms-filters { flex-direction: column; gap: 8px; }
+  .ms-filter-select, .ms-search-input { width: 100%; }
 }
