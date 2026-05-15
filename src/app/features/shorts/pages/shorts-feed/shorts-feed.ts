@@ -69,7 +69,8 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
   private manuallyPausedYtIds   = new Set<string>();
   private touchStartPos         = { x: 0, y: 0 };
   private lastTouchToggleTime   = 0;
-  private gestureUnlocked       = true;  // navigation click is itself a user gesture
+  private gestureUnlocked       = true;
+  private snapTimer:            ReturnType<typeof setTimeout> | null = null;
 
   readonly LIKED_KEY   = 'apna_liked_shorts';
   readonly VIEWED_PREFIX = 'apna_viewed_short_';
@@ -95,6 +96,7 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     this.initAdObserver();
     this.cardRefs.changes.subscribe(() => this.observeAll());
     this.setupGestureUnlock();
+    this.setupScrollGesturePlay();
   }
 
   ngOnDestroy(): void {
@@ -103,6 +105,25 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     this.viewTimers.forEach(t => clearTimeout(t));
     if (this.scrollRafId) cancelAnimationFrame(this.scrollRafId);
     if (this.piTimer) clearTimeout(this.piTimer);
+    if (this.snapTimer) clearTimeout(this.snapTimer);
+  }
+
+  /** Key fix for mobile: touchend on the scroll container IS a user gesture.
+   *  Calling vid.play() within ~350 ms of touchend allows unmuted autoplay
+   *  on iOS Safari and Android — the IntersectionObserver cannot do this
+   *  because its callback runs outside any gesture activation window. */
+  private setupScrollGesturePlay(): void {
+    if (!this.scrollRef) return;
+    this.scrollRef.nativeElement.addEventListener('touchend', () => {
+      if (this.snapTimer) clearTimeout(this.snapTimer);
+      this.snapTimer = setTimeout(() => {
+        this.ngZone.run(() => {
+          const idx = this.activeIndex();
+          this.manuallyPausedSet.delete(idx); // clear if we paused during scroll
+          this.autoPlayVideo(idx);
+        });
+      }, 350); // snap animation takes ~300 ms; 350 ms gives a safe margin
+    }, { passive: true });
   }
 
   private setupGestureUnlock(): void {
