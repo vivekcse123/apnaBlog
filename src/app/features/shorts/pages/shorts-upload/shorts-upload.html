@@ -6,14 +6,16 @@
 
   <div class="sheet-header">
     <button class="sheet-back" (click)="back()" aria-label="Back">
-      @if (step() === 'form') {
+      @if (step() === 'form' || step() === 'trim') {
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
       } @else {
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       }
     </button>
     <span class="sheet-title">
-      {{ step() === 'form' ? 'Short Details' : 'New Short' }}
+      @if (step() === 'trim') { Trim Video }
+      @else if (step() === 'form') { Short Details }
+      @else { New Short }
     </span>
     <div style="width:32px"></div>
   </div>
@@ -94,7 +96,7 @@
                 <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
               </svg>
               <span>Tap to select a video</span>
-              <span class="file-hint">MP4, WebM, MOV, AVI · under 50 MB</span>
+              <span class="file-hint">MP4, WebM, MOV, AVI · max 30 sec · under 50 MB</span>
             </label>
           } @else if (isUploading()) {
             <div class="upload-progress">
@@ -108,6 +110,79 @@
             </div>
           }
         </div>
+      }
+
+      @if (errorMsg()) {
+        <p class="upload-error">{{ errorMsg() }}</p>
+      }
+    </div>
+  }
+
+  <!-- ── Step 1b: Trim ── -->
+  @if (step() === 'trim') {
+    <div class="sheet-body">
+
+      <p class="trim-hint">
+        Your video is <strong>{{ fmtSec(rawDuration()) }}</strong> long.
+        Drag the slider to pick the best <strong>30-second</strong> clip.
+      </p>
+
+      <!-- Video preview -->
+      <div class="trim-preview-wrap">
+        <video
+          #trimVideoEl
+          class="trim-preview-video"
+          [src]="videoPreview()"
+          muted
+          playsinline
+          preload="metadata">
+        </video>
+
+        <!-- Clip window indicator overlay -->
+        <div class="trim-clip-bar">
+          <div class="trim-clip-fill"
+               [style.left.%]="(trimStart() / rawDuration()) * 100"
+               [style.width.%]="(MAX_DURATION_SEC / rawDuration()) * 100">
+          </div>
+        </div>
+      </div>
+
+      <!-- Time labels -->
+      <div class="trim-labels">
+        <span class="trim-label-start">
+          <span class="trim-label-tag">Start</span>
+          {{ fmtSec(trimStart()) }}
+        </span>
+        <span class="trim-label-dur">30s clip</span>
+        <span class="trim-label-end">
+          <span class="trim-label-tag">End</span>
+          {{ fmtSec(trimEnd) }}
+        </span>
+      </div>
+
+      <!-- Slider -->
+      <input
+        type="range"
+        class="trim-slider"
+        [min]="0"
+        [max]="trimMax"
+        [step]="0.1"
+        [value]="trimStart()"
+        (input)="onTrimSlider($event)" />
+
+      <div class="trim-hint-sm">
+        Slide to choose where your clip starts
+      </div>
+
+      @if (isUploading()) {
+        <div class="upload-progress">
+          <span class="spin-ring"></span>
+          <span>Uploading to Cloudinary…</span>
+        </div>
+      } @else {
+        <button class="submit-btn" (click)="confirmTrim()">
+          Use this clip →
+        </button>
       }
 
       @if (errorMsg()) {

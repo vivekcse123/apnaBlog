@@ -84,6 +84,9 @@
             </video>
             <!-- Tap to toggle play/pause — stopPropagation so actions don't trigger it -->
             <div class="vid-tap-area" (click)="toggleVideo(i, $event)"></div>
+            @if (short.duration) {
+              <span class="duration-badge">{{ formatDuration(short.duration) }}</span>
+            }
           } @else {
             <!-- fallback thumbnail -->
             <div class="short-fallback">

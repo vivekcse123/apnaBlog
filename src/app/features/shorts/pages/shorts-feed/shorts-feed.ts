@@ -392,6 +392,13 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     return `${Math.floor(secs / 86400)}d`;
   }
 
+  formatDuration(seconds: number | null | undefined): string {
+    if (!seconds) return '';
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    return `${m}:${s.toString().padStart(2, '0')}`;
+  }
+
   trackById(_: number, item: VideoShort): string { return item._id; }
   trackByComment(_: number, c: ShortComment): string { return c._id; }
 }

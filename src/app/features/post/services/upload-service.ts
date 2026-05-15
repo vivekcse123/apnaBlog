@@ -4,11 +4,14 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 
 export interface UploadResponse {
-  success:  boolean;
-  message:  string;
-  url:      string;
-  publicId: string;
-  images:   { url: string; publicId: string }[];
+  success:      boolean;
+  message:      string;
+  url:          string;
+  publicId:     string;
+  images:       { url: string; publicId: string }[];
+  // Video-upload fields (returned by /api/upload/video)
+  duration?:     number;
+  thumbnailUrl?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -34,9 +37,10 @@ export class UploadService {
     );
   }
 
-  uploadVideo(file: File): Observable<UploadResponse> {
+  uploadVideo(file: File, startTime = 0): Observable<UploadResponse> {
     const formData = new FormData();
     formData.append('video', file);
+    if (startTime > 0) formData.append('startTime', String(startTime));
     return this.http.post<UploadResponse>(
       environment.apiVideoUploadEndpoint,
       formData
