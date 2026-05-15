@@ -81,11 +81,12 @@
               class="short-video"
               [src]="short.videoUrl"
               [poster]="short.thumbnailUrl || ''"
+              autoplay
               muted
               playsinline
               webkit-playsinline
               loop
-              preload="metadata">
+              preload="auto">
             </video>
             @if (short.duration) {
               <span class="duration-badge">{{ formatDuration(short.duration) }}</span>
@@ -107,7 +108,7 @@
         <!-- Pause / play flash indicator -->
         @if (pauseIndicatorIdx() === i) {
           <div class="short-pause-indicator" aria-hidden="true">
-            @if (getVideoAt_paused(i)) {
+            @if (indicatorIsPlaying()) {
               <svg width="32" height="32" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
             } @else {
               <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
@@ -214,13 +215,14 @@
         </div>
       </div>
 
-      <!-- Ad card — injected after every 5th short -->
+      <!-- Ad card — first after 7th short, then every 8 -->
       @if (isAdSlot(i)) {
         <div class="short-ad-card">
           <span class="short-ad-label">Sponsored</span>
           <div class="short-ad-inner">
+            <div class="short-ad-shimmer"></div>
             <ins class="adsbygoogle"
-              style="display:block"
+              style="display:block;min-height:250px"
               data-ad-client="ca-pub-6477809641944524"
               data-ad-slot="2024301795"
               data-ad-format="auto"
