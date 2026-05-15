@@ -212,13 +212,33 @@
   background: #1a1a1a;
 }
 
-.vid-tap-area {
+.short-card { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+
+/* ── Pause / play flash indicator ── */
+.short-pause-indicator {
   position: absolute;
-  inset: 0;
-  z-index: 3;        /* above gradient(2), below info/actions(10) */
-  touch-action: manipulation;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 20;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: rgba(0,0,0,.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  animation: piFlash .7s ease forwards;
+}
+
+@keyframes piFlash {
+  0%   { opacity: 0; transform: translate(-50%,-50%) scale(.7); }
+  20%  { opacity: 1; transform: translate(-50%,-50%) scale(1.05); }
+  60%  { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%,-50%) scale(.85); }
 }
 
 
@@ -530,21 +550,34 @@
   .short-ad-card { max-width: 420px; margin: 0 auto; }
   .shorts-scroll { background: #000; }
 
-  /* Center the category bar over the video card */
+  /* ── Left vertical sidebar for categories ──
+     Card is 420 px wide, centered. We position the sidebar just to the left
+     of the card's left edge, right-aligning chips toward the video. */
   .cat-bar {
-    left: 50%;
+    top: 80px;
+    bottom: 80px;
+    left: calc(50% - 210px - 136px);  /* card-left-edge − gap(8) − sidebar-width(128) */
     right: auto;
-    transform: translateX(-50%);
-    width: 420px;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 6px;
-    padding: 6px 12px;
-    border-radius: 0 0 14px 14px;
-    background: rgba(0,0,0,.45);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    width: 128px;
+    transform: none;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: flex-start;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scrollbar-width: none;
+    gap: 8px;
+    padding: 8px 4px;
+    background: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    /* horizontal scroll reset */
+    scroll-behavior: auto;
+    -webkit-overflow-scrolling: auto;
   }
+  .cat-bar::-webkit-scrollbar { display: none; }
+
+  .cat-chip { font-size: 12px; padding: 5px 12px; }
 }
 
 /* ── Comment drawer ── */

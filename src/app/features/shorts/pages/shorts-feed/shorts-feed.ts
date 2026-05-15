@@ -53,7 +53,9 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
   // tracks which YouTube cards the user has tapped "play" on
   playedYtIds  = signal<Set<string>>(new Set());
   likedIds     = signal<Set<string>>(this.loadLikedFromStorage());
-  isMuted      = signal(false); // default unmuted — video starts muted for autoplay then unmutes
+  isMuted             = signal(false);
+  pauseIndicatorIdx   = signal(-1);
+  private piTimer: ReturnType<typeof setTimeout> | null = null;
 
   private page            = 1;
   private observer!:      IntersectionObserver;
@@ -61,8 +63,7 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
   private viewTimers      = new Map<number, ReturnType<typeof setTimeout>>();
   private scrollRafId     = 0;
   private pendingPlayIdx  = -1;
-  private hasScrolled     = false;
-  private tapStart        = { x: 0, y: 0, t: 0 }; // tap detection for mobile
+  private tapStart        = { x: 0, y: 0, t: 0 };
   private adsPushedCount  = 0;
 
   readonly LIKED_KEY   = 'apna_liked_shorts';
@@ -94,6 +95,7 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     this.observer?.disconnect();
     this.viewTimers.forEach(t => clearTimeout(t));
     if (this.scrollRafId) cancelAnimationFrame(this.scrollRafId);
+    if (this.piTimer) clearTimeout(this.piTimer);
   }
 
   // Unlock autoplay after first user touch/click (required by iOS Safari & some Android)
@@ -309,32 +311,46 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  // Record touch start — used to distinguish tap from scroll on mobile
-  onVideoTouchStart(event: TouchEvent): void {
+  onCardTouchStart(event: TouchEvent): void {
     const t = event.touches[0];
     this.tapStart = { x: t.clientX, y: t.clientY, t: Date.now() };
   }
 
-  // Fire only if movement < 8px and duration < 250ms (genuine tap, not a scroll)
-  onVideoTouchEnd(cardIdx: number, event: TouchEvent): void {
-    event.stopPropagation();
+  onCardTouchEnd(cardIdx: number, event: TouchEvent): void {
     const t  = event.changedTouches[0];
     const dx = Math.abs(t.clientX - this.tapStart.x);
     const dy = Math.abs(t.clientY - this.tapStart.y);
     const dt = Date.now() - this.tapStart.t;
-    if (dx < 8 && dy < 8 && dt < 250) {
-      event.preventDefault(); // stop the synthesised click from firing twice
-      this.toggleVideo(cardIdx, event);
+    // Generous thresholds — mobile fingers drift up to 20 px
+    if (dx < 20 && dy < 20 && dt < 500) {
+      // Skip if the touch originated inside an interactive child
+      const target = event.target as HTMLElement;
+      if (target.closest('button, a, input, [role="button"], .short-actions, .short-info')) return;
+      event.preventDefault(); // suppress the synthesised click so we don't double-toggle
+      event.stopPropagation();
+      this.toggleVideo(cardIdx);
     }
   }
 
-  // Desktop click fallback
-  toggleVideo(cardIdx: number, event: Event): void {
-    event.stopPropagation();
+  onCardClick(cardIdx: number, event: Event): void {
+    const target = event.target as HTMLElement;
+    if (target.closest('button, a, input, [role="button"], .short-actions, .short-info')) return;
+    this.toggleVideo(cardIdx);
+  }
+
+  toggleVideo(cardIdx: number): void {
     const vid = this.getVideoAt(cardIdx);
     if (!vid) return;
-    if (vid.paused) vid.play().catch(() => {});
-    else vid.pause();
+    if (vid.paused) vid.play().catch(() => {}); else vid.pause();
+    // Flash a play/pause indicator in the centre of the card
+    this.pauseIndicatorIdx.set(cardIdx);
+    if (this.piTimer) clearTimeout(this.piTimer);
+    this.piTimer = setTimeout(() => this.pauseIndicatorIdx.set(-1), 700);
+  }
+
+  /** Used by template to decide which icon to show in the pause indicator. */
+  getVideoAt_paused(cardIdx: number): boolean {
+    return this.getVideoAt(cardIdx)?.paused ?? true;
   }
 
   toggleMute(event: Event): void {
