@@ -165,35 +165,17 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
   private setupObserver(): void {
     this.observer = new IntersectionObserver(
       entries => {
-<<<<<<< HEAD
-        this.ngZone.run(() => {
-          for (const e of entries) {
-            const idx = Number(e.target.getAttribute('data-idx'));
-            if (isNaN(idx)) continue;
-
-            if (!e.isIntersecting || e.intersectionRatio < 0.55) {
-              // Card leaving viewport — stop YouTube iframe by collapsing it to thumbnail
-              const short = this.shorts()[idx];
-              if (short?.videoType === 'youtube') {
-                this.playedYtIds.update(s => { const n = new Set(s); n.delete(short._id); return n; });
-              }
-              continue;
-            }
-
-=======
         for (const e of entries) {
           const idx = Number(e.target.getAttribute('data-idx'));
           if (isNaN(idx)) continue;
 
           if (!e.isIntersecting || e.intersectionRatio < 0.55) {
             const short = this.shorts()[idx];
-            // Stop YouTube immediately as card leaves
             if (short?.videoType === 'youtube') {
               this.ngZone.run(() =>
                 this.playedYtIds.update(s => { const n = new Set(s); n.delete(short._id); return n; })
               );
             }
-            // Pause upload video immediately — don't wait for next card to take over
             if (short?.videoType === 'upload') {
               const card = this.scrollRef?.nativeElement.querySelector<HTMLElement>(`[data-idx="${idx}"]`);
               card?.querySelector<HTMLVideoElement>('.short-video')?.pause();
@@ -201,9 +183,7 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
             continue;
           }
 
-          // Enter NgZone only for the card that just became active
           this.ngZone.run(() => {
->>>>>>> dev
             this.activeIndex.set(idx);
             this.scheduleView(idx);
             this.autoPlayVideo(idx);
