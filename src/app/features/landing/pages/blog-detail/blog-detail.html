@@ -614,7 +614,12 @@
 
         <!-- Scrollable list -->
         <div class="apos-body">
-          @if (displayedAuthorPosts().length === 0) {
+          @if (authorPostsLoading()) {
+            <div class="apos-empty">
+              <span class="apos-loading-ring"></span>
+              <p>Loading blogs…</p>
+            </div>
+          } @else if (displayedAuthorPosts().length === 0) {
             <div class="apos-empty">
               <span class="apos-empty-icon">📭</span>
               <p>No other blogs found for this author.</p>
