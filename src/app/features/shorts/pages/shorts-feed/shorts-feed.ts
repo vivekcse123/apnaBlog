@@ -69,6 +69,7 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
   private manuallyPausedYtIds   = new Set<string>();
   private touchStartPos         = { x: 0, y: 0 };
   private lastTouchToggleTime   = 0;
+  private gestureUnlocked       = false; // true after first user touch/click
 
   readonly LIKED_KEY   = 'apna_liked_shorts';
   readonly VIEWED_PREFIX = 'apna_viewed_short_';
@@ -104,26 +105,31 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     if (this.piTimer) clearTimeout(this.piTimer);
   }
 
-  // Unlock autoplay after first user touch/click (required by iOS Safari & some Android)
   private setupGestureUnlock(): void {
-    // touchstart is the safest unlock trigger — fires before click and doesn't
-    // interfere with the click handler that handles pause/play.
     const unlock = () => {
+      this.gestureUnlocked = true;
       this.ngZone.run(() => {
+        // Unmute whatever is playing right now — user has gestured so browser allows it
+        const vid = this.getVideoAt(this.activeIndex());
+        if (vid && !vid.paused) vid.muted = false;
+
+        // Also unmute any active YouTube iframe
+        const activeCard = this.scrollRef?.nativeElement
+          .querySelector<HTMLElement>(`[data-idx="${this.activeIndex()}"]`);
+        activeCard?.querySelector<HTMLIFrameElement>('.short-iframe')
+          ?.contentWindow?.postMessage(
+            JSON.stringify({ event: 'command', func: 'unMute', args: '' }), '*'
+          );
+
+        // Retry a pending autoplay that was blocked before gesture
         if (this.pendingPlayIdx >= 0) {
           this.autoPlayVideo(this.pendingPlayIdx);
           this.pendingPlayIdx = -1;
         }
-        if (!this.isMuted()) {
-          const vid = this.getVideoAt(this.activeIndex());
-          if (vid && !vid.paused) vid.muted = false;
-        }
       });
     };
-    // Listen on both touchstart (mobile) and click (desktop) so autoplay is
-    // unlocked on the first user gesture regardless of input type.
     document.addEventListener('touchstart', unlock, { once: true, passive: true });
-    document.addEventListener('click', unlock, { once: true, passive: true });
+    document.addEventListener('click',      unlock, { once: true, passive: true });
   }
 
   // ── Data ───────────────────────────────────────────────────────────────────
@@ -298,11 +304,12 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
 
       const alreadyMounted = this.playedYtIds().has(short._id);
       if (!alreadyMounted) {
-        // First time — add to signal so Angular renders the iframe
+        // First entry — render the iframe (URL has autoplay=1&mute=1 for reliable start)
         this.playedYtIds.update(s => new Set([...s, short._id]));
       }
 
-      // Send play + mute state via postMessage (works on first load and on re-entry)
+      // Send play + mute state. On first mount this arrives after the player loads;
+      // on re-entry it resumes the paused video. Always try to unmute per preference.
       const sendCmds = () => {
         const card   = this.scrollRef?.nativeElement.querySelector<HTMLElement>(`[data-idx="${cardIdx}"]`);
         const iframe = card?.querySelector<HTMLIFrameElement>('.short-iframe');
@@ -312,36 +319,43 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
             JSON.stringify({ event: 'command', func: 'playVideo', args: '' }), '*'
           );
         }
-        iframe.contentWindow.postMessage(
-          JSON.stringify({ event: 'command', func: this.isMuted() ? 'mute' : 'unMute', args: '' }), '*'
-        );
+        // Unmute if preference is unmuted AND user has gestured (browser allows it)
+        if (!this.isMuted() && this.gestureUnlocked) {
+          iframe.contentWindow.postMessage(
+            JSON.stringify({ event: 'command', func: 'unMute', args: '' }), '*'
+          );
+        }
       };
       setTimeout(sendCmds, 800);
-      setTimeout(sendCmds, 1600);
+      setTimeout(sendCmds, 1600); // second attempt in case player wasn't ready
       return;
     }
 
-    // Skip if the user deliberately paused this card
     if (this.manuallyPausedSet.has(cardIdx)) return;
 
     const vid = this.getVideoAt(cardIdx);
     if (!vid) return;
 
-    // Step 1: always play muted — guaranteed to succeed on every browser
-    vid.muted = true;
+    // After the first user gesture the browser allows unmuted play directly.
+    // Before that, start muted (guaranteed to succeed) and attempt to unmute
+    // in the resolved callback — works on most Android browsers; iOS Safari
+    // will stay muted until gestureUnlock fires and sets vid.muted = false.
+    vid.muted = !this.gestureUnlocked || this.isMuted();
+
     const p = vid.play();
-    if (p === undefined) return; // older browsers — synchronous, already playing
+    if (p === undefined) return;
 
     p.then(() => {
-      // Step 2: video is playing — now attempt to unmute per user preference
-      if (!this.isMuted()) {
-        vid.muted = false;
-        // Some browsers revoke unmute outside a direct user gesture; catch silently
-        // If the property is reset by the browser, the icon will still show sound
-      }
+      // If we started muted and user preference is unmuted, try to unmute now
+      if (vid.muted && !this.isMuted()) vid.muted = false;
     }).catch(() => {
-      // Autoplay itself failed — wait for first user gesture
-      this.pendingPlayIdx = cardIdx;
+      if (!vid.muted) {
+        // Unmuted play was blocked — fall back to muted
+        vid.muted = true;
+        vid.play().catch(() => { this.pendingPlayIdx = cardIdx; });
+      } else {
+        this.pendingPlayIdx = cardIdx;
+      }
     });
   }
 
