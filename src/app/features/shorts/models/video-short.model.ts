@@ -1,9 +1,18 @@
+export interface ShortReply {
+  _id: string;
+  comment: string;
+  name: string;
+  user?: { _id: string; name: string } | null;
+  createdAt: Date;
+}
+
 export interface ShortComment {
   _id: string;
   comment: string;
   name: string;
   user?: { _id: string; name: string; avatar?: string } | null;
   createdAt: Date;
+  replies?: ShortReply[];
 }
 
 export interface VideoShort {

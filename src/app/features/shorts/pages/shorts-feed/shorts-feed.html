@@ -2,7 +2,7 @@
 
   <!-- ── Top bar ── -->
   <div class="top-bar">
-    <a class="top-back" routerLink="/" aria-label="Back to home">
+    <a class="top-back" (click)="goBack()" aria-label="Go back" role="button" style="cursor:pointer">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M19 12H5M12 5l-7 7 7 7"/>
       </svg>
@@ -64,7 +64,8 @@
                 <img class="short-thumb"
                      [src]="youtubeThumbnail(short.youtubeId)"
                      [alt]="short.title"
-                     loading="lazy" />
+                     loading="lazy"
+                     decoding="async" />
                 <button class="yt-play-btn" aria-label="Play video">
                   <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
                     <path d="M8 5v14l11-7z"/>
@@ -79,11 +80,16 @@
               [poster]="short.thumbnailUrl || ''"
               muted
               playsinline
+              webkit-playsinline
               loop
               preload="metadata">
             </video>
-            <!-- Tap to toggle play/pause — stopPropagation so actions don't trigger it -->
-            <div class="vid-tap-area" (click)="toggleVideo(i, $event)"></div>
+            <!-- Tap overlay sits above video but below info/actions (z-index 3 < 10) -->
+            <div class="vid-tap-area"
+              (touchstart)="onVideoTouchStart($event)"
+              (touchend)="onVideoTouchEnd(i, $event)"
+              (click)="toggleVideo(i, $event)">
+            </div>
             @if (short.duration) {
               <span class="duration-badge">{{ formatDuration(short.duration) }}</span>
             }
@@ -104,10 +110,12 @@
         <!-- ── Bottom info ── -->
         <div class="short-info" (click)="$event.stopPropagation()">
           <div class="short-author">
-            <div class="short-avatar" [style.background]="'#43cea2'">
-              {{ userInitial(short.user) }}
-            </div>
-            <span class="short-author-name">&#64;{{ short.user.name }}</span>
+            <a class="short-author-link" [routerLink]="['/author', short.user._id]">
+              <div class="short-avatar" [style.background]="'#43cea2'">
+                {{ userInitial(short.user) }}
+              </div>
+              <span class="short-author-name">&#64;{{ short.user.name }}</span>
+            </a>
             <span class="short-cat-badge">{{ short.category }}</span>
           </div>
           <p class="short-title">{{ short.title }}</p>
@@ -119,6 +127,26 @@
 
         <!-- ── Right action buttons ── -->
         <div class="short-actions" (click)="$event.stopPropagation()">
+
+          <!-- Mute / Unmute — all video types -->
+          <div class="action-item">
+            <button class="action-btn" (click)="toggleMute($event)" [attr.aria-label]="isMuted() ? 'Unmute' : 'Mute'">
+              @if (isMuted()) {
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                  <line x1="23" y1="9" x2="17" y2="15"/>
+                  <line x1="17" y1="9" x2="23" y2="15"/>
+                </svg>
+              } @else {
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                  <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                  <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+                </svg>
+              }
+            </button>
+            <span class="action-count">{{ isMuted() ? 'Muted' : 'Sound' }}</span>
+          </div>
 
           <!-- Like -->
           <div class="action-item">
@@ -250,7 +278,73 @@
           <div class="dc-body">
             <span class="dc-name">{{ c.name }}</span>
             <p class="dc-text">{{ c.comment }}</p>
-            <span class="dc-time">{{ timeAgo(c.createdAt) }} ago</span>
+            <div class="dc-meta">
+              <span class="dc-time">{{ timeAgo(c.createdAt) }} ago</span>
+              @if (isLoggedIn()) {
+                <button class="dc-reply-btn" (click)="startReply(c._id)">
+                  {{ replyingToId() === c._id ? 'Cancel' : 'Reply' }}
+                </button>
+              }
+              @if (canDeleteComment(c.user?._id)) {
+                <button class="dc-delete-btn"
+                  [disabled]="deletingId() === c._id"
+                  (click)="deleteComment(c._id)">
+                  {{ deletingId() === c._id ? '…' : 'Delete' }}
+                </button>
+              }
+            </div>
+
+            <!-- Reply input -->
+            @if (replyingToId() === c._id) {
+              <div class="dc-reply-input-row">
+                <input
+                  type="text"
+                  class="dc-reply-input"
+                  placeholder="Write a reply…"
+                  [ngModel]="replyText()"
+                  (ngModelChange)="replyText.set($event)"
+                  (keydown.enter)="submitReply(c._id)"
+                  [disabled]="isReplying()"
+                  autocomplete="off" />
+                <button
+                  class="dc-send dc-send--sm"
+                  (click)="submitReply(c._id)"
+                  [disabled]="!replyText().trim() || isReplying()">
+                  @if (isReplying()) {
+                    <span class="spin-ring spin-ring--sm"></span>
+                  } @else {
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                    </svg>
+                  }
+                </button>
+              </div>
+            }
+
+            <!-- Replies list -->
+            @if (c.replies?.length) {
+              <div class="dc-replies">
+                @for (r of c.replies; track r._id) {
+                  <div class="dc-reply-item">
+                    <div class="dc-reply-avatar">{{ (r.name || '?').charAt(0).toUpperCase() }}</div>
+                    <div class="dc-body">
+                      <span class="dc-name">{{ r.name }}</span>
+                      <p class="dc-text">{{ r.comment }}</p>
+                      <div class="dc-meta">
+                        <span class="dc-time">{{ timeAgo(r.createdAt) }} ago</span>
+                        @if (canDeleteComment(r.user?._id)) {
+                          <button class="dc-delete-btn"
+                            [disabled]="deletingId() === r._id"
+                            (click)="deleteReply(c._id, r._id)">
+                            {{ deletingId() === r._id ? '…' : 'Delete' }}
+                          </button>
+                        }
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
           </div>
         </div>
       } @empty {

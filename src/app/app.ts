@@ -31,7 +31,7 @@ export class App implements OnInit, OnDestroy {
   constructor(private router: Router) {}
 
   ngOnInit(): void {
-    if (isPlatformBrowser(this.platformId) && this.authService.isTokenExpired()) {
+    if (isPlatformBrowser(this.platformId) && this.authService.getToken() && this.authService.isTokenExpired()) {
       this.authService.logout();
     }
 
