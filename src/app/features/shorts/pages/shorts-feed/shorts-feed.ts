@@ -63,6 +63,7 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
   private pendingPlayIdx  = -1;
   private hasScrolled     = false;
   private tapStart        = { x: 0, y: 0, t: 0 }; // tap detection for mobile
+  private adsPushedCount  = 0;
 
   readonly LIKED_KEY   = 'apna_liked_shorts';
   readonly VIEWED_PREFIX = 'apna_viewed_short_';
@@ -127,6 +128,7 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
         setTimeout(() => {
           this.observeAll();
           if (reset) this.autoPlayVideo(0);
+          this.pushAdsense();
         }, 120);
       },
       error: () => {
@@ -158,6 +160,28 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
       const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 200;
       if (nearBottom && this.hasMore() && !this.isLoading()) this.loadShorts();
     });
+  }
+
+  /** Returns true for the index that should have an ad card rendered after it (every 5th short). */
+  isAdSlot(i: number): boolean {
+    return (i + 1) % 5 === 0;
+  }
+
+  /** Push un-initialized AdSense slots into the adsbygoogle queue. */
+  private pushAdsense(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    try {
+      const ads: any[] = (window as any).adsbygoogle ?? [];
+      (window as any).adsbygoogle = ads;
+      // Only push slots that haven't been initialised yet
+      const uninit = document.querySelectorAll<HTMLElement>(
+        'ins.adsbygoogle:not([data-adsbygoogle-status])'
+      );
+      uninit.forEach(() => {
+        ads.push({});
+        this.adsPushedCount++;
+      });
+    } catch (_) { /* ignore */ }
   }
 
   // ── IntersectionObserver ───────────────────────────────────────────────────

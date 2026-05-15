@@ -480,13 +480,71 @@
 }
 .fab-upload:hover { transform: scale(1.08); box-shadow: 0 6px 20px rgba(0,0,0,.55); }
 
+/* ── Ad card ── */
+.short-ad-card {
+  position: relative;
+  height: 100dvh;
+  height: 100svh;
+  width: 100%;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  background: #0d0d0d;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.short-ad-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(255,255,255,.3);
+  text-transform: uppercase;
+  letter-spacing: .1em;
+}
+
+.short-ad-inner {
+  width: calc(100% - 32px);
+  max-width: 380px;
+  min-height: 260px;
+  background: #1a1a1a;
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.short-ad-inner ins {
+  width: 100%;
+  min-height: 260px;
+}
+
 @media (min-width: 768px) {
   /* On desktop hide FAB — top bar upload button is sufficient */
   .fab-upload { display: none; }
 
-  /* Wider cards on desktop — letterbox style */
-  .short-card { max-width: 420px; margin: 0 auto; }
+  /* Letterbox cards — center within the full viewport width */
+  .short-card,
+  .short-ad-card { max-width: 420px; margin: 0 auto; }
   .shorts-scroll { background: #000; }
+
+  /* Center the category bar over the video card */
+  .cat-bar {
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    width: 420px;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 0 0 14px 14px;
+    background: rgba(0,0,0,.45);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
 }
 
 /* ── Comment drawer ── */

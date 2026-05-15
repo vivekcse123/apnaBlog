@@ -205,6 +205,21 @@
           </div>
         </div>
       </div>
+
+      <!-- Ad card — injected after every 5th short -->
+      @if (isAdSlot(i)) {
+        <div class="short-ad-card">
+          <span class="short-ad-label">Sponsored</span>
+          <div class="short-ad-inner">
+            <ins class="adsbygoogle"
+              style="display:block"
+              data-ad-client="ca-pub-6477809641944524"
+              data-ad-slot="2024301795"
+              data-ad-format="auto"
+              data-full-width-responsive="true"></ins>
+          </div>
+        </div>
+      }
     }
 
     <!-- Loading spinner -->
