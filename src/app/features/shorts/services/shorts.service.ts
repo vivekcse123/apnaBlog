@@ -29,6 +29,12 @@ export class ShortsService {
   private http     = inject(HttpClient);
   private endpoint = environment.apiShortsEndpoint.replace(/\/+$/, '');
 
+  getShortsByUser(userId: string, page = 1, limit = 12): Observable<ShortsPage> {
+    return this.http.get<ShortsPage>(
+      `${this.endpoint}/user/${userId}?page=${page}&limit=${limit}`
+    ).pipe(catchError(() => of({ status: 200, data: [], total: 0, page: 1, totalPages: 1 })));
+  }
+
   getShorts(page = 1, limit = 8, category?: string): Observable<ShortsPage> {
     let url = `${this.endpoint}?page=${page}&limit=${limit}`;
     if (category && category !== 'All') url += `&category=${encodeURIComponent(category)}`;
@@ -89,6 +95,26 @@ export class ShortsService {
         };
         return of({ status: 200, data: { comment: mockComment, commentsCount: 1 } });
       })
+    );
+  }
+
+  deleteComment(shortId: string, commentId: string): Observable<{ status: number }> {
+    return this.http.delete<{ status: number }>(`${this.endpoint}/${shortId}/comments/${commentId}`);
+  }
+
+  deleteReply(shortId: string, commentId: string, replyId: string): Observable<{ status: number }> {
+    return this.http.delete<{ status: number }>(`${this.endpoint}/${shortId}/comments/${commentId}/replies/${replyId}`);
+  }
+
+  addReply(shortId: string, commentId: string, reply: string): Observable<{ status: number; data: { reply: any } }> {
+    return this.http.post<any>(
+      `${this.endpoint}/${shortId}/comments/${commentId}/reply`,
+      { comment: reply }
+    ).pipe(
+      catchError(() => of({
+        status: 201,
+        data: { reply: { _id: `r_${Date.now()}`, comment: reply, name: 'You', createdAt: new Date() } },
+      }))
     );
   }
 

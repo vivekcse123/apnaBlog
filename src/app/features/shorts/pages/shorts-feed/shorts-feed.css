@@ -7,6 +7,11 @@
   flex-direction: column;
   overflow: hidden;
   font-family: 'DM Sans', sans-serif;
+  overscroll-behavior: none;
+  /* Do NOT set touch-action: pan-y here — it overrides touch-action: manipulation
+     on child buttons and makes taps unresponsive on mobile. Let the scroll
+     container handle panning naturally via overflow-y: scroll. */
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* ── Top bar ── */
@@ -35,9 +40,11 @@
   color: #fff;
   text-decoration: none;
   backdrop-filter: blur(8px);
+  touch-action: manipulation;
   transition: background .18s;
 }
 .top-back:hover { background: rgba(255,255,255,.22); }
+.top-back:active { background: rgba(255,255,255,.32); }
 
 .top-title {
   display: flex;
@@ -77,6 +84,9 @@
   padding: 8px 16px;
   overflow-x: auto;
   scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  scroll-behavior: smooth;
 }
 .cat-bar::-webkit-scrollbar { display: none; }
 
@@ -91,8 +101,10 @@
   font-weight: 600;
   font-family: 'DM Sans', sans-serif;
   cursor: pointer;
+  touch-action: manipulation;
   transition: background .15s, border-color .15s, color .15s;
   backdrop-filter: blur(6px);
+  user-select: none;
 }
 .cat-chip:hover { border-color: rgba(255,255,255,.5); color: #fff; }
 .cat-chip--active {
@@ -108,6 +120,9 @@
   scroll-snap-type: y mandatory;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: none;
+  /* GPU layer for scroll — avoids repaints during fling */
+  transform: translateZ(0);
 }
 .shorts-scroll::-webkit-scrollbar { display: none; }
 
@@ -115,6 +130,7 @@
 .short-card {
   position: relative;
   height: 100dvh;
+  height: 100svh; /* stable viewport height — immune to mobile browser chrome show/hide */
   width: 100%;
   scroll-snap-align: start;
   scroll-snap-stop: always;
@@ -123,6 +139,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  /* contain: layout style removed — it creates a stacking context in Chrome that
+     breaks z-index hit testing for the video tap handler */
 }
 
 /* ── Media ── */
@@ -139,6 +157,7 @@
   height: 100%;
   object-fit: cover;
   display: block;
+  pointer-events: none; /* overlay handles all interaction */
 }
 
 .short-iframe {
@@ -146,6 +165,9 @@
   height: 100%;
   border: none;
   display: block;
+  /* Prevent the iframe from swallowing touch events meant for our buttons.
+     We control playback via postMessage so the iframe never needs direct interaction. */
+  pointer-events: none;
 }
 
 .yt-thumb-wrap {
@@ -174,10 +196,12 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  touch-action: manipulation;
   transition: background .18s, transform .18s;
   backdrop-filter: blur(4px);
 }
 .yt-play-btn:hover { background: rgba(0,0,0,.75); transform: translate(-50%, -50%) scale(1.08); }
+.yt-play-btn:active { transform: translate(-50%, -50%) scale(0.94); }
 
 .short-fallback {
   width: 100%;
@@ -191,8 +215,12 @@
 .vid-tap-area {
   position: absolute;
   inset: 0;
-  z-index: 1;
+  z-index: 3;        /* above gradient(2), below info/actions(10) */
+  touch-action: manipulation;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
+
 
 .duration-badge {
   position: absolute;
@@ -227,9 +255,10 @@
   bottom: 0;
   left: 0;
   right: 80px;
-  z-index: 3;
+  z-index: 10;
   padding: 20px 16px;
   padding-bottom: max(20px, env(safe-area-inset-bottom));
+  pointer-events: auto;
 }
 
 .short-author {
@@ -238,6 +267,15 @@
   gap: 8px;
   margin-bottom: 8px;
 }
+
+.short-author-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  touch-action: manipulation;
+}
+.short-author-link:active { opacity: .75; }
 
 .short-avatar {
   width: 32px;
@@ -307,12 +345,13 @@
   position: absolute;
   right: 10px;
   bottom: 80px;
-  z-index: 3;
+  z-index: 10;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 20px;
   padding-bottom: env(safe-area-inset-bottom);
+  pointer-events: auto;
 }
 
 .action-item {
@@ -332,6 +371,8 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  /* Removes 300 ms tap delay on mobile */
+  touch-action: manipulation;
   transition: background .18s, transform .15s;
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
@@ -567,9 +608,98 @@
   word-break: break-word;
 }
 
+.dc-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .dc-time {
   font-size: 11px;
   color: var(--text-muted, #999);
+}
+
+.dc-reply-btn {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted, #888);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  touch-action: manipulation;
+  font-family: 'DM Sans', sans-serif;
+}
+.dc-reply-btn:hover { color: #43cea2; }
+
+.dc-delete-btn {
+  font-size: 11px;
+  font-weight: 700;
+  color: #ef4444;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  touch-action: manipulation;
+  font-family: 'DM Sans', sans-serif;
+  opacity: .75;
+}
+.dc-delete-btn:hover { opacity: 1; }
+.dc-delete-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+.dc-reply-input-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.dc-reply-input {
+  flex: 1;
+  height: 34px;
+  padding: 0 12px;
+  border: 1.5px solid var(--input-border, #d1d5db);
+  border-radius: 99px;
+  background: var(--input-bg, #f9fafb);
+  color: var(--text-primary, #111);
+  font-size: 13px;
+  font-family: 'DM Sans', sans-serif;
+  outline: none;
+}
+.dc-reply-input:focus { border-color: #43cea2; }
+
+.dc-send--sm {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+.dc-replies {
+  margin-top: 10px;
+  padding-left: 8px;
+  border-left: 2px solid var(--border, #e5e7eb);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dc-reply-item {
+  display: flex;
+  gap: 8px;
+}
+
+.dc-reply-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #43cea2, #185a9d);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .dc-empty {

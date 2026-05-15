@@ -315,6 +315,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   // ── Author posts modal ────────────────────────────────────────────────────
   private allAuthorPostsData = signal<Post[]>([]);
   showAuthorPostsModal       = signal(false);
+  authorPostsLoading         = signal(false);
   private authorPostsPage    = signal(1);
 
   displayedAuthorPosts = computed(() =>
@@ -452,6 +453,25 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     this.authorPostsPage.set(1);
     this.showAuthorPostsModal.set(true);
     this.lockScroll(true);
+
+    const aId = this.authorId();
+    if (!aId) return;
+
+    this.authorPostsLoading.set(true);
+    this.postService.getPostByUserId(aId, 1, 100)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: res => {
+          const currentId = this.post()?._id;
+          const posts = (res.data ?? []).filter(
+            p => p._id !== currentId && (p.status === 'published' || p.status === 'draft')
+          );
+          this.allAuthorPostsData.set(posts);
+          this.authorTotalPosts.set(posts.length + 1);
+          this.authorPostsLoading.set(false);
+        },
+        error: () => this.authorPostsLoading.set(false),
+      });
   }
 
   closeAuthorPostsModal(): void {
