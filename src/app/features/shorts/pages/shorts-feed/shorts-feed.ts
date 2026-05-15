@@ -114,6 +114,15 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
    *  window and the browser blocks unmuted play again.
    *  We predict which card will snap by rounding scrollTop / clientHeight,
    *  then call play() immediately without leaving the event handler. */
+  private shuffle<T>(arr: T[]): T[] {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
   private setupScrollGesturePlay(): void {
     if (!this.scrollRef) return;
     const container = this.scrollRef.nativeElement;
@@ -191,7 +200,7 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
 
     this.service.getShorts(this.page, 8, cat).subscribe({
       next: res => {
-        const items = res.data ?? [];
+        const items = this.shuffle(res.data ?? []);
         this.shorts.update(cur => reset ? items : [...cur, ...items]);
         this.hasMore.set(this.page < (res.totalPages ?? 1));
         this.page++;
@@ -384,32 +393,28 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     const vid = this.getVideoAt(cardIdx);
     if (!vid) return;
 
-    // After the first user gesture the browser allows unmuted play directly.
-    // Before that, start muted (guaranteed to succeed) and attempt to unmute
-    // in the resolved callback — works on most Android browsers; iOS Safari
-    // will stay muted until gestureUnlock fires and sets vid.muted = false.
-    // After gesture: play unmuted directly. Before gesture: start muted,
-    // icon shows muted so the user isn't confused by silent "unmuted" state.
-    const wantMuted = !this.gestureUnlocked || this.isMuted();
-    vid.muted = wantMuted;
+    // KEY: if video is already playing (started by the touchend gesture handler),
+    // DO NOT call play() again. The async IntersectionObserver callback running
+    // play() here would fail, hit .catch(), and MUTE the already-playing video.
+    if (!vid.paused) {
+      if (!this.isMuted()) vid.muted = false; // just ensure correct mute state
+      this.ngZone.run(() => this.isMuted.set(vid.muted));
+      return;
+    }
 
-    const p = vid.play();
-    if (p === undefined) return;
-
-    p.then(() => {
-      this.ngZone.run(() => {
-        this.isMuted.set(vid.muted); // sync icon with actual state
-      });
-    }).catch(() => {
-      if (!vid.muted) {
-        // Unmuted play blocked — fall back to muted silently
-        vid.muted = true;
-        this.ngZone.run(() => this.isMuted.set(true));
-        vid.play().catch(() => { this.pendingPlayIdx = cardIdx; });
-      } else {
-        this.pendingPlayIdx = cardIdx;
-      }
-    });
+    // Video is paused — start it. Always begin muted (100% reliable),
+    // then immediately try to unmute. The touchend handler already handles
+    // the unmuted play for swipe-triggered playback.
+    vid.muted = true;
+    vid.play()
+      .then(() => {
+        // Try to unmute after play starts
+        if (!this.isMuted()) {
+          vid.muted = false;
+        }
+        this.ngZone.run(() => this.isMuted.set(vid.muted));
+      })
+      .catch(() => { this.pendingPlayIdx = cardIdx; });
   }
 
   onCardTouchStart(e: TouchEvent): void {
