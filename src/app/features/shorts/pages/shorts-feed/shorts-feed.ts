@@ -108,21 +108,47 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     if (this.snapTimer) clearTimeout(this.snapTimer);
   }
 
-  /** Key fix for mobile: touchend on the scroll container IS a user gesture.
-   *  Calling vid.play() within ~350 ms of touchend allows unmuted autoplay
-   *  on iOS Safari and Android — the IntersectionObserver cannot do this
-   *  because its callback runs outside any gesture activation window. */
+  /** Mobile unmuted autoplay fix.
+   *  iOS Safari requires vid.play() to be called SYNCHRONOUSLY inside the
+   *  touchend handler — any setTimeout (even 0 ms) exits the user activation
+   *  window and the browser blocks unmuted play again.
+   *  We predict which card will snap by rounding scrollTop / clientHeight,
+   *  then call play() immediately without leaving the event handler. */
   private setupScrollGesturePlay(): void {
     if (!this.scrollRef) return;
-    this.scrollRef.nativeElement.addEventListener('touchend', () => {
-      if (this.snapTimer) clearTimeout(this.snapTimer);
-      this.snapTimer = setTimeout(() => {
-        this.ngZone.run(() => {
-          const idx = this.activeIndex();
-          this.manuallyPausedSet.delete(idx); // clear if we paused during scroll
-          this.autoPlayVideo(idx);
-        });
-      }, 350); // snap animation takes ~300 ms; 350 ms gives a safe margin
+    const container = this.scrollRef.nativeElement;
+
+    container.addEventListener('touchend', () => {
+      // Calculate snap target synchronously — scroll hasn't animated yet
+      const cardH = container.clientHeight || window.innerHeight;
+      const nearestIdx = Math.round(container.scrollTop / cardH);
+
+      // Try nearest card and one ahead (handles fast swipes)
+      for (const idx of [nearestIdx, nearestIdx + 1, nearestIdx - 1]) {
+        if (idx < 0 || idx >= this.shorts().length) continue;
+        if (this.manuallyPausedSet.has(idx)) continue;
+        const short = this.shorts()[idx];
+        if (short?.videoType !== 'upload') continue;
+
+        const card = container.querySelector<HTMLElement>(`[data-idx="${idx}"]`);
+        const vid  = card?.querySelector<HTMLVideoElement>('video');
+        if (!vid) continue;
+
+        // SYNCHRONOUS — iOS Safari activation window is still open here
+        vid.muted = false;
+        const p = vid.play();
+        if (p) p.catch(() => { vid.muted = true; vid.play().catch(() => {}); });
+
+        // Update Angular state outside of the tight gesture window
+        if (this.snapTimer) clearTimeout(this.snapTimer);
+        this.snapTimer = setTimeout(() => {
+          this.ngZone.run(() => {
+            this.isMuted.set(vid.muted);
+            this.activeIndex.set(idx);
+          });
+        }, 350);
+        break;
+      }
     }, { passive: true });
   }
 
