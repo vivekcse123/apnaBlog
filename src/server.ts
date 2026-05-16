@@ -51,6 +51,7 @@ const ALL_CATEGORIES = [
 
 const STATIC_PAGES = [
   { url: '/',               changefreq: 'daily',   priority: 1.0 },
+  { url: '/shorts',         changefreq: 'hourly',  priority: 0.9 },
   { url: '/about',          changefreq: 'monthly',  priority: 0.7 },
   { url: '/privacy-policy', changefreq: 'yearly',   priority: 0.3 },
   { url: '/terms',          changefreq: 'yearly',   priority: 0.3 },
@@ -71,21 +72,32 @@ app.get('/sitemap.xml', async (_req: Request, res: Response) => {
       return res.send(sitemapCache);
     }
 
-    // Fetch all posts — paginate until exhausted
-    const posts: { slug?: string; _id?: string; updatedAt?: string; tags?: string[]; user?: { name?: string; _id?: string } }[] = [];
-    let page = 1;
-    while (true) {
-      const r = await fetch(`${API_BASE}/post?page=${page}&limit=100`, {
-        headers: { Accept: 'application/json' },
-        signal: AbortSignal.timeout(8000),
-      });
-      if (!r.ok) break;
-      const body = await r.json() as { data?: typeof posts; totalPages?: number };
-      const batch = body?.data ?? [];
-      posts.push(...batch);
-      if (page >= (body?.totalPages ?? 1) || batch.length === 0) break;
-      page++;
-    }
+    // Fetch all posts and shorts in parallel — paginate until exhausted
+    const fetchAll = async <T>(baseUrl: string): Promise<T[]> => {
+      const items: T[] = [];
+      let pg = 1;
+      while (true) {
+        const r = await fetch(`${baseUrl}&page=${pg}&limit=100`, {
+          headers: { Accept: 'application/json' },
+          signal: AbortSignal.timeout(8000),
+        });
+        if (!r.ok) break;
+        const body = await r.json() as { data?: T[]; totalPages?: number };
+        const batch = body?.data ?? [];
+        items.push(...batch);
+        if (pg >= (body?.totalPages ?? 1) || batch.length === 0) break;
+        pg++;
+      }
+      return items;
+    };
+
+    type PostEntry  = { slug?: string; _id?: string; updatedAt?: string; tags?: string[]; user?: { name?: string; _id?: string } };
+    type ShortEntry = { _id?: string; updatedAt?: string; createdAt?: string };
+
+    const [posts, shorts] = await Promise.all([
+      fetchAll<PostEntry>(`${API_BASE}/post?status=published`),
+      fetchAll<ShortEntry>(`${API_BASE}/shorts?status=published`),
+    ]);
 
     // Collect unique tags and author slugs from posts
     const tagCounts = new Map<string, number>();
@@ -118,6 +130,13 @@ app.get('/sitemap.xml', async (_req: Request, res: Response) => {
         lastmod:    p.updatedAt,
         changefreq: 'weekly' as const,
         priority:   0.8,
+      })),
+      // Individual short pages — crawlable by Google, eligible for AdSense
+      ...shorts.map(s => ({
+        url:        `/shorts/${s._id}`,
+        lastmod:    s.updatedAt ?? s.createdAt,
+        changefreq: 'weekly' as const,
+        priority:   0.7,
       })),
     ];
 

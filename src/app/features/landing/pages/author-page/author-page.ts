@@ -88,6 +88,8 @@ export class AuthorPage implements OnInit {
             this.followersCount.set((res as any).followersCount ?? 0);
             this.followingCount.set((res as any).followingCount ?? 0);
             this.isFollowing.set((res as any).isFollowing ?? false);
+            // Show the profile immediately — don't wait for posts/shorts to load
+            this.isLoading.set(false);
             this.setMeta(user);
             this.loadPosts(id);
             this.loadShorts(id);
@@ -113,9 +115,8 @@ export class AuthorPage implements OnInit {
       .subscribe({
         next: (res) => {
           this.posts.set((res.data ?? []).filter((p: Post) => p.status === 'published' || p.status === 'draft'));
-          this.isLoading.set(false);
         },
-        error: () => this.isLoading.set(false),
+        error: () => {},
       });
   }
 

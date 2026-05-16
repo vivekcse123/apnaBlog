@@ -118,6 +118,10 @@ export class ShortsService {
     );
   }
 
+  getShortById(id: string): Observable<{ status: number; data: VideoShort }> {
+    return this.http.get<{ status: number; data: VideoShort }>(`${this.endpoint}/${id}`);
+  }
+
   addView(id: string): Observable<{ status: number }> {
     return this.http.post<{ status: number }>(`${this.endpoint}/${id}/view`, {}).pipe(
       catchError(() => of({ status: 200 }))
@@ -175,6 +179,6 @@ export class ShortsService {
   }
 
   youtubeThumbnail(youtubeId: string): string {
-    return `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`;
+    return `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg`;
   }
 }

@@ -21,6 +21,8 @@ import { UserService }    from '../../../user/services/user-service';
 import { User }           from '../../../user/models/user.mode';
 import { ToastService }   from '../../../../core/services/toast.service';
 import { TaxonomyService } from '../../../../core/services/taxonomy.service';
+import { ShortsService }  from '../../../shorts/services/shorts.service';
+import { VideoShort }     from '../../../shorts/models/video-short.model';
 
 // ── Transfer-state key: SSR writes the post here; browser reads it instantly ──
 const POST_STATE_KEY = makeStateKey<Post | null>('blogDetailPost');
@@ -72,6 +74,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   // ── Services ─────────────────────────────────────────────────────────────
   private postService   = inject(PostService);
   private postCache     = inject(PostCache);
+  private shortsService = inject(ShortsService);
   private destroyRef    = inject(DestroyRef);
   private route         = inject(ActivatedRoute);
   private router        = inject(Router);
@@ -90,10 +93,18 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   taxonomyService       = inject(TaxonomyService);
 
   // ── Post state ────────────────────────────────────────────────────────────
-  post         = signal<Post | null>(null);
-  isLoading    = signal(true);
-  loadError    = signal(false);
-  relatedPosts = signal<Post[]>([]);
+  // Read TransferState once at construction so every signal that depends on the
+  // SSR post is pre-populated before Angular's first render pass.  That makes
+  // ngSkipHydration's DOM-wipe invisible — the re-render is already complete.
+  private readonly _initPost: Post | null = isPlatformBrowser(this.platformId)
+    ? this.transferState.get<Post | null>(POST_STATE_KEY, null)
+    : null;
+
+  post          = signal<Post | null>(this._initPost);
+  isLoading     = signal(!this._initPost);
+  loadError     = signal(false);
+  relatedPosts  = signal<Post[]>([]);
+  relatedShorts = signal<VideoShort[]>([]);
   currentYear  = new Date().getFullYear();
 
   // ── Carousel ──────────────────────────────────────────────────────────────
@@ -117,7 +128,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   // so that like/view/comment mutations — which replace the post signal with a
   // new object but don't touch content — do NOT cause [innerHTML] to re-render
   // and destroy the imperatively injected code-block wrappers.
-  private readonly _contentHtml = signal<string>('');
+  private readonly _contentHtml = signal<string>(this._initPost?.content ?? '');
 
   // ── Translation ────────────────────────────────────────────────────────────
   readonly LANGUAGES = [
@@ -132,13 +143,21 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   translating = signal(false);
   activeLang  = signal<string | null>(null);
 
-  // bypassSecurityTrustHtml is intentional — content is authored/trusted DB content.
-  // Falls back to original content when no translation is active.
-  // When translation is active, images are re-injected from original if the API stripped them.
+  // Cache SafeHtml so [innerHTML] doesn't re-render when the HTML string is identical.
+  // bypassSecurityTrustHtml creates a new object reference every call — without
+  // caching, even a no-op signal update causes Angular to wipe and repaint the DOM.
+  private _safeCache: SafeHtml | null = null;
+  private _safeCacheKey = '';
+
   safeContent = computed<SafeHtml>(() => {
     const translated = this.translation();
     const original   = this._contentHtml();
-    if (!translated) return this.sanitizer.bypassSecurityTrustHtml(original);
+    if (!translated) {
+      if (original === this._safeCacheKey && this._safeCache) return this._safeCache;
+      this._safeCacheKey = original;
+      this._safeCache = this.sanitizer.bypassSecurityTrustHtml(original);
+      return this._safeCache;
+    }
     return this.sanitizer.bypassSecurityTrustHtml(
       this.mergeTranslatedContent(translated.content, original)
     );
@@ -520,6 +539,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
         this.commentFetchedCount.set(0);
         this.totalCommentsCount.set(0);
         this.relatedPosts.set([]);
+        this.relatedShorts.set([]);
         this.allAuthorPostsData.set([]);
         this.tableOfContents.set([]);
         this.readingProgress.set(0);
@@ -793,6 +813,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
       }
       this.addView(postData);
       this.loadRelatedAndAuthorPosts(postData);
+      this.loadRelatedShorts(postData);
     }, 0);
 
     // ── FIX: Use requestAnimationFrame instead of an arbitrary 300 ms timeout
@@ -925,6 +946,22 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   // ══════════════════════════════════════════════════════════════════════════
   // Related posts + Author posts
   // ══════════════════════════════════════════════════════════════════════════
+
+  private loadRelatedShorts(post: Post): void {
+    const category = post.categories?.[0];
+    this.shortsService.getShorts(1, 6, category)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: res => this.relatedShorts.set((res.data ?? []).slice(0, 6)),
+        error: ()  => this.relatedShorts.set([]),
+      });
+  }
+
+  shortThumbnail(s: VideoShort): string {
+    if (s.thumbnailUrl) return s.thumbnailUrl;
+    if (s.youtubeId)    return `https://img.youtube.com/vi/${s.youtubeId}/mqdefault.jpg`;
+    return '';
+  }
 
   private loadRelatedAndAuthorPosts(currentPost: Post): void {
     const cached = this.postCache.get();
