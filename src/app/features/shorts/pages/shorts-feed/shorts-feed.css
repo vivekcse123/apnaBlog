@@ -219,6 +219,35 @@
   z-index: 2;
 }
 
+/* ── Tap-for-sound hint ── */
+.sf-sound-hint {
+  position: absolute;
+  bottom: 110px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 15;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 99px;
+  background: rgba(0,0,0,.6);
+  border: 1px solid rgba(255,255,255,.25);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: 'DM Sans', sans-serif;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  pointer-events: none;
+  white-space: nowrap;
+  animation: sfHintPulse 2s ease-in-out infinite;
+}
+@keyframes sfHintPulse {
+  0%, 100% { opacity: .9; }
+  50%       { opacity: .5; }
+}
+
 /* ── Pause / play flash ── */
 .sf-flash {
   position: absolute;

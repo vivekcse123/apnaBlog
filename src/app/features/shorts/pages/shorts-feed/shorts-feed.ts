@@ -54,6 +54,7 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
   playedYtIds  = signal<Set<string>>(new Set());
   likedIds     = signal<Set<string>>(this.loadLikedFromStorage());
   isMuted             = signal(false);
+  needsGesture        = signal(false); // true when browser blocks unmuted autoplay
   pauseIndicatorIdx   = signal(-1);
   indicatorIsPlaying  = signal(false);
   private piTimer: ReturnType<typeof setTimeout> | null = null;
@@ -148,11 +149,12 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
         const p = vid.play();
         if (p) p.catch(() => { vid.muted = true; vid.play().catch(() => {}); });
 
-        // Update Angular state outside of the tight gesture window
+        // Update Angular state outside the tight gesture window
         if (this.snapTimer) clearTimeout(this.snapTimer);
         this.snapTimer = setTimeout(() => {
           this.ngZone.run(() => {
             this.isMuted.set(vid.muted);
+            this.needsGesture.set(false);
             this.activeIndex.set(idx);
           });
         }, 350);
@@ -166,10 +168,12 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
       this.gestureUnlocked = true;
       this.ngZone.run(() => {
         const vid = this.getVideoAt(this.activeIndex());
-        if (vid && !vid.paused) {
+        if (vid) {
           vid.muted = false;
-          this.isMuted.set(false);
+          if (!vid.paused) vid.play().catch(() => {});
         }
+        this.isMuted.set(false);
+        this.needsGesture.set(false);
 
         // Unmute active YouTube iframe
         const activeCard = this.scrollRef?.nativeElement
@@ -393,28 +397,29 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     const vid = this.getVideoAt(cardIdx);
     if (!vid) return;
 
-    // KEY: if video is already playing (started by the touchend gesture handler),
-    // DO NOT call play() again. The async IntersectionObserver callback running
-    // play() here would fail, hit .catch(), and MUTE the already-playing video.
+    // Already playing (started by touchend) — never override it.
     if (!vid.paused) {
-      if (!this.isMuted()) vid.muted = false; // just ensure correct mute state
-      this.ngZone.run(() => this.isMuted.set(vid.muted));
+      vid.muted = false; // ensure unmuted on every active card
+      this.ngZone.run(() => { this.isMuted.set(false); this.needsGesture.set(false); });
       return;
     }
 
-    // Video is paused — start it. Always begin muted (100% reliable),
-    // then immediately try to unmute. The touchend handler already handles
-    // the unmuted play for swipe-triggered playback.
-    vid.muted = true;
+    // Always try UNMUTED first — no muted fallback here.
+    vid.muted = false;
     vid.play()
       .then(() => {
-        // Try to unmute after play starts
-        if (!this.isMuted()) {
-          vid.muted = false;
-        }
-        this.ngZone.run(() => this.isMuted.set(vid.muted));
+        this.ngZone.run(() => { this.isMuted.set(false); this.needsGesture.set(false); });
       })
-      .catch(() => { this.pendingPlayIdx = cardIdx; });
+      .catch(() => {
+        // Browser blocked unmuted play — play muted and show a "tap for sound" hint.
+        vid.muted = true;
+        vid.play()
+          .then(() => this.ngZone.run(() => {
+            this.isMuted.set(true);
+            this.needsGesture.set(true); // show overlay until user taps
+          }))
+          .catch(() => { this.pendingPlayIdx = cardIdx; });
+      });
   }
 
   onCardTouchStart(e: TouchEvent): void {
