@@ -394,27 +394,41 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
 
     if (short.videoType === 'youtube' && short._id) {
       if (this.manuallyPausedYtIds.has(short._id)) return;
+
       const alreadyMounted = this.playedYtIds().has(short._id);
       if (!alreadyMounted) {
         this.playedYtIds.update(s => new Set([...s, short._id]));
       }
-      const sendCmds = () => {
+
+      const sendPlay = () => {
         const card   = this.scrollRef?.nativeElement.querySelector<HTMLElement>(`[data-idx="${cardIdx}"]`);
         const iframe = card?.querySelector<HTMLIFrameElement>('.sf-iframe');
         if (!iframe?.contentWindow) return;
-        if (alreadyMounted) {
-          iframe.contentWindow.postMessage(
-            JSON.stringify({ event: 'command', func: 'playVideo', args: '' }), '*'
-          );
-        }
+        // Always send playVideo — mobile browsers block iframe autoplay=1 URL param
+        iframe.contentWindow.postMessage(
+          JSON.stringify({ event: 'command', func: 'playVideo', args: '' }), '*'
+        );
         if (!this.isMuted() && this.gestureUnlocked) {
           iframe.contentWindow.postMessage(
             JSON.stringify({ event: 'command', func: 'unMute', args: '' }), '*'
           );
         }
       };
-      setTimeout(sendCmds, 800);
-      setTimeout(sendCmds, 1600);
+
+      // For a freshly-mounted iframe, also fire playVideo on the iframe's load event
+      // so we don't depend purely on setTimeout for load timing.
+      if (!alreadyMounted) {
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          const card   = this.scrollRef?.nativeElement.querySelector<HTMLElement>(`[data-idx="${cardIdx}"]`);
+          const iframe = card?.querySelector<HTMLIFrameElement>('.sf-iframe');
+          iframe?.addEventListener('load', () => this.ngZone.run(sendPlay), { once: true });
+        }));
+      }
+
+      // Retry attempts cover both "already mounted but paused" and slow-loading iframes
+      setTimeout(sendPlay, 300);
+      setTimeout(sendPlay, 900);
+      setTimeout(sendPlay, 1800);
       return;
     }
 
