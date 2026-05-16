@@ -96,11 +96,7 @@ body {
 .shorts-mobile-pill:hover  { background: #dc2626; }
 .shorts-mobile-pill:active { transform: scale(.96); }
 
-/* Very small phones: icon only, no text label */
-@media (max-width: 360px) {
-  .shorts-mobile-pill span { display: none; }
-  .shorts-mobile-pill { padding: 7px 9px; gap: 0; }
-}
+/* shorts-mobile-pill: icon-only applied at ≤768px above */
 
 /* ── Drawer Shorts card ── */
 .drawer-shorts-card {
@@ -656,8 +652,8 @@ body {
 @keyframes floatC { 0%,100%{transform:translateY(0) rotate(-1deg)} 50%{transform:translateY(-8px) rotate(0deg)} }
 
 .filter-wrap {
-  /* top: 66px = desktop header height — keeps the filter bar visible below the sticky header */
-  position: sticky; top: 0px; z-index: 800;
+  /* Stick just below the 64px desktop header so it never slides behind it */
+  position: sticky; top: 64px; z-index: 800;
   background: var(--bg-surface);
   border-bottom: 1px solid var(--border);
   box-shadow: var(--card-shadow);
@@ -1506,7 +1502,7 @@ body {
    ─────────────────────────────────────────────────────────────────────── */
 @media (max-width: 1024px) {
   /* 2-column grid: logo | [1fr spacer + right-actions] */
-  .header          { grid-template-columns: auto 1fr; padding: 0 20px; }
+  .header          { grid-template-columns: auto 1fr; padding: 0 20px; gap: 12px; }
   .header-nav      { display: none; }
   .desktop-only    { display: none !important; }
   .hamburger       { display: flex; }
@@ -1519,9 +1515,15 @@ body {
 
 @media (max-width: 768px) {
   /* Header shrinks to 60px — drawer top follows */
-  .header { padding: 0 16px; height: 60px; }
+  .header { padding: 0 16px; height: 60px; gap: 10px; }
   .mobile-drawer { top: 60px; }
-  .filter-wrap { top: 0px; }
+  /* filter-wrap sticks just below the 60px mobile header */
+  .filter-wrap { top: 60px; }
+  /* Hide logo text on mobile — prevents right-side overflow on Android */
+  .header-left .app-logo-text { display: none; }
+  /* Shorts pill: icon-only on phones ≤768px so the header-right fits */
+  .shorts-mobile-pill span { display: none; }
+  .shorts-mobile-pill { padding: 7px 9px; gap: 0; }
 
   .hero-wrap { padding: 48px 5% 44px; }
   .hero-title { font-size: clamp(32px, 8vw, 44px); letter-spacing: -0.5px; }
@@ -1566,6 +1568,13 @@ body {
   .stat-count   { max-width: 32px; }
   .ctrl-enter-hint { display: none; }
   .cat-pill-count { display: none; }
+}
+
+@media (max-width: 420px) {
+  .header { padding: 0 12px; gap: 8px; }
+  .header-right { gap: 6px; }
+  .theme-toggle, .hamburger { width: 34px; height: 34px; }
+  .hamburger { width: 34px; height: 34px; }
 }
 
 .load-more-wrap {
