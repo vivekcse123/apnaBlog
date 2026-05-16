@@ -69,6 +69,11 @@ export const routes: Routes = [
         title: 'Shorts | ApnaInsights'
     },
     {
+        path: 'shorts/:id',
+        loadComponent: () => import('./features/shorts/pages/short-view/short-view').then(m => m.ShortView),
+        title: 'Short | ApnaInsights'
+    },
+    {
         path: 'bookmarks',
         loadComponent: () => import('./features/landing/pages/bookmarks/bookmarks').then(m => m.BookmarksPage),
         title: 'My Bookmarks | ApnaInsights'

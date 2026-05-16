@@ -464,6 +464,53 @@
       </section>
     }
 
+    <!-- ── Shorts Recommendation ── -->
+    @if (relatedShorts().length > 0) {
+      <section class="shorts-rec-section">
+        <div class="shorts-rec-header">
+          <div class="shorts-rec-title-wrap">
+            <span class="shorts-rec-pill">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M8 5v14l11-7z"/>
+              </svg>
+              Shorts
+            </span>
+            <h2 class="shorts-rec-title">Get the quick take</h2>
+            <p class="shorts-rec-sub">Short videos related to this story</p>
+          </div>
+          <a routerLink="/shorts" class="shorts-rec-see-all">See all →</a>
+        </div>
+
+        <div class="shorts-rec-strip">
+          @for (s of relatedShorts(); track s._id) {
+            <a class="shorts-rec-card" [routerLink]="['/shorts', s._id]" [attr.aria-label]="s.title">
+              <div class="shorts-rec-thumb-wrap">
+                @if (shortThumbnail(s)) {
+                  <img class="shorts-rec-thumb" [src]="shortThumbnail(s)" [alt]="s.title"
+                       loading="lazy" decoding="async" width="120" height="213"/>
+                } @else {
+                  <div class="shorts-rec-thumb shorts-rec-thumb--fallback">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.5">
+                      <path d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.9L15 14v-4z"/>
+                      <rect x="3" y="6" width="12" height="12" rx="2"/>
+                    </svg>
+                  </div>
+                }
+                <div class="shorts-rec-overlay">
+                  <svg class="shorts-rec-play" width="28" height="28" viewBox="0 0 24 24" fill="white">
+                    <path d="M8 5v14l11-7z"/>
+                  </svg>
+                </div>
+                <span class="shorts-rec-cat">{{ s.category }}</span>
+              </div>
+              <p class="shorts-rec-card-title">{{ s.title }}</p>
+              <span class="shorts-rec-views">{{ s.views | number }} views</span>
+            </a>
+          }
+        </div>
+      </section>
+    }
+
     <!-- Related Stories -->
     @if (relatedPosts().length > 0) {
       <section class="related-section">

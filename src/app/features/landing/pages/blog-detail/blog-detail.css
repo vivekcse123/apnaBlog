@@ -2610,3 +2610,173 @@ body {
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
 @media (max-width: 500px) { .mins-left { display: none; } }
+
+/* ══ Shorts Recommendation Strip ══════════════════════════════════════════════ */
+.shorts-rec-section {
+  margin: 40px 0 8px;
+  padding: 24px 20px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.shorts-rec-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.shorts-rec-title-wrap { display: flex; flex-direction: column; gap: 4px; }
+
+.shorts-rec-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 99px;
+  background: linear-gradient(135deg, rgba(67,206,162,.15), rgba(24,90,157,.15));
+  border: 1px solid rgba(67,206,162,.35);
+  color: #43cea2;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  width: fit-content;
+}
+
+.shorts-rec-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.shorts-rec-sub {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.shorts-rec-see-all {
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: #43cea2;
+  text-decoration: none;
+  white-space: nowrap;
+  padding-top: 2px;
+  transition: opacity .15s;
+}
+.shorts-rec-see-all:hover { opacity: .72; }
+
+/* Horizontal scroll strip */
+.shorts-rec-strip {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  padding-bottom: 4px;
+  margin: 0 -4px;
+  padding: 0 4px 4px;
+}
+.shorts-rec-strip::-webkit-scrollbar { display: none; }
+
+/* Individual card — 9:16 portrait */
+.shorts-rec-card {
+  flex-shrink: 0;
+  width: 120px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform .18s ease;
+}
+.shorts-rec-card:hover { transform: translateY(-3px); }
+.shorts-rec-card:hover .shorts-rec-overlay { opacity: 1; }
+
+.shorts-rec-thumb-wrap {
+  position: relative;
+  width: 120px;
+  height: 213px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #111;
+  flex-shrink: 0;
+}
+
+.shorts-rec-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform .25s ease;
+}
+.shorts-rec-card:hover .shorts-rec-thumb { transform: scale(1.05); }
+
+.shorts-rec-thumb--fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #1a1a2e, #16213e);
+  width: 100%;
+  height: 100%;
+}
+
+.shorts-rec-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity .18s;
+  border-radius: 12px;
+}
+
+.shorts-rec-play {
+  filter: drop-shadow(0 2px 8px rgba(0,0,0,.6));
+}
+
+.shorts-rec-cat {
+  position: absolute;
+  bottom: 7px;
+  left: 7px;
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: #fff;
+  background: rgba(0,0,0,.65);
+  backdrop-filter: blur(6px);
+  padding: 2px 7px;
+  border-radius: 99px;
+}
+
+.shorts-rec-card-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.shorts-rec-views {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+@media (max-width: 480px) {
+  .shorts-rec-section { padding: 18px 14px; border-radius: 14px; }
+  .shorts-rec-title   { font-size: 16px; }
+  .shorts-rec-card    { width: 106px; }
+  .shorts-rec-thumb-wrap { width: 106px; height: 188px; }
+}

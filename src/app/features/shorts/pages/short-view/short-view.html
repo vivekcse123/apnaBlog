@@ -1,0 +1,107 @@
+@if (isLoading()) {
+  <div class="sv-loading">
+    <span class="sv-spin"></span>
+  </div>
+} @else if (notFound()) {
+  <div class="sv-notfound">
+    <p>Short not found.</p>
+    <a routerLink="/shorts" class="sv-back-btn">Browse Shorts</a>
+  </div>
+} @else if (short(); as s) {
+
+<div class="sv-page">
+
+  <!-- Breadcrumb for SEO -->
+  <nav class="sv-breadcrumb" aria-label="Breadcrumb">
+    <a routerLink="/">Home</a>
+    <span aria-hidden="true">›</span>
+    <a routerLink="/shorts">Shorts</a>
+    <span aria-hidden="true">›</span>
+    <span>{{ s.title }}</span>
+  </nav>
+
+  <div class="sv-layout">
+
+    <!-- ── Video column ── -->
+    <div class="sv-video-col">
+
+      <div class="sv-player">
+        @if (s.videoType === 'youtube' && s.youtubeId) {
+          @if (ytPlaying()) {
+            <!-- iframe mounts only after tap — autoplay=1 so YouTube idle UI never shows -->
+            <iframe class="sv-iframe"
+              [src]="safeEmbedUrl(s.youtubeId)"
+              allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+              allowfullscreen frameborder="0"
+              [title]="s.title">
+            </iframe>
+          } @else {
+            <div class="sv-yt-cover" (click)="playYt()" role="button" [attr.aria-label]="'Play ' + s.title">
+              <img class="sv-yt-thumb" [src]="cleanThumbnail(s.youtubeId)" [alt]="s.title"
+                   loading="eager" decoding="async"/>
+              <div class="sv-yt-play-btn">
+                <svg width="44" height="44" viewBox="0 0 24 24" fill="white">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+              </div>
+            </div>
+          }
+        } @else if (s.videoType === 'upload' && s.videoUrl) {
+          <video class="sv-video"
+            [src]="s.videoUrl"
+            [poster]="s.thumbnailUrl || ''"
+            controls playsinline webkit-playsinline
+            preload="metadata"
+            [attr.aria-label]="s.title">
+          </video>
+        }
+      </div>
+
+      <!-- ── Short metadata — rich text for AdSense & SEO ── -->
+      <div class="sv-meta">
+        <div class="sv-meta-top">
+          <span class="sv-cat">{{ s.category }}</span>
+          <span class="sv-views">{{ formatCount(s.views) }} views</span>
+        </div>
+
+        <h1 class="sv-title">{{ s.title }}</h1>
+
+        @if (s.caption) {
+          <p class="sv-caption">{{ s.caption }}</p>
+        }
+
+        <div class="sv-author-row">
+          <a class="sv-author" [routerLink]="['/author', s.user._id]">
+            <div class="sv-avatar">{{ userInitial(s.user) }}</div>
+            <span class="sv-author-name">&#64;{{ s.user.name }}</span>
+          </a>
+          <div class="sv-stats">
+            <span>❤️ {{ formatCount(s.likesCount) }}</span>
+            <span>💬 {{ formatCount(s.commentsCount) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── AdSense unit ── -->
+      <div class="sv-ad-wrap">
+        <ins class="adsbygoogle"
+          style="display:block"
+          data-ad-client="ca-pub-6477809641944524"
+          data-ad-slot="2024301795"
+          data-ad-format="auto"
+          data-full-width-responsive="true">
+        </ins>
+      </div>
+
+      <!-- ── CTA to open in feed ── -->
+      <a class="sv-feed-btn" [routerLink]="['/shorts']" [fragment]="s._id">
+        Watch more Shorts ↗
+      </a>
+
+    </div>
+
+  </div>
+
+</div>
+
+}
