@@ -64,8 +64,8 @@
             @if (isYtPlaying(short._id)) {
               <iframe class="sf-iframe"
                 [src]="safeEmbedUrl(short.youtubeId)"
-                allow="autoplay; encrypted-media; picture-in-picture"
-                allowfullscreen frameborder="0" loading="lazy">
+                allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+                allowfullscreen frameborder="0">
               </iframe>
             } @else {
               <div class="sf-yt-cover" (click)="playYouTube(short._id, $event)">

@@ -14,12 +14,18 @@
   position: sticky;
   top: 0;
   z-index: 100;
+  /* Prevent children from breaking out on narrow screens */
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: visible; /* let dropdown escape, but flex handles inline overflow */
 }
 
 /* ── Global Search ── */
 .ch-search {
   position: relative;
-  flex: 0 0 auto;
+  flex: 0 1 360px;   /* shrinkable — prevents overflow on mid-size screens */
+  min-width: 0;
   width: 360px;
   margin-left: auto;
   display: flex; align-items: center; gap: 10px;
@@ -454,11 +460,12 @@
 }
 .ch-backdrop--open { opacity: 1; pointer-events: auto; }
 
+/* ── Tablet ── */
 @media (max-width: 768px) {
-  .ch-topbar { padding: 0 14px; gap: 8px; height: 58px; }
+  .ch-topbar    { padding: 0 14px; gap: 8px; height: 58px; }
   .ch-hamburger { display: flex; }
-  .ch-search { width: 220px; }
-  .ch-search-kbd { display: none; }
+  .ch-search    { flex: 1 1 0; width: auto; min-width: 0; max-width: 240px; margin-left: 0; }
+  .ch-search-kbd     { display: none; }
   .ch-search-divider { display: none; }
   .ch-suggestions {
     position: fixed !important;
@@ -469,7 +476,25 @@
     max-height: 65vh;
   }
 }
+
+/* ── Large phone (≤480px) ── */
 @media (max-width: 480px) {
-  .ch-topbar { padding: 0 12px; }
-  .ch-search { width: 160px; height: 38px; }
+  .ch-topbar  { padding: 0 12px; gap: 6px; }
+  .ch-search  { max-width: 180px; height: 38px; padding: 0 12px; }
+  .ch-actions { gap: 4px; }
+}
+
+/* ── Small phone (≤390px) — squeeze everything ── */
+@media (max-width: 390px) {
+  .ch-topbar  { padding: 0 10px; gap: 4px; }
+  .ch-search  { max-width: 140px; padding: 0 10px; }
+  .ch-search-input { font-size: 12px; }
+  .ch-icon-btn,
+  .ch-avatar-btn { width: 32px; height: 32px; font-size: 12px; }
+  .ch-hamburger   { width: 32px; height: 32px; }
+}
+
+/* ── Very small (≤320px) ── */
+@media (max-width: 320px) {
+  .ch-search { max-width: 110px; }
 }

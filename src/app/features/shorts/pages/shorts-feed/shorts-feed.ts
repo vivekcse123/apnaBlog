@@ -80,6 +80,40 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
   private holdTimer:      ReturnType<typeof setTimeout> | null = null;
   private likeFlashTimer: ReturnType<typeof setTimeout> | null = null;
 
+  // Bound reference kept so we can removeEventListener in ngOnDestroy
+  private readonly ytMsgHandler = (e: MessageEvent) => {
+    if (!e.data || typeof e.data !== 'string') return;
+    try {
+      const msg = JSON.parse(e.data);
+      // YouTube player fires onReady when the JS player is fully initialised.
+      // This is the ONLY reliable trigger on iOS Safari — timeouts alone are not enough.
+      if (msg.event !== 'onReady') return;
+      if (!this.scrollRef?.nativeElement) return;
+      const iframes = this.scrollRef.nativeElement
+        .querySelectorAll<HTMLIFrameElement>('.sf-iframe');
+      for (const iframe of Array.from(iframes)) {
+        if (iframe.contentWindow !== e.source) continue;
+        const idx = Number(
+          iframe.closest<HTMLElement>('[data-idx]')?.getAttribute('data-idx')
+        );
+        if (isNaN(idx)) break;
+        this.ngZone.run(() => {
+          const short = this.shorts()[idx];
+          if (!short || this.manuallyPausedYtIds.has(short._id)) return;
+          iframe.contentWindow!.postMessage(
+            JSON.stringify({ event: 'command', func: 'playVideo', args: '' }), '*'
+          );
+          if (!this.isMuted() && this.gestureUnlocked) {
+            iframe.contentWindow!.postMessage(
+              JSON.stringify({ event: 'command', func: 'unMute', args: '' }), '*'
+            );
+          }
+        });
+        break;
+      }
+    } catch { /* non-JSON messages from other origins */ }
+  };
+
   readonly LIKED_KEY     = 'apna_liked_shorts';
   readonly VIEWED_PREFIX = 'apna_viewed_short_';
 
@@ -105,6 +139,10 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     this.cardRefs.changes.subscribe(() => this.observeAll());
     this.setupGestureUnlock();
     this.setupScrollGesturePlay();
+    // Listen for YouTube player onReady (critical for iOS Safari autoplay)
+    this.ngZone.runOutsideAngular(() =>
+      window.addEventListener('message', this.ytMsgHandler, { passive: true })
+    );
   }
 
   ngOnDestroy(): void {
@@ -116,6 +154,7 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     if (this.snapTimer)      clearTimeout(this.snapTimer);
     if (this.holdTimer)      clearTimeout(this.holdTimer);
     if (this.likeFlashTimer) clearTimeout(this.likeFlashTimer);
+    window.removeEventListener('message', this.ytMsgHandler);
   }
 
   // ── Gesture unlock ─────────────────────────────────────────────────────────
@@ -683,7 +722,7 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
       this.safeUrlCache.set(
         youtubeId,
         this.sanitizer.bypassSecurityTrustResourceUrl(
-          `https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&playsinline=1&rel=0&modestbranding=1&controls=0&enablejsapi=1`
+          `https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&playsinline=1&rel=0&modestbranding=1&controls=0&enablejsapi=1&origin=${encodeURIComponent(location.origin)}`
         )
       );
     }
