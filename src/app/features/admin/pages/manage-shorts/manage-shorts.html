@@ -138,17 +138,17 @@
               </td>
 
               <!-- Category -->
-              <td><span class="ms-cat-badge">{{ s.category }}</span></td>
+              <td data-label="Category"><span class="ms-cat-badge">{{ s.category }}</span></td>
 
               <!-- Type -->
-              <td>
+              <td data-label="Type">
                 <span class="ms-type-badge" [class.ms-type-badge--yt]="s.videoType === 'youtube'">
                   {{ s.videoType === 'youtube' ? 'YouTube' : 'Upload' }}
                 </span>
               </td>
 
               <!-- Stats -->
-              <td class="ms-td-stats">
+              <td data-label="Stats" class="ms-td-stats">
                 <div class="ms-stats-row">
                   <span title="Views">👁 {{ formatCount(s.views) }}</span>
                   <span title="Likes">❤️ {{ formatCount(s.likesCount) }}</span>
@@ -157,7 +157,7 @@
               </td>
 
               <!-- Status -->
-              <td>
+              <td data-label="Status">
                 <button
                   class="ms-status-btn"
                   [class.ms-status-btn--published]="s.status === 'published'"
@@ -174,10 +174,10 @@
               </td>
 
               <!-- Date -->
-              <td class="ms-td-date">{{ timeAgo(s.createdAt) }}</td>
+              <td data-label="Date" class="ms-td-date">{{ timeAgo(s.createdAt) }}</td>
 
               <!-- Actions -->
-              <td class="ms-td-actions">
+              <td data-label="Actions" class="ms-td-actions">
                 <a class="ms-action-btn ms-action-btn--preview"
                    [routerLink]="['/shorts']"
                    [fragment]="s._id"

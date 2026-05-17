@@ -453,49 +453,110 @@
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ── Responsive ── */
+/* ══════════════════════════════════════════════════════════════
+   MOBILE — card layout instead of horizontal-scroll table
+   ══════════════════════════════════════════════════════════════ */
 @media (max-width: 768px) {
   .ms-page {
     padding: 14px 12px 32px;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
   }
 
-  /* Header: stack title and button */
+  /* Header */
   .ms-header { flex-direction: column; align-items: flex-start; gap: 10px; }
   .ms-preview-link { align-self: flex-start; font-size: 12px; padding: 7px 14px; }
 
   /* Stats: 2×2 grid */
-  .ms-stats {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-  }
+  .ms-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .ms-stat { min-width: 0; padding: 12px 14px; }
   .ms-stat-val { font-size: 18px; }
 
-  /* Filters: stack vertically, full width */
+  /* Filters: stack vertically */
   .ms-filters { flex-direction: column; gap: 8px; }
   .ms-search, .ms-select { width: 100%; box-sizing: border-box; }
-  .ms-search input { width: 100%; }
 
-  /* Table: horizontally scrollable */
+  /* ── Table → Card transformation ── */
   .ms-table-wrap {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    border-radius: 10px;
-    /* Hint that content scrolls */
-    -ms-overflow-style: -ms-autohiding-scrollbar;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    overflow: visible;        /* no horizontal scroll */
   }
-  .ms-table { min-width: 620px; } /* prevent columns from collapsing */
-  .ms-table th, .ms-table td { padding: 10px 10px; font-size: 12px; white-space: nowrap; }
-  .ms-short-title  { max-width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .ms-short-caption { display: none; } /* hide on mobile to save space */
 
-  /* Thumb smaller */
-  .ms-thumb { width: 44px; height: 58px; }
+  /* Hide the <thead> row entirely */
+  .ms-table thead { display: none; }
 
-  /* Pagination: center and wrap */
+  /* Treat each element as block so rows stack */
+  .ms-table,
+  .ms-table tbody,
+  .ms-table tr { display: block; width: 100%; }
+
+  /* Each <tr> becomes a card */
+  .ms-table tr {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    margin-bottom: 12px;
+    padding: 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,.04);
+    overflow: hidden;
+  }
+  .ms-row--pending {
+    border-color: color-mix(in srgb, #f59e0b 40%, var(--border));
+    background: color-mix(in srgb, #f59e0b 4%, var(--bg-surface));
+  }
+
+  /* All <td> cells become flex rows with a label */
+  .ms-table td {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 14px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    vertical-align: unset;
+  }
+  .ms-table td:last-child { border-bottom: none; }
+
+  /* Label injected from data-label attribute */
+  .ms-table td[data-label]::before {
+    content: attr(data-label);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--text-muted);
+    min-width: 62px;
+    flex-shrink: 0;
+  }
+
+  /* Short cell: full-width card header, no label prefix */
+  .ms-table td.ms-td-short {
+    padding: 14px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-surface-alt);
+  }
+  .ms-table td.ms-td-short::before { display: none; }
+  .ms-td-short { align-items: flex-start; }
+
+  .ms-thumb { width: 64px; height: 56px; border-radius: 8px; object-fit: cover; }
+  .ms-short-title  { max-width: none; white-space: normal; font-size: 13px; }
+  .ms-short-caption { font-size: 11px; }
+
+  /* Stats cell: inline row */
+  .ms-stats-row { flex-direction: row; gap: 10px; flex-wrap: wrap; font-size: 12px; }
+
+  /* Actions cell: no label, buttons on the right */
+  .ms-table td.ms-td-actions {
+    justify-content: flex-end;
+    padding: 10px 14px;
+  }
+  .ms-table td.ms-td-actions::before { display: none; }
+  .ms-action-btn { width: 34px; height: 34px; border-radius: 8px; }
+
+  /* Date cell */
+  .ms-td-date { color: var(--text-muted); font-size: 12px; }
+
+  /* Pagination */
   .ms-pagination { flex-wrap: wrap; justify-content: center; gap: 6px; }
-  .ms-page-btn { min-width: 34px; height: 34px; font-size: 12px; }
+  .ms-page-btn { font-size: 12px; padding: 6px 14px; }
 }
