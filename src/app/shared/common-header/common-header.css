@@ -465,20 +465,21 @@
   .ch-topbar    { padding: 0 14px; gap: 8px; height: 58px; }
   .ch-hamburger { display: flex; }
 
-  /* Search: fixed width, does NOT flex-grow — lets margin-left: auto on
-     .ch-actions push the action cluster to the far right on all Androids */
+  /* margin-left: auto on search pushes the [search + actions] cluster
+     together to the RIGHT edge — hamburger stays on the far left.
+     Works on all Androids and matches desktop behaviour. */
   .ch-search {
     flex: 0 1 180px;
     width: auto;
     min-width: 0;
-    margin-left: 0;
+    margin-left: auto;   /* ← key: whole right-cluster sticks to right */
     height: 38px;
   }
   .ch-search-kbd     { display: none; }
   .ch-search-divider { display: none; }
 
-  /* Always pin actions to the right edge */
-  .ch-actions { margin-left: auto; gap: 6px; }
+  /* Actions follow the search — no extra auto margin needed */
+  .ch-actions { margin-left: 0; gap: 6px; }
 
   /* Drawer drops below the 58 px mobile header */
   .ch-drawer { top: 58px; }
@@ -496,7 +497,7 @@
 /* ── Large phone (≤480px) ── */
 @media (max-width: 480px) {
   .ch-topbar  { padding: 0 12px; gap: 6px; }
-  .ch-search  { flex: 0 1 140px; height: 36px; padding: 0 10px; }
+  .ch-search  { flex: 0 1 130px; height: 36px; padding: 0 10px; }
   .ch-actions { gap: 4px; }
   .ch-icon-btn,
   .ch-avatar-btn { width: 34px; height: 34px; }
@@ -505,14 +506,13 @@
 /* ── Small phone (≤360px) ── */
 @media (max-width: 360px) {
   .ch-topbar  { padding: 0 10px; gap: 4px; }
-  .ch-search  { flex: 0 1 100px; padding: 0 8px; }
+  .ch-search  { flex: 0 1 90px; padding: 0 8px; }
   .ch-search-input { font-size: 12px; }
   .ch-hamburger    { width: 32px; height: 32px; }
 }
 
-/* ── Very small (≤320px) — search collapses to icon only ── */
+/* ── Very small (≤320px) — hide search, actions keep right edge via margin-left:auto ── */
 @media (max-width: 320px) {
-  .ch-search { flex: 0 0 36px; padding: 0; }
-  .ch-search-ico { margin: 0 auto; }
-  .ch-search-input { display: none; }
+  .ch-search  { display: none; }
+  .ch-actions { margin-left: auto; } /* search gone, actions take the auto margin */
 }
