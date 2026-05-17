@@ -71,9 +71,7 @@ body {
   font-weight: 700;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  padding: 8px 10px;  /* slightly tighter for icon-only */
-  gap: 0;
+  gap: 5px;
 }
 .nav-link--shorts:hover { color: #dc2626; background: rgba(239,68,68,.08); }
 
