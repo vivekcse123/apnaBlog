@@ -24,9 +24,9 @@
 /* ── Global Search ── */
 .ch-search {
   position: relative;
-  flex: 0 1 360px;   /* shrinkable — prevents overflow on mid-size screens */
+  flex: 0 1 520px;   /* grows up to 520px; margin-left:auto keeps cluster right-aligned */
   min-width: 0;
-  width: 360px;
+  width: auto;
   margin-left: auto;
   display: flex; align-items: center; gap: 10px;
   padding: 0 16px;
@@ -333,6 +333,83 @@
 .ch-suggestion-search:hover { background: rgba(67,206,162,0.07); }
 .ch-suggestion-search svg { flex-shrink: 0; opacity: 0.7; }
 
+/* ── Search toggle button (hidden on desktop, shown on mobile) ── */
+.ch-search-toggle { display: none; }
+.ch-search-toggle--active {
+  background: rgba(67,206,162,0.12);
+  border-color: rgba(67,206,162,0.45);
+  color: #43cea2;
+}
+
+/* ══ Mobile search panel ══════════════════════════════════════════════════ */
+.ch-search-panel {
+  display: none; /* shown only on mobile via media query */
+  flex-direction: column;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 4px 16px rgba(0,0,0,.08);
+  position: sticky;
+  top: 58px;
+  z-index: 99;
+  /* Slide-down animation via opacity + transform */
+  opacity: 0;
+  transform: translateY(-6px);
+  pointer-events: none;
+  transition: opacity .2s ease, transform .2s ease;
+}
+.ch-search-panel--open {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* Panel input row */
+.ch-panel-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+}
+.ch-panel-bar .ch-search-ico { flex-shrink: 0; color: var(--text-muted); }
+
+.ch-panel-input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  color: var(--text-primary);
+  font-family: 'DM Sans', sans-serif;
+}
+.ch-panel-input::placeholder { color: var(--text-muted); }
+.ch-panel-input::-webkit-search-cancel-button { display: none; }
+
+.ch-panel-clear {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: var(--bg-surface-alt);
+  color: var(--text-muted);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background .15s, color .15s;
+}
+.ch-panel-clear:hover { background: rgba(239,68,68,.1); color: #ef4444; }
+
+/* Panel suggestions — in normal flow, not fixed */
+.ch-panel-suggestions {
+  max-height: 52vh;
+  overflow-y: auto;
+  border-top: 1px solid var(--border);
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+  -webkit-overflow-scrolling: touch;
+}
+.ch-panel-suggestions::-webkit-scrollbar { width: 4px; }
+.ch-panel-suggestions::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+
 /* ── Hamburger (mobile only) ── */
 .ch-hamburger {
   display: none;
@@ -465,39 +542,23 @@
   .ch-topbar    { padding: 0 14px; gap: 8px; height: 58px; }
   .ch-hamburger { display: flex; }
 
-  /* margin-left: auto on search pushes the [search + actions] cluster
-     together to the RIGHT edge — hamburger stays on the far left.
-     Works on all Androids and matches desktop behaviour. */
-  .ch-search {
-    flex: 0 1 180px;
-    width: auto;
-    min-width: 0;
-    margin-left: auto;   /* ← key: whole right-cluster sticks to right */
-    height: 38px;
-  }
-  .ch-search-kbd     { display: none; }
-  .ch-search-divider { display: none; }
+  /* Inline search hidden — replaced by the slide-down panel */
+  .ch-search { display: none; }
 
-  /* Actions follow the search — no extra auto margin needed */
-  .ch-actions { margin-left: 0; gap: 6px; }
+  /* Search toggle visible; actions auto-margin pushes everything right */
+  .ch-search-toggle { display: flex; }
+  .ch-actions { margin-left: auto; gap: 6px; }
+
+  /* Panel rendered below header */
+  .ch-search-panel { display: flex; }
 
   /* Drawer drops below the 58 px mobile header */
   .ch-drawer { top: 58px; }
-
-  .ch-suggestions {
-    position: fixed !important;
-    top: 66px !important;
-    left: 12px !important;
-    right: 12px !important;
-    width: auto !important;
-    max-height: 65vh;
-  }
 }
 
 /* ── Large phone (≤480px) ── */
 @media (max-width: 480px) {
   .ch-topbar  { padding: 0 12px; gap: 6px; }
-  .ch-search  { flex: 0 1 130px; height: 36px; padding: 0 10px; }
   .ch-actions { gap: 4px; }
   .ch-icon-btn,
   .ch-avatar-btn { width: 34px; height: 34px; }
@@ -505,14 +566,12 @@
 
 /* ── Small phone (≤360px) ── */
 @media (max-width: 360px) {
-  .ch-topbar  { padding: 0 10px; gap: 4px; }
-  .ch-search  { flex: 0 1 90px; padding: 0 8px; }
-  .ch-search-input { font-size: 12px; }
-  .ch-hamburger    { width: 32px; height: 32px; }
+  .ch-topbar    { padding: 0 10px; gap: 4px; }
+  .ch-hamburger { width: 32px; height: 32px; }
 }
 
-/* ── Very small (≤320px) — hide search, actions keep right edge via margin-left:auto ── */
+/* ── Very small (≤320px) ── */
 @media (max-width: 320px) {
-  .ch-search  { display: none; }
-  .ch-actions { margin-left: auto; } /* search gone, actions take the auto margin */
+  .ch-icon-btn,
+  .ch-avatar-btn { width: 30px; height: 30px; }
 }

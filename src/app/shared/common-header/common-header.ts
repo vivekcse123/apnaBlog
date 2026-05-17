@@ -35,10 +35,13 @@ export class CommonHeader implements OnInit {
   get displayName(): string { return this.name || this.profile || ''; }
   get firstName():   string { return (this.name || this.profile || '').split(' ')[0]; }
 
-  menuOpen        = false;
-  profileOpen     = false;
-  searchQuery     = '';
-  showSuggestions = false;
+  menuOpen         = false;
+  profileOpen      = false;
+  searchQuery      = '';
+  showSuggestions  = false;
+  searchPanelOpen  = false;
+
+  @ViewChild('panelInput') panelInputRef?: ElementRef<HTMLInputElement>;
 
   private get dynamicCategories(): { label: string; emoji: string }[] {
     const items = this.taxonomyService.categories();
@@ -235,7 +238,34 @@ export class CommonHeader implements OnInit {
   onSearchEnter(): void {
     if (!this.searchQuery.trim()) return;
     this.showSuggestions = false;
+    this.searchPanelOpen = false;
     this.searchChange.emit(this.searchQuery.trim());
+  }
+
+  /** Close suggestions + panel when a suggestion link is clicked. */
+  onSuggClick(): void {
+    this.showSuggestions = false;
+    this.searchPanelOpen = false;
+    this.searchQuery = '';
+  }
+
+  /** Toggle the mobile slide-down search panel. */
+  toggleSearchPanel(e: Event): void {
+    e.stopPropagation();
+    this.searchPanelOpen = !this.searchPanelOpen;
+    if (this.searchPanelOpen) {
+      setTimeout(() => this.panelInputRef?.nativeElement.focus(), 180);
+    } else {
+      this.showSuggestions = false;
+      this.searchQuery = '';
+    }
+  }
+
+  /** Clear the panel input without closing the panel. */
+  clearPanel(): void {
+    this.searchQuery = '';
+    this.showSuggestions = false;
+    this.panelInputRef?.nativeElement.focus();
   }
 
   toggleMenu(): void { this.menuOpen = !this.menuOpen; }
@@ -248,8 +278,15 @@ export class CommonHeader implements OnInit {
 
   @HostListener('document:click', ['$event'])
   onDocClick(e: MouseEvent): void {
-    if (!(e.target as HTMLElement).closest('.ch-search')) {
+    const t = e.target as HTMLElement;
+    if (!t.closest('.ch-search') && !t.closest('.ch-search-panel')) {
       this.showSuggestions = false;
+    }
+    if (!t.closest('.ch-search-panel') && !t.closest('.ch-search-toggle')) {
+      if (this.searchPanelOpen) {
+        this.searchPanelOpen = false;
+        this.searchQuery = '';
+      }
     }
   }
 
