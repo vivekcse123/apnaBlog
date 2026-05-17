@@ -71,32 +71,29 @@ body {
   font-weight: 700;
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  justify-content: center;
+  padding: 8px 10px;  /* slightly tighter for icon-only */
+  gap: 0;
 }
 .nav-link--shorts:hover { color: #dc2626; background: rgba(239,68,68,.08); }
 
-/* ── Shorts pill: hidden on desktop, shown in header when nav is hidden ── */
+/* ── Shorts pill: icon-only circle, shown in header when nav is hidden ── */
 .shorts-mobile-pill {
   display: none;
   align-items: center;
-  gap: 4px;
-  padding: 6px 12px;
-  border-radius: 99px;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
   background: #ef4444;
   color: #fff;
-  font-size: 13px;
-  font-weight: 700;
-  font-family: 'DM Sans', sans-serif;
   text-decoration: none;
-  white-space: nowrap;
   box-shadow: 0 2px 8px rgba(239,68,68,.35);
-  transition: background .15s, transform .15s;
+  transition: background .15s, transform .15s, box-shadow .15s;
   flex-shrink: 0;
 }
-.shorts-mobile-pill:hover  { background: #dc2626; }
-.shorts-mobile-pill:active { transform: scale(.96); }
-
-/* shorts-mobile-pill: icon-only applied at ≤768px above */
+.shorts-mobile-pill:hover  { background: #dc2626; box-shadow: 0 4px 12px rgba(239,68,68,.5); }
+.shorts-mobile-pill:active { transform: scale(.9); }
 
 /* ── Drawer Shorts card ── */
 .drawer-shorts-card {
@@ -1519,11 +1516,8 @@ body {
   .mobile-drawer { top: 60px; }
   /* filter-wrap sticks just below the 60px mobile header */
   .filter-wrap { top: 60px; }
-  /* Hide logo text on mobile — prevents right-side overflow on Android */
+  /* app-logo-text removed from HTML; rule kept for safety */
   .header-left .app-logo-text { display: none; }
-  /* Shorts pill: icon-only on phones ≤768px so the header-right fits */
-  .shorts-mobile-pill span { display: none; }
-  .shorts-mobile-pill { padding: 7px 9px; gap: 0; }
 
   .hero-wrap { padding: 48px 5% 44px; }
   .hero-title { font-size: clamp(32px, 8vw, 44px); letter-spacing: -0.5px; }
