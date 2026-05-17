@@ -333,8 +333,10 @@
 .ch-suggestion-search:hover { background: rgba(67,206,162,0.07); }
 .ch-suggestion-search svg { flex-shrink: 0; opacity: 0.7; }
 
-/* ── Search toggle button (hidden on desktop, shown on mobile) ── */
-.ch-search-toggle { display: none; }
+/* ── Search toggle button (hidden on desktop, shown on mobile) ──
+   Must use combined selector — .ch-icon-btn declares display:flex later
+   in the file and would win a single-class specificity race. */
+.ch-icon-btn.ch-search-toggle { display: none; }
 .ch-search-toggle--active {
   background: rgba(67,206,162,0.12);
   border-color: rgba(67,206,162,0.45);
@@ -342,8 +344,12 @@
 }
 
 /* ══ Mobile search panel ══════════════════════════════════════════════════ */
-.ch-search-panel {
-  display: none; /* shown only on mobile via media query */
+/* Always hidden — display:none takes zero space when closed */
+.ch-search-panel { display: none; }
+
+/* Only rendered (and animated) when --open is applied */
+.ch-search-panel--open {
+  display: flex;
   flex-direction: column;
   background: var(--bg-surface);
   border-bottom: 1px solid var(--border);
@@ -351,16 +357,11 @@
   position: sticky;
   top: 58px;
   z-index: 99;
-  /* Slide-down animation via opacity + transform */
-  opacity: 0;
-  transform: translateY(-6px);
-  pointer-events: none;
-  transition: opacity .2s ease, transform .2s ease;
+  animation: panelSlideDown .2s cubic-bezier(.4,0,.2,1) both;
 }
-.ch-search-panel--open {
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: auto;
+@keyframes panelSlideDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 /* Panel input row */
@@ -542,15 +543,13 @@
   .ch-topbar    { padding: 0 14px; gap: 8px; height: 58px; }
   .ch-hamburger { display: flex; }
 
+
   /* Inline search hidden — replaced by the slide-down panel */
   .ch-search { display: none; }
 
   /* Search toggle visible; actions auto-margin pushes everything right */
-  .ch-search-toggle { display: flex; }
+  .ch-icon-btn.ch-search-toggle { display: flex; }
   .ch-actions { margin-left: auto; gap: 6px; }
-
-  /* Panel rendered below header */
-  .ch-search-panel { display: flex; }
 
   /* Drawer drops below the 58 px mobile header */
   .ch-drawer { top: 58px; }

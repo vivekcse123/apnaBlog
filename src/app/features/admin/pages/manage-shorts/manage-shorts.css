@@ -34,7 +34,7 @@
   gap: 6px;
   padding: 8px 16px;
   border-radius: 8px;
-  background: #ef4444;
+  background: linear-gradient(135deg, #43cea2, #185a9d);
   color: #fff;
   font-size: 13px;
   font-weight: 600;
@@ -68,7 +68,7 @@
   gap: 6px;
 }
 .ms-stat-val--green { color: #16a34a; }
-.ms-stat-val--red   { color: #ef4444; }
+.ms-stat-val--red   { color: #43cea2; }
 .ms-stat-val--blue  { color: #3b82f6; }
 .ms-stat-label {
   font-size: 12px;
@@ -241,8 +241,8 @@
   white-space: nowrap;
 }
 .ms-type-badge--yt {
-  background: color-mix(in srgb, #ef4444 12%, transparent);
-  color: #b91c1c;
+  background: color-mix(in srgb, #43cea2 12%, transparent);
+  color: #0f7a5e;
 }
 
 /* ── Stats cell ── */

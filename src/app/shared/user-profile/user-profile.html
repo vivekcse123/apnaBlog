@@ -1,58 +1,66 @@
-<div class="profile-panel">
+<div class="up-panel">
 
-  <div class="panel-caret" aria-hidden="true"></div>
+  <div class="up-caret" aria-hidden="true"></div>
 
-  <!-- ── Header ── -->
-  <div class="panel-header">
-    <div class="panel-header-bg" aria-hidden="true"></div>
+  <!-- ── Identity ── -->
+  <div class="up-header">
+    <div class="up-header-bg" aria-hidden="true"></div>
 
-    <button class="panel-close" (click)="closeProfile($event)" aria-label="Close profile panel">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+    <button class="up-close" (click)="closeProfile($event)" aria-label="Close">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2.8" stroke-linecap="round" aria-hidden="true">
+        <path d="M18 6L6 18M6 6l12 12"/>
       </svg>
     </button>
 
-    <button class="panel-avatar-wrap" (click)="goToSettings()"
-            type="button" title="Go to Account Settings" aria-label="Open account settings">
-      <div class="panel-avatar">
-        @if (avatar) {
-          <img [src]="avatar" alt="Profile photo" class="panel-avatar-img" />
-        } @else {
-          {{ name.charAt(0).toUpperCase() }}
-        }
-      </div>
-      <span class="panel-role-badge role-{{ role }}">{{ roleLabel }}</span>
-    </button>
+    <div class="up-av">
+      @if (avatar) {
+        <img [src]="avatar" alt="" class="up-av-img" />
+      } @else {
+        {{ name.charAt(0).toUpperCase() }}
+      }
+    </div>
 
-    <button class="panel-identity" (click)="goToSettings()"
-            type="button" title="Go to Account Settings" aria-label="Open account settings">
-      <span class="panel-name">{{ name }}</span>
-      <span class="panel-email">{{ email }}</span>
-      <span class="panel-settings-hint">⚙ Settings</span>
-    </button>
+    <span class="up-name">{{ name }}</span>
+    <span class="up-email">{{ email }}</span>
+    <span class="up-role-badge role-{{ role }}">{{ roleLabel }}</span>
   </div>
 
-  <!-- ── Stats ── -->
-  @if (totalBlogs > 0 || totalViews > 0) {
-    <div class="panel-stats">
-      <div class="panel-stat">
-        <strong>{{ totalBlogs }}</strong>
-        <span>Stories</span>
-      </div>
-      <div class="panel-stat-divider"></div>
-      <div class="panel-stat">
-        <strong>{{ totalViews | formatCount }}</strong>
-        <span>Total Reads</span>
-      </div>
+  <!-- ── Appearance ── -->
+  <div class="up-appearance">
+    <span class="up-section-label">Appearance</span>
+    <div class="up-theme-seg" role="group" aria-label="Theme">
+      <button class="up-theme-opt"
+              [class.up-theme-opt--on]="themeService.theme() === 'dark'"
+              (click)="themeService.theme() !== 'dark' && themeService.toggleTheme()"
+              type="button">
+        <span aria-hidden="true">☾</span> Dark
+      </button>
+      <button class="up-theme-opt"
+              [class.up-theme-opt--on]="themeService.theme() === 'light'"
+              (click)="themeService.theme() !== 'light' && themeService.toggleTheme()"
+              type="button">
+        <span aria-hidden="true">☀</span> Light
+      </button>
     </div>
-  }
+  </div>
 
-  <!-- ── Footer: logout ── -->
-  <div class="panel-footer">
-    <button class="panel-logout" (click)="onLogout($event)">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        <path d="M16 17l5-5-5-5M21 12H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- ── Footer ── -->
+  <div class="up-footer">
+    <button class="up-settings" (click)="goToSettings()" type="button">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+      </svg>
+      Settings
+    </button>
+    <button class="up-logout" (click)="onLogout($event)" type="button">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+        <polyline points="16 17 21 12 16 7"/>
+        <line x1="21" y1="12" x2="9" y2="12"/>
       </svg>
       Sign Out
     </button>

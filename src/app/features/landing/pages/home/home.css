@@ -67,13 +67,13 @@ body {
 .nav-link--cat { padding-right: 8px; }
 
 .nav-link--shorts {
-  color: #ef4444;
+  color: #43cea2;
   font-weight: 700;
   display: inline-flex;
   align-items: center;
   gap: 5px;
 }
-.nav-link--shorts:hover { color: #dc2626; background: rgba(239,68,68,.08); }
+.nav-link--shorts:hover { color: #1d9e78; background: rgba(67,206,162,.08); }
 
 /* ── Shorts pill: icon-only circle, shown in header when nav is hidden ── */
 .shorts-mobile-pill {
@@ -83,14 +83,14 @@ body {
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background: #ef4444;
+  background: linear-gradient(135deg, #43cea2, #185a9d);
   color: #fff;
   text-decoration: none;
-  box-shadow: 0 2px 8px rgba(239,68,68,.35);
-  transition: background .15s, transform .15s, box-shadow .15s;
+  box-shadow: 0 2px 8px rgba(67,206,162,.35);
+  transition: opacity .15s, transform .15s, box-shadow .15s;
   flex-shrink: 0;
 }
-.shorts-mobile-pill:hover  { background: #dc2626; box-shadow: 0 4px 12px rgba(239,68,68,.5); }
+.shorts-mobile-pill:hover  { opacity: .88; box-shadow: 0 4px 12px rgba(67,206,162,.45); }
 .shorts-mobile-pill:active { transform: scale(.9); }
 
 /* ── Drawer Shorts card ── */
@@ -101,10 +101,10 @@ body {
   margin: 0 0 8px;
   padding: 14px 16px;
   border-radius: 14px;
-  background: linear-gradient(135deg, #ef4444, #b91c1c);
+  background: linear-gradient(135deg, #43cea2, #185a9d);
   color: #fff;
   text-decoration: none;
-  box-shadow: 0 4px 14px rgba(239,68,68,.35);
+  box-shadow: 0 4px 14px rgba(67,206,162,.35);
   transition: opacity .15s, transform .15s;
 }
 .drawer-shorts-card:hover { opacity: .92; transform: translateY(-1px); }
@@ -648,7 +648,7 @@ body {
 
 .filter-wrap {
   /* Stick just below the 64px desktop header so it never slides behind it */
-  position: sticky; top: 64px; z-index: 800;
+  position: sticky; top: 0px; z-index: 800;
   background: var(--bg-surface);
   border-bottom: 1px solid var(--border);
   box-shadow: var(--card-shadow);
@@ -1513,7 +1513,7 @@ body {
   .header { padding: 0 16px; height: 60px; gap: 10px; }
   .mobile-drawer { top: 60px; }
   /* filter-wrap sticks just below the 60px mobile header */
-  .filter-wrap { top: 60px; }
+  .filter-wrap { top: 0px; }
   /* app-logo-text removed from HTML; rule kept for safety */
   .header-left .app-logo-text { display: none; }
 

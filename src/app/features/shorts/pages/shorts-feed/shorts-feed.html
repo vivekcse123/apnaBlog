@@ -65,22 +65,12 @@
         <!-- ── Media ── -->
         <div class="reel-media">
           @if (short.videoType === 'youtube' && short.youtubeId) {
-            @if (isYtPlaying(short._id)) {
+            @if (isYtMounted(short._id)) {
               <iframe class="reel-iframe"
                 [src]="safeEmbedUrl(short.youtubeId)"
                 allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
                 allowfullscreen frameborder="0">
               </iframe>
-            } @else {
-              <div class="reel-yt-cover" (click)="playYouTube(short._id, $event)">
-                <img class="reel-thumb" [src]="youtubeThumbnail(short.youtubeId)"
-                     [alt]="short.title" loading="lazy" decoding="async"/>
-                <div class="reel-yt-play">
-                  <svg width="30" height="30" viewBox="0 0 24 24" fill="white">
-                    <path d="M8 5v14l11-7z"/>
-                  </svg>
-                </div>
-              </div>
             }
           } @else if (short.videoType === 'upload' && short.videoUrl) {
             <video class="reel-video"

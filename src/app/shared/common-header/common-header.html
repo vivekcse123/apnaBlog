@@ -238,13 +238,6 @@
       }
     </button>
 
-    <button class="ch-icon-btn"
-            (click)="themeService.toggleTheme()"
-            [title]="themeService.theme() === 'dark' ? 'Light mode' : 'Dark mode'"
-            [attr.aria-label]="themeService.theme() === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'">
-      <span aria-hidden="true">{{ themeService.theme() === 'dark' ? '&#9728;' : '&#9790;' }}</span>
-    </button>
-
     <app-notification-panel />
 
     <div class="ch-avatar-wrapper">
