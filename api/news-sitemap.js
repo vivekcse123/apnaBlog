@@ -1,39 +1,34 @@
-// Google News Sitemap — only articles published in the last 2 days
-// Google News indexes articles within 48 hours of publication.
-// Submit this URL in Google Search Console → Sitemaps.
+// Google News Sitemap — articles published in the last 72 hours
+// Google News indexes within 48h; 72h window avoids gaps on slow-publish days.
+// Only fetches page 1 (newest 100 posts) — far faster than paginating all posts,
+// and sufficient since no site publishes 100+ articles per 3 days.
 export default async function handler(req, res) {
   try {
-    let allPosts = [];
+    let posts = [];
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 8000);
 
     try {
-      let page = 1;
-      let totalPages = 1;
-      do {
-        const response = await fetch(
-          `https://apnablogserver.onrender.com/api/post?page=${page}&limit=100`,
-          { signal: controller.signal }
-        );
-        if (!response.ok) throw new Error(`Backend ${response.status}`);
-        const data = await response.json();
-        allPosts = allPosts.concat(Array.isArray(data.data) ? data.data : []);
-        totalPages = data.totalPages || 1;
-        page++;
-      } while (page <= totalPages);
+      const response = await fetch(
+        'https://apnablogserver.onrender.com/api/post?page=1&limit=100',
+        { signal: controller.signal }
+      );
+      if (!response.ok) throw new Error(`Backend ${response.status}`);
+      const data = await response.json();
+      posts = Array.isArray(data.data) ? data.data : [];
     } catch (e) {
       console.warn('News sitemap: backend unavailable:', e.message);
     } finally {
       clearTimeout(timeout);
     }
 
-    const twoDaysAgo = Date.now() - 2 * 24 * 60 * 60 * 1000;
+    const threeDaysAgo = Date.now() - 3 * 24 * 60 * 60 * 1000;
 
-    const recentPosts = allPosts.filter(p =>
+    const recentPosts = posts.filter(p =>
       p.status === 'published' &&
       p.title &&
-      new Date(p.createdAt).getTime() >= twoDaysAgo
+      new Date(p.createdAt).getTime() >= threeDaysAgo
     );
 
     const escape = str =>
@@ -44,12 +39,11 @@ export default async function handler(req, res) {
         .replace(/"/g, '&quot;');
 
     const urls = recentPosts.map(post => {
-      const url  = `https://apnainsights.com/blog/${post.slug || post._id}`;
+      const loc  = `https://apnainsights.com/blog/${post.slug || post._id}`;
       const date = new Date(post.createdAt).toISOString();
-
       return `
   <url>
-    <loc>${url}</loc>
+    <loc>${loc}</loc>
     <news:news>
       <news:publication>
         <news:name>ApnaInsights</news:name>
@@ -63,8 +57,7 @@ export default async function handler(req, res) {
 
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
-  ${urls || '<!-- No articles published in the last 48 hours -->'}
+        xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">${urls}
 </urlset>`;
 
     res.setHeader('Content-Type', 'application/xml; charset=utf-8');
@@ -73,11 +66,10 @@ export default async function handler(req, res) {
 
   } catch (err) {
     console.error('News sitemap error:', err);
-    const fallback = `<?xml version="1.0" encoding="UTF-8"?>
+    res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+    res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
-</urlset>`;
-    res.setHeader('Content-Type', 'application/xml; charset=utf-8');
-    res.status(200).send(fallback);
+</urlset>`);
   }
 }

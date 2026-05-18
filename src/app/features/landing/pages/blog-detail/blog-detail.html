@@ -988,4 +988,28 @@
   </div>
 </footer>
 
+<!-- Floating paragraph emoji picker -->
+@if (pickerIdx() >= 0) {
+  <div class="rp-picker"
+       [style.top.px]="pickerPos().y"
+       [style.left.px]="pickerPos().x"
+       role="dialog"
+       aria-label="React to paragraph">
+
+    @if (auth.isAuthorized()) {
+      @for (emoji of EMOJIS; track emoji) {
+        <button class="rp-emoji-btn"
+                [class.rp-selected]="myReactions()[pickerIdx()] === emoji"
+                (click)="reactTo(emoji, $event)"
+                [attr.aria-label]="'React with ' + emoji">
+          {{ emoji }}
+        </button>
+      }
+    } @else {
+      <span class="rp-login-hint">Login to react ✨</span>
+    }
+
+  </div>
+}
+
 }
