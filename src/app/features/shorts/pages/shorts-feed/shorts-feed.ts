@@ -127,6 +127,7 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
 
   isLoggedIn    = computed(() => !!this.auth.token());
   isAdmin       = computed(() => this.auth.isAdmin());
+  canCreate     = computed(() => !!this.auth.token()); // any logged-in user (admin + user)
   currentUserId = computed(() => this.auth.userId());
 
   categories = [
