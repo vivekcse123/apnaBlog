@@ -58,10 +58,22 @@ export class ShortsUpload {
   ];
 
   form = this.fb.group({
-    title:    ['', [Validators.required, Validators.minLength(3), Validators.maxLength(80)]],
-    caption:  ['', Validators.maxLength(150)],
-    category: ['', Validators.required],
+    title:                 ['', [Validators.required, Validators.minLength(3), Validators.maxLength(80)]],
+    caption:               ['', Validators.maxLength(150)],
+    category:              ['', Validators.required],
+    isSponsored:           [false],
+    sponsoredDays:         [7],
+    sponsoredExpiryAction: ['keep'],
   });
+
+  readonly SPONSORED_DURATION_OPTIONS = [
+    { label: '1 day',    value: 1  },
+    { label: '3 days',   value: 3  },
+    { label: '1 week',   value: 7  },
+    { label: '2 weeks',  value: 14 },
+    { label: '1 month',  value: 30 },
+    { label: 'No expiry',value: 0  },
+  ];
 
   // ── Step 1: choose source ──────────────────────────────────────────────────
 
@@ -95,7 +107,7 @@ export class ShortsUpload {
 
   // ── Video file upload ─────────────────────────────────────────────────────
 
-  readonly MAX_DURATION_SEC = 30;
+  readonly MAX_DURATION_SEC = 60;
 
   onVideoFile(event: Event): void {
     const file = (event.target as HTMLInputElement).files?.[0];
@@ -205,7 +217,7 @@ export class ShortsUpload {
   submit(): void {
     if (this.form.invalid || this.isSubmitting()) return;
 
-    const { title, caption, category } = this.form.value;
+    const { title, caption, category, isSponsored, sponsoredDays, sponsoredExpiryAction } = this.form.value;
     const src = this.source();
     if (!src) return;
 
@@ -215,23 +227,29 @@ export class ShortsUpload {
       const youtubeId = this.ytId()!;
       payload = {
         title: title!,
-        caption: caption ?? undefined,
-        category: category!,
-        videoType: 'youtube',
-        videoUrl: `https://www.youtube.com/watch?v=${youtubeId}`,
+        caption:     caption ?? undefined,
+        category:    category!,
+        videoType:   'youtube',
+        videoUrl:    `https://www.youtube.com/watch?v=${youtubeId}`,
         youtubeId,
         thumbnailUrl: this.service.youtubeThumbnail(youtubeId),
+        isSponsored:           !!isSponsored,
+        sponsoredDays:         isSponsored ? (sponsoredDays ?? 7)          : undefined,
+        sponsoredExpiryAction: isSponsored ? (sponsoredExpiryAction as any) : undefined,
       };
     } else {
       if (!this.uploadedUrl()) { this.errorMsg.set('Video not yet uploaded.'); return; }
       payload = {
-        title: title!,
-        caption: caption ?? undefined,
-        category: category!,
-        videoType: 'upload',
-        videoUrl: this.uploadedUrl(),
-        thumbnailUrl: this.thumbUrl() || undefined,
-        duration: this.uploadedDuration() ?? undefined,
+        title:                 title!,
+        caption:               caption ?? undefined,
+        category:              category!,
+        videoType:             'upload',
+        videoUrl:              this.uploadedUrl(),
+        thumbnailUrl:          this.thumbUrl() || undefined,
+        duration:              this.uploadedDuration() ?? undefined,
+        isSponsored:           !!isSponsored,
+        sponsoredDays:         isSponsored ? (sponsoredDays ?? 7)          : undefined,
+        sponsoredExpiryAction: isSponsored ? (sponsoredExpiryAction as any) : undefined,
       };
     }
 
