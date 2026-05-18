@@ -20,97 +20,33 @@
     <div style="width:32px"></div>
   </div>
 
-  <!-- ── Step 1: Choose source ── -->
-  @if (step() === 'source') {
+  <!-- ── Step 1: Pick file ── -->
+  @if (step() === 'pick') {
     <div class="sheet-body">
-
-      <p class="source-hint">How do you want to add your short?</p>
-
-      <!-- YouTube URL -->
-      <div class="source-card" [class.source-card--active]="source() === 'youtube'"
-           (click)="selectSource('youtube')">
-        <div class="source-icon source-icon--yt">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="#ff0000">
-            <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.8 15.5V8.5l6.2 3.5-6.2 3.5z"/>
-          </svg>
-        </div>
-        <div class="source-text">
-          <strong>YouTube / Shorts Link</strong>
-          <span>Paste any YouTube URL — zero storage cost</span>
-        </div>
-        <div class="source-check" [class.visible]="source() === 'youtube'">✓</div>
+      <div class="file-upload-area">
+        @if (!videoFile()) {
+          <label class="file-drop-label">
+            <input type="file" accept="video/mp4,video/webm,video/quicktime,video/x-msvideo"
+                   style="display:none" (change)="onVideoFile($event)" />
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="rgba(67,206,162,.6)" stroke-width="1.5" stroke-linecap="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <span>Tap to select a video</span>
+            <span class="file-hint">MP4, WebM, MOV, AVI · max 60 sec · under 50 MB</span>
+          </label>
+        } @else if (isUploading()) {
+          <div class="upload-progress">
+            <span class="spin-ring"></span>
+            <span>Uploading video…</span>
+          </div>
+        } @else if (uploadedUrl()) {
+          <div class="upload-done">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#43cea2" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Video uploaded · <strong>{{ videoFile()?.name }}</strong></span>
+          </div>
+        }
       </div>
-
-      @if (source() === 'youtube') {
-        <div class="yt-url-row">
-          <input
-            type="url"
-            class="yt-input"
-            placeholder="https://youtu.be/… or youtube.com/shorts/…"
-            [value]="ytUrl()"
-            (input)="ytUrl.set($any($event.target).value); validateYtUrl()"
-            (keydown.enter)="proceedWithYt()"
-            autocomplete="off" />
-          @if (ytError()) {
-            <small class="field-error">{{ ytError() }}</small>
-          }
-          @if (ytId()) {
-            <div class="yt-preview">
-              <img [src]="'https://img.youtube.com/vi/' + ytId() + '/hqdefault.jpg'"
-                   alt="YouTube thumbnail" class="yt-preview-img" />
-              <span class="yt-preview-ok">✓ Valid YouTube video</span>
-            </div>
-          }
-          <button class="proceed-btn"
-                  [disabled]="!ytId()"
-                  (click)="proceedWithYt()">
-            Continue →
-          </button>
-        </div>
-      }
-
-      <!-- Direct upload -->
-      <div class="source-card" [class.source-card--active]="source() === 'upload'"
-           (click)="selectSource('upload')">
-        <div class="source-icon source-icon--upload">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-            <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
-          </svg>
-        </div>
-        <div class="source-text">
-          <strong>Upload Video File</strong>
-          <span>MP4, WebM, MOV · max 50 MB · stored on Cloudinary</span>
-        </div>
-        <div class="source-check" [class.visible]="source() === 'upload'">✓</div>
-      </div>
-
-      @if (source() === 'upload') {
-        <div class="file-upload-area">
-          @if (!videoFile()) {
-            <label class="file-drop-label">
-              <input type="file" accept="video/mp4,video/webm,video/quicktime,video/x-msvideo"
-                     style="display:none" (change)="onVideoFile($event)" />
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(67,206,162,.6)" stroke-width="1.5" stroke-linecap="round">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
-              </svg>
-              <span>Tap to select a video</span>
-              <span class="file-hint">MP4, WebM, MOV, AVI · max 60 sec · under 50 MB</span>
-            </label>
-          } @else if (isUploading()) {
-            <div class="upload-progress">
-              <span class="spin-ring"></span>
-              <span>Uploading video…</span>
-            </div>
-          } @else if (uploadedUrl()) {
-            <div class="upload-done">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#43cea2" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-              <span>Video uploaded · <strong>{{ videoFile()?.name }}</strong></span>
-            </div>
-          }
-        </div>
-      }
 
       @if (errorMsg()) {
         <p class="upload-error">{{ errorMsg() }}</p>
@@ -118,7 +54,7 @@
     </div>
   }
 
-  <!-- ── Step 1b: Trim ── -->
+  <!-- ── Step 2: Trim ── -->
   @if (step() === 'trim') {
     <div class="sheet-body">
 
@@ -127,18 +63,10 @@
         Drag the slider to pick the best <strong>60-second</strong> clip.
       </p>
 
-      <!-- Video preview -->
       <div class="trim-preview-wrap">
-        <video
-          #trimVideoEl
-          class="trim-preview-video"
-          [src]="videoPreview()"
-          muted
-          playsinline
-          preload="metadata">
+        <video #trimVideoEl class="trim-preview-video"
+               [src]="videoPreview()" muted playsinline preload="metadata">
         </video>
-
-        <!-- Clip window indicator overlay -->
         <div class="trim-clip-bar">
           <div class="trim-clip-fill"
                [style.left.%]="(trimStart() / rawDuration()) * 100"
@@ -147,42 +75,30 @@
         </div>
       </div>
 
-      <!-- Time labels -->
       <div class="trim-labels">
         <span class="trim-label-start">
-          <span class="trim-label-tag">Start</span>
-          {{ fmtSec(trimStart()) }}
+          <span class="trim-label-tag">Start</span>{{ fmtSec(trimStart()) }}
         </span>
-        <span class="trim-label-dur">30s clip</span>
+        <span class="trim-label-dur">60s clip</span>
         <span class="trim-label-end">
-          <span class="trim-label-tag">End</span>
-          {{ fmtSec(trimEnd) }}
+          <span class="trim-label-tag">End</span>{{ fmtSec(trimEnd) }}
         </span>
       </div>
 
-      <!-- Slider -->
-      <input
-        type="range"
-        class="trim-slider"
-        [min]="0"
-        [max]="trimMax"
-        [step]="0.1"
-        [value]="trimStart()"
-        (input)="onTrimSlider($event)" />
+      <input type="range" class="trim-slider"
+             [min]="0" [max]="trimMax" [step]="0.1"
+             [value]="trimStart()"
+             (input)="onTrimSlider($event)" />
 
-      <div class="trim-hint-sm">
-        Slide to choose where your clip starts
-      </div>
+      <div class="trim-hint-sm">Slide to choose where your clip starts</div>
 
       @if (isUploading()) {
         <div class="upload-progress">
           <span class="spin-ring"></span>
-          <span>Uploading to Cloudinary…</span>
+          <span>Uploading video…</span>
         </div>
       } @else {
-        <button class="submit-btn" (click)="confirmTrim()">
-          Use this clip →
-        </button>
+        <button class="submit-btn" (click)="confirmTrim()">Use this clip →</button>
       }
 
       @if (errorMsg()) {
@@ -191,26 +107,19 @@
     </div>
   }
 
-  <!-- ── Step 2: Fill in details ── -->
+  <!-- ── Step 3: Details form ── -->
   @if (step() === 'form') {
     <form class="sheet-body" [formGroup]="form" (ngSubmit)="submit()">
 
-      <!-- Preview thumbnail -->
-      @if (source() === 'youtube' && ytId()) {
-        <img class="form-thumb"
-             [src]="'https://img.youtube.com/vi/' + ytId() + '/hqdefault.jpg'"
-             alt="Thumbnail" />
-      } @else if (videoPreview()) {
+      @if (videoPreview()) {
         <video class="form-thumb" [src]="videoPreview()" muted playsinline></video>
       }
 
       <!-- Title -->
       <div class="form-field">
         <label class="form-label">Title <span class="req">*</span></label>
-        <input type="text" class="form-input"
-               formControlName="title"
-               placeholder="Give your short a catchy title…"
-               maxlength="80" />
+        <input type="text" class="form-input" formControlName="title"
+               placeholder="Give your short a catchy title…" maxlength="80" />
         @if (form.get('title')?.invalid && form.get('title')?.touched) {
           <small class="field-error">Title is required (3–80 chars)</small>
         }
@@ -219,10 +128,8 @@
       <!-- Caption -->
       <div class="form-field">
         <label class="form-label">Caption <span class="opt">(optional)</span></label>
-        <input type="text" class="form-input"
-               formControlName="caption"
-               placeholder="What's this about?"
-               maxlength="150" />
+        <input type="text" class="form-input" formControlName="caption"
+               placeholder="What's this about?" maxlength="150" />
       </div>
 
       <!-- Category -->
@@ -230,12 +137,9 @@
         <label class="form-label">Category <span class="req">*</span></label>
         <div class="cat-grid">
           @for (cat of CATEGORIES; track cat) {
-            <button type="button"
-                    class="cat-btn"
+            <button type="button" class="cat-btn"
                     [class.cat-btn--active]="form.get('category')?.value === cat"
-                    (click)="form.get('category')?.setValue(cat)">
-              {{ cat }}
-            </button>
+                    (click)="form.get('category')?.setValue(cat)">{{ cat }}</button>
           }
         </div>
         @if (form.get('category')?.invalid && form.get('category')?.touched) {
@@ -256,22 +160,17 @@
       </div>
 
       @if (form.get('isSponsored')?.value) {
-        <!-- Sponsored duration -->
         <div class="form-field">
           <label class="form-label">Show for</label>
           <div class="sponsored-dur-grid">
             @for (opt of SPONSORED_DURATION_OPTIONS; track opt.value) {
-              <button type="button"
-                      class="dur-btn"
+              <button type="button" class="dur-btn"
                       [class.dur-btn--active]="form.get('sponsoredDays')?.value === opt.value"
-                      (click)="form.get('sponsoredDays')?.setValue(opt.value)">
-                {{ opt.label }}
-              </button>
+                      (click)="form.get('sponsoredDays')?.setValue(opt.value)">{{ opt.label }}</button>
             }
           </div>
         </div>
 
-        <!-- Expiry action — only if a duration is set -->
         @if ((form.get('sponsoredDays')?.value ?? 0) > 0) {
           <div class="form-field">
             <label class="form-label">After the duration ends</label>
@@ -280,20 +179,14 @@
                 <input type="radio" formControlName="sponsoredExpiryAction" value="keep" />
                 <div class="expiry-opt-body">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-                  <span>
-                    <strong>Keep</strong>
-                    <small>Remove the sponsored badge but keep the short in the feed</small>
-                  </span>
+                  <span><strong>Keep</strong><small>Remove badge but keep the short in feed</small></span>
                 </div>
               </label>
               <label class="expiry-opt" [class.expiry-opt--active]="form.get('sponsoredExpiryAction')?.value === 'delete'">
                 <input type="radio" formControlName="sponsoredExpiryAction" value="delete" />
                 <div class="expiry-opt-body">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
-                  <span>
-                    <strong>Delete</strong>
-                    <small>Automatically remove this short when the duration expires</small>
-                  </span>
+                  <span><strong>Delete</strong><small>Automatically remove when duration expires</small></span>
                 </div>
               </label>
             </div>
@@ -305,13 +198,10 @@
         <p class="upload-error">{{ errorMsg() }}</p>
       }
 
-      <button
-        type="submit"
-        class="submit-btn"
-        [disabled]="form.invalid || isSubmitting() || isUploading()">
+      <button type="submit" class="submit-btn"
+              [disabled]="form.invalid || isSubmitting() || isUploading()">
         @if (isSubmitting()) {
-          <span class="spin-ring spin-ring--sm"></span>
-          Posting…
+          <span class="spin-ring spin-ring--sm"></span> Posting…
         } @else {
           Post Short
         }

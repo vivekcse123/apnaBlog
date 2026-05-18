@@ -5,11 +5,9 @@ import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ShortsService, CreateShortPayload } from '../../services/shorts.service';
 import { UploadService } from '../../../../features/post/services/upload-service';
-import { Auth } from '../../../../core/services/auth';
 import { VideoShort } from '../../models/video-short.model';
 
-type Step = 'source' | 'trim' | 'form';
-type Source = 'youtube' | 'upload';
+type Step = 'pick' | 'trim' | 'form';
 
 @Component({
   selector: 'app-shorts-upload',
@@ -22,7 +20,6 @@ export class ShortsUpload {
   private fb            = inject(FormBuilder);
   private service       = inject(ShortsService);
   private uploadService = inject(UploadService);
-  private auth          = inject(Auth);
   private platformId    = inject(PLATFORM_ID);
 
   @ViewChild('trimVideoEl') trimVideoRef?: ElementRef<HTMLVideoElement>;
@@ -30,16 +27,10 @@ export class ShortsUpload {
   close   = output<void>();
   created = output<VideoShort>();
 
-  step         = signal<Step>('source');
-  source       = signal<Source | null>(null);
+  step         = signal<Step>('pick');
   isSubmitting = signal(false);
   isUploading  = signal(false);
   errorMsg     = signal('');
-
-  // YouTube flow
-  ytUrl        = signal('');
-  ytId         = signal<string | null>(null);
-  ytError      = signal('');
 
   // File upload flow
   videoFile        = signal<File | null>(null);
@@ -75,39 +66,9 @@ export class ShortsUpload {
     { label: 'No expiry',value: 0  },
   ];
 
-  // ── Step 1: choose source ──────────────────────────────────────────────────
-
-  selectSource(s: Source): void {
-    this.source.set(s);
-    this.step.set('source'); // stay on source until valid
-    this.errorMsg.set('');
-    this.ytError.set('');
-  }
-
-  // ── YouTube URL validation ─────────────────────────────────────────────────
-
-  validateYtUrl(): void {
-    const url = this.ytUrl().trim();
-    if (!url) { this.ytError.set(''); this.ytId.set(null); return; }
-    const id = this.service.extractYouTubeId(url);
-    if (!id) {
-      this.ytError.set('Paste a valid YouTube or YouTube Shorts URL.');
-      this.ytId.set(null);
-    } else {
-      this.ytError.set('');
-      this.ytId.set(id);
-    }
-  }
-
-  proceedWithYt(): void {
-    this.validateYtUrl();
-    if (!this.ytId()) return;
-    this.step.set('form');
-  }
-
-  // ── Video file upload ─────────────────────────────────────────────────────
-
   readonly MAX_DURATION_SEC = 60;
+
+  // ── File pick ─────────────────────────────────────────────────────────────
 
   onVideoFile(event: Event): void {
     const file = (event.target as HTMLInputElement).files?.[0];
@@ -142,11 +103,9 @@ export class ShortsUpload {
       this.videoFile.set(file);
       this.rawDuration.set(dur);
       this.trimStart.set(0);
-      const preview = URL.createObjectURL(file);
-      this.videoPreview.set(preview);
+      this.videoPreview.set(URL.createObjectURL(file));
 
       if (dur > this.MAX_DURATION_SEC) {
-        // Video too long — show trimmer
         this.step.set('trim');
       } else {
         this.uploadToCloudinary(file, 0);
@@ -164,13 +123,8 @@ export class ShortsUpload {
 
   // ── Trim step ─────────────────────────────────────────────────────────────
 
-  get trimMax(): number {
-    return Math.max(0, this.rawDuration() - this.MAX_DURATION_SEC);
-  }
-
-  get trimEnd(): number {
-    return Math.min(this.trimStart() + this.MAX_DURATION_SEC, this.rawDuration());
-  }
+  get trimMax(): number { return Math.max(0, this.rawDuration() - this.MAX_DURATION_SEC); }
+  get trimEnd(): number { return Math.min(this.trimStart() + this.MAX_DURATION_SEC, this.rawDuration()); }
 
   onTrimSlider(event: Event): void {
     const val = parseFloat((event.target as HTMLInputElement).value);
@@ -187,8 +141,7 @@ export class ShortsUpload {
 
   fmtSec(s: number): string {
     const m = Math.floor(s / 60);
-    const sec = Math.floor(s % 60);
-    return `${m}:${sec.toString().padStart(2, '0')}`;
+    return `${m}:${Math.floor(s % 60).toString().padStart(2, '0')}`;
   }
 
   private uploadToCloudinary(file: File, startTime: number): void {
@@ -212,55 +165,32 @@ export class ShortsUpload {
     });
   }
 
-  // ── Final submit ──────────────────────────────────────────────────────────
+  // ── Submit ────────────────────────────────────────────────────────────────
 
   submit(): void {
     if (this.form.invalid || this.isSubmitting()) return;
+    if (!this.uploadedUrl()) { this.errorMsg.set('Video not yet uploaded.'); return; }
 
     const { title, caption, category, isSponsored, sponsoredDays, sponsoredExpiryAction } = this.form.value;
-    const src = this.source();
-    if (!src) return;
 
-    let payload: CreateShortPayload;
-
-    if (src === 'youtube') {
-      const youtubeId = this.ytId()!;
-      payload = {
-        title: title!,
-        caption:     caption ?? undefined,
-        category:    category!,
-        videoType:   'youtube',
-        videoUrl:    `https://www.youtube.com/watch?v=${youtubeId}`,
-        youtubeId,
-        thumbnailUrl: this.service.youtubeThumbnail(youtubeId),
-        isSponsored:           !!isSponsored,
-        sponsoredDays:         isSponsored ? (sponsoredDays ?? 7)          : undefined,
-        sponsoredExpiryAction: isSponsored ? (sponsoredExpiryAction as any) : undefined,
-      };
-    } else {
-      if (!this.uploadedUrl()) { this.errorMsg.set('Video not yet uploaded.'); return; }
-      payload = {
-        title:                 title!,
-        caption:               caption ?? undefined,
-        category:              category!,
-        videoType:             'upload',
-        videoUrl:              this.uploadedUrl(),
-        thumbnailUrl:          this.thumbUrl() || undefined,
-        duration:              this.uploadedDuration() ?? undefined,
-        isSponsored:           !!isSponsored,
-        sponsoredDays:         isSponsored ? (sponsoredDays ?? 7)          : undefined,
-        sponsoredExpiryAction: isSponsored ? (sponsoredExpiryAction as any) : undefined,
-      };
-    }
+    const payload: CreateShortPayload = {
+      title:                 title!,
+      caption:               caption ?? undefined,
+      category:              category!,
+      videoType:             'upload',
+      videoUrl:              this.uploadedUrl(),
+      thumbnailUrl:          this.thumbUrl() || undefined,
+      duration:              this.uploadedDuration() ?? undefined,
+      isSponsored:           !!isSponsored,
+      sponsoredDays:         isSponsored ? (sponsoredDays ?? 7)           : undefined,
+      sponsoredExpiryAction: isSponsored ? (sponsoredExpiryAction as any) : undefined,
+    };
 
     this.isSubmitting.set(true);
     this.errorMsg.set('');
 
     this.service.createShort(payload).subscribe({
-      next: res => {
-        this.isSubmitting.set(false);
-        this.created.emit(res.data);
-      },
+      next: res => { this.isSubmitting.set(false); this.created.emit(res.data); },
       error: err => {
         this.isSubmitting.set(false);
         this.errorMsg.set(err?.error?.message ?? 'Something went wrong. Try again.');
@@ -271,7 +201,7 @@ export class ShortsUpload {
   back(): void {
     const s = this.step();
     if (s === 'form' || s === 'trim') {
-      this.step.set('source');
+      this.step.set('pick');
       this.videoFile.set(null);
       this.videoPreview.set('');
       this.uploadedUrl.set('');

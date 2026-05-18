@@ -207,17 +207,6 @@
   pointer-events: none;
 }
 
-.reel-iframe {
-  width: 100%; height: 100%;
-  border: none; display: block;
-  pointer-events: none;
-  /* Hidden on preloaded (non-active) cards so no thumbnail flash */
-  opacity: 0;
-  transition: opacity 0.1s ease;
-}
-.reel-card--active .reel-iframe {
-  opacity: 1;
-}
 
 
 
