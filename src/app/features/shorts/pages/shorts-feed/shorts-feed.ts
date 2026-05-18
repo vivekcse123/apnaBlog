@@ -62,6 +62,9 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
   likeFlashIdx       = signal(-1);
   holdingIdx         = signal(-1);
   expandedCaptions   = signal<Set<string>>(new Set());
+  showSearch         = signal(false);
+  searchQuery        = signal('');
+  private searchDebounce: ReturnType<typeof setTimeout> | null = null;
 
   // ── Private state ──────────────────────────────────────────────────────────
   private page                = 1;
@@ -289,6 +292,7 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     if (this.holdTimer)         clearTimeout(this.holdTimer);
     if (this.likeFlashTimer)    clearTimeout(this.likeFlashTimer);
     if (this.seekTimer)         clearTimeout(this.seekTimer);
+    if (this.searchDebounce)    clearTimeout(this.searchDebounce);
     this.stopYtProgress();
     window.removeEventListener('message', this.ytMsgHandler);
   }
@@ -413,8 +417,9 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     if (this.isLoading()) return;
     if (reset) { this.page = 1; this.hasMore.set(true); }
     this.isLoading.set(true);
-    const cat = this.selectedCat() === 'All' ? undefined : this.selectedCat();
-    this.service.getShorts(this.page, 8, cat).subscribe({
+    const cat    = this.selectedCat() === 'All' ? undefined : this.selectedCat();
+    const search = this.searchQuery().trim() || undefined;
+    this.service.getShorts(this.page, 8, cat, search).subscribe({
       next: res => {
         const items = res.data ?? [];
         this.shorts.update(cur => {
@@ -487,9 +492,25 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     this.activeIndex.set(idx);
   }
 
-  onCategorySelect(cat: string): void {
-    if (cat === this.selectedCat() && !this.isLoading()) return;
-    this.selectedCat.set(cat);
+  toggleSearch(): void {
+    const opening = !this.showSearch();
+    this.showSearch.set(opening);
+    if (!opening) {
+      // Closing: clear query and reload feed
+      if (this.searchQuery()) {
+        this.searchQuery.set('');
+        this.resetFeed();
+      }
+    }
+  }
+
+  onSearchInput(value: string): void {
+    this.searchQuery.set(value);
+    if (this.searchDebounce) clearTimeout(this.searchDebounce);
+    this.searchDebounce = setTimeout(() => this.resetFeed(), 400);
+  }
+
+  private resetFeed(): void {
     this.pendingPlayIdx = -1;
     this.playedYtIds.set(new Set());
     this.safeUrlCache.clear();
@@ -501,6 +522,12 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     this.progressBound.clear();
     this.loadShorts(true);
     this.feedRef?.nativeElement.scrollTo({ top: 0, behavior: 'instant' });
+  }
+
+  onCategorySelect(cat: string): void {
+    if (cat === this.selectedCat() && !this.isLoading()) return;
+    this.selectedCat.set(cat);
+    this.resetFeed();
   }
 
   onScroll(): void {
