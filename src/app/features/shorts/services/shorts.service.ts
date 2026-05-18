@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 import { VideoShort, ShortComment } from '../models/video-short.model';
 import { environment } from '../../../../environments/environment';
 
@@ -14,14 +14,17 @@ export interface ShortsPage {
 }
 
 export interface CreateShortPayload {
-  title: string;
-  caption?: string;
-  category: string;
-  videoType: 'upload' | 'youtube';
-  videoUrl: string;
-  youtubeId?: string;
+  title:        string;
+  caption?:     string;
+  category:     string;
+  videoType:    'upload' | 'youtube';
+  videoUrl:     string;
+  youtubeId?:   string;
   thumbnailUrl?: string;
-  duration?: number;
+  duration?:    number;
+  isSponsored?:           boolean;
+  sponsoredDays?:         number;
+  sponsoredExpiryAction?: 'delete' | 'keep';
 }
 
 @Injectable({ providedIn: 'root' })
@@ -180,5 +183,15 @@ export class ShortsService {
 
   youtubeThumbnail(youtubeId: string): string {
     return `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg`;
+  }
+
+  /** Fetch and cache the actual duration of a YouTube short from the server. */
+  fetchYtDuration(shortId: string): Observable<number | null> {
+    return this.http.get<{ status: number; duration: number | null }>(
+      `${this.endpoint}/${shortId}/duration`
+    ).pipe(
+      map(r => r.duration ?? null),
+      catchError(() => of(null))
+    );
   }
 }

@@ -58,6 +58,7 @@
                #reelCard
                [attr.data-idx]="i"
                [id]="short._id"
+               [class.reel-card--active]="activeIndex() === i"
                (touchstart)="onCardTouchStart(i, $event)"
                (touchend)="onCardTouchEnd(i, $event)"
                (click)="onCardClick(i, $event)">
@@ -76,7 +77,7 @@
             <video class="reel-video"
               [src]="short.videoUrl"
               [poster]="short.thumbnailUrl || ''"
-              autoplay muted playsinline webkit-playsinline loop preload="metadata">
+              autoplay muted playsinline webkit-playsinline preload="metadata">
             </video>
           } @else {
             <div class="reel-fallback">
@@ -88,14 +89,40 @@
             </div>
           }
 
-          <!-- Progress bar (updated via --vp CSS variable) -->
-          @if (short.videoType === 'upload') {
-            <div class="reel-progress"></div>
-          }
+          <!-- Progress track — click/tap to seek -->
+          <div class="reel-progress-track"
+               (touchstart)="$event.stopPropagation()"
+               (touchend)="onProgressSeek(i, $event); $event.stopPropagation()"
+               (click)="onProgressSeek(i, $event); $event.stopPropagation()">
+            <div class="reel-progress-fill"></div>
+            <div class="reel-progress-thumb"></div>
+          </div>
 
           <!-- Duration -->
           @if (short.duration && short.videoType === 'upload') {
             <span class="reel-duration">{{ formatDuration(short.duration) }}</span>
+          }
+
+          <!-- Seek indicator — shown on left/right tap -->
+          @if (seekIndicator()?.cardIdx === i) {
+            <div class="reel-seek-indicator" [class.reel-seek-fwd]="seekIndicator()!.dir === 'fwd'"
+                 [class.reel-seek-bwd]="seekIndicator()!.dir === 'bwd'">
+              @if (seekIndicator()!.dir === 'bwd') {
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="white"><path d="M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z"/></svg>
+              } @else {
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="white"><path d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z"/></svg>
+              }
+              <span>{{ seekIndicator()!.dir === 'fwd' ? '+' : '-' }}{{ SEEK_SEC }}s</span>
+            </div>
+          }
+
+          <!-- Replay overlay — shown when video ends -->
+          @if (endedCards().has(i)) {
+            <div class="reel-replay-overlay" aria-label="Tap to replay">
+              <svg width="52" height="52" viewBox="0 0 24 24" fill="white" aria-hidden="true">
+                <path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/>
+              </svg>
+            </div>
           }
         </div>
 
@@ -212,6 +239,13 @@
               <div class="reel-info-av">{{ userInitial(short.user) }}</div>
               <span class="reel-username">&#64;{{ short.user.name }}</span>
             </a>
+            @if (short.isSponsored) {
+              <span class="reel-sponsored-badge"
+                    [title]="short.sponsoredUntil ? 'Sponsored until ' + (short.sponsoredUntil | date:'MMM d, y') : 'Sponsored'">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                Sponsored
+              </span>
+            }
             <span class="reel-cat-pill">{{ short.category }}</span>
           </div>
 

@@ -31,5 +31,8 @@ export interface VideoShort {
   comments?: ShortComment[];
   user: { _id: string; name: string; avatar?: string };
   createdAt: Date;
-  status: 'published' | 'pending';
+  status:                 'published' | 'pending';
+  isSponsored?:           boolean;
+  sponsoredUntil?:        string | null;
+  sponsoredExpiryAction?: 'delete' | 'keep' | null;
 }
