@@ -30,7 +30,7 @@
           </svg>
         }
       </button>
-      @if (isAdmin()) {
+      @if (canCreate()) {
         <button class="reel-hdr-btn" (click)="openUpload($event)" aria-label="Upload short">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -285,7 +285,7 @@
           <rect x="3" y="6" width="12" height="12" rx="2"/>
         </svg>
         <p>No shorts in {{ selectedCat() }} yet</p>
-        @if (isAdmin()) {
+        @if (canCreate()) {
           <button class="reel-reload" (click)="openUpload($event)">Be first to post</button>
         }
       </div>
@@ -298,8 +298,8 @@
     <div class="reel-toast" role="status">{{ shareMsg() }}</div>
   }
 
-  <!-- Admin FAB -->
-  @if (isAdmin()) {
+  <!-- Upload FAB — visible to all logged-in users -->
+  @if (canCreate()) {
     <button class="reel-fab" (click)="openUpload($event)" aria-label="Upload a short">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white"
            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
