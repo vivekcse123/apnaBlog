@@ -1,199 +1,148 @@
-<div class="reel-page">
+<div class="sf-page">
 
-  <!-- ══ Top bar ══ -->
-  <header class="reel-header" [class.reel-header--search]="showSearch()">
-
+  <!-- ══ Header ══ -->
+  <header class="sf-header" [class.sf-header--search]="showSearch()">
     @if (showSearch()) {
-      <!-- Search mode -->
-      <button class="reel-hdr-btn" (click)="toggleSearch()" aria-label="Close search">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-             stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      <button class="sf-icon-btn" (click)="toggleSearch()" aria-label="Close">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
       </button>
-
-      <div class="reel-search-bar">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-             stroke-width="2.2" stroke-linecap="round" class="reel-search-icon">
+      <div class="sf-search-bar">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
           <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
         </svg>
-        <input #searchInput
-               class="reel-search-input"
-               type="search"
-               placeholder="Search shorts…"
-               autocomplete="off"
-               [value]="searchQuery()"
+        <input type="search" class="sf-search-input" placeholder="Search shorts…"
+               autocomplete="off" [value]="searchQuery()"
                (input)="onSearchInput($any($event.target).value)" />
         @if (searchQuery()) {
-          <button class="reel-search-clear" (click)="onSearchInput('')" aria-label="Clear">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          <button class="sf-search-clear" (click)="onSearchInput('')" aria-label="Clear">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
           </button>
         }
       </div>
-
     } @else {
-      <!-- Normal mode -->
-      <button class="reel-hdr-btn" (click)="goBack()" aria-label="Back">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-             stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <button class="sf-icon-btn" (click)="goBack()" aria-label="Back">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
           <path d="M19 12H5M12 5l-7 7 7 7"/>
         </svg>
       </button>
-
-      <span class="reel-hdr-title">Shorts</span>
-
-      <div class="reel-hdr-right">
-        <!-- Search toggle -->
-        <button class="reel-hdr-btn" (click)="toggleSearch()" aria-label="Search">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-               stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+      <span class="sf-header-title">Shorts</span>
+      <div class="sf-header-right">
+        <button class="sf-icon-btn" (click)="toggleSearch()" aria-label="Search">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
             <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
           </svg>
         </button>
-        <button class="reel-hdr-btn reel-mute-btn" [class.reel-mute-btn--muted]="isMuted()"
-                (click)="toggleMute($event)"
-                [attr.aria-label]="isMuted() ? 'Unmute' : 'Mute'">
+        <button class="sf-icon-btn" (click)="toggleMute($event)" [attr.aria-label]="isMuted() ? 'Unmute' : 'Mute'">
           @if (isMuted()) {
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round">
               <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
               <line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>
             </svg>
           } @else {
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round">
               <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
               <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
               <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
             </svg>
           }
         </button>
-        @if (canCreate()) {
-          <button class="reel-hdr-btn" (click)="openUpload($event)" aria-label="Upload short">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-            </svg>
-          </button>
-        }
       </div>
     }
-
   </header>
 
-  <!-- ══ Category pills (hidden while searching) ══ -->
+  <!-- ══ Category pills ══ -->
   @if (!showSearch()) {
-    <nav class="reel-cats" aria-label="Categories">
+    <nav class="sf-cats" aria-label="Categories">
       @for (cat of categories; track cat) {
-        <button class="reel-cat" [class.reel-cat--on]="selectedCat() === cat"
+        <button class="sf-cat" [class.sf-cat--on]="selectedCat() === cat"
                 (click)="onCategorySelect(cat)">{{ cat }}</button>
       }
     </nav>
   }
 
   <!-- ══ Feed ══ -->
-  <div class="reel-feed" #reelFeed (scroll)="onScroll()">
+  <div class="sf-feed" #reelFeed (scroll)="onScroll()">
 
     @for (short of shorts(); track trackById($index, short); let i = $index) {
 
-      <article class="reel-card"
+      <article class="sf-card"
                #reelCard
                [attr.data-idx]="i"
                [id]="short._id"
-               [class.reel-card--active]="activeIndex() === i"
+               [class.sf-card--active]="activeIndex() === i"
                (touchstart)="onCardTouchStart(i, $event)"
                (touchend)="onCardTouchEnd(i, $event)"
                (click)="onCardClick(i, $event)">
 
-        <!-- ── Media ── -->
-        <div class="reel-media">
-          @if (short.videoType === 'upload' && short.videoUrl) {
-            <video class="reel-video"
-              [src]="short.videoUrl"
-              [poster]="short.thumbnailUrl || ''"
-              autoplay muted playsinline webkit-playsinline preload="metadata">
-            </video>
-          } @else {
-            <div class="reel-fallback">
-              <svg width="44" height="44" viewBox="0 0 24 24" fill="none"
-                   stroke="rgba(255,255,255,.2)" stroke-width="1.5">
-                <path d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.9L15 14v-4z"/>
-                <rect x="3" y="6" width="12" height="12" rx="2"/>
-              </svg>
-            </div>
-          }
-
-          <!-- Progress track — click/tap to seek -->
-          <div class="reel-progress-track"
-               (touchstart)="$event.stopPropagation()"
-               (touchend)="onProgressSeek(i, $event); $event.stopPropagation()"
-               (click)="onProgressSeek(i, $event); $event.stopPropagation()">
-            <div class="reel-progress-fill"></div>
-            <div class="reel-progress-thumb"></div>
-          </div>
-
-          <!-- Duration -->
-          @if (short.duration && short.videoType === 'upload') {
-            <span class="reel-duration">{{ formatDuration(short.duration) }}</span>
-          }
-
-          <!-- Seek indicator — shown on left/right tap -->
-          @if (seekIndicator()?.cardIdx === i) {
-            <div class="reel-seek-indicator" [class.reel-seek-fwd]="seekIndicator()!.dir === 'fwd'"
-                 [class.reel-seek-bwd]="seekIndicator()!.dir === 'bwd'">
-              @if (seekIndicator()!.dir === 'bwd') {
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="white"><path d="M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z"/></svg>
-              } @else {
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="white"><path d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z"/></svg>
-              }
-              <span>{{ seekIndicator()!.dir === 'fwd' ? '+' : '-' }}{{ SEEK_SEC }}s</span>
-            </div>
-          }
-
-          <!-- Replay overlay — shown when video ends -->
-          @if (endedCards().has(i)) {
-            <div class="reel-replay-overlay" aria-label="Tap to replay">
-              <svg width="52" height="52" viewBox="0 0 24 24" fill="white" aria-hidden="true">
-                <path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/>
-              </svg>
-            </div>
-          }
-        </div>
-
-        <!-- ── Gradient ── -->
-        <div class="reel-gradient" aria-hidden="true"></div>
-
-        <!-- ── Like burst ── -->
-        @if (likeFlashIdx() === i) {
-          <div class="reel-like-burst" aria-hidden="true">
-            <svg width="86" height="86" viewBox="0 0 24 24" fill="#fe2c55">
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+        <!-- Video -->
+        @if (short.videoType === 'upload' && short.videoUrl) {
+          <video class="sf-video"
+                 [src]="short.videoUrl"
+                 [poster]="short.thumbnailUrl || ''"
+                 autoplay muted playsinline webkit-playsinline preload="metadata">
+          </video>
+        } @else {
+          <div class="sf-fallback">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="1.2">
+              <path d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.9L15 14v-4z"/>
+              <rect x="3" y="6" width="12" height="12" rx="2"/>
             </svg>
           </div>
         }
 
-        <!-- ── Hold dim ── -->
-        @if (holdingIdx() === i) {
-          <div class="reel-hold-dim" aria-hidden="true"></div>
-        }
+        <!-- Gradient overlay -->
+        <div class="sf-gradient"></div>
 
-        <!-- ── Play/pause flash ── -->
+        <!-- Tap overlays -->
+        @if (likeFlashIdx() === i) {
+          <div class="sf-like-burst">
+            <svg width="90" height="90" viewBox="0 0 24 24" fill="#fe2c55">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+          </div>
+        }
+        @if (holdingIdx() === i) {
+          <div class="sf-hold-dim"></div>
+        }
         @if (pauseIndicatorIdx() === i) {
-          <div class="reel-flash" aria-hidden="true">
+          <div class="sf-play-flash">
             @if (indicatorIsPlaying()) {
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
             } @else {
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="white">
                 <rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>
               </svg>
             }
           </div>
         }
-
-        <!-- ── Sound hint ── -->
+        @if (endedCards().has(i)) {
+          <div class="sf-replay" (click)="$event.stopPropagation(); doTogglePublic(i, $event)">
+            <div class="sf-replay-btn">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
+                <path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/>
+              </svg>
+            </div>
+            <span class="sf-replay-label">Tap to replay</span>
+          </div>
+        }
+        @if (seekIndicator()?.cardIdx === i) {
+          <div class="sf-seek-bubble" [class.sf-seek-bubble--right]="seekIndicator()!.dir === 'fwd'"
+               [class.sf-seek-bubble--left]="seekIndicator()!.dir === 'bwd'">
+            @if (seekIndicator()!.dir === 'bwd') {
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="white"><path d="M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z"/></svg>
+            } @else {
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="white"><path d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z"/></svg>
+            }
+            <span>{{ seekIndicator()!.dir === 'fwd' ? '+' : '-' }}{{ SEEK_SEC }}s</span>
+          </div>
+        }
         @if (needsGesture() && activeIndex() === i) {
-          <button class="reel-sound-hint" (click)="unlockAudio($event)" aria-label="Tap for sound">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white"
-                 stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <button class="sf-sound-hint" (click)="unlockAudio($event)">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
               <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
               <line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>
             </svg>
@@ -201,118 +150,133 @@
           </button>
         }
 
-        <!-- ══ Right action sidebar ══ -->
-        <aside class="reel-actions" (touchend)="$event.stopPropagation()" (click)="$event.stopPropagation()">
+        <!-- Progress bar -->
+        <div class="sf-progress-track"
+             (touchstart)="$event.stopPropagation()"
+             (touchend)="onProgressSeek(i, $event); $event.stopPropagation()"
+             (click)="onProgressSeek(i, $event); $event.stopPropagation()">
+          <div class="sf-progress-fill"></div>
+        </div>
+
+        <!-- ══ Right sidebar ══ -->
+        <aside class="sf-sidebar" (touchend)="$event.stopPropagation()" (click)="$event.stopPropagation()">
 
           <!-- Author avatar -->
-          <div class="reel-action">
-            <a class="reel-av-link" [routerLink]="['/author', short.user._id]"
-               (click)="$event.stopPropagation()" aria-label="View author">
-              <div class="reel-av">{{ userInitial(short.user) }}</div>
+          <div class="sf-side-item">
+            <a class="sf-av-wrap" [routerLink]="['/author', short.user._id]" (click)="$event.stopPropagation()">
+              <div class="sf-av">{{ userInitial(short.user) }}</div>
             </a>
           </div>
 
           <!-- Like -->
-          <div class="reel-action">
-            <button class="reel-act-btn" [class.reel-act-btn--liked]="isLiked(short._id)"
+          <div class="sf-side-item">
+            <button class="sf-side-btn" [class.sf-side-btn--liked]="isLiked(short._id)"
                     (click)="toggleLike(short, $event)" aria-label="Like">
-              <svg width="30" height="30" viewBox="0 0 24 24"
+              <svg width="26" height="26" viewBox="0 0 24 24"
                    [attr.fill]="isLiked(short._id) ? '#fe2c55' : 'none'"
                    [attr.stroke]="isLiked(short._id) ? '#fe2c55' : 'white'"
-                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                   stroke-width="1.8" stroke-linecap="round">
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
               </svg>
             </button>
-            <span class="reel-act-count">{{ formatCount(short.likesCount) }}</span>
+            <span class="sf-side-label">{{ formatCount(short.likesCount) }}</span>
           </div>
 
           <!-- Comment -->
-          <div class="reel-action">
-            <button class="reel-act-btn" (click)="openComments(short, $event)" aria-label="Comments">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white"
-                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <div class="sf-side-item">
+            <button class="sf-side-btn" (click)="openComments(short, $event)" aria-label="Comments">
+              <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
               </svg>
             </button>
-            <span class="reel-act-count">{{ formatCount(short.commentsCount) }}</span>
+            <span class="sf-side-label">{{ formatCount(short.commentsCount) }}</span>
           </div>
 
           <!-- Share -->
-          <div class="reel-action">
-            <button class="reel-act-btn" (click)="share(short, $event)" aria-label="Share">
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white"
-                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <div class="sf-side-item">
+            <button class="sf-side-btn" (click)="share(short, $event)" aria-label="Share">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round">
                 <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
                 <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
                 <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
               </svg>
             </button>
-            <span class="reel-act-count">Share</span>
+            <span class="sf-side-label">Share</span>
           </div>
 
           <!-- Views -->
-          <div class="reel-action">
-            <span class="reel-act-btn reel-act-btn--static" role="img" aria-label="Views">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white"
-                   stroke-width="2" stroke-linecap="round">
+          <div class="sf-side-item">
+            <div class="sf-side-btn sf-side-btn--static">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round">
                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
                 <circle cx="12" cy="12" r="3"/>
               </svg>
-            </span>
-            <span class="reel-act-count">{{ formatCount(short.views) }}</span>
+            </div>
+            <span class="sf-side-label">{{ formatCount(short.views) }}</span>
           </div>
+
+          <!-- Duration badge -->
+          @if (short.duration) {
+            <div class="sf-duration-badge">{{ formatDuration(short.duration) }}</div>
+          }
 
         </aside>
 
         <!-- ══ Bottom info ══ -->
-        <footer class="reel-info" (touchend)="$event.stopPropagation()" (click)="$event.stopPropagation()">
+        <footer class="sf-info" (touchend)="$event.stopPropagation()" (click)="$event.stopPropagation()">
 
-          <div class="reel-author-row">
-            <a class="reel-author" [routerLink]="['/author', short.user._id]">
-              <div class="reel-info-av">{{ userInitial(short.user) }}</div>
-              <span class="reel-username">&#64;{{ short.user.name }}</span>
+          <!-- Row 1: author + badges -->
+          <div class="sf-info-top">
+            <a class="sf-author-row" [routerLink]="['/author', short.user._id]" (click)="$event.stopPropagation()">
+              <div class="sf-info-av">{{ userInitial(short.user) }}</div>
+              <span class="sf-username">&#64;{{ short.user.name }}</span>
             </a>
-            @if (short.isSponsored) {
-              <span class="reel-sponsored-badge"
-                    [title]="short.sponsoredUntil ? 'Sponsored until ' + (short.sponsoredUntil | date:'MMM d, y') : 'Sponsored'">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                Sponsored
-              </span>
-            }
-            <span class="reel-cat-pill">{{ short.category }}</span>
+            <div class="sf-badges">
+              <span class="sf-cat-badge">{{ short.category }}</span>
+              @if (short.isSponsored) {
+                <span class="sf-sponsored-badge"
+                      [title]="short.sponsoredUntil ? 'Sponsored until ' + (short.sponsoredUntil | date:'MMM d') : 'Sponsored'">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                  </svg>
+                  Sponsored
+                </span>
+              }
+            </div>
           </div>
 
-          <h2 class="reel-title">{{ short.title }}</h2>
+          <!-- Title -->
+          <h2 class="sf-title">{{ short.title }}</h2>
 
+          <!-- Caption -->
           @if (short.caption) {
-            <p class="reel-caption" [class.reel-caption--open]="isExpanded(short._id)">
-              {{ short.caption }}
-            </p>
+            <p class="sf-caption" [class.sf-caption--open]="isExpanded(short._id)">{{ short.caption }}</p>
             @if (short.caption.length > 72) {
-              <button class="reel-more" (click)="toggleCaption(short._id, $event)">
-                {{ isExpanded(short._id) ? 'less' : '...more' }}
+              <button class="sf-more" (click)="toggleCaption(short._id, $event)">
+                {{ isExpanded(short._id) ? 'less' : '…more' }}
               </button>
             }
           }
 
-          <div class="reel-music-row">
-            <div class="reel-disc">{{ userInitial(short.user) }}</div>
-            <span class="reel-music-name">Original audio &middot; &#64;{{ short.user.name }}</span>
-            <span class="reel-time">{{ timeAgo(short.createdAt) }}</span>
+          <!-- Disc row -->
+          <div class="sf-disc-row">
+            <div class="sf-disc" [class.sf-disc--spin]="activeIndex() === i && !endedCards().has(i)">
+              {{ userInitial(short.user) }}
+            </div>
+            <span class="sf-audio-label">Original audio · &#64;{{ short.user.name }}</span>
+            <span class="sf-time-ago">{{ timeAgo(short.createdAt) }}</span>
           </div>
 
         </footer>
 
       </article>
 
-      <!-- ── Ad slot every 8th short ── -->
+      <!-- Ad slot every 8 shorts -->
       @if (isAdSlot(i)) {
-        <div class="reel-ad-card">
-          <span class="reel-ad-label">Sponsored</span>
-          <div class="reel-ad-inner">
-            <div class="reel-ad-shimmer"></div>
-            <!-- fluid + in-article is designed for scrollable content feeds;
-                 the explicit height ensures AdSense sees available space. -->
+        <div class="sf-ad-card">
+          <span class="sf-ad-label">Advertisement</span>
+          <div class="sf-ad-inner">
+            <div class="sf-ad-shimmer"></div>
             <ins class="adsbygoogle"
               style="display:block;width:100%;height:320px"
               data-ad-client="ca-pub-6477809641944524"
@@ -324,44 +288,47 @@
       }
     }
 
-    <!-- Loading -->
+    <!-- Loading spinner -->
     @if (isLoading()) {
-      <div class="reel-state">
-        <span class="reel-spin"></span>
+      <div class="sf-state">
+        <div class="sf-spinner"></div>
       </div>
     }
 
     <!-- End of feed -->
     @if (!isLoading() && !hasMore() && shorts().length > 0) {
-      <div class="reel-state">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
-             stroke="rgba(255,255,255,.25)" stroke-width="1.5">
-          <path d="M8 5v14l11-7z"/>
-        </svg>
-        <p>You're all caught up</p>
-        <button class="reel-reload" (click)="onCategorySelect(selectedCat())">Watch again</button>
+      <div class="sf-state">
+        <div class="sf-state-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1.5">
+            <path d="M8 5v14l11-7z"/>
+          </svg>
+        </div>
+        <p class="sf-state-text">You're all caught up</p>
+        <button class="sf-state-btn" (click)="onCategorySelect(selectedCat())">Watch again</button>
       </div>
     }
 
-    <!-- Empty -->
+    <!-- Empty state -->
     @if (!isLoading() && shorts().length === 0) {
-      <div class="reel-state">
+      <div class="sf-state">
         @if (searchQuery()) {
-          <svg width="52" height="52" viewBox="0 0 24 24" fill="none"
-               stroke="rgba(255,255,255,.2)" stroke-width="1.5" stroke-linecap="round">
-            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-          </svg>
-          <p>No results for "{{ searchQuery() }}"</p>
-          <button class="reel-reload" (click)="onSearchInput('')">Clear search</button>
+          <div class="sf-state-icon">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="1.5" stroke-linecap="round">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+          </div>
+          <p class="sf-state-text">No results for "{{ searchQuery() }}"</p>
+          <button class="sf-state-btn" (click)="onSearchInput('')">Clear search</button>
         } @else {
-          <svg width="52" height="52" viewBox="0 0 24 24" fill="none"
-               stroke="rgba(255,255,255,.2)" stroke-width="1.5" stroke-linecap="round">
-            <path d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.9L15 14v-4z"/>
-            <rect x="3" y="6" width="12" height="12" rx="2"/>
-          </svg>
-          <p>No shorts in {{ selectedCat() }} yet</p>
+          <div class="sf-state-icon">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="1.5" stroke-linecap="round">
+              <path d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.9L15 14v-4z"/>
+              <rect x="3" y="6" width="12" height="12" rx="2"/>
+            </svg>
+          </div>
+          <p class="sf-state-text">No shorts yet{{ selectedCat() !== 'All' ? ' in ' + selectedCat() : '' }}</p>
           @if (canCreate()) {
-            <button class="reel-reload" (click)="openUpload($event)">Be first to post</button>
+            <button class="sf-state-btn" (click)="openUpload($event)">Post the first one</button>
           }
         }
       </div>
@@ -371,14 +338,13 @@
 
   <!-- Share toast -->
   @if (shareMsg()) {
-    <div class="reel-toast" role="status">{{ shareMsg() }}</div>
+    <div class="sf-toast">{{ shareMsg() }}</div>
   }
 
-  <!-- Upload FAB — visible to all logged-in users -->
+  <!-- Upload FAB -->
   @if (canCreate()) {
-    <button class="reel-fab" (click)="openUpload($event)" aria-label="Upload a short">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white"
-           stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <button class="sf-fab" (click)="openUpload($event)" aria-label="Upload short">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
         <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
       </svg>
@@ -389,38 +355,43 @@
 
 <!-- ══ Comment drawer ══ -->
 @if (showComments() && commentShort()) {
-  <div class="reel-backdrop" (click)="closeComments()" aria-hidden="true"></div>
-  <div class="reel-drawer" role="dialog" aria-label="Comments">
+  <div class="sf-backdrop" (click)="closeComments()"></div>
+  <div class="sf-drawer" role="dialog" aria-label="Comments">
 
-    <div class="reel-drawer-handle"></div>
+    <div class="sf-drawer-handle"></div>
 
-    <div class="reel-drawer-hdr">
-      <span class="reel-drawer-ttl">{{ formatCount(commentShort()!.commentsCount) }} Comments</span>
-      <button class="reel-drawer-close" (click)="closeComments()" aria-label="Close">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-             stroke-width="2.5" stroke-linecap="round">
+    <div class="sf-drawer-header">
+      <span class="sf-drawer-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+        {{ formatCount(commentShort()!.commentsCount) }} Comments
+      </span>
+      <button class="sf-drawer-close" (click)="closeComments()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
           <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
         </svg>
       </button>
     </div>
 
-    <div class="reel-drawer-body">
+    <div class="sf-drawer-body">
       @for (c of commentShort()!.comments ?? []; track trackByComment($index, c)) {
-        <div class="reel-cmt">
-          <div class="reel-cmt-av">{{ (c.name || '?').charAt(0).toUpperCase() }}</div>
-          <div class="reel-cmt-body">
-            <span class="reel-cmt-name">{{ c.name }}</span>
-            <p class="reel-cmt-text">{{ c.comment }}</p>
-            <div class="reel-cmt-meta">
-              <span class="reel-cmt-time">{{ timeAgo(c.createdAt) }}</span>
+        <div class="sf-cmt">
+          <div class="sf-cmt-av">{{ (c.name || '?').charAt(0).toUpperCase() }}</div>
+          <div class="sf-cmt-content">
+            <div class="sf-cmt-header">
+              <span class="sf-cmt-name">{{ c.name }}</span>
+              <span class="sf-cmt-time">{{ timeAgo(c.createdAt) }}</span>
+            </div>
+            <p class="sf-cmt-text">{{ c.comment }}</p>
+            <div class="sf-cmt-actions">
               @if (isLoggedIn()) {
-                <button class="reel-cmt-act" (click)="startReply(c._id)">
+                <button class="sf-cmt-btn" (click)="startReply(c._id)">
                   {{ replyingToId() === c._id ? 'Cancel' : 'Reply' }}
                 </button>
               }
               @if (canDeleteComment(c.user?._id)) {
-                <button class="reel-cmt-act reel-cmt-act--del"
-                        [disabled]="deletingId() === c._id"
+                <button class="sf-cmt-btn sf-cmt-btn--del" [disabled]="deletingId() === c._id"
                         (click)="deleteComment(c._id)">
                   {{ deletingId() === c._id ? '…' : 'Delete' }}
                 </button>
@@ -428,16 +399,15 @@
             </div>
 
             @if (replyingToId() === c._id) {
-              <div class="reel-reply-row">
-                <input class="reel-reply-input" type="text" placeholder="Write a reply…"
-                  [ngModel]="replyText()" (ngModelChange)="replyText.set($event)"
-                  (keydown.enter)="submitReply(c._id)" [disabled]="isReplying()" autocomplete="off"/>
-                <button class="reel-send reel-send--sm" (click)="submitReply(c._id)"
+              <div class="sf-reply-row">
+                <input class="sf-reply-input" type="text" placeholder="Write a reply…"
+                       [ngModel]="replyText()" (ngModelChange)="replyText.set($event)"
+                       (keydown.enter)="submitReply(c._id)" [disabled]="isReplying()" autocomplete="off"/>
+                <button class="sf-send-btn sf-send-btn--sm" (click)="submitReply(c._id)"
                         [disabled]="!replyText().trim() || isReplying()">
-                  @if (isReplying()) { <span class="reel-spin reel-spin--sm"></span> }
+                  @if (isReplying()) { <div class="sf-spin-sm"></div> }
                   @else {
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                         stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
                       <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
                     </svg>
                   }
@@ -446,23 +416,22 @@
             }
 
             @if (c.replies?.length) {
-              <div class="reel-replies">
+              <div class="sf-replies">
                 @for (r of c.replies; track r._id) {
-                  <div class="reel-cmt reel-cmt--reply">
-                    <div class="reel-cmt-av reel-cmt-av--sm">{{ (r.name || '?').charAt(0).toUpperCase() }}</div>
-                    <div class="reel-cmt-body">
-                      <span class="reel-cmt-name">{{ r.name }}</span>
-                      <p class="reel-cmt-text">{{ r.comment }}</p>
-                      <div class="reel-cmt-meta">
-                        <span class="reel-cmt-time">{{ timeAgo(r.createdAt) }}</span>
-                        @if (canDeleteComment(r.user?._id)) {
-                          <button class="reel-cmt-act reel-cmt-act--del"
-                                  [disabled]="deletingId() === r._id"
-                                  (click)="deleteReply(c._id, r._id)">
-                            {{ deletingId() === r._id ? '…' : 'Delete' }}
-                          </button>
-                        }
+                  <div class="sf-cmt sf-cmt--reply">
+                    <div class="sf-cmt-av sf-cmt-av--sm">{{ (r.name || '?').charAt(0).toUpperCase() }}</div>
+                    <div class="sf-cmt-content">
+                      <div class="sf-cmt-header">
+                        <span class="sf-cmt-name">{{ r.name }}</span>
+                        <span class="sf-cmt-time">{{ timeAgo(r.createdAt) }}</span>
                       </div>
+                      <p class="sf-cmt-text">{{ r.comment }}</p>
+                      @if (canDeleteComment(r.user?._id)) {
+                        <button class="sf-cmt-btn sf-cmt-btn--del" [disabled]="deletingId() === r._id"
+                                (click)="deleteReply(c._id, r._id)">
+                          {{ deletingId() === r._id ? '…' : 'Delete' }}
+                        </button>
+                      }
                     </div>
                   </div>
                 }
@@ -471,41 +440,40 @@
           </div>
         </div>
       } @empty {
-        <div class="reel-cmt-empty">
-          <svg width="38" height="38" viewBox="0 0 24 24" fill="none"
-               stroke="var(--text-muted,#ccc)" stroke-width="1.5" stroke-linecap="round">
+        <div class="sf-cmt-empty">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,.2)" stroke-width="1.5" stroke-linecap="round">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
           </svg>
-          <p>No comments yet. Be first!</p>
+          <p>No comments yet — be first!</p>
         </div>
       }
     </div>
 
     @if (isLoggedIn()) {
-      <div class="reel-drawer-input">
-        <input class="reel-input" type="text" placeholder="Add a comment…"
-          [ngModel]="commentText()" (ngModelChange)="commentText.set($event)"
-          (keydown.enter)="submitComment()" [disabled]="isSending()" autocomplete="off"/>
-        <button class="reel-send" (click)="submitComment()"
+      <div class="sf-drawer-input">
+        <input class="sf-comment-input" type="text" placeholder="Add a comment…"
+               [ngModel]="commentText()" (ngModelChange)="commentText.set($event)"
+               (keydown.enter)="submitComment()" [disabled]="isSending()" autocomplete="off"/>
+        <button class="sf-send-btn" (click)="submitComment()"
                 [disabled]="!commentText().trim() || isSending()" aria-label="Send">
-          @if (isSending()) { <span class="reel-spin reel-spin--sm"></span> }
+          @if (isSending()) { <div class="sf-spin-sm"></div> }
           @else {
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
               <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
             </svg>
           }
         </button>
       </div>
     } @else {
-      <div class="reel-drawer-hint">
-        <a routerLink="/auth/login" (click)="closeComments()">Sign in</a> to comment
+      <div class="sf-drawer-guest">
+        <a routerLink="/auth/login" (click)="closeComments()">Sign in</a> to join the conversation
       </div>
     }
+
   </div>
 }
 
-<!-- ══ Upload modal ══ -->
+<!-- ══ Upload sheet ══ -->
 @if (showUpload()) {
   <app-shorts-upload (close)="showUpload.set(false)" (created)="onShortCreated($event)">
   </app-shorts-upload>

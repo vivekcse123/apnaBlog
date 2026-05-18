@@ -1,192 +1,257 @@
-<div class="upload-backdrop" (click)="close.emit()"></div>
+<div class="up-backdrop" (click)="close.emit()"></div>
 
-<div class="upload-sheet" (click)="$event.stopPropagation()" role="dialog" aria-label="Upload short">
+<div class="up-sheet" (click)="$event.stopPropagation()" role="dialog" aria-label="Upload short">
 
-  <div class="sheet-handle"></div>
+  <div class="up-handle"></div>
 
-  <div class="sheet-header">
-    <button class="sheet-back" (click)="back()" aria-label="Back">
+  <!-- Header -->
+  <div class="up-header">
+    <button class="up-back-btn" (click)="back()" aria-label="Back">
       @if (step() === 'form' || step() === 'trim') {
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <path d="M19 12H5M12 5l-7 7 7 7"/>
+        </svg>
       } @else {
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
       }
     </button>
-    <span class="sheet-title">
-      @if (step() === 'trim') { Trim Video }
-      @else if (step() === 'form') { Short Details }
-      @else { New Short }
-    </span>
-    <div style="width:32px"></div>
+
+    <!-- Step indicator -->
+    <div class="up-steps">
+      <div class="up-step" [class.up-step--done]="step() === 'trim' || step() === 'form'"
+           [class.up-step--active]="step() === 'pick'">
+        @if (step() === 'trim' || step() === 'form') {
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+        } @else { 1 }
+      </div>
+      <div class="up-step-line" [class.up-step-line--done]="step() === 'trim' || step() === 'form'"></div>
+      <div class="up-step" [class.up-step--done]="step() === 'form'"
+           [class.up-step--active]="step() === 'trim'">
+        @if (step() === 'form') {
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+        } @else { 2 }
+      </div>
+      <div class="up-step-line" [class.up-step-line--done]="step() === 'form'"></div>
+      <div class="up-step" [class.up-step--active]="step() === 'form'">3</div>
+    </div>
+
+    <div class="up-step-label">
+      @if (step() === 'pick') { Pick video }
+      @else if (step() === 'trim') { Trim clip }
+      @else { Add details }
+    </div>
   </div>
 
-  <!-- ── Step 1: Pick file ── -->
+  <!-- ── Step 1: Pick video ── -->
   @if (step() === 'pick') {
-    <div class="sheet-body">
-      <div class="file-upload-area">
+    <div class="up-body">
+      <div class="up-drop-zone">
         @if (!videoFile()) {
-          <label class="file-drop-label">
+          <label class="up-drop-label">
             <input type="file" accept="video/mp4,video/webm,video/quicktime,video/x-msvideo"
                    style="display:none" (change)="onVideoFile($event)" />
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="rgba(67,206,162,.6)" stroke-width="1.5" stroke-linecap="round">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-              <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
-            </svg>
-            <span>Tap to select a video</span>
-            <span class="file-hint">MP4, WebM, MOV, AVI · max 60 sec · under 50 MB</span>
+            <div class="up-drop-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="url(#grad)" stroke-width="1.6" stroke-linecap="round">
+                <defs>
+                  <linearGradient id="grad" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stop-color="#43cea2"/>
+                    <stop offset="100%" stop-color="#185a9d"/>
+                  </linearGradient>
+                </defs>
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+            </div>
+            <span class="up-drop-title">Tap to select a video</span>
+            <span class="up-drop-hint">MP4 · WebM · MOV · AVI</span>
+            <span class="up-drop-hint">Max 60 seconds · Under 50 MB</span>
           </label>
         } @else if (isUploading()) {
-          <div class="upload-progress">
-            <span class="spin-ring"></span>
-            <span>Uploading video…</span>
+          <div class="up-uploading">
+            <div class="up-upload-ring"></div>
+            <span class="up-upload-text">Uploading video…</span>
+            <span class="up-upload-name">{{ videoFile()?.name }}</span>
           </div>
         } @else if (uploadedUrl()) {
-          <div class="upload-done">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#43cea2" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-            <span>Video uploaded · <strong>{{ videoFile()?.name }}</strong></span>
+          <div class="up-upload-done">
+            <div class="up-done-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#43cea2" stroke-width="2.5" stroke-linecap="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </div>
+            <span class="up-done-name">{{ videoFile()?.name }}</span>
+            <span class="up-done-sub">Video ready</span>
           </div>
         }
       </div>
-
-      @if (errorMsg()) {
-        <p class="upload-error">{{ errorMsg() }}</p>
-      }
+      @if (errorMsg()) { <p class="up-error">{{ errorMsg() }}</p> }
     </div>
   }
 
   <!-- ── Step 2: Trim ── -->
   @if (step() === 'trim') {
-    <div class="sheet-body">
-
-      <p class="trim-hint">
-        Your video is <strong>{{ fmtSec(rawDuration()) }}</strong> long.
-        Drag the slider to pick the best <strong>60-second</strong> clip.
+    <div class="up-body">
+      <p class="up-trim-hint">
+        Video is <strong>{{ fmtSec(rawDuration()) }}</strong> long.
+        Pick the best <strong>60-second</strong> clip.
       </p>
 
-      <div class="trim-preview-wrap">
-        <video #trimVideoEl class="trim-preview-video"
+      <div class="up-preview-wrap">
+        <video #trimVideoEl class="up-preview-video"
                [src]="videoPreview()" muted playsinline preload="metadata">
         </video>
-        <div class="trim-clip-bar">
-          <div class="trim-clip-fill"
+        <div class="up-trim-bar">
+          <div class="up-trim-fill"
                [style.left.%]="(trimStart() / rawDuration()) * 100"
                [style.width.%]="(MAX_DURATION_SEC / rawDuration()) * 100">
+            <div class="up-trim-handle up-trim-handle--l"></div>
+            <div class="up-trim-handle up-trim-handle--r"></div>
           </div>
         </div>
       </div>
 
-      <div class="trim-labels">
-        <span class="trim-label-start">
-          <span class="trim-label-tag">Start</span>{{ fmtSec(trimStart()) }}
-        </span>
-        <span class="trim-label-dur">60s clip</span>
-        <span class="trim-label-end">
-          <span class="trim-label-tag">End</span>{{ fmtSec(trimEnd) }}
-        </span>
+      <div class="up-trim-labels">
+        <div class="up-trim-tag">
+          <span class="up-trim-tag-label">Start</span>
+          <span class="up-trim-tag-val">{{ fmtSec(trimStart()) }}</span>
+        </div>
+        <span class="up-trim-dur">60 s clip</span>
+        <div class="up-trim-tag">
+          <span class="up-trim-tag-label">End</span>
+          <span class="up-trim-tag-val">{{ fmtSec(trimEnd) }}</span>
+        </div>
       </div>
 
-      <input type="range" class="trim-slider"
+      <input type="range" class="up-slider"
              [min]="0" [max]="trimMax" [step]="0.1"
              [value]="trimStart()"
              (input)="onTrimSlider($event)" />
 
-      <div class="trim-hint-sm">Slide to choose where your clip starts</div>
-
       @if (isUploading()) {
-        <div class="upload-progress">
-          <span class="spin-ring"></span>
-          <span>Uploading video…</span>
+        <div class="up-uploading up-uploading--inline">
+          <div class="up-upload-ring"></div>
+          <span class="up-upload-text">Uploading video…</span>
         </div>
       } @else {
-        <button class="submit-btn" (click)="confirmTrim()">Use this clip →</button>
+        <button class="up-primary-btn" (click)="confirmTrim()">
+          Use this clip
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </button>
       }
 
-      @if (errorMsg()) {
-        <p class="upload-error">{{ errorMsg() }}</p>
-      }
+      @if (errorMsg()) { <p class="up-error">{{ errorMsg() }}</p> }
     </div>
   }
 
-  <!-- ── Step 3: Details form ── -->
+  <!-- ── Step 3: Details ── -->
   @if (step() === 'form') {
-    <form class="sheet-body" [formGroup]="form" (ngSubmit)="submit()">
+    <form class="up-body" [formGroup]="form" (ngSubmit)="submit()">
 
+      <!-- Video preview thumbnail -->
       @if (videoPreview()) {
-        <video class="form-thumb" [src]="videoPreview()" muted playsinline></video>
+        <div class="up-thumb-wrap">
+          <video class="up-thumb" [src]="videoPreview()" muted playsinline></video>
+          <div class="up-thumb-overlay">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="white" opacity=".9">
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+          </div>
+        </div>
       }
 
       <!-- Title -->
-      <div class="form-field">
-        <label class="form-label">Title <span class="req">*</span></label>
-        <input type="text" class="form-input" formControlName="title"
+      <div class="up-field">
+        <label class="up-label">Title <span class="up-req">*</span></label>
+        <input type="text" class="up-input" formControlName="title"
                placeholder="Give your short a catchy title…" maxlength="80" />
+        <div class="up-field-hint">{{ form.get('title')?.value?.length ?? 0 }}/80</div>
         @if (form.get('title')?.invalid && form.get('title')?.touched) {
-          <small class="field-error">Title is required (3–80 chars)</small>
+          <small class="up-field-error">Title must be 3–80 characters</small>
         }
       </div>
 
       <!-- Caption -->
-      <div class="form-field">
-        <label class="form-label">Caption <span class="opt">(optional)</span></label>
-        <input type="text" class="form-input" formControlName="caption"
+      <div class="up-field">
+        <label class="up-label">Caption <span class="up-opt">optional</span></label>
+        <input type="text" class="up-input" formControlName="caption"
                placeholder="What's this about?" maxlength="150" />
+        <div class="up-field-hint">{{ form.get('caption')?.value?.length ?? 0 }}/150</div>
       </div>
 
       <!-- Category -->
-      <div class="form-field">
-        <label class="form-label">Category <span class="req">*</span></label>
-        <div class="cat-grid">
+      <div class="up-field">
+        <label class="up-label">Category <span class="up-req">*</span></label>
+        <div class="up-cat-grid">
           @for (cat of CATEGORIES; track cat) {
-            <button type="button" class="cat-btn"
-                    [class.cat-btn--active]="form.get('category')?.value === cat"
+            <button type="button" class="up-cat-btn"
+                    [class.up-cat-btn--on]="form.get('category')?.value === cat"
                     (click)="form.get('category')?.setValue(cat)">{{ cat }}</button>
           }
         </div>
         @if (form.get('category')?.invalid && form.get('category')?.touched) {
-          <small class="field-error">Pick a category</small>
+          <small class="up-field-error">Please pick a category</small>
         }
       </div>
 
       <!-- Sponsored toggle -->
-      <div class="form-field sponsored-row">
-        <label class="sponsored-label">
-          <input type="checkbox" formControlName="isSponsored" class="sponsored-check" />
-          <span class="sponsored-text">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-            Mark as Sponsored
-          </span>
-          <span class="sponsored-hint">Appears at the top of the feed</span>
+      <div class="up-sponsored-row">
+        <label class="up-sponsored-label">
+          <div class="up-sponsored-info">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            </svg>
+            <div>
+              <span class="up-sponsored-title">Mark as Sponsored</span>
+              <span class="up-sponsored-sub">Appears at the top of the feed</span>
+            </div>
+          </div>
+          <div class="up-toggle" [class.up-toggle--on]="form.get('isSponsored')?.value">
+            <div class="up-toggle-thumb"></div>
+          </div>
+          <input type="checkbox" formControlName="isSponsored" style="display:none" />
         </label>
       </div>
 
       @if (form.get('isSponsored')?.value) {
-        <div class="form-field">
-          <label class="form-label">Show for</label>
-          <div class="sponsored-dur-grid">
+        <!-- Duration -->
+        <div class="up-field">
+          <label class="up-label">Show for</label>
+          <div class="up-dur-grid">
             @for (opt of SPONSORED_DURATION_OPTIONS; track opt.value) {
-              <button type="button" class="dur-btn"
-                      [class.dur-btn--active]="form.get('sponsoredDays')?.value === opt.value"
+              <button type="button" class="up-dur-btn"
+                      [class.up-dur-btn--on]="form.get('sponsoredDays')?.value === opt.value"
                       (click)="form.get('sponsoredDays')?.setValue(opt.value)">{{ opt.label }}</button>
             }
           </div>
         </div>
 
+        <!-- Expiry action -->
         @if ((form.get('sponsoredDays')?.value ?? 0) > 0) {
-          <div class="form-field">
-            <label class="form-label">After the duration ends</label>
-            <div class="expiry-options">
-              <label class="expiry-opt" [class.expiry-opt--active]="form.get('sponsoredExpiryAction')?.value === 'keep'">
-                <input type="radio" formControlName="sponsoredExpiryAction" value="keep" />
-                <div class="expiry-opt-body">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-                  <span><strong>Keep</strong><small>Remove badge but keep the short in feed</small></span>
+          <div class="up-field">
+            <label class="up-label">When duration ends</label>
+            <div class="up-expiry-grid">
+              <label class="up-expiry-card" [class.up-expiry-card--on]="form.get('sponsoredExpiryAction')?.value === 'keep'">
+                <input type="radio" formControlName="sponsoredExpiryAction" value="keep" style="display:none" />
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                </svg>
+                <div>
+                  <strong>Keep</strong>
+                  <small>Remove badge, stay in feed</small>
                 </div>
               </label>
-              <label class="expiry-opt" [class.expiry-opt--active]="form.get('sponsoredExpiryAction')?.value === 'delete'">
-                <input type="radio" formControlName="sponsoredExpiryAction" value="delete" />
-                <div class="expiry-opt-body">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
-                  <span><strong>Delete</strong><small>Automatically remove when duration expires</small></span>
+              <label class="up-expiry-card" [class.up-expiry-card--on]="form.get('sponsoredExpiryAction')?.value === 'delete'">
+                <input type="radio" formControlName="sponsoredExpiryAction" value="delete" style="display:none" />
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                  <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                </svg>
+                <div>
+                  <strong>Delete</strong>
+                  <small>Auto-remove when expired</small>
                 </div>
               </label>
             </div>
@@ -194,16 +259,17 @@
         }
       }
 
-      @if (errorMsg()) {
-        <p class="upload-error">{{ errorMsg() }}</p>
-      }
+      @if (errorMsg()) { <p class="up-error">{{ errorMsg() }}</p> }
 
-      <button type="submit" class="submit-btn"
+      <button type="submit" class="up-primary-btn up-submit-btn"
               [disabled]="form.invalid || isSubmitting() || isUploading()">
         @if (isSubmitting()) {
-          <span class="spin-ring spin-ring--sm"></span> Posting…
+          <div class="up-spin"></div> Posting…
         } @else {
           Post Short
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
         }
       </button>
 
