@@ -38,9 +38,10 @@ export class ShortsService {
     ).pipe(catchError(() => of({ status: 200, data: [], total: 0, page: 1, totalPages: 1 })));
   }
 
-  getShorts(page = 1, limit = 8, category?: string): Observable<ShortsPage> {
+  getShorts(page = 1, limit = 8, category?: string, search?: string): Observable<ShortsPage> {
     let url = `${this.endpoint}?page=${page}&limit=${limit}`;
     if (category && category !== 'All') url += `&category=${encodeURIComponent(category)}`;
+    if (search?.trim()) url += `&search=${encodeURIComponent(search.trim())}`;
     return this.http.get<ShortsPage>(url).pipe(
       catchError(() => of({ status: 200, data: [], total: 0, page: 1, totalPages: 1 }))
     );
