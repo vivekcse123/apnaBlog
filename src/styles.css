@@ -552,3 +552,13 @@ html, body { height: 100%; }
   line-height: 1.5;
   text-align: center;
 }
+
+/* ── Prevent iOS Safari input zoom ───────────────────────────────────────────
+   iOS zooms in on any input/textarea/select whose font-size < 16px.
+   Force 16px on mobile only — desktop keeps its designed size via the
+   individual component stylesheets.                                          */
+@media (max-width: 768px) {
+  input, textarea, select {
+    font-size: 16px !important;
+  }
+}
