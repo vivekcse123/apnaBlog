@@ -230,6 +230,26 @@ export class NotificationPanel implements OnInit, OnDestroy {
           return 'An admin updated your profile information. Review the changes in your settings.';
         return n.message;
 
+      // ── Social events ────────────────────────────────────────────────────────
+
+      case 'USER_FOLLOWED': {
+        if (isUser) {
+          const actor = n.actorName?.split(' ')[0] || 'Someone';
+          return `${actor} started following you.`;
+        }
+        return n.message;
+      }
+
+      case 'COMMENT_REPLIED': {
+        if (isUser) {
+          const actor = n.actorName?.split(' ')[0] || 'Someone';
+          return title
+            ? `${actor} replied to your comment on "${title}".`
+            : `${actor} replied to your comment.`;
+        }
+        return n.message;
+      }
+
       // ── All other types: use backend message as-is ───────────────────────────
       default:
         return n.message;

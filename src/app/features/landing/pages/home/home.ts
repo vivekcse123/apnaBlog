@@ -13,7 +13,6 @@ import { debounceTime, distinctUntilChanged, catchError, expand, reduce, timeout
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { PostService } from '../../../post/services/post-service';
 import { Post } from '../../../../core/models/post.model';
-import { ReadBlog } from '../read-blog/read-blog';
 import { ThemeService } from '../../../../core/services/theme-service';
 import { Auth } from '../../../../core/services/auth';
 import { UserService } from '../../../user/services/user-service';
@@ -67,7 +66,7 @@ function persistStats(total: number, totalViews: number, categoryCounts: Record<
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [RouterLink, CommonModule, FormsModule, ReadBlog, NgTemplateOutlet, WelcomeModal, FormatCountPipe, TimeAgoPipe],
+  imports: [RouterLink, CommonModule, FormsModule, NgTemplateOutlet, WelcomeModal, FormatCountPipe, TimeAgoPipe],
   templateUrl: './home.html',
   styleUrl: './home.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -95,8 +94,6 @@ export class Home implements OnInit, OnDestroy {
 
   allPosts         = signal<PostWithTs[]>([]);
   isLoading        = signal(true);
-  isViewed         = signal(false);
-  selectedId       = signal('');
   menuOpen: WritableSignal<boolean> = signal(false);
   searchQuery      = signal('');
   selectedCategory = signal('');
@@ -284,12 +281,6 @@ export class Home implements OnInit, OnDestroy {
   // True once stats-fetch has returned accurate data
   storiesReady   = computed(() => this.serverTotal() > 0);
   totalReadsReady = computed(() => this._maxSeenViews() > 0);
-
-  isDrawerPostOwner = computed(() => {
-    return false;
-  });
-
-;
 
   // ── Personalization computeds ────────────────────────────────────────────────
 

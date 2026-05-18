@@ -79,7 +79,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   private route         = inject(ActivatedRoute);
   private router        = inject(Router);
   private location      = inject(Location);
-  private auth          = inject(Auth);
+  readonly auth         = inject(Auth);
   private userService   = inject(UserService);
   private platformId    = inject(PLATFORM_ID);
   private meta          = inject(Meta);
@@ -305,6 +305,13 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
 
   // ── Quote share ───────────────────────────────────────────────────────────
   quotePopover = signal<{ text: string; x: number; y: number } | null>(null);
+
+  // ── Paragraph Reactions ───────────────────────────────────────────────────
+  readonly EMOJIS = ['👍', '❤️', '🔥', '💡', '😮'];
+  reactions   = signal<Record<number, Record<string, number>>>({});
+  myReactions = signal<Record<number, string>>({});
+  pickerIdx   = signal<number>(-1);
+  pickerPos   = signal<{ x: number; y: number }>({ x: 0, y: 0 });
 
   // ── Header visibility ─────────────────────────────────────────────────────
   headerHidden    = signal(false);
@@ -606,6 +613,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe(e => {
           if (e.key !== 'Escape') return;
+          if (this.pickerIdx() >= 0)       { this.pickerIdx.set(-1);          return; }
           if (this.lightboxSrc())          { this.closeLightbox();            return; }
           if (this.showAuthorPostsModal()) { this.closeAuthorPostsModal();    return; }
           if (this.showAuthorModal())      { this.closeAuthorModal();         return; }
@@ -814,6 +822,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
       this.addView(postData);
       this.loadRelatedAndAuthorPosts(postData);
       this.loadRelatedShorts(postData);
+      if (postData._id) this.loadReactions(postData._id);
     }, 0);
 
     // ── FIX: Use requestAnimationFrame instead of an arbitrary 300 ms timeout
@@ -849,6 +858,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     this.addHeadingIds();
     this.addCodeCopyButtons();
     this.pushAdSense();
+    this.updateReactionStrips();
   }
 
   // ── AdSense ───────────────────────────────────────────────────────────────
@@ -1862,13 +1872,107 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  // ── Paragraph Reactions ───────────────────────────────────────────────────
+
+  private loadReactions(postId: string): void {
+    this.postService.getReactions(postId).subscribe({
+      next: (res) => {
+        this.reactions.set(res.data ?? {});
+        this.myReactions.set(res.myReactions ?? {});
+        setTimeout(() => this.updateReactionStrips(), 0);
+      },
+      error: () => {},
+    });
+  }
+
+  private openReactionPicker(idx: number, x: number, y: number): void {
+    const pickerW = 220;
+    const safeX   = Math.min(x, window.innerWidth - pickerW - 12);
+    const pickerH = 56;
+    const safeY   = y + pickerH + 12 > window.innerHeight ? y - pickerH - 8 : y + 12;
+    this.pickerIdx.set(idx);
+    this.pickerPos.set({ x: Math.max(8, safeX), y: safeY });
+  }
+
+  reactTo(emoji: string, event: Event): void {
+    event.stopPropagation();
+    if (!this.auth.isAuthorized()) return;
+    const postId  = this.post()?._id ?? '';
+    const idx     = this.pickerIdx();
+    const current = this.myReactions()[idx];
+    const next    = current === emoji ? '' : emoji;
+
+    const r = { ...this.reactions() };
+    if (!r[idx]) r[idx] = {};
+    if (current) r[idx][current] = Math.max(0, (r[idx][current] ?? 1) - 1);
+    if (next)    r[idx][next]    = (r[idx][next] ?? 0) + 1;
+    this.reactions.set(r);
+    this.myReactions.update(m => ({ ...m, [idx]: next }));
+    this.pickerIdx.set(-1);
+    setTimeout(() => this.updateReactionStrips(), 0);
+
+    this.postService.addReaction(postId, idx, next).subscribe({
+      error: () => this.loadReactions(postId),
+    });
+  }
+
+  private updateReactionStrips(): void {
+    if (!isPlatformBrowser(this.platformId) || !this.contentEl) return;
+    this.contentEl.querySelectorAll('.rp-strip').forEach(el => el.remove());
+
+    const paragraphs = Array.from(this.contentEl.querySelectorAll('p'));
+    const r          = this.reactions();
+
+    for (const [idxStr, emojis] of Object.entries(r)) {
+      const idx  = Number(idxStr);
+      const para = paragraphs[idx];
+      if (!para) continue;
+
+      const chips = Object.entries(emojis)
+        .filter(([, count]) => count > 0)
+        .sort(([, a], [, b]) => b - a)
+        .map(([em, count]) => {
+          const span = document.createElement('span');
+          span.className = 'rp-chip';
+          span.textContent = `${em} ${count}`;
+          return span;
+        });
+
+      if (!chips.length) continue;
+
+      const strip = document.createElement('div');
+      strip.className = 'rp-strip';
+      chips.forEach(c => strip.appendChild(c));
+      para.insertAdjacentElement('afterend', strip);
+    }
+  }
+
   onContentClick(event: MouseEvent): void {
     const target = event.target as HTMLElement;
+
+    // Picker handled by its own (click) + stopPropagation — ignore here
+    if (target.closest('.rp-picker')) return;
+
+    // Close open picker on any prose click that isn't the picker itself
+    if (this.pickerIdx() >= 0) {
+      this.pickerIdx.set(-1);
+      return;
+    }
+
     const img = target.closest('figure.inline-img img') as HTMLImageElement | null
               ?? (target.tagName === 'IMG' && target.closest('figure.inline-img') ? target as HTMLImageElement : null);
     if (img) {
       event.preventDefault();
       this.openLightbox(img.src, img.alt || '');
+      return;
+    }
+
+    // Paragraph reaction picker
+    const p = target.closest('p');
+    if (p && this.contentEl) {
+      const paragraphs = Array.from(this.contentEl.querySelectorAll<HTMLParagraphElement>('p'));
+      const idx = paragraphs.indexOf(p as HTMLParagraphElement);
+      if (idx >= 0) this.openReactionPicker(idx, event.clientX, event.clientY);
     }
   }
 }

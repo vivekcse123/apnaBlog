@@ -333,6 +333,9 @@
 .ch-suggestion-search:hover { background: rgba(67,206,162,0.07); }
 .ch-suggestion-search svg { flex-shrink: 0; opacity: 0.7; }
 
+/* ── Theme toggle — desktop only ── */
+.ch-icon-btn.ch-theme-btn { display: flex; }
+
 /* ── Search toggle button (hidden on desktop, shown on mobile) ──
    Must use combined selector — .ch-icon-btn declares display:flex later
    in the file and would win a single-class specificity race. */
@@ -506,7 +509,7 @@
 }
 .ch-drawer-avatar-img { width:100%; height:100%; object-fit:cover; border-radius:8px; }
 .ch-drawer-user-info { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1; }
-.ch-drawer-user-name { font-size: 14px; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ch-drawer-user-name { font-size: 14px; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 .ch-role-badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
 .ch-role--user  { background: rgba(67,206,162,0.1); color: #43cea2; border: 1px solid rgba(67,206,162,0.3); }
 .ch-role--admin { background: rgba(24,90,157,0.1); color: #185a9d; border: 1px solid rgba(24,90,157,0.3); }
@@ -547,6 +550,8 @@
   /* Inline search hidden — replaced by the slide-down panel */
   .ch-search { display: none; }
 
+  /* Theme toggle hidden on mobile — available inside the profile panel */
+  .ch-icon-btn.ch-theme-btn    { display: none; }
   /* Search toggle visible; actions auto-margin pushes everything right */
   .ch-icon-btn.ch-search-toggle { display: flex; }
   .ch-actions { margin-left: auto; gap: 6px; }

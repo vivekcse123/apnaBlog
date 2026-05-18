@@ -2,10 +2,10 @@ import {
   Component, inject, signal, computed, OnInit, OnDestroy, AfterViewInit,
   NgZone, PLATFORM_ID, ViewChildren, QueryList, ElementRef, ViewChild,
 } from '@angular/core';
-import { isPlatformBrowser, CommonModule, Location } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
+import { isPlatformBrowser, CommonModule, Location, DOCUMENT } from '@angular/common';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { DomSanitizer, SafeResourceUrl, Meta, Title } from '@angular/platform-browser';
 import { ShortsService } from '../../services/shorts.service';
 import { VideoShort, ShortComment } from '../../models/video-short.model';
 import { Auth } from '../../../../core/services/auth';
@@ -24,8 +24,12 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
   private sanitizer  = inject(DomSanitizer);
   private ngZone     = inject(NgZone);
   private router     = inject(Router);
+  private route      = inject(ActivatedRoute);
   private location   = inject(Location);
   private platformId = inject(PLATFORM_ID);
+  private doc        = inject(DOCUMENT);
+  private titleSvc   = inject(Title);
+  private meta       = inject(Meta);
 
   @ViewChildren('reelCard') cardRefs!: QueryList<ElementRef<HTMLElement>>;
   @ViewChild('reelFeed')    feedRef!:  ElementRef<HTMLElement>;
@@ -78,11 +82,13 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
   private piTimer:        ReturnType<typeof setTimeout> | null = null;
   private holdTimer:      ReturnType<typeof setTimeout> | null = null;
   private likeFlashTimer: ReturnType<typeof setTimeout> | null = null;
+  private targetShortId:  string | null = null; // deep-link from author profile
 
   // ── YouTube postMessage handler ────────────────────────────────────────────
   // onReady → send playVideo + mute for the active card.
   // iOS Safari may give null/opaque e.source for cross-origin iframes, so we
   // try identity matching first, then fall back to activeIndex().
+  // When YouTube player fires onReady, play the active card.
   private readonly ytMsgHandler = (e: MessageEvent) => {
     if (!e.data || typeof e.data !== 'string') return;
     try {
@@ -90,39 +96,28 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
       if (msg.event !== 'onReady') return;
       if (!this.feedRef?.nativeElement) return;
 
-      // Identify which card sent onReady.
-      let matchedIdx = -1;
+      // Find which iframe sent the event.
+      let idx = -1;
       if (e.source) {
-        for (const iframe of Array.from(
-          this.feedRef.nativeElement.querySelectorAll<HTMLIFrameElement>('.reel-iframe')
-        )) {
-          if (iframe.contentWindow === (e.source as Window)) {
-            matchedIdx = Number(
-              iframe.closest<HTMLElement>('[data-idx]')?.getAttribute('data-idx') ?? '-1'
-            );
+        for (const fr of Array.from(this.feedRef.nativeElement.querySelectorAll<HTMLIFrameElement>('.reel-iframe'))) {
+          if (fr.contentWindow === (e.source as Window)) {
+            idx = Number(fr.closest<HTMLElement>('[data-idx]')?.getAttribute('data-idx') ?? '-1');
             break;
           }
         }
       }
-      // Fallback when e.source matching fails (iOS cross-origin restriction).
-      if (matchedIdx < 0) matchedIdx = this.activeIndex();
-
-      // Only play the card that is currently active.
-      if (matchedIdx !== this.activeIndex()) return;
+      if (idx < 0) idx = this.activeIndex();
+      if (idx !== this.activeIndex()) return;
 
       this.ngZone.run(() => {
-        const short = this.shorts()[matchedIdx];
+        const short = this.shorts()[idx];
         if (!short || this.manuallyPausedYtIds.has(short._id)) return;
-        const card   = this.feedRef?.nativeElement.querySelector<HTMLElement>(`[data-idx="${matchedIdx}"]`);
-        const iframe = card?.querySelector<HTMLIFrameElement>('.reel-iframe');
-        if (!iframe?.contentWindow) return;
-        iframe.contentWindow.postMessage(
-          JSON.stringify({ event: 'command', func: 'playVideo', args: '' }), '*'
-        );
-        // Respect current mute preference — user may have unmuted before onReady fired.
-        iframe.contentWindow.postMessage(
-          JSON.stringify({ event: 'command', func: this.isMuted() ? 'mute' : 'unMute', args: '' }), '*'
-        );
+        const fr = this.feedRef?.nativeElement
+          .querySelector<HTMLElement>(`[data-idx="${idx}"]`)
+          ?.querySelector<HTMLIFrameElement>('.reel-iframe');
+        if (!fr?.contentWindow) return;
+        fr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo', args: '' }), '*');
+        fr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: this.isMuted() ? 'mute' : 'unMute', args: '' }), '*');
       });
     } catch { /* non-JSON / cross-origin */ }
   };
@@ -141,7 +136,50 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
 
   // ── Lifecycle ──────────────────────────────────────────────────────────────
 
-  ngOnInit(): void { this.loadShorts(true); }
+  ngOnInit(): void {
+    this.applyMeta();
+    // Capture deep-link id from URL fragment (e.g. /shorts#<id> from author profile)
+    this.targetShortId = this.route.snapshot.fragment ?? null;
+    this.loadShorts(true);
+  }
+
+  private applyMeta(): void {
+    this.titleSvc.setTitle('Shorts — Quick Videos & Reels | ApnaInsights');
+    const desc = 'Watch short videos across News, Sports, Technology, Entertainment and more on ApnaInsights Shorts.';
+    this.meta.updateTag({ name: 'description',        content: desc });
+    this.meta.updateTag({ name: 'robots',             content: 'index, follow' });
+    this.meta.updateTag({ property: 'og:title',       content: 'ApnaInsights Shorts' });
+    this.meta.updateTag({ property: 'og:description', content: desc });
+    this.meta.updateTag({ property: 'og:url',         content: 'https://apnainsights.com/shorts' });
+    this.meta.updateTag({ property: 'og:type',        content: 'website' });
+
+    const canonical = this.doc.querySelector<HTMLLinkElement>('link[rel="canonical"]')
+      ?? (() => {
+        const el = this.doc.createElement('link');
+        el.setAttribute('rel', 'canonical');
+        this.doc.head.appendChild(el);
+        return el;
+      })();
+    canonical.setAttribute('href', 'https://apnainsights.com/shorts');
+
+    // JSON-LD for Google Rich Results
+    const schema = {
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      name: 'ApnaInsights Shorts',
+      description: desc,
+      url: 'https://apnainsights.com/shorts',
+      publisher: { '@type': 'Organization', name: 'ApnaInsights', url: 'https://apnainsights.com' },
+    };
+    let sd = this.doc.getElementById('shorts-schema') as HTMLScriptElement | null;
+    if (!sd) {
+      sd = this.doc.createElement('script');
+      sd.id   = 'shorts-schema';
+      sd.type = 'application/ld+json';
+      this.doc.head.appendChild(sd);
+    }
+    sd.textContent = JSON.stringify(schema);
+  }
 
   ngAfterViewInit(): void {
     if (!isPlatformBrowser(this.platformId)) return;
@@ -261,18 +299,59 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     this.service.getShorts(this.page, 8, cat).subscribe({
       next: res => {
         const items = res.data ?? [];
-        this.shorts.update(cur => reset ? items : [...cur, ...items]);
+        this.shorts.update(cur => {
+          if (reset) return items;
+          // $sample can return a short that already appeared in a previous batch.
+          // Deduplicate by _id so the user never sees the same video twice.
+          const seen = new Set(cur.map(s => s._id));
+          return [...cur, ...items.filter(s => !seen.has(s._id))];
+        });
         this.hasMore.set(this.page < (res.totalPages ?? 1));
         this.page++;
         this.isLoading.set(false);
-        requestAnimationFrame(() => requestAnimationFrame(() => {
-          this.observeAll();
-          if (reset) this.autoPlayVideo(0);
-          this.observeAdCards();
-        }));
+        // RAF and DOM calls only make sense in the browser; on the server Angular
+        // renders the template directly from the signals — no observers needed.
+        if (isPlatformBrowser(this.platformId)) {
+          requestAnimationFrame(() => requestAnimationFrame(() => {
+            this.observeAll();
+            this.observeAdCards();
+            this.resolveDeepLink(reset);
+          }));
+        }
       },
       error: () => { this.isLoading.set(false); this.hasMore.set(false); },
     });
+  }
+
+  // Called after every page of shorts loads. If a target id is pending (deep-link
+  // from author profile), find the matching card, scroll to it, and play it.
+  // If not found yet and more pages exist, keep loading until located.
+  private resolveDeepLink(isReset: boolean): void {
+    if (this.targetShortId) {
+      const idx = this.shorts().findIndex(s => s._id === this.targetShortId);
+      if (idx >= 0) {
+        this.targetShortId = null; // resolved — clear so normal scrolling takes over
+        this.scrollToCard(idx);
+        this.autoPlayVideo(idx);
+        return;
+      }
+      if (this.hasMore()) {
+        // Target not in this page — load the next page silently.
+        this.loadShorts();
+        return;
+      }
+      // Exhausted all pages without finding the short — fall through to default.
+      this.targetShortId = null;
+    }
+    // Default: play the first card on a fresh load.
+    if (isReset) this.autoPlayVideo(0);
+  }
+
+  private scrollToCard(idx: number): void {
+    if (!this.feedRef?.nativeElement) return;
+    const container = this.feedRef.nativeElement;
+    container.scrollTo({ top: idx * container.clientHeight, behavior: 'instant' });
+    this.activeIndex.set(idx);
   }
 
   onCategorySelect(cat: string): void {
@@ -315,9 +394,9 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
         ins.dataset['adLoaded'] = 'true';
         this.adObserver.unobserve(e.target);
         try {
-          const ads: any[] = (window as any).adsbygoogle ?? [];
-          (window as any).adsbygoogle = ads;
-          ads.push({});
+          // IMPORTANT: never overwrite adsbygoogle — Google's script replaces it
+          // with a special command queue; assigning a plain array breaks all ads.
+          ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
         } catch { /* already init */ }
       }
     }, { threshold: 0.5 });
@@ -356,7 +435,8 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
         this.ngZone.run(() => {
           this.activeIndex.set(idx);
           this.scheduleView(idx);
-          this.autoPlayVideo(idx);
+          // autoPlayVideo is called by setupScrollEndPlay once the snap settles —
+          // calling it here too causes a double-mount race for YouTube iframes.
           this.preloadAdjacent(idx);
         });
       }
@@ -399,6 +479,8 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private preloadAdjacent(currentIdx: number): void {
+    // Only preload upload video buffers — YouTube iframes are mounted on-demand
+    // when their card becomes active, ensuring the load event fires reliably.
     for (const offset of [1, 2]) {
       const short = this.shorts()[currentIdx + offset];
       if (short?.videoType === 'upload') {
@@ -446,43 +528,30 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     // ── YouTube ──────────────────────────────────────────────────────────────
     if (short.videoType === 'youtube' && short._id) {
       if (this.manuallyPausedYtIds.has(short._id)) return;
+      const id = short._id;
 
-      // Mount iframe if not yet in DOM.
-      const alreadyMounted = this.playedYtIds().has(short._id);
-      if (!alreadyMounted) {
-        this.playedYtIds.update(s => new Set([...s, short._id]));
+      // Mount iframe if not already in DOM.
+      if (!this.playedYtIds().has(id)) {
+        this.playedYtIds.update(s => new Set([...s, id]));
       }
 
-      // Helper: send playVideo + mute/unMute to the active card's iframe.
-      // Reads isMuted() at call time so it always respects the user's current
-      // preference — retries must never re-mute after the user has unmuted.
-      const sendPlay = () => {
+      // Send playVideo once the player is ready. onReady (ytMsgHandler) is the
+      // primary trigger. These retries cover the case where onReady already fired
+      // before we scrolled here, or where postMessages are delayed on mobile.
+      const play = () => {
         if (this.activeIndex() !== cardIdx) return;
-        const card   = this.feedRef?.nativeElement.querySelector<HTMLElement>(`[data-idx="${cardIdx}"]`);
-        const iframe = card?.querySelector<HTMLIFrameElement>('.reel-iframe');
-        if (!iframe?.contentWindow) return;
-        iframe.contentWindow.postMessage(
-          JSON.stringify({ event: 'command', func: 'playVideo', args: '' }), '*'
-        );
-        iframe.contentWindow.postMessage(
-          JSON.stringify({ event: 'command', func: this.isMuted() ? 'mute' : 'unMute', args: '' }), '*'
-        );
+        const fr = this.feedRef?.nativeElement
+          .querySelector<HTMLElement>(`[data-idx="${cardIdx}"]`)
+          ?.querySelector<HTMLIFrameElement>('.reel-iframe');
+        if (!fr?.contentWindow) return;
+        fr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo', args: '' }), '*');
+        fr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: this.isMuted() ? 'mute' : 'unMute', args: '' }), '*');
       };
 
-      if (!alreadyMounted) {
-        // Wait for Angular to render the iframe, then listen for its load event.
-        requestAnimationFrame(() => requestAnimationFrame(() => {
-          const card   = this.feedRef?.nativeElement.querySelector<HTMLElement>(`[data-idx="${cardIdx}"]`);
-          const iframe = card?.querySelector<HTMLIFrameElement>('.reel-iframe');
-          iframe?.addEventListener('load', () => this.ngZone.run(sendPlay), { once: true });
-        }));
-      }
-
-      // Belt-and-suspenders retries for slow iOS / cellular networks.
-      setTimeout(sendPlay, 300);
-      setTimeout(sendPlay, 900);
-      setTimeout(sendPlay, 2000);
-      setTimeout(sendPlay, 4000);
+      setTimeout(play, 300);
+      setTimeout(play, 800);
+      setTimeout(play, 1800);
+      setTimeout(play, 3500);
       return;
     }
 
@@ -502,6 +571,10 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     vid.play()
       .then(() => {
         if (this.gestureUnlocked && !this.isMuted()) vid.muted = false;
+        // Sync icon to reality: if the browser played unmuted (allowed for returning
+        // users), flip isMuted false so the icon matches the actual audio state.
+        // Never set isMuted back to true here — that would override a user mute.
+        if (!vid.muted) this.ngZone.run(() => this.isMuted.set(false));
       })
       .catch(() => { this.pendingPlayIdx = cardIdx; });
   }
@@ -684,11 +757,11 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
 
   safeEmbedUrl(youtubeId: string): SafeResourceUrl {
     if (!this.safeUrlCache.has(youtubeId)) {
+      const origin = encodeURIComponent(this.doc.location?.origin ?? 'https://apnainsights.com');
       this.safeUrlCache.set(youtubeId, this.sanitizer.bypassSecurityTrustResourceUrl(
         `https://www.youtube.com/embed/${youtubeId}` +
         `?autoplay=1&mute=1&playsinline=1&rel=0&modestbranding=1` +
-        `&controls=0&iv_load_policy=3&enablejsapi=1` +
-        `&origin=${encodeURIComponent(location.origin)}`
+        `&controls=0&iv_load_policy=3&enablejsapi=1&origin=${origin}`
       ));
     }
     return this.safeUrlCache.get(youtubeId)!;

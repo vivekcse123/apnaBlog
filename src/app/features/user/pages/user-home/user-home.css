@@ -254,6 +254,7 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  transition: background 0.25s ease, transform 0.25s ease;
 }
 
 .blogs-icon     { background: rgba(67,  206, 162, 0.12); }

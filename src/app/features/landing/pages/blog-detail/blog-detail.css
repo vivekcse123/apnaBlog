@@ -2780,3 +2780,94 @@ body {
   .shorts-rec-card    { width: 106px; }
   .shorts-rec-thumb-wrap { width: 106px; height: 188px; }
 }
+
+/* ── Paragraph Reactions ──────────────────────────────────────── */
+
+/* Hover cue — paragraphs are clickable */
+.blog-content ::ng-deep p {
+  cursor: pointer;
+  border-radius: 5px;
+  padding: 2px 6px;
+  margin-left: -6px;
+  margin-right: -6px;
+  transition: background 0.15s;
+}
+.blog-content ::ng-deep p:hover { background: rgba(37,99,235,0.05); }
+[data-theme="dark"] .blog-content ::ng-deep p:hover { background: rgba(96,165,250,0.07); }
+
+/* Inline reaction strips injected via DOM after each reacted paragraph */
+:host ::ng-deep .rp-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: -6px 0 14px 2px;
+}
+
+:host ::ng-deep .rp-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 9px;
+  background: var(--bg-surface, #f5f5f5);
+  border: 1px solid var(--border, #e2e2e2);
+  border-radius: 20px;
+  font-size: 0.78rem;
+  color: var(--text-muted, #666);
+  user-select: none;
+  cursor: default;
+}
+
+[data-theme="dark"] :host ::ng-deep .rp-chip {
+  background: #2a2a2a;
+  border-color: #3a3a3a;
+  color: #aaa;
+}
+
+/* Floating emoji picker */
+.rp-picker {
+  position: fixed;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 10px;
+  background: var(--bg-surface, #fff);
+  border: 1px solid var(--border, #e2e2e2);
+  border-radius: 40px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.10);
+  animation: rp-pop 0.15s cubic-bezier(.34,1.56,.64,1);
+}
+
+[data-theme="dark"] .rp-picker {
+  background: #1e1e1e;
+  border-color: #3a3a3a;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.45);
+}
+
+@keyframes rp-pop {
+  from { opacity: 0; transform: scale(0.8); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.rp-emoji-btn {
+  width: 36px; height: 36px;
+  border: none;
+  background: transparent;
+  border-radius: 50%;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.12s, transform 0.12s;
+}
+.rp-emoji-btn:hover   { background: rgba(37,99,235,0.08); transform: scale(1.25); }
+.rp-emoji-btn.rp-selected { background: rgba(37,99,235,0.14); transform: scale(1.2); }
+
+.rp-login-hint {
+  font-size: 0.82rem;
+  color: var(--text-muted, #888);
+  padding: 0 6px;
+  white-space: nowrap;
+}

@@ -166,6 +166,7 @@
 }
 
 
+
 .reel-fallback {
   width: 100%; height: 100%;
   display: flex; align-items: center; justify-content: center;
@@ -569,13 +570,15 @@
 .reel-ad-inner {
   position: relative;
   width: calc(100% - 32px); max-width: 380px;
-  min-height: 250px;
+  min-height: 320px;
   background: #141414;
-  border-radius: 18px; overflow: hidden;
+  border-radius: 18px;
+  overflow: visible; /* must NOT be hidden — clipping kills AdSense iframes */
   border: 1px solid rgba(255,255,255,.06);
 }
 .reel-ad-shimmer {
   position: absolute; inset: 0;
+  border-radius: 18px;
   background: linear-gradient(90deg, #161616 25%, #1e1e1e 50%, #161616 75%);
   background-size: 200% 100%;
   animation: reelShimmer 1.8s ease-in-out infinite;
@@ -585,7 +588,16 @@
   0%   { background-position:  200% 0; }
   100% { background-position: -200% 0; }
 }
-.reel-ad-inner ins { position: relative; z-index: 1; display: block; width: 100%; }
+/* ins sits above the shimmer; AdSense injects an iframe inside it */
+.reel-ad-inner ins {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  min-height: 320px;
+  border-radius: 18px;
+  overflow: hidden;
+}
 
 /* ══ Comment Drawer ══════════════════════════════════════════════════ */
 .reel-backdrop {

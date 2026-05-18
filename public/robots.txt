@@ -24,3 +24,4 @@ Allow: /
 # ── Sitemap ───────────────────────────────────────────────────────────────────
 Sitemap: https://apnainsights.com/sitemap.xml
 Sitemap: https://apnainsights.com/news-sitemap.xml
+Sitemap: https://apnainsights.com/api/rss

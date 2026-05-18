@@ -49,16 +49,14 @@ export class ShortView implements OnInit, AfterViewInit {
   ngAfterViewInit(): void {
     if (!isPlatformBrowser(this.platformId)) return;
     try {
-      const ads: any[] = (window as any).adsbygoogle ?? [];
-      (window as any).adsbygoogle = ads;
-      ads.push({});
+      ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
     } catch { /* already initialised */ }
   }
 
-  // Mounts with autoplay=1 only after the user taps — YouTube idle UI never shows
   safeEmbedUrl(youtubeId: string): SafeResourceUrl {
+    const origin = encodeURIComponent(this.doc.location?.origin ?? 'https://apnainsights.com');
     return this.sanitizer.bypassSecurityTrustResourceUrl(
-      `https://www.youtube.com/embed/${youtubeId}?autoplay=1&playsinline=1&rel=0&modestbranding=1&controls=1&iv_load_policy=3&enablejsapi=1&origin=${encodeURIComponent('https://apnainsights.com')}`
+      `https://www.youtube.com/embed/${youtubeId}?autoplay=1&playsinline=1&rel=0&modestbranding=1&controls=1&iv_load_policy=3&enablejsapi=1&origin=${origin}`
     );
   }
 

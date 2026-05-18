@@ -199,4 +199,18 @@ export class PostService {
       `${this.endPoint}/${postId}/comment/${commentId}/reply/${replyId}`
     );
   }
+
+  // ── Paragraph reactions ────────────────────────────────────────────────────
+
+  getReactions(postId: string): Observable<{
+    status: number;
+    data: Record<number, Record<string, number>>;
+    myReactions: Record<number, string>;
+  }> {
+    return this.http.get<any>(`${this.endPoint}/${postId}/reactions`);
+  }
+
+  addReaction(postId: string, paragraphIdx: number, emoji: string): Observable<{ status: number; message: string }> {
+    return this.http.post<any>(`${this.endPoint}/${postId}/react`, { paragraphIdx, emoji });
+  }
 }
