@@ -505,6 +505,11 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     this.doToggle(cardIdx, event.currentTarget as HTMLElement);
   }
 
+  doTogglePublic(cardIdx: number, event: Event): void {
+    this.doToggle(cardIdx, (event.currentTarget as HTMLElement).closest('[data-idx]') as HTMLElement
+      ?? this.feedRef?.nativeElement.querySelector<HTMLElement>(`[data-idx="${cardIdx}"]`)!);
+  }
+
   private doToggle(cardIdx: number, cardEl: HTMLElement): void {
     // Replay if ended
     if (this.endedCards().has(cardIdx)) {
