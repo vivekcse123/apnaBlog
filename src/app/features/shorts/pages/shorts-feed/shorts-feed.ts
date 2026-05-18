@@ -51,7 +51,7 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
   deletingId         = signal<string | null>(null);
   endedCards         = signal<Set<number>>(new Set());
   likedIds           = signal<Set<string>>(this.loadLikedFromStorage());
-  isMuted            = signal(true);
+  isMuted            = signal(false);
   needsGesture       = signal(false);
   pauseIndicatorIdx  = signal(-1);
   indicatorIsPlaying = signal(false);
@@ -176,8 +176,9 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     this.gestureUnlocked = true;
     const idx = this.activeIndex();
     const vid = this.getVideoAt(idx);
-    if (vid && !this.isMuted()) {
+    if (vid) {
       vid.muted = false;
+      this.ngZone.run(() => this.isMuted.set(false));
       if (vid.paused) vid.play().catch(() => {});
     }
     this.ngZone.run(() => {
@@ -444,10 +445,20 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
       if (this.gestureUnlocked && !this.isMuted()) vid.muted = false;
       return;
     }
-    vid.muted = true;
+    // Try unmuted first. Browsers block unmuted autoplay until the user
+    // interacts with the page — if blocked, fall back to muted autoplay.
+    vid.muted = this.isMuted();
     vid.play()
-      .then(() => { if (this.gestureUnlocked && !this.isMuted()) vid.muted = false; })
-      .catch(() => { this.pendingPlayIdx = cardIdx; });
+      .then(() => {
+        // Sync icon: if the browser silently forced mute, reflect that.
+        if (vid.muted && !this.isMuted()) this.ngZone.run(() => this.isMuted.set(true));
+      })
+      .catch(() => {
+        // Unmuted play blocked — retry muted.
+        vid.muted = true;
+        this.ngZone.run(() => this.isMuted.set(true));
+        vid.play().catch(() => { this.pendingPlayIdx = cardIdx; });
+      });
   }
 
   // ── Touch handlers ─────────────────────────────────────────────────────────
