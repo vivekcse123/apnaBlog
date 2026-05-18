@@ -5,7 +5,7 @@ import {
 import { isPlatformBrowser, CommonModule, Location, DOCUMENT } from '@angular/common';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { DomSanitizer, SafeResourceUrl, Meta, Title } from '@angular/platform-browser';
+import { Meta, Title } from '@angular/platform-browser';
 import { ShortsService } from '../../services/shorts.service';
 import { VideoShort, ShortComment } from '../../models/video-short.model';
 import { Auth } from '../../../../core/services/auth';
@@ -21,7 +21,6 @@ import { ShortsUpload } from '../shorts-upload/shorts-upload';
 export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
   private service    = inject(ShortsService);
   private auth       = inject(Auth);
-  private sanitizer  = inject(DomSanitizer);
   private ngZone     = inject(NgZone);
   private router     = inject(Router);
   private route      = inject(ActivatedRoute);
@@ -33,8 +32,6 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
 
   @ViewChildren('reelCard') cardRefs!: QueryList<ElementRef<HTMLElement>>;
   @ViewChild('reelFeed')    feedRef!:  ElementRef<HTMLElement>;
-
-  private safeUrlCache = new Map<string, SafeResourceUrl>();
 
   // ── Signals ────────────────────────────────────────────────────────────────
   shorts             = signal<VideoShort[]>([]);
@@ -52,10 +49,9 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
   replyText          = signal('');
   isReplying         = signal(false);
   deletingId         = signal<string | null>(null);
-  playedYtIds        = signal<Set<string>>(new Set()); // YT iframes mounted in DOM
-  endedCards         = signal<Set<number>>(new Set()); // cards whose video has ended
+  endedCards         = signal<Set<number>>(new Set());
   likedIds           = signal<Set<string>>(this.loadLikedFromStorage());
-  isMuted            = signal(true);   // start muted; mute-button in header unmutes
+  isMuted            = signal(true);
   needsGesture       = signal(false);
   pauseIndicatorIdx  = signal(-1);
   indicatorIsPlaying = signal(false);
@@ -76,7 +72,6 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
   private scrollSettleTimer:  ReturnType<typeof setTimeout> | null = null;
   private pendingPlayIdx      = -1;
   private manuallyPausedSet   = new Set<number>();
-  private manuallyPausedYtIds = new Set<string>();
   private gestureUnlocked     = false;
   private progressBound       = new Set<number>();
   private touchStartPos       = { x: 0, y: 0 };
@@ -87,134 +82,18 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
   private holdTimer:      ReturnType<typeof setTimeout> | null = null;
   private likeFlashTimer: ReturnType<typeof setTimeout> | null = null;
   private seekTimer:      ReturnType<typeof setTimeout> | null = null;
-  private ytProgressTimer: ReturnType<typeof setInterval> | null = null;
-  private targetShortId:  string | null = null; // deep-link from author profile
-
-  // YouTube elapsed-time tracking for seek (wall-clock when playVideo last fired)
-  private ytPlayStartMs = new Map<number, number>();
-  private ytPausedAt    = new Map<number, number>(); // accumulated seconds when paused
+  private targetShortId:  string | null = null;
 
   // Seek config
   public readonly SEEK_SEC = 10;
   seekIndicator = signal<{ cardIdx: number; dir: 'fwd' | 'bwd' } | null>(null);
-
-  // ── YouTube postMessage handler ────────────────────────────────────────────
-  // onReady → send playVideo + mute for the active card.
-  // iOS Safari may give null/opaque e.source for cross-origin iframes, so we
-  // try identity matching first, then fall back to activeIndex().
-  // When YouTube player fires onReady, play the active card.
-  private readonly ytMsgHandler = (e: MessageEvent) => {
-    if (!e.data || typeof e.data !== 'string') return;
-    try {
-      const msg = JSON.parse(e.data);
-      if (!this.feedRef?.nativeElement) return;
-
-      // ── Resolve which card sent this message ─────────────────────────────
-      const resolveIdx = (): number => {
-        if (e.source) {
-          for (const fr of Array.from(
-            this.feedRef!.nativeElement.querySelectorAll<HTMLIFrameElement>('.reel-iframe')
-          )) {
-            if (fr.contentWindow === (e.source as Window)) {
-              return Number(fr.closest<HTMLElement>('[data-idx]')?.getAttribute('data-idx') ?? '-1');
-            }
-          }
-        }
-        return this.activeIndex();
-      };
-
-      // ── infoDelivery — fires every ~500 ms; gives ACTUAL currentTime & duration ──
-      if (msg.event === 'infoDelivery' && msg.info) {
-        const info        = msg.info;
-        const currentTime = typeof info.currentTime === 'number' ? info.currentTime : null;
-        const duration    = typeof info.duration    === 'number' && info.duration > 0 ? info.duration : null;
-        if (currentTime === null || duration === null) return;
-
-        const idx          = resolveIdx();
-        // Guard: ignore messages from an iframe that has already been unmounted
-        // (e.g. fired after replay resets --vp to 0%, before Angular destroys the old iframe)
-        const infoShort = this.shorts()[idx];
-        if (!infoShort || !this.playedYtIds().has(infoShort._id)) return;
-
-        const pct  = Math.min(100, (currentTime / duration) * 100);
-        const card = this.feedRef?.nativeElement.querySelector<HTMLElement>(`[data-idx="${idx}"]`);
-        card?.style.setProperty('--vp', `${pct}%`);
-
-        // Keep seek tracker in sync with real player time.
-        // Only advance the wall-clock origin when the player is actually playing
-        // (playerState === 1). If it's paused (2) or unstarted (-1/0), freeze
-        // ytPausedAt at the real currentTime so the fallback timer stays correct.
-        const playerState = typeof msg.info.playerState === 'number' ? msg.info.playerState : 1;
-        if (playerState === 2) {
-          this.ytPausedAt.set(idx, currentTime);
-        } else {
-          this.ytPlayStartMs.set(idx, Date.now() - currentTime * 1000);
-          this.ytPausedAt.delete(idx);
-        }
-
-        // Update short duration if different from what we stored
-        if (infoShort && !infoShort.duration && duration) {
-          this.shorts.update(list =>
-            list.map(s => s._id === infoShort._id ? { ...s, duration } : s)
-          );
-        }
-        return;
-      }
-
-      // ── onStateChange ─────────────────────────────────────────────────────
-      if (msg.event === 'onStateChange') {
-        const idx   = resolveIdx();
-        const state = msg.info;
-        if (state === 0) {
-          // Ended
-          this.ngZone.run(() => this.endedCards.update(s => new Set([...s, idx])));
-        } else if (state === 1) {
-          // Video is now actually playing — reset clock to NOW so elapsed matches reality.
-          // This corrects any buffering delay between autoPlayVideo and actual playback.
-          const acc = this.ytPausedAt.get(idx) ?? 0;
-          // If resuming from pause, acc > 0; if fresh start, acc = 0
-          this.ytPlayStartMs.set(idx, Date.now() - acc * 1000);
-          this.ytPausedAt.delete(idx);
-          if (!this.ytProgressTimer) this.startYtProgress();
-        } else if (state === 2) {
-          // Paused
-          const startMs = this.ytPlayStartMs.get(idx);
-          if (startMs) this.ytPausedAt.set(idx, (Date.now() - startMs) / 1000);
-        }
-        return;
-      }
-
-      // ── onReady — send play command ───────────────────────────────────────
-      if (msg.event !== 'onReady') return;
-
-      const idx = resolveIdx();
-      // Only play if this is the currently active card
-      if (idx !== this.activeIndex()) return;
-
-      this.ngZone.run(() => {
-        const short = this.shorts()[idx];
-        if (!short || this.manuallyPausedYtIds.has(short._id)) return;
-        const fr = this.feedRef?.nativeElement
-          .querySelector<HTMLElement>(`[data-idx="${idx}"]`)
-          ?.querySelector<HTMLIFrameElement>('.reel-iframe');
-        if (!fr?.contentWindow) return;
-        fr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo', args: '' }), '*');
-        fr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: this.isMuted() ? 'mute' : 'unMute', args: '' }), '*');
-        // onReady may fire AFTER autoPlayVideo already set ytPlayStartMs —
-        // only reset if onStateChange state=1 hasn't corrected it yet.
-        if (!this.ytPausedAt.has(idx)) {
-          this.ytPlayStartMs.set(idx, Date.now());
-        }
-      });
-    } catch { /* non-JSON / cross-origin */ }
-  };
 
   readonly LIKED_KEY     = 'apna_liked_shorts';
   readonly VIEWED_PREFIX = 'apna_viewed_short_';
 
   isLoggedIn    = computed(() => !!this.auth.token());
   isAdmin       = computed(() => this.auth.isAdmin());
-  canCreate     = computed(() => !!this.auth.token()); // any logged-in user (admin + user)
+  canCreate     = computed(() => !!this.auth.token());
   currentUserId = computed(() => this.auth.userId());
 
   categories = [
@@ -226,7 +105,6 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnInit(): void {
     this.applyMeta();
-    // Capture deep-link id from URL fragment (e.g. /shorts#<id> from author profile)
     this.targetShortId = this.route.snapshot.fragment ?? null;
     this.loadShorts(true);
   }
@@ -250,7 +128,6 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
       })();
     canonical.setAttribute('href', 'https://apnainsights.com/shorts');
 
-    // JSON-LD for Google Rich Results
     const schema = {
       '@context': 'https://schema.org',
       '@type': 'WebPage',
@@ -277,9 +154,6 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     this.setupGestureUnlock();
     this.setupScrollGesturePlay();
     this.setupScrollEndPlay();
-    this.ngZone.runOutsideAngular(() =>
-      window.addEventListener('message', this.ytMsgHandler, { passive: true })
-    );
   }
 
   ngOnDestroy(): void {
@@ -293,39 +167,6 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     if (this.likeFlashTimer)    clearTimeout(this.likeFlashTimer);
     if (this.seekTimer)         clearTimeout(this.seekTimer);
     if (this.searchDebounce)    clearTimeout(this.searchDebounce);
-    this.stopYtProgress();
-    window.removeEventListener('message', this.ytMsgHandler);
-  }
-
-  // ── YouTube progress bar (polls every 250 ms while a YT card is active) ───
-  private startYtProgress(): void {
-    if (this.ytProgressTimer) return;
-    this.ytProgressTimer = setInterval(() => {
-      const idx   = this.activeIndex();
-      const short = this.shorts()[idx];
-      if (!short || short.videoType !== 'youtube') return;
-
-      const startMs  = this.ytPlayStartMs.get(idx);
-      if (!startMs) return; // not yet playing
-
-      const paused   = this.ytPausedAt.get(idx);
-      const elapsed  = paused !== undefined ? paused : (Date.now() - startMs) / 1000;
-      // Use stored duration or fall back to 60 s (YouTube Shorts max length)
-      const duration = short.duration ?? 60;
-      const pct      = Math.min(100, (elapsed / duration) * 100);
-
-      const card = this.feedRef?.nativeElement.querySelector<HTMLElement>(`[data-idx="${idx}"]`);
-      card?.style.setProperty('--vp', `${pct}%`);
-
-      if (pct >= 100) this.stopYtProgress();
-    }, 250);
-  }
-
-  private stopYtProgress(): void {
-    if (this.ytProgressTimer) {
-      clearInterval(this.ytProgressTimer);
-      this.ytProgressTimer = null;
-    }
   }
 
   // ── Gesture unlock ─────────────────────────────────────────────────────────
@@ -339,14 +180,6 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
       vid.muted = false;
       if (vid.paused) vid.play().catch(() => {});
     }
-    if (!this.isMuted()) {
-      this.feedRef?.nativeElement
-        .querySelector<HTMLElement>(`[data-idx="${idx}"]`)
-        ?.querySelector<HTMLIFrameElement>('.reel-iframe')
-        ?.contentWindow?.postMessage(
-          JSON.stringify({ event: 'command', func: 'unMute', args: '' }), '*'
-        );
-    }
     this.ngZone.run(() => {
       this.needsGesture.set(false);
       if (this.pendingPlayIdx >= 0) {
@@ -357,10 +190,7 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private setupGestureUnlock(): void {
-    const unlock = () => {
-      if (this.gestureUnlocked) return;
-      this.gestureUnlocked = true;
-    };
+    const unlock = () => { this.gestureUnlocked = true; };
     document.addEventListener('touchend', unlock, { once: true, passive: true });
     document.addEventListener('click',    unlock, { once: true, passive: true });
   }
@@ -369,38 +199,21 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     if (!this.feedRef) return;
     const container = this.feedRef.nativeElement;
     let startY = 0;
-
-    container.addEventListener('touchstart', (e: TouchEvent) => {
-      startY = e.touches[0].clientY;
-    }, { passive: true });
-
+    container.addEventListener('touchstart', (e: TouchEvent) => { startY = e.touches[0].clientY; }, { passive: true });
     container.addEventListener('touchend', (e: TouchEvent) => {
       const dy = Math.abs((e.changedTouches[0]?.clientY ?? startY) - startY);
       if (dy < 30) return;
-      // Pause everything immediately; setupScrollEndPlay() will play the right card.
-      container.querySelectorAll<HTMLVideoElement>('.reel-video').forEach(v => {
-        v.muted = true; v.pause();
-      });
-      container.querySelectorAll<HTMLIFrameElement>('.reel-iframe').forEach(fr => {
-        fr.contentWindow?.postMessage(
-          JSON.stringify({ event: 'command', func: 'pauseVideo', args: '' }), '*'
-        );
-      });
+      container.querySelectorAll<HTMLVideoElement>('.reel-video').forEach(v => { v.muted = true; v.pause(); });
     }, { passive: true });
   }
 
   private setupScrollEndPlay(): void {
     if (!this.feedRef) return;
     const container = this.feedRef.nativeElement;
-
     const onSettle = () => {
       const idx = Math.round(container.scrollTop / container.clientHeight);
-      this.ngZone.run(() => {
-        this.activeIndex.set(idx);
-        this.autoPlayVideo(idx);
-      });
+      this.ngZone.run(() => { this.activeIndex.set(idx); this.autoPlayVideo(idx); });
     };
-
     if ('onscrollend' in window) {
       container.addEventListener('scrollend', onSettle, { passive: true });
     } else {
@@ -424,8 +237,6 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
         const items = res.data ?? [];
         this.shorts.update(cur => {
           if (reset) return items;
-          // $sample can return a short that already appeared in a previous batch.
-          // Deduplicate by _id so the user never sees the same video twice.
           const seen = new Set(cur.map(s => s._id));
           return [...cur, ...items.filter(s => !seen.has(s._id))];
         });
@@ -433,22 +244,6 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
         this.page++;
         this.isLoading.set(false);
 
-        // Backfill missing duration for YouTube shorts — fire-and-forget
-        if (isPlatformBrowser(this.platformId)) {
-          items
-            .filter(s => s.videoType === 'youtube' && !s.duration && s._id)
-            .forEach(s => {
-              this.service.fetchYtDuration(s._id).subscribe(duration => {
-                if (!duration) return;
-                this.shorts.update(list =>
-                  list.map(x => x._id === s._id ? { ...x, duration } : x)
-                );
-              });
-            });
-        }
-
-        // RAF and DOM calls only make sense in the browser; on the server Angular
-        // renders the template directly from the signals — no observers needed.
         if (isPlatformBrowser(this.platformId)) {
           requestAnimationFrame(() => requestAnimationFrame(() => {
             this.observeAll();
@@ -461,27 +256,18 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  // Called after every page of shorts loads. If a target id is pending (deep-link
-  // from author profile), find the matching card, scroll to it, and play it.
-  // If not found yet and more pages exist, keep loading until located.
   private resolveDeepLink(isReset: boolean): void {
     if (this.targetShortId) {
       const idx = this.shorts().findIndex(s => s._id === this.targetShortId);
       if (idx >= 0) {
-        this.targetShortId = null; // resolved — clear so normal scrolling takes over
+        this.targetShortId = null;
         this.scrollToCard(idx);
         this.autoPlayVideo(idx);
         return;
       }
-      if (this.hasMore()) {
-        // Target not in this page — load the next page silently.
-        this.loadShorts();
-        return;
-      }
-      // Exhausted all pages without finding the short — fall through to default.
+      if (this.hasMore()) { this.loadShorts(); return; }
       this.targetShortId = null;
     }
-    // Default: play the first card on a fresh load.
     if (isReset) this.autoPlayVideo(0);
   }
 
@@ -495,13 +281,7 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
   toggleSearch(): void {
     const opening = !this.showSearch();
     this.showSearch.set(opening);
-    if (!opening) {
-      // Closing: clear query and reload feed
-      if (this.searchQuery()) {
-        this.searchQuery.set('');
-        this.resetFeed();
-      }
-    }
+    if (!opening && this.searchQuery()) { this.searchQuery.set(''); this.resetFeed(); }
   }
 
   onSearchInput(value: string): void {
@@ -512,13 +292,10 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
 
   private resetFeed(): void {
     this.pendingPlayIdx = -1;
-    this.playedYtIds.set(new Set());
-    this.safeUrlCache.clear();
     this.viewedSet.clear();
     this.viewTimers.forEach(t => clearTimeout(t));
     this.viewTimers.clear();
     this.manuallyPausedSet.clear();
-    this.manuallyPausedYtIds.clear();
     this.progressBound.clear();
     this.loadShorts(true);
     this.feedRef?.nativeElement.scrollTo({ top: 0, behavior: 'instant' });
@@ -553,20 +330,14 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
         if (!ins || ins.dataset['adLoaded']) continue;
         ins.dataset['adLoaded'] = 'true';
         this.adObserver.unobserve(e.target);
-        try {
-          // IMPORTANT: never overwrite adsbygoogle — Google's script replaces it
-          // with a special command queue; assigning a plain array breaks all ads.
-          ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
-        } catch { /* already init */ }
+        try { ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({}); } catch { /* already init */ }
       }
     }, { threshold: 0.5 });
   }
 
   private observeAdCards(): void {
     if (!this.adObserver || !this.feedRef) return;
-    this.feedRef.nativeElement
-      .querySelectorAll<HTMLElement>('.reel-ad-card')
-      .forEach(card => this.adObserver.observe(card));
+    this.feedRef.nativeElement.querySelectorAll<HTMLElement>('.reel-ad-card').forEach(card => this.adObserver.observe(card));
   }
 
   // ── IntersectionObserver ───────────────────────────────────────────────────
@@ -577,26 +348,13 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
         const idx = Number(e.target.getAttribute('data-idx'));
         if (isNaN(idx)) continue;
         if (!e.isIntersecting || e.intersectionRatio < 0.8) {
-          const short = this.shorts()[idx];
-          const card  = this.feedRef?.nativeElement.querySelector<HTMLElement>(`[data-idx="${idx}"]`);
-          if (short?.videoType === 'youtube') {
-            card?.querySelector<HTMLIFrameElement>('.reel-iframe')
-              ?.contentWindow?.postMessage(
-                JSON.stringify({ event: 'command', func: 'pauseVideo', args: '' }), '*'
-              );
-          }
-          if (short?.videoType === 'upload') {
-            const v = card?.querySelector<HTMLVideoElement>('.reel-video');
-            if (v) { v.muted = true; v.pause(); }
-            this.manuallyPausedSet.delete(idx);
-          }
+          const vid = this.getVideoAt(idx);
+          if (vid) { vid.muted = true; vid.pause(); this.manuallyPausedSet.delete(idx); }
           continue;
         }
         this.ngZone.run(() => {
           this.activeIndex.set(idx);
           this.scheduleView(idx);
-          // autoPlayVideo is called by setupScrollEndPlay once the snap settles —
-          // calling it here too causes a double-mount race for YouTube iframes.
           this.preloadAdjacent(idx);
         });
       }
@@ -618,9 +376,7 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
       if (!this.hasViewedInSession(short._id)) {
         this.markViewedInSession(short._id);
         this.service.addView(short._id).subscribe();
-        this.shorts.update(list =>
-          list.map((s, i) => i === idx ? { ...s, views: s.views + 1 } : s)
-        );
+        this.shorts.update(list => list.map((s, i) => i === idx ? { ...s, views: s.views + 1 } : s));
       }
     }, 2000);
     this.viewTimers.set(idx, t);
@@ -640,21 +396,9 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
 
   private preloadAdjacent(currentIdx: number): void {
     for (const offset of [1, 2]) {
-      const nextIdx = currentIdx + offset;
-      const short   = this.shorts()[nextIdx];
-      if (!short) continue;
-
-      if (short.videoType === 'youtube' && short._id && offset === 1) {
-        // Preload the immediately-next YouTube card: mount its iframe now (autoplay=0)
-        // so the YT player JS initialises while the user is still on the current card.
-        // When the user scrolls here, autoPlayVideo sends playVideo instantly.
-        if (!this.playedYtIds().has(short._id) && !this.manuallyPausedYtIds.has(short._id)) {
-          this.playedYtIds.update(s => new Set([...s, short._id]));
-        }
-      }
-
-      if (short.videoType === 'upload') {
-        const vid = this.getVideoAt(nextIdx);
+      const short = this.shorts()[currentIdx + offset];
+      if (short?.videoType === 'upload') {
+        const vid = this.getVideoAt(currentIdx + offset);
         if (vid && vid.preload !== 'auto') { vid.preload = 'auto'; vid.load(); }
       }
     }
@@ -664,17 +408,9 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
 
   private pauseAllExcept(activeIdx: number): void {
     if (!this.feedRef?.nativeElement) return;
-    const c = this.feedRef.nativeElement;
-    c.querySelectorAll<HTMLVideoElement>('.reel-video').forEach(vid => {
+    this.feedRef.nativeElement.querySelectorAll<HTMLVideoElement>('.reel-video').forEach(vid => {
       const idx = Number(vid.closest<HTMLElement>('[data-idx]')?.getAttribute('data-idx'));
       if (idx !== activeIdx) { vid.muted = true; vid.pause(); }
-    });
-    c.querySelectorAll<HTMLIFrameElement>('.reel-iframe').forEach(iframe => {
-      const idx = Number(iframe.closest<HTMLElement>('[data-idx]')?.getAttribute('data-idx'));
-      if (idx !== activeIdx)
-        iframe.contentWindow?.postMessage(
-          JSON.stringify({ event: 'command', func: 'pauseVideo', args: '' }), '*'
-        );
     });
   }
 
@@ -697,69 +433,20 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     const short = this.shorts()[cardIdx];
     if (!short) return;
     this.pauseAllExcept(cardIdx);
-    // Clear ended state so re-entering this card doesn't keep showing replay overlay
     if (this.endedCards().has(cardIdx)) {
       this.endedCards.update(s => { const n = new Set(s); n.delete(cardIdx); return n; });
     }
-
-    // ── YouTube ──────────────────────────────────────────────────────────────
-    if (short.videoType === 'youtube' && short._id) {
-      if (this.manuallyPausedYtIds.has(short._id)) return;
-      const id = short._id;
-
-      // Mount iframe if not already in DOM.
-      if (!this.playedYtIds().has(id)) {
-        this.playedYtIds.update(s => new Set([...s, id]));
-      }
-
-      // Send playVideo once the player is ready. onReady (ytMsgHandler) is the
-      // primary trigger. These retries cover the case where onReady already fired
-      // before we scrolled here, or where postMessages are delayed on mobile.
-      const play = () => {
-        if (this.activeIndex() !== cardIdx) return;
-        const fr = this.feedRef?.nativeElement
-          .querySelector<HTMLElement>(`[data-idx="${cardIdx}"]`)
-          ?.querySelector<HTMLIFrameElement>('.reel-iframe');
-        if (!fr?.contentWindow) return;
-        fr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo', args: '' }), '*');
-        fr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: this.isMuted() ? 'mute' : 'unMute', args: '' }), '*');
-      };
-
-      play();                   // immediate — works when player already loaded
-      setTimeout(play, 150);   // retry if player wasn't ready yet
-      setTimeout(play, 600);   // retry for slow connections
-      setTimeout(play, 1500);  // final safety net
-
-      // Always start progress tracking immediately — don't wait for postMessage events.
-      // onReady / onStateChange state=1 / infoDelivery will correct the timestamp later.
-      this.ytPlayStartMs.set(cardIdx, Date.now());
-      this.ytPausedAt.delete(cardIdx);
-      this.stopYtProgress();
-      this.startYtProgress();
-      return;
-    }
-
-    // ── Upload video ─────────────────────────────────────────────────────────
     if (this.manuallyPausedSet.has(cardIdx)) return;
     const vid = this.getVideoAt(cardIdx);
     if (!vid) return;
     this.attachProgress(cardIdx, vid);
-
     if (!vid.paused) {
-      // Already playing — sync mute state if user has unmuted.
       if (this.gestureUnlocked && !this.isMuted()) vid.muted = false;
       return;
     }
-
-    vid.muted = true; // always start muted; browser allows muted autoplay everywhere
+    vid.muted = true;
     vid.play()
-      .then(() => {
-        if (this.gestureUnlocked && !this.isMuted()) vid.muted = false;
-        // Sync icon to reality: if the browser played unmuted (allowed for returning
-        // users), flip isMuted false so the icon matches the actual audio state.
-        // Never set isMuted back to true here — that would override a user mute.
-        if (!vid.muted) this.ngZone.run(() => this.isMuted.set(false));
-      })
+      .then(() => { if (this.gestureUnlocked && !this.isMuted()) vid.muted = false; })
       .catch(() => { this.pendingPlayIdx = cardIdx; });
   }
 
@@ -771,11 +458,8 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     if (target.closest('button, a, input, .reel-actions, .reel-info')) return;
     if (this.holdTimer) clearTimeout(this.holdTimer);
     this.holdTimer = setTimeout(() => {
-      const short = this.shorts()[cardIdx];
-      if (short?.videoType === 'upload') {
-        const vid = (e.currentTarget as HTMLElement).querySelector<HTMLVideoElement>('video');
-        if (vid && !vid.paused) vid.pause();
-      }
+      const vid = (e.currentTarget as HTMLElement).querySelector<HTMLVideoElement>('video');
+      if (vid && !vid.paused) vid.pause();
       this.ngZone.run(() => this.holdingIdx.set(cardIdx));
     }, 400);
   }
@@ -784,8 +468,7 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     if (this.holdTimer) { clearTimeout(this.holdTimer); this.holdTimer = null; }
     if (this.holdingIdx() === cardIdx) {
       this.holdingIdx.set(-1);
-      const short = this.shorts()[cardIdx];
-      if (short?.videoType === 'upload' && !this.manuallyPausedSet.has(cardIdx)) {
+      if (!this.manuallyPausedSet.has(cardIdx)) {
         const vid = (e.currentTarget as HTMLElement).querySelector<HTMLVideoElement>('video');
         if (vid) vid.play().catch(() => {});
       }
@@ -803,7 +486,6 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     this.lastTapTime = now;
 
     if (isDblTap) {
-      // Double-tap → like
       const short = this.shorts()[cardIdx];
       if (short && this.isLoggedIn()) this.doLike(short);
       this.likeFlashIdx.set(cardIdx);
@@ -812,7 +494,6 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
-    // Single tap → pause / play
     this.lastTouchToggleTime = Date.now();
     this.doToggle(cardIdx, e.currentTarget as HTMLElement);
   }
@@ -825,102 +506,45 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private doToggle(cardIdx: number, cardEl: HTMLElement): void {
-    const short = this.shorts()[cardIdx];
-
-    // ── Replay if video ended ────────────────────────────────────────────────
+    // Replay if ended
     if (this.endedCards().has(cardIdx)) {
       this.endedCards.update(s => { const n = new Set(s); n.delete(cardIdx); return n; });
-
-      if (short?.videoType === 'youtube' && short._id) {
-        // Hard-reset: remove from playedYtIds → Angular destroys the iframe →
-        // autoPlayVideo remounts it with autoplay=1 → fresh clean restart.
-        this.manuallyPausedYtIds.delete(short._id);
-        this.ytPlayStartMs.delete(cardIdx);
-        this.ytPausedAt.delete(cardIdx);
-        this.stopYtProgress();
-        // Reset progress bar to 0 immediately
-        const card = this.feedRef?.nativeElement.querySelector<HTMLElement>(`[data-idx="${cardIdx}"]`);
-        card?.style.setProperty('--vp', '0%');
-        // Remove iframe so Angular re-creates it with autoplay=1
-        this.playedYtIds.update(s => { const n = new Set(s); n.delete(short._id); return n; });
-        // Re-mount and play after one frame so Angular has time to destroy the old iframe
-        requestAnimationFrame(() => this.autoPlayVideo(cardIdx));
-      } else {
-        const vid = cardEl.querySelector<HTMLVideoElement>('video');
-        if (vid) {
-          this.manuallyPausedSet.delete(cardIdx);
-          vid.currentTime = 0;
-          vid.muted = this.isMuted();
-          vid.play().catch(() => {});
-        }
+      const vid = cardEl.querySelector<HTMLVideoElement>('video');
+      if (vid) {
+        this.manuallyPausedSet.delete(cardIdx);
+        vid.currentTime = 0;
+        vid.muted = this.isMuted();
+        vid.play().catch(() => {});
       }
       this.indicatorIsPlaying.set(true);
       this.flashIndicator(cardIdx);
       return;
     }
 
-    // ── YouTube normal toggle ────────────────────────────────────────────────
-    if (short?.videoType === 'youtube' && short._id && this.playedYtIds().has(short._id)) {
-      const iframe = cardEl.querySelector<HTMLIFrameElement>('.reel-iframe');
-      if (this.manuallyPausedYtIds.has(short._id)) {
-        this.manuallyPausedYtIds.delete(short._id);
-        iframe?.contentWindow?.postMessage(JSON.stringify({ event: 'command', func: 'playVideo', args: '' }), '*');
-        // Resume tracking from where we paused
-        const acc = this.ytPausedAt.get(cardIdx) ?? 0;
-        this.ytPlayStartMs.set(cardIdx, Date.now() - acc * 1000);
-        this.ytPausedAt.delete(cardIdx);
-        this.indicatorIsPlaying.set(true);
-      } else {
-        this.manuallyPausedYtIds.add(short._id);
-        iframe?.contentWindow?.postMessage(JSON.stringify({ event: 'command', func: 'pauseVideo', args: '' }), '*');
-        // Save accumulated time at pause
-        const startMs = this.ytPlayStartMs.get(cardIdx) ?? Date.now();
-        this.ytPausedAt.set(cardIdx, (Date.now() - startMs) / 1000);
-        this.indicatorIsPlaying.set(false);
-      }
-      this.flashIndicator(cardIdx);
-      return;
-    }
-
-    // ── Upload video normal toggle ───────────────────────────────────────────
+    // Normal toggle
     const vid = cardEl.querySelector<HTMLVideoElement>('video');
     if (!vid) return;
     if (!vid.paused) {
       this.manuallyPausedSet.add(cardIdx);
       vid.pause();
       this.indicatorIsPlaying.set(false);
-      this.flashIndicator(cardIdx);
-      return;
+    } else {
+      this.manuallyPausedSet.delete(cardIdx);
+      vid.muted = this.isMuted();
+      vid.play().catch(() => {});
+      this.indicatorIsPlaying.set(true);
     }
-    this.manuallyPausedSet.delete(cardIdx);
-    vid.muted = this.isMuted();
-    vid.play().catch(() => {});
-    this.indicatorIsPlaying.set(true);
     this.flashIndicator(cardIdx);
   }
 
   seekVideo(cardIdx: number, delta: number, cardEl: HTMLElement): void {
-    const short = this.shorts()[cardIdx];
-    if (!short) return;
-    const duration = short.duration ?? 60;
-
-    if (short.videoType === 'youtube' && short._id && this.playedYtIds().has(short._id)) {
-      const startMs = this.ytPlayStartMs.get(cardIdx) ?? Date.now();
-      const paused  = this.ytPausedAt.get(cardIdx);
-      const elapsed = paused !== undefined ? paused : (Date.now() - startMs) / 1000;
-      const newTime = Math.max(0, Math.min(elapsed + delta, duration));
-      this.seekYtToTime(cardIdx, newTime, cardEl);
-    } else {
-      const vid = cardEl.querySelector<HTMLVideoElement>('video');
-      if (!vid) return;
-      vid.currentTime = Math.max(0, Math.min(vid.currentTime + delta, vid.duration || 0));
-      if (vid.paused && !this.manuallyPausedSet.has(cardIdx)) vid.play().catch(() => {});
-    }
-
+    const vid = cardEl.querySelector<HTMLVideoElement>('video');
+    if (!vid) return;
+    vid.currentTime = Math.max(0, Math.min(vid.currentTime + delta, vid.duration || 0));
+    if (vid.paused && !this.manuallyPausedSet.has(cardIdx)) vid.play().catch(() => {});
     this.showSeekIndicator(cardIdx, delta > 0 ? 'fwd' : 'bwd');
   }
 
-  // Seek progress bar by clicking/tapping a position ratio (0–1)
   onProgressSeek(cardIdx: number, event: MouseEvent | TouchEvent): void {
     event.stopPropagation();
     const track   = event.currentTarget as HTMLElement;
@@ -928,37 +552,15 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     const clientX = event instanceof MouseEvent
       ? event.clientX
       : (event as TouchEvent).changedTouches[0]?.clientX ?? rect.left;
-    const ratio   = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
-    const short   = this.shorts()[cardIdx];
-    if (!short) return;
-
-    const duration = short.duration ?? 60;
-    const target   = ratio * duration;
-    const cardEl   = this.feedRef?.nativeElement.querySelector<HTMLElement>(`[data-idx="${cardIdx}"]`);
+    const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    const cardEl = this.feedRef?.nativeElement.querySelector<HTMLElement>(`[data-idx="${cardIdx}"]`);
     if (!cardEl) return;
-
-    // Optimistically update progress bar
     cardEl.style.setProperty('--vp', `${ratio * 100}%`);
-
-    if (short.videoType === 'youtube') {
-      this.seekYtToTime(cardIdx, target, cardEl);
-    } else {
-      const vid = cardEl.querySelector<HTMLVideoElement>('video');
-      if (vid) {
-        vid.currentTime = target;
-        if (vid.paused && !this.manuallyPausedSet.has(cardIdx)) vid.play().catch(() => {});
-      }
+    const vid = cardEl.querySelector<HTMLVideoElement>('video');
+    if (vid) {
+      vid.currentTime = ratio * (vid.duration || 0);
+      if (vid.paused && !this.manuallyPausedSet.has(cardIdx)) vid.play().catch(() => {});
     }
-  }
-
-  private seekYtToTime(cardIdx: number, newTime: number, cardEl: HTMLElement): void {
-    const iframe = cardEl.querySelector<HTMLIFrameElement>('.reel-iframe');
-    if (!iframe?.contentWindow) return;
-    iframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'seekTo', args: [newTime, true] }), '*');
-    // Update tracker so progress continues from new position
-    const paused = this.ytPausedAt.get(cardIdx);
-    this.ytPlayStartMs.set(cardIdx, Date.now() - newTime * 1000);
-    if (paused !== undefined) this.ytPausedAt.set(cardIdx, newTime);
   }
 
   private showSeekIndicator(cardIdx: number, dir: 'fwd' | 'bwd'): void {
@@ -979,13 +581,7 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     this.isMuted.set(newMuted);
     if (!newMuted) { this.gestureUnlocked = true; this.needsGesture.set(false); }
     if (!this.feedRef?.nativeElement) return;
-    const c = this.feedRef.nativeElement;
-    c.querySelectorAll<HTMLVideoElement>('.reel-video').forEach(vid => { vid.muted = newMuted; });
-    c.querySelectorAll<HTMLIFrameElement>('.reel-iframe').forEach(iframe => {
-      iframe.contentWindow?.postMessage(
-        JSON.stringify({ event: 'command', func: newMuted ? 'mute' : 'unMute', args: '' }), '*'
-      );
-    });
+    this.feedRef.nativeElement.querySelectorAll<HTMLVideoElement>('.reel-video').forEach(vid => { vid.muted = newMuted; });
   }
 
   private getVideoAt(cardIdx: number): HTMLVideoElement | null {
@@ -999,9 +595,7 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
   private doLike(short: VideoShort): void {
     if (this.isLiked(short._id)) return;
     this.likedIds.update(s => { const n = new Set(s); n.add(short._id); return n; });
-    this.shorts.update(list =>
-      list.map(s => s._id === short._id ? { ...s, likesCount: s.likesCount + 1 } : s)
-    );
+    this.shorts.update(list => list.map(s => s._id === short._id ? { ...s, likesCount: s.likesCount + 1 } : s));
     this.saveLikedToStorage();
     this.service.likeShort(short._id).subscribe({ error: () => this.revertLike(short, false) });
   }
@@ -1012,28 +606,16 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     event.stopPropagation();
     if (!this.isLoggedIn()) { this.router.navigate(['/auth/login']); return; }
     const liked = this.isLiked(short._id);
-    this.likedIds.update(s => {
-      const n = new Set(s);
-      liked ? n.delete(short._id) : n.add(short._id);
-      return n;
-    });
-    this.shorts.update(list =>
-      list.map(s => s._id === short._id ? { ...s, likesCount: s.likesCount + (liked ? -1 : 1) } : s)
-    );
+    this.likedIds.update(s => { const n = new Set(s); liked ? n.delete(short._id) : n.add(short._id); return n; });
+    this.shorts.update(list => list.map(s => s._id === short._id ? { ...s, likesCount: s.likesCount + (liked ? -1 : 1) } : s));
     this.saveLikedToStorage();
     (liked ? this.service.unlikeShort(short._id) : this.service.likeShort(short._id))
       .subscribe({ error: () => this.revertLike(short, liked) });
   }
 
   private revertLike(short: VideoShort, wasLiked: boolean): void {
-    this.likedIds.update(s => {
-      const n = new Set(s);
-      wasLiked ? n.add(short._id) : n.delete(short._id);
-      return n;
-    });
-    this.shorts.update(list =>
-      list.map(s => s._id === short._id ? { ...s, likesCount: s.likesCount + (wasLiked ? 1 : -1) } : s)
-    );
+    this.likedIds.update(s => { const n = new Set(s); wasLiked ? n.add(short._id) : n.delete(short._id); return n; });
+    this.shorts.update(list => list.map(s => s._id === short._id ? { ...s, likesCount: s.likesCount + (wasLiked ? 1 : -1) } : s));
     this.saveLikedToStorage();
   }
 
@@ -1047,24 +629,6 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     if (!isPlatformBrowser(this.platformId)) return;
     try { localStorage.setItem(this.LIKED_KEY, JSON.stringify([...this.likedIds()])); } catch { /* quota */ }
   }
-
-  // ── YouTube helpers ────────────────────────────────────────────────────────
-
-  safeEmbedUrl(youtubeId: string): SafeResourceUrl {
-    if (!this.safeUrlCache.has(youtubeId)) {
-      const origin = encodeURIComponent(this.doc.location?.origin ?? 'https://apnainsights.com');
-      // autoplay=0: preloaded iframes must not autoplay on their own.
-      // playVideo is sent via postMessage by autoPlayVideo() instead.
-      this.safeUrlCache.set(youtubeId, this.sanitizer.bypassSecurityTrustResourceUrl(
-        `https://www.youtube.com/embed/${youtubeId}` +
-        `?autoplay=0&mute=1&playsinline=1&rel=0&modestbranding=1` +
-        `&controls=0&iv_load_policy=3&enablejsapi=1&origin=${origin}`
-      ));
-    }
-    return this.safeUrlCache.get(youtubeId)!;
-  }
-
-  isYtMounted(id: string): boolean { return this.playedYtIds().has(id); }
 
   // ── Comments ───────────────────────────────────────────────────────────────
 
@@ -1125,8 +689,7 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
       next: () => {
         const upd = (s: VideoShort) => s._id === short._id
           ? { ...s, comments: (s.comments ?? []).map(c => c._id === commentId
-              ? { ...c, replies: (c.replies ?? []).filter(r => r._id !== replyId) }
-              : c) }
+              ? { ...c, replies: (c.replies ?? []).filter(r => r._id !== replyId) } : c) }
           : s;
         this.shorts.update(l => l.map(upd));
         this.commentShort.update(cs => cs ? upd(cs) : cs);
@@ -1151,8 +714,7 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
         if (newReply) {
           const upd = (s: VideoShort) => s._id === short._id
             ? { ...s, comments: (s.comments ?? []).map(c => c._id === commentId
-                ? { ...c, replies: [...(c.replies ?? []), newReply] }
-                : c) }
+                ? { ...c, replies: [...(c.replies ?? []), newReply] } : c) }
             : s;
           this.shorts.update(l => l.map(upd));
           this.commentShort.update(cs => cs ? upd(cs) : cs);
@@ -1221,11 +783,7 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
 
   toggleCaption(id: string, event: Event): void {
     event.stopPropagation();
-    this.expandedCaptions.update(s => {
-      const n = new Set(s);
-      n.has(id) ? n.delete(id) : n.add(id);
-      return n;
-    });
+    this.expandedCaptions.update(s => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n; });
   }
 
   // ── Helpers ────────────────────────────────────────────────────────────────
@@ -1236,9 +794,7 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     return String(n);
   }
 
-  userInitial(user: VideoShort['user']): string {
-    return (user?.name ?? '?').charAt(0).toUpperCase();
-  }
+  userInitial(user: VideoShort['user']): string { return (user?.name ?? '?').charAt(0).toUpperCase(); }
 
   timeAgo(date: Date): string {
     const s = Math.floor((Date.now() - new Date(date).getTime()) / 1000);

@@ -106,15 +106,7 @@
 
         <!-- ── Media ── -->
         <div class="reel-media">
-          @if (short.videoType === 'youtube' && short.youtubeId) {
-            @if (isYtMounted(short._id)) {
-              <iframe class="reel-iframe"
-                [src]="safeEmbedUrl(short.youtubeId)"
-                allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
-                allowfullscreen frameborder="0">
-              </iframe>
-            }
-          } @else if (short.videoType === 'upload' && short.videoUrl) {
+          @if (short.videoType === 'upload' && short.videoUrl) {
             <video class="reel-video"
               [src]="short.videoUrl"
               [poster]="short.thumbnailUrl || ''"
