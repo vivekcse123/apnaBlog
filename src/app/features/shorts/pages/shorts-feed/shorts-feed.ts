@@ -52,7 +52,6 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
   endedCards         = signal<Set<number>>(new Set());
   likedIds           = signal<Set<string>>(this.loadLikedFromStorage());
   isMuted            = signal(false);
-  needsGesture       = signal(false);
   pauseIndicatorIdx  = signal(-1);
   indicatorIsPlaying = signal(false);
   likeFlashIdx       = signal(-1);
@@ -182,7 +181,6 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
       if (vid.paused) vid.play().catch(() => {});
     }
     this.ngZone.run(() => {
-      this.needsGesture.set(false);
       if (this.pendingPlayIdx >= 0) {
         this.autoPlayVideo(this.pendingPlayIdx);
         this.pendingPlayIdx = -1;
@@ -200,11 +198,20 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     if (!this.feedRef) return;
     const container = this.feedRef.nativeElement;
     let startY = 0;
-    container.addEventListener('touchstart', (e: TouchEvent) => { startY = e.touches[0].clientY; }, { passive: true });
+    container.addEventListener('touchstart', (e: TouchEvent) => {
+      startY = e.touches[0].clientY;
+    }, { passive: true });
     container.addEventListener('touchend', (e: TouchEvent) => {
       const dy = Math.abs((e.changedTouches[0]?.clientY ?? startY) - startY);
       if (dy < 30) return;
-      container.querySelectorAll<HTMLVideoElement>('.reel-video').forEach(v => { v.muted = true; v.pause(); });
+      // Scroll is a user gesture — unlock audio immediately on current card.
+      if (!this.gestureUnlocked) {
+        this.gestureUnlocked = true;
+        const vid = this.getVideoAt(this.activeIndex());
+        if (vid && !this.isMuted()) vid.muted = false;
+      }
+      // Pause all; setupScrollEndPlay will play the correct card unmuted.
+      container.querySelectorAll<HTMLVideoElement>('.sf-video').forEach(v => v.pause());
     }, { passive: true });
   }
 
@@ -213,6 +220,8 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     const container = this.feedRef.nativeElement;
     const onSettle = () => {
       const idx = Math.round(container.scrollTop / container.clientHeight);
+      // Settling after a scroll = confirmed user gesture → unlock audio.
+      this.gestureUnlocked = true;
       this.ngZone.run(() => { this.activeIndex.set(idx); this.autoPlayVideo(idx); });
     };
     if ('onscrollend' in window) {
@@ -442,19 +451,20 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     if (!vid) return;
     this.attachProgress(cardIdx, vid);
     if (!vid.paused) {
-      if (this.gestureUnlocked && !this.isMuted()) vid.muted = false;
+      // Already playing — ensure mute state matches preference.
+      vid.muted = !this.gestureUnlocked || this.isMuted();
       return;
     }
-    // Try unmuted first. Browsers block unmuted autoplay until the user
-    // interacts with the page — if blocked, fall back to muted autoplay.
-    vid.muted = this.isMuted();
+    // Unmuted when user has already scrolled/tapped (gesture unlocked).
+    // Muted on very first autoplay — browser requires it before any interaction.
+    vid.muted = !this.gestureUnlocked || this.isMuted();
     vid.play()
       .then(() => {
-        // Sync icon: if the browser silently forced mute, reflect that.
-        if (vid.muted && !this.isMuted()) this.ngZone.run(() => this.isMuted.set(true));
+        // Confirm icon matches reality.
+        this.ngZone.run(() => this.isMuted.set(vid.muted));
       })
       .catch(() => {
-        // Unmuted play blocked — retry muted.
+        // Browser blocked (e.g. data-saver policy) — fall back to muted.
         vid.muted = true;
         this.ngZone.run(() => this.isMuted.set(true));
         vid.play().catch(() => { this.pendingPlayIdx = cardIdx; });
@@ -595,7 +605,7 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     event.stopPropagation();
     const newMuted = !this.isMuted();
     this.isMuted.set(newMuted);
-    if (!newMuted) { this.gestureUnlocked = true; this.needsGesture.set(false); }
+    if (!newMuted) { this.gestureUnlocked = true; }
     if (!this.feedRef?.nativeElement) return;
     this.feedRef.nativeElement.querySelectorAll<HTMLVideoElement>('.reel-video').forEach(vid => { vid.muted = newMuted; });
   }
