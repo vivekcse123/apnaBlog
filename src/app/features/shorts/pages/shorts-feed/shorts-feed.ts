@@ -284,7 +284,7 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     } else {
       container.addEventListener('scroll', () => {
         if (this.scrollSettleTimer) clearTimeout(this.scrollSettleTimer);
-        this.scrollSettleTimer = setTimeout(onSettle, 200);
+        this.scrollSettleTimer = setTimeout(onSettle, 80);
       }, { passive: true });
     }
   }
@@ -548,10 +548,10 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
         fr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: this.isMuted() ? 'mute' : 'unMute', args: '' }), '*');
       };
 
-      setTimeout(play, 300);
-      setTimeout(play, 800);
-      setTimeout(play, 1800);
-      setTimeout(play, 3500);
+      play();                    // immediate — works when player already loaded
+      setTimeout(play, 150);   // retry if player wasn't ready yet
+      setTimeout(play, 600);   // retry for slow connections
+      setTimeout(play, 1500);  // final safety net
       return;
     }
 
