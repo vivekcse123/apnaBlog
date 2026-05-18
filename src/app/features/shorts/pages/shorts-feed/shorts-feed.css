@@ -257,6 +257,61 @@
   color: #fff;
   box-shadow: 0 0 0 2.5px #fff, 0 2px 12px rgba(0,0,0,.5);
 }
+.sf-liked-by-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,.85);
+  text-shadow: 0 1px 4px rgba(0,0,0,.7);
+  margin: 0;
+  background: none;
+  border: none;
+  font-family: inherit;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+}
+.sf-side-label--tap {
+  background: none;
+  border: none;
+  font-family: inherit;
+  color: inherit;
+  cursor: pointer;
+  padding: 0;
+}
+/* Likes drawer */
+.sf-likes-loading {
+  display: flex;
+  justify-content: center;
+  padding: 40px 0;
+}
+.sf-liker-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+.sf-liker-row:last-child { border-bottom: none; }
+.sf-liker-av {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #43cea2, #185a9d);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px;
+  font-weight: 800;
+  color: #fff;
+  flex-shrink: 0;
+}
+.sf-liker-name {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 600;
+  color: #111;
+}
+.sf-liker-heart { flex-shrink: 0; }
 .sf-duration-badge {
   background: rgba(0,0,0,.55);
   border: 1px solid rgba(255,255,255,.15);
@@ -370,6 +425,8 @@
   font-family: inherit;
   padding: 0;
   cursor: pointer;
+  display: block;
+  text-align: left;
 }
 .sf-disc-row {
   display: flex;
@@ -683,7 +740,7 @@
   overscroll-behavior: contain;
 }
 
-/* Comment item */
+/* Comment item — Instagram inline style */
 .sf-cmt {
   display: flex;
   gap: 10px;
@@ -691,41 +748,37 @@
 }
 .sf-cmt--reply { margin-left: 36px; margin-top: 10px; }
 .sf-cmt-av {
-  width: 34px; height: 34px;
+  width: 32px; height: 32px;
   border-radius: 50%;
   background: linear-gradient(135deg, #43cea2, #185a9d);
   display: flex; align-items: center; justify-content: center;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 800;
   color: #fff;
   flex-shrink: 0;
 }
-.sf-cmt-av--sm { width: 26px; height: 26px; font-size: 10px; }
+.sf-cmt-av--sm { width: 24px; height: 24px; font-size: 9px; }
 .sf-cmt-content { flex: 1; min-width: 0; }
-.sf-cmt-header {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  margin-bottom: 3px;
+/* Username + comment on the same line, Instagram-style */
+.sf-cmt-text {
+  font-size: 13.5px;
+  color: #1f2937;
+  margin: 0 0 4px;
+  line-height: 1.5;
 }
 .sf-cmt-name {
-  font-size: 12.5px;
   font-weight: 700;
   color: #111;
+  margin-right: 4px;
+}
+.sf-cmt-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 .sf-cmt-time {
-  font-size: 11px;
+  font-size: 11.5px;
   color: #9ca3af;
-}
-.sf-cmt-text {
-  font-size: 13px;
-  color: #374151;
-  margin: 0 0 5px;
-  line-height: 1.45;
-}
-.sf-cmt-actions {
-  display: flex;
-  gap: 12px;
 }
 .sf-cmt-btn {
   background: none; border: none;
