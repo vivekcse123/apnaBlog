@@ -83,7 +83,7 @@
           <video class="sf-video"
                  [src]="short.videoUrl"
                  [poster]="short.thumbnailUrl || ''"
-                 autoplay muted playsinline webkit-playsinline preload="metadata">
+                 muted playsinline webkit-playsinline preload="metadata">
           </video>
         } @else {
           <div class="sf-fallback">
@@ -170,7 +170,9 @@
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
               </svg>
             </button>
-            <span class="sf-side-label">{{ formatCount(short.likesCount) }}</span>
+            <button class="sf-side-label sf-side-label--tap" (click)="openLikes(short, $event)">
+              {{ formatCount(short.likesCount) }}
+            </button>
           </div>
 
           <!-- Comment -->
@@ -235,6 +237,16 @@
               }
             </div>
           </div>
+
+          <!-- Liked by — Instagram style, tappable -->
+          @if (short.recentLikers?.length) {
+            <button class="sf-liked-by-row" (click)="openLikes(short, $event)">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="#fe2c55">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+              </svg>
+              {{ likedByText(short) }}
+            </button>
+          }
 
           <!-- Title -->
           <h2 class="sf-title">{{ short.title }}</h2>
@@ -370,12 +382,13 @@
         <div class="sf-cmt">
           <div class="sf-cmt-av">{{ (c.name || '?').charAt(0).toUpperCase() }}</div>
           <div class="sf-cmt-content">
-            <div class="sf-cmt-header">
+            <!-- Instagram style: @username + comment on same line -->
+            <p class="sf-cmt-text">
               <span class="sf-cmt-name">{{ c.name }}</span>
+              {{ c.comment }}
+            </p>
+            <div class="sf-cmt-meta">
               <span class="sf-cmt-time">{{ timeAgo(c.createdAt) }}</span>
-            </div>
-            <p class="sf-cmt-text">{{ c.comment }}</p>
-            <div class="sf-cmt-actions">
               @if (isLoggedIn()) {
                 <button class="sf-cmt-btn" (click)="startReply(c._id)">
                   {{ replyingToId() === c._id ? 'Cancel' : 'Reply' }}
@@ -412,17 +425,19 @@
                   <div class="sf-cmt sf-cmt--reply">
                     <div class="sf-cmt-av sf-cmt-av--sm">{{ (r.name || '?').charAt(0).toUpperCase() }}</div>
                     <div class="sf-cmt-content">
-                      <div class="sf-cmt-header">
+                      <p class="sf-cmt-text">
                         <span class="sf-cmt-name">{{ r.name }}</span>
+                        {{ r.comment }}
+                      </p>
+                      <div class="sf-cmt-meta">
                         <span class="sf-cmt-time">{{ timeAgo(r.createdAt) }}</span>
+                        @if (canDeleteComment(r.user?._id)) {
+                          <button class="sf-cmt-btn sf-cmt-btn--del" [disabled]="deletingId() === r._id"
+                                  (click)="deleteReply(c._id, r._id)">
+                            {{ deletingId() === r._id ? '…' : 'Delete' }}
+                          </button>
+                        }
                       </div>
-                      <p class="sf-cmt-text">{{ r.comment }}</p>
-                      @if (canDeleteComment(r.user?._id)) {
-                        <button class="sf-cmt-btn sf-cmt-btn--del" [disabled]="deletingId() === r._id"
-                                (click)="deleteReply(c._id, r._id)">
-                          {{ deletingId() === r._id ? '…' : 'Delete' }}
-                        </button>
-                      }
                     </div>
                   </div>
                 }
@@ -460,6 +475,55 @@
         <a routerLink="/auth/login" (click)="closeComments()">Sign in</a> to join the conversation
       </div>
     }
+
+  </div>
+}
+
+<!-- ══ Likes drawer ══ -->
+@if (showLikes() && likesShort()) {
+  <div class="sf-backdrop" (click)="closeLikes()"></div>
+  <div class="sf-drawer" role="dialog" aria-label="Likes">
+
+    <div class="sf-drawer-handle"></div>
+
+    <div class="sf-drawer-header">
+      <span class="sf-drawer-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="#fe2c55">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+        </svg>
+        {{ formatCount(likesTotal()) }} Likes
+      </span>
+      <button class="sf-drawer-close" (click)="closeLikes()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="sf-drawer-body">
+      @if (likesLoading()) {
+        <div class="sf-likes-loading">
+          <div class="sf-spinner"></div>
+        </div>
+      } @else if (!likesList().length) {
+        <div class="sf-cmt-empty">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,.2)" stroke-width="1.5">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+          </svg>
+          <p>No likes yet</p>
+        </div>
+      } @else {
+        @for (u of likesList(); track u._id) {
+          <div class="sf-liker-row">
+            <div class="sf-liker-av">{{ (u.name || '?').charAt(0).toUpperCase() }}</div>
+            <span class="sf-liker-name">{{ u.name }}</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="#fe2c55" class="sf-liker-heart">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+          </div>
+        }
+      }
+    </div>
 
   </div>
 }

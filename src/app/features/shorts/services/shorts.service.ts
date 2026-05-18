@@ -74,16 +74,18 @@ export class ShortsService {
     );
   }
 
-  likeShort(id: string): Observable<{ status: number }> {
-    return this.http.post<{ status: number }>(`${this.endpoint}/${id}/like`, {}).pipe(
-      catchError(() => of({ status: 200 }))
+  getLikes(id: string, page = 1, limit = 20): Observable<{ status: number; data: { _id: string; name: string; avatar?: string }[]; total: number; totalPages: number }> {
+    return this.http.get<any>(`${this.endpoint}/${id}/likes?page=${page}&limit=${limit}`).pipe(
+      catchError(() => of({ status: 200, data: [], total: 0, totalPages: 0 }))
     );
   }
 
+  likeShort(id: string): Observable<{ status: number }> {
+    return this.http.post<{ status: number }>(`${this.endpoint}/${id}/like`, {});
+  }
+
   unlikeShort(id: string): Observable<{ status: number }> {
-    return this.http.delete<{ status: number }>(`${this.endpoint}/${id}/like`).pipe(
-      catchError(() => of({ status: 200 }))
-    );
+    return this.http.delete<{ status: number }>(`${this.endpoint}/${id}/like`);
   }
 
   addComment(id: string, comment: string, userId?: string): Observable<{ status: number; data: { comment: ShortComment; commentsCount: number } }> {

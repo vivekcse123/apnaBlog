@@ -42,6 +42,11 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
   showUpload         = signal(false);
   showComments       = signal(false);
   commentShort       = signal<VideoShort | null>(null);
+  showLikes          = signal(false);
+  likesShort         = signal<VideoShort | null>(null);
+  likesList          = signal<{ _id: string; name: string; avatar?: string }[]>([]);
+  likesLoading       = signal(false);
+  likesTotal         = signal(0);
   commentText        = signal('');
   isSending          = signal(false);
   shareMsg           = signal('');
@@ -357,15 +362,26 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
       for (const e of entries) {
         const idx = Number(e.target.getAttribute('data-idx'));
         if (isNaN(idx)) continue;
+
         if (!e.isIntersecting || e.intersectionRatio < 0.8) {
+          // Card left viewport — pause and clear manual-pause flag so it
+          // restarts cleanly when the user scrolls back.
           const vid = this.getVideoAt(idx);
-          if (vid) { vid.muted = true; vid.pause(); this.manuallyPausedSet.delete(idx); }
+          if (vid && !vid.paused) {
+            vid.pause();
+            vid.muted = true;
+          }
+          this.manuallyPausedSet.delete(idx);
           continue;
         }
+
+        // Card is >= 80 % visible — it is now the active card.
         this.ngZone.run(() => {
           this.activeIndex.set(idx);
           this.scheduleView(idx);
           this.preloadAdjacent(idx);
+          // autoPlayVideo handles mute/unmute based on gestureUnlocked.
+          this.autoPlayVideo(idx);
         });
       }
     }, { threshold: [0, 0.8] });
@@ -418,9 +434,12 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
 
   private pauseAllExcept(activeIdx: number): void {
     if (!this.feedRef?.nativeElement) return;
-    this.feedRef.nativeElement.querySelectorAll<HTMLVideoElement>('.reel-video').forEach(vid => {
+    this.feedRef.nativeElement.querySelectorAll<HTMLVideoElement>('.sf-video').forEach(vid => {
       const idx = Number(vid.closest<HTMLElement>('[data-idx]')?.getAttribute('data-idx'));
-      if (idx !== activeIdx) { vid.muted = true; vid.pause(); }
+      if (idx !== activeIdx && !vid.paused) {
+        vid.pause();
+        vid.muted = true;
+      }
     });
   }
 
@@ -607,13 +626,13 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     this.isMuted.set(newMuted);
     if (!newMuted) { this.gestureUnlocked = true; }
     if (!this.feedRef?.nativeElement) return;
-    this.feedRef.nativeElement.querySelectorAll<HTMLVideoElement>('.reel-video').forEach(vid => { vid.muted = newMuted; });
+    this.feedRef.nativeElement.querySelectorAll<HTMLVideoElement>('.sf-video').forEach(vid => { vid.muted = newMuted; });
   }
 
   private getVideoAt(cardIdx: number): HTMLVideoElement | null {
     return this.feedRef?.nativeElement
       .querySelector<HTMLElement>(`[data-idx="${cardIdx}"]`)
-      ?.querySelector<HTMLVideoElement>('.reel-video') ?? null;
+      ?.querySelector<HTMLVideoElement>('.sf-video') ?? null;
   }
 
   // ── Like ───────────────────────────────────────────────────────────────────
@@ -627,6 +646,15 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
   }
 
   isLiked(id: string): boolean { return this.likedIds().has(id); }
+
+  likedByText(short: VideoShort): string {
+    const likers = short.recentLikers ?? [];
+    if (!likers.length) return '';
+    const first = likers[likers.length - 1].name.split(' ')[0];
+    const others = short.likesCount - 1;
+    if (others <= 0) return `Liked by ${first}`;
+    return `Liked by ${first} and ${others.toLocaleString()} other${others > 1 ? 's' : ''}`;
+  }
 
   toggleLike(short: VideoShort, event: Event): void {
     event.stopPropagation();
@@ -657,6 +685,22 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // ── Comments ───────────────────────────────────────────────────────────────
+
+  openLikes(short: VideoShort, event: Event): void {
+    event.stopPropagation();
+    if (!short.likesCount) return;
+    this.likesShort.set(short);
+    this.likesList.set([]);
+    this.likesTotal.set(short.likesCount);
+    this.showLikes.set(true);
+    this.likesLoading.set(true);
+    this.service.getLikes(short._id).subscribe({
+      next: res => { this.likesList.set(res.data ?? []); this.likesTotal.set(res.total); this.likesLoading.set(false); },
+      error: () => this.likesLoading.set(false),
+    });
+  }
+
+  closeLikes(): void { this.showLikes.set(false); this.likesShort.set(null); }
 
   openComments(short: VideoShort, event: Event): void {
     event.stopPropagation();
