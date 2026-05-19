@@ -3,6 +3,8 @@ import {
   Input, ChangeDetectionStrategy, WritableSignal, PLATFORM_ID,
   HostListener, ElementRef, ViewChild
 } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../../environments/environment';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule, isPlatformBrowser, NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -82,6 +84,7 @@ export class Home implements OnInit, OnDestroy {
   private route          = inject(ActivatedRoute);
   private router         = inject(Router);
   private auth           = inject(Auth);
+  private http           = inject(HttpClient);
   private userService    = inject(UserService);
   themeService           = inject(ThemeService);
   private platformId     = inject(PLATFORM_ID);
@@ -138,6 +141,13 @@ export class Home implements OnInit, OnDestroy {
   readHistoryIds   = signal<Set<string>>(new Set());
   progressMap      = signal<Map<string, number>>(new Map());
   readingStreak    = signal(0);
+
+  // Newsletter subscribe
+  subscribeEmail   = '';
+  subscribing      = signal(false);
+  subscribeSuccess = signal(false);
+  subscribeMessage = signal('');
+  subscribeError   = signal('');
 
 
   private currentUserData = signal<User | null>(null);
@@ -853,6 +863,27 @@ export class Home implements OnInit, OnDestroy {
 
   scrollToTop(): void {
     if (isPlatformBrowser(this.platformId)) window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  onSubscribe(): void {
+    const email = this.subscribeEmail.trim();
+    if (!email || this.subscribing()) return;
+    this.subscribing.set(true);
+    this.subscribeError.set('');
+    this.http.post<{ status: number; message: string }>(
+      `${environment.apiUrl}/subscribers/subscribe`, { email }
+    ).subscribe({
+      next: res => {
+        this.subscribing.set(false);
+        this.subscribeSuccess.set(true);
+        this.subscribeMessage.set(res.message ?? 'Subscribed successfully!');
+        this.subscribeEmail = '';
+      },
+      error: err => {
+        this.subscribing.set(false);
+        this.subscribeError.set(err?.error?.message ?? 'Something went wrong. Please try again.');
+      },
+    });
   }
 
   addView(post: Post): void {

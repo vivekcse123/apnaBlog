@@ -1,0 +1,312 @@
+<div class="ms-page">
+
+  <!-- Header -->
+  <div class="ms-header">
+    <div>
+      <h2 class="ms-title">Newsletter Subscribers</h2>
+      <p class="ms-sub">Manage email subscribers and send newsletters</p>
+    </div>
+    <button class="nl-send-btn" (click)="openNewsletter()" [disabled]="activeCount() === 0">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+      </svg>
+      Send Newsletter
+      @if (activeCount() > 0) {
+        <span class="nl-send-count">{{ activeCount() }}</span>
+      }
+    </button>
+  </div>
+
+  <!-- Stats -->
+  @if (stats()) {
+    <div class="stats-bar">
+      <div class="stat-card">
+        <div class="stat-icon-wrap" style="background:rgba(24,90,157,.12)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#185a9d" stroke-width="2" stroke-linecap="round">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+            <path d="M22 6l-10 7L2 6"/>
+          </svg>
+        </div>
+        <div class="stat-body">
+          <span class="stat-label">Total</span>
+          <span class="stat-value">{{ stats()!.total }}</span>
+          <span class="stat-chip" style="color:#185a9d;background:rgba(24,90,157,.08)">All time</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon-wrap" style="background:rgba(22,163,74,.12)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-5"/>
+          </svg>
+        </div>
+        <div class="stat-body">
+          <span class="stat-label">Active</span>
+          <span class="stat-value" style="color:#16a34a">{{ stats()!.active }}</span>
+          <span class="stat-chip" style="color:#16a34a;background:rgba(22,163,74,.08)">Subscribed</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon-wrap" style="background:rgba(67,206,162,.12)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#43cea2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+        </div>
+        <div class="stat-body">
+          <span class="stat-label">This Month</span>
+          <span class="stat-value" style="color:#43cea2">{{ stats()!.thisMonth }}</span>
+          <span class="stat-chip" style="color:#43cea2;background:rgba(67,206,162,.08)">New signups</span>
+        </div>
+      </div>
+      @if (stats()!.today > 0) {
+        <div class="stat-card">
+          <div class="stat-icon-wrap" style="background:rgba(245,158,11,.12)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+          </div>
+          <div class="stat-body">
+            <span class="stat-label">Today</span>
+            <span class="stat-value" style="color:#d97706">{{ stats()!.today }}</span>
+            <span class="stat-chip" style="color:#d97706;background:rgba(245,158,11,.08)">Joined today</span>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Filters -->
+  <div class="ms-filters">
+    <div class="ms-search">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+      </svg>
+      <input id="sub-search" name="sub-search" type="text" placeholder="Search by email or name…"
+             [value]="searchQuery" (input)="onSearch($any($event.target).value)" />
+    </div>
+    <select [(ngModel)]="selectedStatus" (change)="onFilter()" class="ms-select">
+      <option value="">All Status</option>
+      <option value="active">Active</option>
+      <option value="unsubscribed">Unsubscribed</option>
+    </select>
+  </div>
+
+  <!-- Table -->
+  @if (isLoading()) {
+    <div class="ms-skeletons">
+      @for (i of [1,2,3,4,5]; track i) {
+        <div class="ms-skeleton-row">
+          <div class="sk sk-line sk-lg"></div>
+          <div class="sk sk-line sk-sm"></div>
+          <div class="sk sk-line sk-xs"></div>
+          <div class="sk sk-line sk-xs"></div>
+        </div>
+      }
+    </div>
+  } @else if (subscribers().length === 0) {
+    <div class="ms-empty">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--border-strong)" stroke-width="1.5" stroke-linecap="round">
+        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+        <path d="M22 6l-10 7L2 6"/>
+      </svg>
+      <p>No subscribers found</p>
+      @if (searchQuery || selectedStatus) {
+        <button class="ms-clear-btn" (click)="searchQuery=''; selectedStatus=''; load(1)">Clear filters</button>
+      }
+    </div>
+  } @else {
+    <div class="ms-card">
+      <div class="ms-table-wrap">
+        <table class="ms-table">
+          <thead>
+            <tr>
+              <th>Email</th>
+              <th>Name</th>
+              <th>Status</th>
+              <th>Joined</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (s of subscribers(); track trackById($index, s)) {
+              <tr [class.ms-row--pending]="s.status === 'unsubscribed'">
+                <td class="ms-td-email" data-label="Email">{{ s.email }}</td>
+                <td data-label="Name">{{ s.name || '—' }}</td>
+                <td data-label="Status">
+                  <span class="ms-status-badge"
+                        [class.ms-status-badge--active]="s.status === 'active'"
+                        [class.ms-status-badge--inactive]="s.status === 'unsubscribed'">
+                    {{ s.status === 'active' ? 'Active' : 'Unsubscribed' }}
+                  </span>
+                </td>
+                <td class="ms-td-date">{{ timeAgo(s.createdAt) }}</td>
+                <td class="ms-td-actions">
+                  <div class="ms-actions-wrap">
+                    @if (s.status === 'active') {
+                      <button class="ms-action-btn ms-action-btn--edit" (click)="unsubscribe(s)" title="Mark as unsubscribed">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                        </svg>
+                      </button>
+                    }
+                    <button class="ms-action-btn ms-action-btn--delete" (click)="confirmDelete(s._id)" title="Delete">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+                        <path d="M10 11v6M14 11v6M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      @if (totalPages() >= 1) {
+        <div class="ms-pagination">
+          <span class="ms-pg-info">Showing {{ pageStart() }}–{{ pageEnd() }} of {{ totalSubscribers() }} subscribers</span>
+          <div class="ms-pg-controls">
+            <button class="ms-pg-btn" (click)="goToPage(1)" [disabled]="currentPage() === 1" title="First">«</button>
+            <button class="ms-pg-btn" (click)="prevPage()" [disabled]="currentPage() === 1" title="Previous">‹</button>
+            @for (p of pageNumbers(); track p) {
+              @if (p === '...') {
+                <span class="ms-pg-ellipsis">…</span>
+              } @else {
+                <button class="ms-pg-btn ms-pg-btn--num" [class.ms-pg-active]="currentPage() === p" (click)="goToPage(p)">{{ p }}</button>
+              }
+            }
+            <button class="ms-pg-btn" (click)="nextPage()" [disabled]="currentPage() === totalPages()" title="Next">›</button>
+            <button class="ms-pg-btn" (click)="goToPage(totalPages())" [disabled]="currentPage() === totalPages()" title="Last">»</button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+</div>
+
+<!-- ── Send Newsletter Modal ── -->
+@if (showNewsletter()) {
+  <div class="ms-modal-backdrop" (click)="closeNewsletter()">
+    <div class="nl-modal" (click)="$event.stopPropagation()">
+
+      <div class="nl-modal-header">
+        <div>
+          <h3>Send Newsletter</h3>
+          <p>Will be sent to <strong>{{ activeCount() }}</strong> active subscriber(s)</p>
+        </div>
+        <button class="nl-close-btn" (click)="closeNewsletter()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="nl-modal-body">
+
+        <!-- Subject -->
+        <div class="nl-field">
+          <label for="nl-subject">Subject Line <span class="ms-req">*</span></label>
+          <input id="nl-subject" name="nl-subject" type="text" class="nl-input"
+                 [(ngModel)]="nlSubject" placeholder="e.g. This week's top stories on ApnaInsights 📰"
+                 maxlength="150" />
+        </div>
+
+        <!-- Intro message -->
+        <div class="nl-field">
+          <label for="nl-intro">Intro Message <span class="nl-optional">(optional)</span></label>
+          <textarea id="nl-intro" name="nl-intro" class="nl-input nl-textarea"
+                    [(ngModel)]="nlIntro"
+                    placeholder="Write a short personal message to your subscribers…"
+                    maxlength="500"></textarea>
+          <span class="nl-char">{{ nlIntro.length }} / 500</span>
+        </div>
+
+        <!-- Story picker -->
+        <div class="nl-field">
+          <label>Pick Stories <span class="ms-req">*</span>
+            <span class="nl-optional">Select up to 6 — {{ nlSelectedIds().size }} selected</span>
+          </label>
+
+          @if (nlLoadingPosts()) {
+            <div class="nl-posts-loading">
+              @for (i of [1,2,3]; track i) {
+                <div class="nl-post-skeleton"></div>
+              }
+            </div>
+          } @else {
+            <div class="nl-posts-list">
+              @for (p of nlPosts(); track p._id) {
+                <div class="nl-post-item"
+                     [class.nl-post-item--selected]="isSelected(p._id)"
+                     [class.nl-post-item--disabled]="nlSelectedIds().size >= 6 && !isSelected(p._id)"
+                     (click)="togglePost(p._id)">
+                  @if (p.featuredImage) {
+                    <img [src]="p.featuredImage" [alt]="p.title" class="nl-post-thumb" />
+                  } @else {
+                    <div class="nl-post-thumb nl-post-thumb--empty">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg>
+                    </div>
+                  }
+                  <div class="nl-post-info">
+                    <span class="nl-post-cat">{{ p.categories[0] }}</span>
+                    <span class="nl-post-title">{{ p.title }}</span>
+                    <span class="nl-post-meta">{{ timeAgo(p.createdAt) }} · {{ p.views }} views</span>
+                  </div>
+                  <div class="nl-post-check" [class.nl-post-check--on]="isSelected(p._id)">
+                    @if (isSelected(p._id)) {
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 6L9 17l-5-5"/>
+                      </svg>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+      </div>
+
+      <div class="nl-modal-footer">
+        <button class="ms-modal-cancel" (click)="closeNewsletter()" [disabled]="isSending()">Cancel</button>
+        <button class="nl-send-confirm-btn" (click)="sendNewsletter()"
+                [disabled]="isSending() || !nlSubject.trim() || nlSelectedIds().size === 0">
+          @if (isSending()) {
+            <span class="ms-spin"></span> Sending…
+          } @else {
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            </svg>
+            Send to {{ activeCount() }} Subscriber{{ activeCount() === 1 ? '' : 's' }}
+          }
+        </button>
+      </div>
+
+    </div>
+  </div>
+}
+
+<!-- Delete confirm modal -->
+@if (pendingDeleteId()) {
+  <div class="ms-modal-backdrop" (click)="cancelDelete()">
+    <div class="ms-modal" (click)="$event.stopPropagation()">
+      <div class="ms-modal-icon">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+          <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+        </svg>
+      </div>
+      <h3>Remove Subscriber?</h3>
+      <p>This will permanently delete this subscriber record.</p>
+      <div class="ms-modal-actions">
+        <button class="ms-modal-cancel" [disabled]="isDeleting()" (click)="cancelDelete()">Cancel</button>
+        <button class="ms-modal-delete" [disabled]="isDeleting()" (click)="proceedDelete()">
+          @if (isDeleting()) { <span class="ms-spin"></span> Deleting… } @else { Yes, Delete }
+        </button>
+      </div>
+    </div>
+  </div>
+}

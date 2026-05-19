@@ -39,6 +39,11 @@ export const routes: Routes = [
         title: 'Disclaimer | ApnaInsights'
     },
     {
+        path: 'advertise',
+        loadComponent: () => import('./features/landing/pages/advertise/advertise').then(m => m.Advertise),
+        title: 'Advertise with Us | ApnaInsights'
+    },
+    {
         path: 'category/:category',
         loadComponent: () => import('./features/landing/pages/category-page/category-page').then(m => m.CategoryPage),
         title: 'Category | ApnaInsights'
