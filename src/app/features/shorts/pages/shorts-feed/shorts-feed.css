@@ -206,7 +206,7 @@
 .sf-sidebar {
   position: absolute;
   right: 10px;
-  bottom: 90px;
+  bottom: 70px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -260,10 +260,10 @@
 .sf-liked-by-row {
   display: flex;
   align-items: center;
-  gap: 5px;
-  font-size: 12px;
+  gap: 4px;
+  font-size: 11px;
   font-weight: 600;
-  color: rgba(255,255,255,.85);
+  color: rgba(255,255,255,.75);
   text-shadow: 0 1px 4px rgba(0,0,0,.7);
   margin: 0;
   background: none;
@@ -322,81 +322,68 @@
   color: rgba(255,255,255,.85);
 }
 
-/* ── Bottom info ─────────────────────────────────────── */
+/* ── Bottom info — Instagram Reels style ─────────────── */
 .sf-info {
   position: absolute;
-  bottom: 22px;
+  bottom: 8px;
   left: 0;
-  right: 76px;
-  padding: 0 14px 10px;
+  right: 68px;
+  padding: 0 14px 12px;
   z-index: 9;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
 }
-.sf-info-top {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.sf-author-row {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  text-decoration: none;
-}
-.sf-info-av {
-  width: 28px; height: 28px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 11px;
+/* @username — bold, large, Instagram style */
+.sf-username-link {
+  font-size: 14px;
   font-weight: 800;
   color: #fff;
-  flex-shrink: 0;
+  text-decoration: none;
+  text-shadow: 0 1px 6px rgba(0,0,0,.6);
+  display: block;
 }
-.sf-username {
+/* Title bold + caption inline — single text block */
+.sf-body-text {
+  margin: 0;
   font-size: 13px;
+  font-weight: 400;
+  color: rgba(255,255,255,.92);
+  line-height: 1.4;
+  text-shadow: 0 1px 4px rgba(0,0,0,.5);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.sf-body-text strong {
   font-weight: 700;
   color: #fff;
-  text-shadow: 0 1px 5px rgba(0,0,0,.6);
 }
-.sf-badges {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-.sf-cat-badge {
-  font-size: 10px;
-  font-weight: 700;
-  padding: 2px 8px;
-  border-radius: 99px;
-  background: rgba(255,255,255,.12);
-  border: 1px solid rgba(255,255,255,.2);
-  color: rgba(255,255,255,.85);
-  letter-spacing: .02em;
+.sf-body-text--open {
+  -webkit-line-clamp: 6;
 }
 .sf-sponsored-badge {
   display: flex;
   align-items: center;
   gap: 3px;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
   padding: 2px 8px;
   border-radius: 99px;
   background: rgba(251,191,36,.2);
-  border: 1px solid rgba(251,191,36,.4);
+  border: 1px solid rgba(251,191,36,.35);
   color: #fbbf24;
+  width: fit-content;
 }
 .sf-title {
   margin: 0;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   color: #fff;
   line-height: 1.35;
   text-shadow: 0 1px 6px rgba(0,0,0,.7);
+  /* Full title — up to 2 lines, no truncation */
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -404,23 +391,23 @@
 }
 .sf-caption {
   margin: 0;
-  font-size: 12.5px;
-  color: rgba(255,255,255,.8);
-  line-height: 1.4;
+  font-size: 11.5px;
+  color: rgba(255,255,255,.72);
+  line-height: 1.35;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  text-shadow: 0 1px 4px rgba(0,0,0,.5);
+  text-shadow: 0 1px 3px rgba(0,0,0,.5);
 }
 .sf-caption--open {
-  -webkit-line-clamp: unset;
-  overflow: visible;
+  -webkit-line-clamp: 4;
+  overflow: hidden;
 }
 .sf-more {
   background: none; border: none;
-  color: rgba(255,255,255,.6);
-  font-size: 12px;
+  color: rgba(255,255,255,.5);
+  font-size: 11px;
   font-weight: 600;
   font-family: inherit;
   padding: 0;
@@ -428,35 +415,16 @@
   display: block;
   text-align: left;
 }
-.sf-disc-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 2px;
-}
-.sf-disc {
-  width: 26px; height: 26px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #1a1a1a, #333);
-  border: 2px solid rgba(255,255,255,.2);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 9px;
-  font-weight: 800;
-  color: rgba(255,255,255,.7);
-  flex-shrink: 0;
-}
-.sf-disc--spin { animation: disc-spin 4s linear infinite; }
-@keyframes disc-spin { to { transform: rotate(360deg); } }
-.sf-audio-label {
-  font-size: 11px;
-  color: rgba(255,255,255,.65);
+.sf-unused-placeholder {
+  font-size: 10px;
+  color: rgba(255,255,255,.4);
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .sf-time-ago {
-  font-size: 11px;
+  font-size: 10px;
   color: rgba(255,255,255,.4);
   flex-shrink: 0;
 }
