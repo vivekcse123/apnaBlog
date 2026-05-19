@@ -9,6 +9,7 @@ const CATEGORIES = [
 export const serverRoutes: ServerRoute[] = [
   { path: '',               renderMode: RenderMode.Prerender },
   { path: 'about',          renderMode: RenderMode.Prerender },
+  { path: 'advertise',      renderMode: RenderMode.Prerender },
   { path: 'privacy-policy', renderMode: RenderMode.Prerender },
   { path: 'terms',          renderMode: RenderMode.Prerender },
   { path: 'disclaimer',     renderMode: RenderMode.Prerender },

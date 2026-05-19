@@ -1,4 +1,5 @@
 /about
+/advertise
 /privacy-policy
 /terms
 /disclaimer

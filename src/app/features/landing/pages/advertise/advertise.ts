@@ -134,6 +134,6 @@ export class Advertise implements OnInit {
 
   scrollToForm(): void {
     if (!isPlatformBrowser(this.platformId)) return;
-    document.getElementById('inquire')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    this.document.getElementById('inquire')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 }
