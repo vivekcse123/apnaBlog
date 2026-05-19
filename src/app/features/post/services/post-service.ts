@@ -200,6 +200,22 @@ export class PostService {
     );
   }
 
+  // ── Sponsorship ───────────────────────────────────────────────────────────
+
+  getSponsoredBlogsReport(): Observable<{ status: number; data: any[]; stats: any }> {
+    return this.http.get<any>(`${this.endPoint}/admin/sponsored-report`);
+  }
+
+  sponsorPost(id: string, days?: number, expiryAction?: 'delete' | 'keep'): Observable<apiResponse<Post>> {
+    this.invalidatePost(id);
+    return this.http.patch<apiResponse<Post>>(`${this.endPoint}/${id}/sponsor`, { days, expiryAction });
+  }
+
+  unsponsorPost(id: string): Observable<apiResponse<Post>> {
+    this.invalidatePost(id);
+    return this.http.patch<apiResponse<Post>>(`${this.endPoint}/${id}/unsponsor`, {});
+  }
+
   // ── Paragraph reactions ────────────────────────────────────────────────────
 
   getReactions(postId: string): Observable<{

@@ -47,6 +47,7 @@ export class PostLists implements OnInit, OnDestroy {
   selectedStatus          = signal<string>('');
   showTodayOnly           = signal<boolean>(false);
   showDeletionRequestOnly = signal<boolean>(false);
+  showSponsoredOnly       = signal<boolean>(false);
 
   private debounceTimer: any;
 
@@ -60,6 +61,9 @@ export class PostLists implements OnInit, OnDestroy {
   filteredBlogs = computed(() => {
     let data = this.allBlogs();
 
+    if (this.showSponsoredOnly()) {
+      data = data.filter(p => p.isSponsored);
+    }
     if (this.showDeletionRequestOnly()) {
       data = data.filter(p => p.deleteRequested);
     }
@@ -103,7 +107,8 @@ export class PostLists implements OnInit, OnDestroy {
     return Array.from({ length: Math.min(7, total) }, (_, i) => start + i);
   });
 
-  draftCount = computed(() => this.allBlogs().filter(p => p.status === 'draft').length);
+  draftCount   = computed(() => this.allBlogs().filter(p => p.status === 'draft').length);
+  sponsorCount = computed(() => this.allBlogs().filter(p => p.isSponsored).length);
 
   timeAgo(date: any): string {
     if (!date) return '—';
@@ -235,13 +240,19 @@ private _fetchUserPosts(uid: string, showLoader = false): void {
 
   toggleTodayFilter(): void {
     this.showTodayOnly.update(v => !v);
-    if (this.showTodayOnly()) this.showDeletionRequestOnly.set(false);
+    if (this.showTodayOnly()) { this.showDeletionRequestOnly.set(false); this.showSponsoredOnly.set(false); }
     this.currentPage.set(1);
   }
 
   toggleDeletionFilter(): void {
     this.showDeletionRequestOnly.update(v => !v);
-    if (this.showDeletionRequestOnly()) this.showTodayOnly.set(false);
+    if (this.showDeletionRequestOnly()) { this.showTodayOnly.set(false); this.showSponsoredOnly.set(false); }
+    this.currentPage.set(1);
+  }
+
+  toggleSponsoredFilter(): void {
+    this.showSponsoredOnly.update(v => !v);
+    if (this.showSponsoredOnly()) { this.showTodayOnly.set(false); this.showDeletionRequestOnly.set(false); }
     this.currentPage.set(1);
   }
 
@@ -453,5 +464,64 @@ private _fetchUserPosts(uid: string, showLoader = false): void {
   onPostUpdated(updatedPost: Post): void {
     this.allBlogs.update(blogs => blogs.map(b => b._id === updatedPost._id ? updatedPost : b));
     this.closeModal();
+  }
+
+  // ── Sponsor Blog ──────────────────────────────────────────────────────────
+
+  showSponsorModal    = signal(false);
+  sponsorTargetId     = signal('');
+  sponsorTargetTitle  = signal('');
+  sponsorHasExpiry    = signal(false);
+  sponsorDays         = signal(30);
+  sponsorExpiryAction = signal<'delete' | 'keep'>('keep');
+  isSponsorSaving     = signal(false);
+
+  openSponsorModal(blog: Post): void {
+    this.sponsorTargetId.set(blog._id);
+    this.sponsorTargetTitle.set(blog.title);
+    this.sponsorHasExpiry.set(false);
+    this.sponsorDays.set(30);
+    this.sponsorExpiryAction.set('keep');
+    this.showSponsorModal.set(true);
+  }
+
+  closeSponsorModal(): void {
+    this.showSponsorModal.set(false);
+    this.sponsorTargetId.set('');
+    this.sponsorTargetTitle.set('');
+  }
+
+  submitSponsor(): void {
+    const id = this.sponsorTargetId();
+    if (!id || this.isSponsorSaving()) return;
+    this.isSponsorSaving.set(true);
+    const days         = this.sponsorHasExpiry() ? this.sponsorDays() : undefined;
+    const expiryAction = this.sponsorHasExpiry() ? this.sponsorExpiryAction() : undefined;
+    this.postService.sponsorPost(id, days, expiryAction).subscribe({
+      next: res => {
+        this.allBlogs.update(blogs => blogs.map(b => b._id === id ? { ...b, ...res.data } : b));
+        this.dashboardCache.invalidateAdminPosts();
+        this.isSponsorSaving.set(false);
+        this.closeSponsorModal();
+        this.toastService.show('Blog marked as sponsored.', 'success');
+      },
+      error: err => {
+        this.isSponsorSaving.set(false);
+        this.toastService.show(err?.error?.message ?? 'Failed to sponsor blog.', 'error');
+      },
+    });
+  }
+
+  unsponsorBlog(blog: Post): void {
+    this.postService.unsponsorPost(blog._id).subscribe({
+      next: res => {
+        this.allBlogs.update(blogs => blogs.map(b => b._id === blog._id ? { ...b, ...res.data } : b));
+        this.dashboardCache.invalidateAdminPosts();
+        this.toastService.show('Sponsorship removed.', 'success');
+      },
+      error: err => {
+        this.toastService.show(err?.error?.message ?? 'Failed to remove sponsorship.', 'error');
+      },
+    });
   }
 }

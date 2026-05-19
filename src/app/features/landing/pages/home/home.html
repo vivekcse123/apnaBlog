@@ -540,6 +540,21 @@
     </section>
   }
 
+  @if (!isFiltering() && showSponsored()) {
+    <section class="section section--featured" aria-labelledby="featured-heading">
+      <div class="section-header">
+        <span class="section-pill featured" aria-hidden="true">FEATURED</span>
+        <h2 class="section-title section-title--featured" id="featured-heading">★ Featured Stories</h2>
+      </div>
+      <div class="blog-grid">
+        @for (blog of sponsoredPosts(); track blog._id) {
+          <ng-container [ngTemplateOutlet]="blogCard"
+                        [ngTemplateOutletContext]="{ $implicit: blog }"></ng-container>
+        }
+      </div>
+    </section>
+  }
+
   @defer (on idle) {
     @if (!isFiltering() && showFavorites()) {
       <section class="section section--pers" aria-labelledby="fav-heading">
@@ -723,7 +738,9 @@
           </div>
         }
         <span class="card-cat" aria-hidden="true">{{ blog.categories[0] }}</span>
-        @if (isTrending(blog._id)) {
+        @if (blog.isSponsored) {
+          <span class="sponsored-badge" aria-label="Sponsored content">★ Sponsored</span>
+        } @else if (isTrending(blog._id)) {
           <span class="trending-badge" aria-label="Trending story">🔥 Trending</span>
         } @else if (isNew(blog)) {
           <span class="new-badge" aria-label="New story — published in the last 48 hours">NEW</span>

@@ -46,4 +46,9 @@ export interface Post {
   deleteRequested?:      boolean;
   deleteRequestReason?:  string | null;
   deleteRequestedAt?:    Date | null;
+
+  // Sponsorship
+  isSponsored?:           boolean;
+  sponsoredUntil?:        string | Date | null;
+  sponsoredExpiryAction?: 'delete' | 'keep' | null;
 }

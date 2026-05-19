@@ -70,6 +70,21 @@
       </div>
     }
 
+    @if (sponsorCount() > 0) {
+      <div class="stat-card">
+        <div class="stat-icon-wrap" style="background:rgba(245,158,11,.12)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          </svg>
+        </div>
+        <div class="stat-body">
+          <span class="stat-label">Sponsored</span>
+          <span class="stat-value" style="color:#f59e0b">{{ sponsorCount() }}</span>
+          <span class="stat-chip" style="color:#d97706;background:rgba(245,158,11,.08)">Featured</span>
+        </div>
+      </div>
+    }
+
   </div>
 
   <!-- ── Filters ── -->
@@ -103,6 +118,16 @@
       </svg>
       Today
     </button>
+
+    <button class="ms-today-btn ms-sponsor-btn" [class.ms-today-btn--active]="filterSponsored()" (click)="toggleSponsored()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+      </svg>
+      Sponsored
+      @if (sponsorCount() > 0) {
+        <span class="ms-sponsor-count">{{ sponsorCount() }}</span>
+      }
+    </button>
   </div>
 
   <!-- ── Table ── -->
@@ -125,7 +150,9 @@
         <rect x="3" y="6" width="12" height="12" rx="2"/>
       </svg>
       <p>No shorts found</p>
-      @if (searchQuery || selectedCategory() || selectedStatus()) {
+      @if (filterSponsored()) {
+        <span style="font-size:13px;color:var(--text-muted)">No sponsored shorts yet. Mark a short as sponsored using the ★ button.</span>
+      } @else if (searchQuery || selectedCategory() || selectedStatus()) {
         <button class="ms-clear-btn" (click)="searchQuery=''; selectedCategory.set(''); selectedStatus.set(''); load(1)">
           Clear filters
         </button>
@@ -165,6 +192,9 @@
                     <span class="ms-short-caption">{{ s.caption }}</span>
                   }
                   <span class="ms-short-author">&#64;{{ s.user.name }}</span>
+                  @if (s.isSponsored) {
+                    <span class="ms-sponsored-tag">★ Sponsored</span>
+                  }
                 </div>
               </td>
 
@@ -215,6 +245,21 @@
                       <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
                     </svg>
                   </button>
+                  @if (s.isSponsored) {
+                    <button class="ms-action-btn ms-action-btn--sponsor ms-action-btn--sponsored"
+                            (click)="unsponsorVideo(s)" title="Remove sponsorship">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                      </svg>
+                    </button>
+                  } @else {
+                    <button class="ms-action-btn ms-action-btn--sponsor"
+                            (click)="openSponsorModal(s)" title="Mark as sponsored">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                      </svg>
+                    </button>
+                  }
                   <button class="ms-action-btn ms-action-btn--delete" (click)="confirmDelete(s._id)" title="Delete">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <polyline points="3 6 5 6 21 6"/>
@@ -275,6 +320,56 @@
         <button class="ms-modal-cancel" [disabled]="isDeleting()" (click)="cancelDelete()">Cancel</button>
         <button class="ms-modal-delete" [disabled]="isDeleting()" (click)="proceedDelete()">
           @if (isDeleting()) { <span class="ms-spin"></span> Deleting… } @else { Yes, Delete }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ── Sponsor modal ── -->
+@if (showSponsorModal()) {
+  <div class="ms-modal-backdrop" (click)="closeSponsorModal()">
+    <div class="ms-modal ms-modal--sponsor" (click)="$event.stopPropagation()">
+      <div class="ms-modal-icon ms-modal-icon--sponsor">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+      </div>
+      <h3>Sponsor Short</h3>
+      <p class="ms-sponsor-subtitle">{{ sponsorTargetTitle() }}</p>
+
+      <label class="ms-sponsor-toggle">
+        <input type="checkbox"
+               [checked]="sponsorHasExpiry()"
+               (change)="sponsorHasExpiry.set($any($event.target).checked)" />
+        Set expiry duration
+      </label>
+
+      @if (sponsorHasExpiry()) {
+        <div class="ms-sponsor-field">
+          <label class="ms-sponsor-field-label">Duration (days)</label>
+          <input type="number" class="ms-edit-input"
+                 min="1" max="365"
+                 [value]="sponsorDays()"
+                 (input)="sponsorDays.set(+$any($event.target).value)" />
+        </div>
+        <div class="ms-sponsor-field">
+          <label class="ms-sponsor-field-label">On expiry</label>
+          <div class="ms-sponsor-radios">
+            <label class="ms-sponsor-radio" [class.active]="sponsorExpiryAction() === 'keep'"
+                   (click)="sponsorExpiryAction.set('keep')">Keep short</label>
+            <label class="ms-sponsor-radio" [class.active]="sponsorExpiryAction() === 'delete'"
+                   (click)="sponsorExpiryAction.set('delete')">Delete short</label>
+          </div>
+        </div>
+      } @else {
+        <p class="ms-sponsor-note">This short will be sponsored indefinitely with no expiry.</p>
+      }
+
+      <div class="ms-modal-actions">
+        <button class="ms-modal-cancel" [disabled]="isSponsorSaving()" (click)="closeSponsorModal()">Cancel</button>
+        <button class="ms-modal-sponsor" [disabled]="isSponsorSaving()" (click)="submitSponsor()">
+          @if (isSponsorSaving()) { <span class="ms-spin"></span> Saving… } @else { Mark as Sponsored }
         </button>
       </div>
     </div>

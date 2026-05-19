@@ -70,6 +70,21 @@
       </div>
     </div>
 
+    @if (role() === 'admin' || role() === 'super_admin') {
+      <div class="stat-card">
+        <div class="stat-icon-wrap sponsored-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          </svg>
+        </div>
+        <div class="stat-body">
+          <span class="stat-label">Sponsored</span>
+          <span class="stat-value stat-value--sponsored">{{ sponsorCount() }}</span>
+          <span class="stat-chip sponsored-chip">Featured</span>
+        </div>
+      </div>
+    }
+
     @if (deletionRequestCount() > 0 && (role() === 'admin' || role() === 'super_admin')) {
       <div class="stat-card stat-card--alert">
         <div class="stat-icon-wrap deletion-icon">
@@ -155,6 +170,23 @@
       </button>
     }
 
+    @if (role() === 'admin' || role() === 'super_admin') {
+      <button
+        class="filter-btn filter-btn--sponsor"
+        [class.filter-btn--active]="showSponsoredOnly()"
+        (click)="toggleSponsoredFilter()"
+        title="Show sponsored blogs only">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+        Sponsored
+        @if (sponsorCount() > 0) {
+          <span class="sponsor-badge-count">{{ sponsorCount() }}</span>
+        }
+      </button>
+    }
+
     <div class="filters-spacer"></div>
 
     <button class="add-btn" (click)="showCreateBlog.set(true)">
@@ -222,6 +254,9 @@
                   <div class="blog-title-text">{{ blog.title }}</div>
                   @if (blog.description) {
                     <div class="blog-sub">{{ blog.description }}</div>
+                  }
+                  @if (blog.isSponsored) {
+                    <span class="sponsored-tag">★ Sponsored</span>
                   }
                   @if (blog.deleteRequested) {
                     <span class="del-req-tag">Deletion Requested</span>
@@ -297,6 +332,25 @@
                     </button>
 
                     @if (role() === 'admin' || role() === 'super_admin') {
+                      @if (blog.status === 'published') {
+                        @if (blog.isSponsored) {
+                          <button class="action-btn action-btn--sponsor is-sponsored"
+                                  (click)="unsponsorBlog(blog)"
+                                  title="Remove sponsorship">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1">
+                              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                            </svg>
+                          </button>
+                        } @else {
+                          <button class="action-btn action-btn--sponsor"
+                                  (click)="openSponsorModal(blog)"
+                                  title="Mark as sponsored">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                            </svg>
+                          </button>
+                        }
+                      }
                       @if (blog.deleteRequested) {
                         <button class="action-btn action-btn--approve"
                           (click)="openApproveDelete(blog._id, blog.title, blog.deleteRequestReason || '')"
@@ -369,6 +423,9 @@
                     @if (showTodayOnly()) {
                       <p>No blogs posted today</p>
                       <span>There are no posts published on today's date.</span>
+                    } @else if (showSponsoredOnly()) {
+                      <p>No sponsored blogs</p>
+                      <span>Mark a published blog as sponsored from the actions column.</span>
                     } @else {
                       <p>No blogs found</p>
                       <span>Try adjusting your search or filters.</span>
@@ -532,6 +589,78 @@
           }
         </button>
       </div>
+    </div>
+  </div>
+}
+
+<!-- ── Sponsor Modal ── -->
+@if (showSponsorModal()) {
+  <div class="modal-overlay" (click)="closeSponsorModal()">
+    <div class="sponsor-box" (click)="$event.stopPropagation()">
+
+      <div class="sponsor-box-header">
+        <div class="confirm-icon sponsor-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          </svg>
+        </div>
+        <h3>Sponsor Blog</h3>
+        <p class="sponsor-blog-title">{{ sponsorTargetTitle() }}</p>
+      </div>
+
+      <!-- Expiry toggle -->
+      <label class="sponsor-toggle-label">
+        <input type="checkbox"
+               [checked]="sponsorHasExpiry()"
+               (change)="sponsorHasExpiry.set($any($event.target).checked)" />
+        Set expiry duration
+      </label>
+
+      @if (sponsorHasExpiry()) {
+        <div class="sponsor-field">
+          <label class="sponsor-field-label">Duration (days)</label>
+          <input type="number" class="sponsor-days-input"
+                 min="1" max="365"
+                 [value]="sponsorDays()"
+                 (input)="sponsorDays.set(+$any($event.target).value)" />
+        </div>
+
+        <div class="sponsor-field">
+          <label class="sponsor-field-label">On expiry</label>
+          <div class="sponsor-radio-group">
+            <label class="sponsor-radio-label" [class.active]="sponsorExpiryAction() === 'keep'"
+                   (click)="sponsorExpiryAction.set('keep')">
+              <input type="radio" name="expiryAction" value="keep"
+                     [checked]="sponsorExpiryAction() === 'keep'"
+                     style="display:none" />
+              Keep blog
+            </label>
+            <label class="sponsor-radio-label" [class.active]="sponsorExpiryAction() === 'delete'"
+                   (click)="sponsorExpiryAction.set('delete')">
+              <input type="radio" name="expiryAction" value="delete"
+                     [checked]="sponsorExpiryAction() === 'delete'"
+                     style="display:none" />
+              Delete blog
+            </label>
+          </div>
+        </div>
+      } @else {
+        <p class="sponsor-unlimited-note">This blog will be sponsored indefinitely with no expiry date.</p>
+      }
+
+      <div class="confirm-actions">
+        <button class="btn-cancel" (click)="closeSponsorModal()" [disabled]="isSponsorSaving()">Cancel</button>
+        <button class="btn-confirm btn-sponsor"
+                [disabled]="isSponsorSaving()"
+                (click)="submitSponsor()">
+          @if (isSponsorSaving()) {
+            <span class="btn-spinner"></span> Saving…
+          } @else {
+            Mark as Sponsored
+          }
+        </button>
+      </div>
+
     </div>
   </div>
 }

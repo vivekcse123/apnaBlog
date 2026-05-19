@@ -173,6 +173,14 @@ export class ShortsService {
     return this.http.delete<{ status: number; message: string }>(`${this.endpoint}/${id}`);
   }
 
+  sponsorShort(id: string, days?: number, expiryAction?: 'delete' | 'keep'): Observable<{ status: number; data: VideoShort }> {
+    return this.http.patch<{ status: number; data: VideoShort }>(`${this.endpoint}/${id}/sponsor`, { days, expiryAction });
+  }
+
+  unsponsorShort(id: string): Observable<{ status: number; data: VideoShort }> {
+    return this.http.patch<{ status: number; data: VideoShort }>(`${this.endpoint}/${id}/unsponsor`, {});
+  }
+
   /** Extract YouTube video ID from any YouTube URL format. */
   extractYouTubeId(url: string): string | null {
     const patterns = [

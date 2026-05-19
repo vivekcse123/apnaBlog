@@ -25,6 +25,37 @@
   padding: 2px 7px; border-radius: 99px;
 }
 
+/* ── Performance sub-tabs ── */
+.sp-perf-tabs {
+  display: flex; gap: 6px; flex-wrap: wrap;
+}
+.sp-perf-tab {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 9px 16px; border-radius: 10px;
+  border: 1px solid var(--border); background: var(--bg-surface);
+  font-size: 13px; font-weight: 600; font-family: 'DM Sans', sans-serif;
+  color: var(--text-muted); cursor: pointer; transition: all .15s;
+}
+.sp-perf-tab:hover { border-color: var(--border-strong); color: var(--text-primary); }
+.sp-perf-tab--active {
+  background: linear-gradient(135deg,#43cea2,#185a9d);
+  border-color: transparent; color: #fff;
+}
+.sp-perf-count {
+  min-width: 20px; height: 20px; border-radius: 99px;
+  background: rgba(255,255,255,.2); color: inherit;
+  font-size: 11px; font-weight: 700;
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 0 5px;
+}
+.sp-perf-tab:not(.sp-perf-tab--active) .sp-perf-count {
+  background: var(--bg-surface-alt); color: var(--text-muted);
+}
+
+/* Blog thumbnail placeholder */
+.ms-thumb--blog { background: #1e293b; }
+.sp-top-thumb--blog { background: #1e293b; }
+
 /* ── Inquiries table ── */
 .sp-row--new td { background: color-mix(in srgb, #185a9d 4%, transparent); }
 .sp-company-cell { display: flex; align-items: center; gap: 7px; }
@@ -202,6 +233,70 @@
   .stats-bar { display:grid;grid-template-columns:1fr 1fr;gap:8px; }
   .stat-value { font-size:18px; }
   .sp-filter-tabs { flex-wrap:wrap; }
-  .ms-table-wrap { overflow-x:auto; }
   .sp-top-grid { gap:8px; }
+  .sp-main-tabs { overflow-x:auto; }
+
+  /* ── Table → Card transformation ── */
+  .ms-card { border-radius:0; border-left:none; border-right:none; }
+  .ms-table-wrap { overflow:visible; }
+
+  .ms-table thead { display:none; }
+
+  .ms-table,
+  .ms-table tbody,
+  .ms-table tr { display:block; width:100%; }
+
+  .ms-table tr {
+    background:var(--bg-surface);
+    border:1px solid var(--border);
+    border-radius:14px;
+    margin-bottom:12px;
+    padding:0;
+    box-shadow:0 2px 8px rgba(0,0,0,.04);
+    overflow:hidden;
+  }
+  .sp-row--new { border-color:color-mix(in srgb,#185a9d 40%,var(--border)); background:color-mix(in srgb,#185a9d 4%,var(--bg-surface)); }
+
+  .ms-table td {
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:9px 14px;
+    border-bottom:1px solid var(--border);
+    font-size:13px;
+    vertical-align:unset;
+  }
+  .ms-table td:last-child { border-bottom:none; }
+
+  .ms-table td[data-label]::before {
+    content:attr(data-label);
+    font-size:10px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    color:var(--text-muted);
+    min-width:72px;
+    flex-shrink:0;
+  }
+
+  /* Short cell — card header, no label prefix */
+  .ms-table td.ms-td-short {
+    padding:14px;
+    border-bottom:1px solid var(--border);
+    background:var(--bg-surface-alt);
+  }
+  .ms-table td.ms-td-short::before { display:none; }
+  .ms-td-short { align-items:flex-start; min-width:0; }
+  .ms-thumb { width:64px; height:56px; border-radius:8px; }
+  .ms-short-title { max-width:none; white-space:normal; font-size:13px; }
+
+  /* Message cell: let text flow */
+  .sp-message-cell { max-width:none; }
+  .sp-message-preview { max-width:none; white-space:normal; overflow:visible; text-overflow:unset; }
+
+  /* Status select: full width */
+  .sp-status-select { width:100%; }
+
+  /* Date cell */
+  .ms-td-date { color:var(--text-muted); font-size:12px; }
 }

@@ -318,6 +318,12 @@ export class Home implements OnInit, OnDestroy {
   showFavorites   = computed(() => this.favoritePosts().length > 0);
   showRecommended = computed(() => this.recommendedPosts().length > 0);
 
+  /** Active sponsored posts — shown in the Featured spotlight section. */
+  sponsoredPosts = computed(() =>
+    this.allPosts().filter(p => p.isSponsored).slice(0, 4)
+  );
+  showSponsored = computed(() => this.sponsoredPosts().length > 0);
+
   navCatOpen = signal(false);
 
   // Use synchronous auth signals (localStorage) so the button routes correctly

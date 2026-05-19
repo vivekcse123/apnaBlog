@@ -6,6 +6,7 @@ import { HttpClient } from '@angular/common/http';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { environment } from '../../../../../environments/environment';
 import { ToastService } from '../../../../core/services/toast.service';
+import { PostService } from '../../../post/services/post-service';
 
 interface SponsoredShort {
   _id: string;
@@ -13,6 +14,27 @@ interface SponsoredShort {
   caption?: string;
   category: string;
   thumbnailUrl?: string;
+  views: number;
+  likesCount: number;
+  commentsCount: number;
+  status: string;
+  isSponsored: boolean;
+  isActive: boolean;
+  isExpired: boolean;
+  sponsoredUntil?: string;
+  sponsoredExpiryAction?: string;
+  daysLeft: number | null;
+  daysRan: number;
+  createdAt: string;
+  user?: { name: string };
+}
+
+interface SponsoredBlog {
+  _id: string;
+  title: string;
+  description?: string;
+  categories: string[];
+  featuredImage?: string;
   views: number;
   likesCount: number;
   commentsCount: number;
@@ -61,21 +83,32 @@ const AD_TYPE_LABELS: Record<string, string> = {
   styleUrl:    './sponsored-report.css',
 })
 export class SponsoredReport implements OnInit {
-  private http       = inject(HttpClient);
-  private destroyRef = inject(DestroyRef);
-  private platformId = inject(PLATFORM_ID);
-  private toast      = inject(ToastService);
+  private http        = inject(HttpClient);
+  private destroyRef  = inject(DestroyRef);
+  private platformId  = inject(PLATFORM_ID);
+  private toast       = inject(ToastService);
+  private postService = inject(PostService);
+
   private api        = `${environment.apiUrl}/shorts/admin/sponsored-report`;
   private inquiryApi = `${environment.apiUrl}/sponsorship`;
 
   // Main tab
   activeTab = signal<'performance' | 'inquiries'>('inquiries');
 
-  // Performance tab
+  // Performance sub-tab
+  perfTab = signal<'shorts' | 'blogs'>('shorts');
+
+  // Shorts performance
   shorts    = signal<SponsoredShort[]>([]);
   stats     = signal<ReportStats | null>(null);
   isLoading = signal(true);
   filter    = signal<'all' | 'active' | 'expired'>('all');
+
+  // Blogs performance
+  blogs        = signal<SponsoredBlog[]>([]);
+  blogStats    = signal<ReportStats | null>(null);
+  blogsLoading = signal(false);
+  blogFilter   = signal<'all' | 'active' | 'expired'>('all');
 
   // Inquiries tab
   inquiries        = signal<Inquiry[]>([]);
@@ -91,14 +124,27 @@ export class SponsoredReport implements OnInit {
     return list;
   });
 
+  filteredBlogs = computed(() => {
+    const f = this.blogFilter();
+    const list = this.blogs();
+    if (f === 'active')  return list.filter(b => b.isActive);
+    if (f === 'expired') return list.filter(b => b.isExpired);
+    return list;
+  });
+
   topByViews = computed(() =>
     [...this.shorts()].sort((a, b) => b.views - a.views).slice(0, 3)
+  );
+
+  topBlogsByViews = computed(() =>
+    [...this.blogs()].sort((a, b) => b.views - a.views).slice(0, 3)
   );
 
   readonly adTypeLabel = (t: string) => AD_TYPE_LABELS[t] ?? t;
 
   ngOnInit(): void {
     this.load();
+    this.loadBlogs();
     this.loadInquiries();
   }
 
@@ -116,7 +162,22 @@ export class SponsoredReport implements OnInit {
       });
   }
 
+  loadBlogs(): void {
+    this.blogsLoading.set(true);
+    this.postService.getSponsoredBlogsReport()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: res => {
+          this.blogs.set(res.data ?? []);
+          this.blogStats.set(res.stats ?? null);
+          this.blogsLoading.set(false);
+        },
+        error: () => this.blogsLoading.set(false),
+      });
+  }
+
   setFilter(f: 'all' | 'active' | 'expired'): void { this.filter.set(f); }
+  setBlogFilter(f: 'all' | 'active' | 'expired'): void { this.blogFilter.set(f); }
 
   loadInquiries(): void {
     this.inquiriesLoading.set(true);
@@ -161,10 +222,7 @@ export class SponsoredReport implements OnInit {
         `"${s.title.replace(/"/g, '""')}"`,
         s.category,
         s.isActive ? 'Active' : s.isExpired ? 'Expired' : 'No Expiry',
-        s.views,
-        s.likesCount,
-        s.commentsCount,
-        s.daysRan,
+        s.views, s.likesCount, s.commentsCount, s.daysRan,
         s.daysLeft ?? 'Unlimited',
         s.sponsoredExpiryAction ?? '—',
         s.sponsoredUntil ? this.formatDate(s.sponsoredUntil) : '—',
@@ -172,13 +230,34 @@ export class SponsoredReport implements OnInit {
         this.formatDate(s.createdAt),
       ]),
     ];
+    this._downloadCSV(rows, `sponsored-shorts-${new Date().toISOString().slice(0, 10)}.csv`);
+  }
+
+  exportBlogCSV(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    const rows = [
+      ['Title', 'Categories', 'Status', 'Views', 'Likes', 'Comments', 'Days Ran', 'Days Left', 'Expiry Action', 'Sponsored Until', 'Author', 'Created'],
+      ...this.blogs().map(b => [
+        `"${b.title.replace(/"/g, '""')}"`,
+        b.categories.join(';'),
+        b.isActive ? 'Active' : b.isExpired ? 'Expired' : 'No Expiry',
+        b.views, b.likesCount, b.commentsCount, b.daysRan,
+        b.daysLeft ?? 'Unlimited',
+        b.sponsoredExpiryAction ?? '—',
+        b.sponsoredUntil ? this.formatDate(b.sponsoredUntil) : '—',
+        b.user?.name ?? '—',
+        this.formatDate(b.createdAt),
+      ]),
+    ];
+    this._downloadCSV(rows, `sponsored-blogs-${new Date().toISOString().slice(0, 10)}.csv`);
+  }
+
+  private _downloadCSV(rows: any[][], filename: string): void {
     const csv  = rows.map(r => r.join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
-    a.href = url;
-    a.download = `sponsored-report-${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
+    a.href = url; a.download = filename; a.click();
     URL.revokeObjectURL(url);
   }
 }

@@ -44,8 +44,8 @@ export class About implements OnInit, OnDestroy {
   get dashboardRoute(): string {
     const role = this.auth.userRole() ?? 'user';
     const id   = this.auth.userId()   ?? '';
-    if (role === 'admin')       return `/admin/${id}/dashboard`;
-    if (role === 'super_admin') return `/super-admin/${id}/dashboard`;
+    if (role === 'admin')       return `/admin/${id}`;
+    if (role === 'super_admin') return `/super-admin/${id}`;
     return `/user/${id}/profile`;
   }
   formSubmitted = false;

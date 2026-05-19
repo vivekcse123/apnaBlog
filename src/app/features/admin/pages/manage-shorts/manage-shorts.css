@@ -355,7 +355,20 @@
 .ms-action-btn svg { flex-shrink: 0; }
 .ms-action-btn--preview:hover { background: color-mix(in srgb, #43cea2 12%, transparent); border-color: #43cea2; color: #43cea2; }
 .ms-action-btn--delete:hover  { background: color-mix(in srgb, #ef4444 12%, transparent); border-color: #ef4444; color: #ef4444; }
+.ms-action-btn--sponsor       { color: #f59e0b; border-color: rgba(245,158,11,.3); background: rgba(245,158,11,.08); }
+.ms-action-btn--sponsor:hover { background: rgba(245,158,11,.16); border-color: #f59e0b; }
+.ms-action-btn--sponsored     { background: rgba(245,158,11,.18); color: #d97706; }
 .ms-action-btn:active { transform: scale(.9); }
+
+/* ── Sponsored tag in short info ── */
+.ms-sponsored-tag {
+  display: inline-block; margin-top: 3px;
+  padding: 1px 7px; border-radius: 4px;
+  background: rgba(245,158,11,.12); color: #f59e0b;
+  font-size: 10px; font-weight: 700;
+  border: 1px solid rgba(245,158,11,.25);
+  width: fit-content;
+}
 
 /* ── Skeleton ── */
 .ms-skeletons { display: flex; flex-direction: column; gap: 1px; }
@@ -530,6 +543,46 @@
 }
 .ms-modal-save:disabled { opacity: .5; cursor: not-allowed; }
 
+/* Sponsor modal */
+.ms-modal--sponsor { max-width: 420px; width: 90%; gap: 12px; }
+.ms-modal-icon--sponsor { background: rgba(245,158,11,.12); color: #f59e0b; }
+.ms-sponsor-subtitle {
+  font-size: 13px; color: var(--text-muted); margin: 0;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 340px;
+}
+.ms-sponsor-toggle {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 12px; border-radius: 8px;
+  border: 1px solid var(--border); background: var(--bg-surface-alt);
+  cursor: pointer; font-size: 13px; font-weight: 500; color: var(--text-secondary);
+  transition: border-color .15s; width: 100%; box-sizing: border-box;
+}
+.ms-sponsor-toggle:hover { border-color: #f59e0b; }
+.ms-sponsor-field { display: flex; flex-direction: column; gap: 5px; width: 100%; }
+.ms-sponsor-field-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); }
+.ms-sponsor-radios { display: flex; gap: 8px; }
+.ms-sponsor-radio {
+  flex: 1; text-align: center; padding: 9px 12px; border-radius: 8px;
+  border: 1px solid var(--border); background: var(--bg-surface-alt);
+  cursor: pointer; font-size: 13px; font-weight: 500; color: var(--text-secondary);
+  transition: border-color .15s, background .15s, color .15s;
+}
+.ms-sponsor-radio.active { border-color: #f59e0b; background: rgba(245,158,11,.08); color: #d97706; }
+.ms-sponsor-note {
+  font-size: 12px; color: var(--text-muted); margin: 0;
+  padding: 10px 12px; background: var(--bg-surface-alt);
+  border-radius: 8px; border: 1px solid var(--border); width: 100%; box-sizing: border-box;
+}
+.ms-modal-sponsor {
+  padding: 9px 20px; border-radius: 8px; border: none;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #fff; font-size: 13px; font-weight: 600;
+  font-family: 'DM Sans', sans-serif; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 7px; transition: opacity .15s;
+}
+.ms-modal-sponsor:disabled { opacity: .5; cursor: not-allowed; }
+.ms-modal-sponsor:not(:disabled):hover { opacity: .88; }
+
 /* Edit modal wider */
 .ms-modal--edit { max-width: 480px; width: 90%; }
 .ms-edit-fields { display: flex; flex-direction: column; gap: 14px; margin: 16px 0; }
@@ -573,6 +626,15 @@
   border-color: transparent;
   color: #fff;
 }
+.ms-sponsor-btn:not(.ms-today-btn--active):hover { border-color: #f59e0b; color: #f59e0b; }
+.ms-sponsor-btn.ms-today-btn--active { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.ms-sponsor-count {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 18px; height: 18px; padding: 0 4px;
+  border-radius: 50%; background: #f59e0b; color: #fff;
+  font-size: 10px; font-weight: 700;
+}
+.ms-today-btn--active .ms-sponsor-count { background: rgba(255,255,255,.3); }
 
 /* Edit action button */
 .ms-action-btn--edit:hover { background: color-mix(in srgb, #f59e0b 12%, transparent); border-color: #f59e0b; color: #f59e0b; }

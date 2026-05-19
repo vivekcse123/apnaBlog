@@ -25,12 +25,13 @@ export class ManageShorts implements OnInit {
   totalCount  = signal(0);
   currentPage = signal(1);
   totalPages  = signal(1);
-  readonly LIMIT = 20;
+  readonly LIMIT = 10;
 
   searchQuery      = '';
   selectedCategory = signal('');
   selectedStatus   = signal('');
   filterToday      = signal(false);
+  filterSponsored  = signal(false);
 
   // Delete
   pendingDeleteId = signal<string | null>(null);
@@ -58,6 +59,7 @@ export class ManageShorts implements OnInit {
   pageEnd        = computed(() => Math.min(this.currentPage() * this.LIMIT, this.totalCount()));
   publishedCount = computed(() => this.shorts().filter(s => s.status === 'published').length);
   pendingCount   = computed(() => this.shorts().filter(s => s.status === 'pending').length);
+  sponsorCount   = computed(() => this.shorts().filter(s => s.isSponsored).length);
   todayCount     = computed(() => {
     const today = new Date(); today.setHours(0, 0, 0, 0);
     return this.shorts().filter(s => new Date(s.createdAt) >= today).length;
@@ -99,17 +101,22 @@ export class ManageShorts implements OnInit {
         const start = new Date(); start.setHours(0, 0, 0, 0);
         data = data.filter(s => new Date(s.createdAt) >= start);
       }
+      if (this.filterSponsored()) {
+        data = data.filter(s => s.isSponsored);
+      }
+      const clientFiltered = this.filterToday() || this.filterSponsored();
       this.shorts.set(data);
-      this.totalCount.set(this.filterToday() ? data.length : (res.total ?? 0));
+      this.totalCount.set(clientFiltered ? data.length : (res.total ?? 0));
       this.currentPage.set(res.page ?? page);
-      this.totalPages.set(this.filterToday() ? 1 : (res.totalPages ?? 1));
+      this.totalPages.set(clientFiltered ? 1 : (res.totalPages ?? 1));
       this.isLoading.set(false);
     });
   }
 
   onSearch(val: string): void { this.searchQuery = val; this.search$.next(val); }
   onFilter(): void { this.load(1); }
-  toggleToday(): void { this.filterToday.update(v => !v); this.load(1); }
+  toggleToday(): void { this.filterToday.update(v => !v); if (this.filterToday()) this.filterSponsored.set(false); this.load(1); }
+  toggleSponsored(): void { this.filterSponsored.update(v => !v); if (this.filterSponsored()) this.filterToday.set(false); this.load(1); }
 
   prevPage(): void { if (this.currentPage() > 1) this.load(this.currentPage() - 1); }
   nextPage(): void { if (this.currentPage() < this.totalPages()) this.load(this.currentPage() + 1); }
@@ -185,6 +192,65 @@ export class ManageShorts implements OnInit {
       },
       error: err => { this.togglingId.set(null); this.toast.show(err?.error?.message ?? 'Status update failed.', 'error'); },
     });
+  }
+
+  // ── Sponsor Short ─────────────────────────────────────────────────────────
+
+  showSponsorModal    = signal(false);
+  sponsorTargetId     = signal('');
+  sponsorTargetTitle  = signal('');
+  sponsorHasExpiry    = signal(false);
+  sponsorDays         = signal(30);
+  sponsorExpiryAction = signal<'delete' | 'keep'>('keep');
+  isSponsorSaving     = signal(false);
+
+  openSponsorModal(s: VideoShort): void {
+    this.sponsorTargetId.set(s._id);
+    this.sponsorTargetTitle.set(s.title);
+    this.sponsorHasExpiry.set(false);
+    this.sponsorDays.set(30);
+    this.sponsorExpiryAction.set('keep');
+    this.showSponsorModal.set(true);
+  }
+
+  closeSponsorModal(): void {
+    this.showSponsorModal.set(false);
+    this.sponsorTargetId.set('');
+    this.sponsorTargetTitle.set('');
+  }
+
+  submitSponsor(): void {
+    const id = this.sponsorTargetId();
+    if (!id || this.isSponsorSaving()) return;
+    this.isSponsorSaving.set(true);
+    const days         = this.sponsorHasExpiry() ? this.sponsorDays() : undefined;
+    const expiryAction = this.sponsorHasExpiry() ? this.sponsorExpiryAction() : undefined;
+    this.service.sponsorShort(id, days, expiryAction)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: res => {
+          this.shorts.update(list => list.map(s => s._id === id ? { ...s, ...res.data } : s));
+          this.isSponsorSaving.set(false);
+          this.closeSponsorModal();
+          this.toast.show('Short marked as sponsored.', 'success');
+        },
+        error: err => {
+          this.isSponsorSaving.set(false);
+          this.toast.show(err?.error?.message ?? 'Failed to sponsor short.', 'error');
+        },
+      });
+  }
+
+  unsponsorVideo(s: VideoShort): void {
+    this.service.unsponsorShort(s._id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: res => {
+          this.shorts.update(list => list.map(x => x._id === s._id ? { ...x, ...res.data } : x));
+          this.toast.show('Sponsorship removed.', 'success');
+        },
+        error: err => this.toast.show(err?.error?.message ?? 'Failed to remove sponsorship.', 'error'),
+      });
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────────
