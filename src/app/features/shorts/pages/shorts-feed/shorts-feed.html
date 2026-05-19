@@ -215,60 +215,44 @@
 
         </aside>
 
-        <!-- ══ Bottom info ══ -->
+        <!-- ══ Bottom info (Instagram Reels style) ══ -->
         <footer class="sf-info" (touchend)="$event.stopPropagation()" (click)="$event.stopPropagation()">
 
-          <!-- Row 1: author + badges -->
-          <div class="sf-info-top">
-            <a class="sf-author-row" [routerLink]="['/author', short.user._id]" (click)="$event.stopPropagation()">
-              <div class="sf-info-av">{{ userInitial(short.user) }}</div>
-              <span class="sf-username">&#64;{{ short.user.name }}</span>
-            </a>
-            <div class="sf-badges">
-              <span class="sf-cat-badge">{{ short.category }}</span>
-              @if (short.isSponsored) {
-                <span class="sf-sponsored-badge"
-                      [title]="short.sponsoredUntil ? 'Sponsored until ' + (short.sponsoredUntil | date:'MMM d') : 'Sponsored'">
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
-                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                  </svg>
-                  Sponsored
-                </span>
-              }
-            </div>
-          </div>
+          <!-- Sponsored badge (only when relevant) -->
+          @if (short.isSponsored) {
+            <span class="sf-sponsored-badge">
+              <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+              </svg>
+              Sponsored
+            </span>
+          }
 
-          <!-- Liked by — Instagram style, tappable -->
+          <!-- @username -->
+          <a class="sf-username-link" [routerLink]="['/author', short.user._id]" (click)="$event.stopPropagation()">
+            &#64;{{ short.user.name }}
+          </a>
+
+          <!-- Title + caption as one text block -->
+          <p class="sf-body-text" [class.sf-body-text--open]="isExpanded(short._id)">
+            <strong>{{ short.title }}</strong>
+            @if (short.caption) { &nbsp;{{ short.caption }} }
+          </p>
+          @if ((short.title + (short.caption ?? '')).length > 80) {
+            <button class="sf-more" (click)="toggleCaption(short._id, $event)">
+              {{ isExpanded(short._id) ? 'less' : '…more' }}
+            </button>
+          }
+
+          <!-- Liked by -->
           @if (short.recentLikers?.length) {
             <button class="sf-liked-by-row" (click)="openLikes(short, $event)">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="#fe2c55">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="#fe2c55">
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
               </svg>
               {{ likedByText(short) }}
             </button>
           }
-
-          <!-- Title -->
-          <h2 class="sf-title">{{ short.title }}</h2>
-
-          <!-- Caption -->
-          @if (short.caption) {
-            <p class="sf-caption" [class.sf-caption--open]="isExpanded(short._id)">{{ short.caption }}</p>
-            @if (short.caption.length > 72) {
-              <button class="sf-more" (click)="toggleCaption(short._id, $event)">
-                {{ isExpanded(short._id) ? 'less' : '…more' }}
-              </button>
-            }
-          }
-
-          <!-- Disc row -->
-          <div class="sf-disc-row">
-            <div class="sf-disc" [class.sf-disc--spin]="activeIndex() === i && !endedCards().has(i)">
-              {{ userInitial(short.user) }}
-            </div>
-            <span class="sf-audio-label">Original audio · &#64;{{ short.user.name }}</span>
-            <span class="sf-time-ago">{{ timeAgo(short.createdAt) }}</span>
-          </div>
 
         </footer>
 
