@@ -242,12 +242,19 @@
                     [class.status-draft]="blog.status === 'draft'"
                     [class.status-pending]="blog.status === 'pending'"
                     [class.status-rejected]="blog.status === 'rejected'"
+                    [class.status-scheduled]="blog.status === 'scheduled'"
                   >
                     <span class="status-dot"></span>
                     @if (blog.status === 'pending') { Pending Review }
                     @else if (blog.status === 'rejected') { Rejected }
+                    @else if (blog.status === 'scheduled') {
+                      ⏰ Scheduled
+                    }
                     @else { {{ blog.status | titlecase }} }
                   </span>
+                  @if (blog.status === 'scheduled' && blog.scheduledAt) {
+                    <span class="scheduled-time">{{ blog.scheduledAt | date:'d MMM, h:mm a' }}</span>
+                  }
                 </td>
 
                 <td data-label="Views">

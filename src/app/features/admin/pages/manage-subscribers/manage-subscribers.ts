@@ -1,4 +1,5 @@
-import { Component, inject, signal, computed, OnInit, DestroyRef } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, DestroyRef, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -32,7 +33,9 @@ export class ManageSubscribers implements OnInit {
   private http       = inject(HttpClient);
   private toast      = inject(ToastService);
   private destroyRef = inject(DestroyRef);
+  private platformId = inject(PLATFORM_ID);
   private api        = `${environment.apiUrl}/subscribers`;
+  private pushApi    = `${environment.apiUrl}/push`;
 
   subscribers  = signal<Subscriber[]>([]);
   isLoading    = signal(true);
@@ -62,6 +65,7 @@ export class ManageSubscribers implements OnInit {
   pageStart        = computed(() => (this.currentPage() - 1) * this.LIMIT + 1);
   pageEnd          = computed(() => Math.min(this.currentPage() * this.LIMIT, this.totalCount()));
   activeCount      = computed(() => this.stats()?.active ?? 0);
+  pushCount        = signal(0);
 
   pageNumbers = computed(() => {
     const total = this.totalPages(), cur = this.currentPage();
@@ -81,7 +85,35 @@ export class ManageSubscribers implements OnInit {
     this.search$.pipe(debounceTime(350), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.load(1));
     this.loadStats();
+    this.loadPushCount();
     this.load(1);
+  }
+
+  loadPushCount(): void {
+    this.http.get<{ status: number; data: { total: number } }>(`${this.pushApi}/stats`)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({ next: r => this.pushCount.set(r.data?.total ?? 0), error: () => {} });
+  }
+
+  exportCSV(): void {
+    if (!isPlatformBrowser(this.platformId) || !this.subscribers().length) return;
+    const rows = [
+      ['Email', 'Name', 'Status', 'Joined'],
+      ...this.subscribers().map(s => [
+        s.email,
+        `"${(s.name || '').replace(/"/g, '""')}"`,
+        s.status,
+        new Date(s.createdAt).toLocaleDateString('en-IN'),
+      ]),
+    ];
+    const csv  = rows.map(r => r.join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url;
+    a.download = `subscribers-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
   }
 
   loadStats(): void {

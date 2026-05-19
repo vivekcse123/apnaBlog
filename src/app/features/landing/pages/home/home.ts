@@ -27,6 +27,7 @@ import { ReadingHistory }        from '../../../../core/services/reading-history
 import { AllPostsCache }         from '../../../../core/services/all-posts-cache';
 import { TaxonomyService }       from '../../../../core/services/taxonomy.service';
 import { BookmarkService }       from '../../../../core/services/bookmark.service';
+import { PushNotificationService } from '../../../../core/services/push-notification.service';
 
 const PAGE_SIZE   = 8;
 const FETCH_LIMIT = 20;   // posts per server page — keeps initial payload small
@@ -85,6 +86,7 @@ export class Home implements OnInit, OnDestroy {
   private router         = inject(Router);
   private auth           = inject(Auth);
   private http           = inject(HttpClient);
+  pushService            = inject(PushNotificationService);
   private userService    = inject(UserService);
   themeService           = inject(ThemeService);
   private platformId     = inject(PLATFORM_ID);

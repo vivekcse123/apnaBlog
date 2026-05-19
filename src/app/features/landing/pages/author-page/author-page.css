@@ -269,6 +269,53 @@
 /* ── POSTS GRID ── */
 .ap-main { padding: 24px 5% 48px; }
 
+/* ── Top Stories ── */
+.ap-top-section {
+  margin-bottom: 32px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px;
+}
+.ap-top-title {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 15px; font-weight: 700; margin: 0 0 16px;
+  color: var(--text-primary);
+}
+.ap-top-grid { display: flex; flex-direction: column; gap: 10px; }
+.ap-top-card {
+  display: flex; align-items: center; gap: 14px;
+  padding: 10px 12px; border-radius: 10px;
+  border: 1px solid var(--border); background: var(--bg-surface-alt);
+  cursor: pointer; transition: border-color .15s, background .15s;
+}
+.ap-top-card:hover { border-color: #43cea2; background: color-mix(in srgb, #43cea2 5%, var(--bg-surface)); }
+.ap-top-rank {
+  font-size: 20px; font-weight: 800; color: var(--text-muted);
+  min-width: 28px; text-align: center; flex-shrink: 0;
+}
+.ap-top-card:nth-child(1) .ap-top-rank { color: #f59e0b; }
+.ap-top-card:nth-child(2) .ap-top-rank { color: #9ca3af; }
+.ap-top-card:nth-child(3) .ap-top-rank { color: #b45309; }
+.ap-top-img {
+  width: 72px; height: 48px; border-radius: 8px;
+  object-fit: cover; flex-shrink: 0; background: var(--bg-hover);
+}
+.ap-top-img--empty {
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; font-weight: 800; color: var(--text-muted);
+}
+.ap-top-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.ap-top-cat {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .06em; color: #0f7a5e;
+}
+.ap-top-name {
+  font-size: 13px; font-weight: 600; color: var(--text-primary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0;
+}
+.ap-top-meta { display: flex; gap: 12px; font-size: 12px; color: var(--text-muted); }
+
 .ap-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -467,7 +514,33 @@
   .ap-name { font-size: 18px; }
   .ap-follow-wrap { width: 100%; }
   .ap-follow-btn { width: 100%; justify-content: center; }
-  .ap-stat strong { font-size: 16px; }
+  /* Stats — 3×2 grid */
+  .ap-stats-bar {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    padding: 0;
+  }
+  .ap-stat-div { display: none; }
+
+  .ap-stat {
+    padding: 12px 6px;
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* Right column — no right border: Views (5th child) and Likes (11th child) */
+  .ap-stats-bar > .ap-stat:nth-child(5),
+  .ap-stats-bar > .ap-stat:nth-child(11) { border-right: none; }
+
+  /* Bottom row — no bottom border: Followers (7), Following (9), Likes (11) */
+  .ap-stats-bar > .ap-stat:nth-child(7),
+  .ap-stats-bar > .ap-stat:nth-child(9),
+  .ap-stats-bar > .ap-stat:nth-child(11) { border-bottom: none; }
+
+  .ap-stat strong { font-size: 17px; }
+  .ap-stat span   { font-size: 11px; }
+
   .ap-grid { grid-template-columns: 1fr; gap: 16px; }
   .ap-main { padding: 16px 4% 40px; }
   .ap-about { padding: 16px 4% 40px; }

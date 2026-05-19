@@ -47,12 +47,18 @@ export class AuthorPage implements OnInit {
   shortsLoading   = signal(false);
   selectedTab     = signal<'posts' | 'shorts' | 'about'>('posts');
 
+  // Accurate stats from backend
+  totalViewsFromApi  = signal(0);
+  totalLikesFromApi  = signal(0);
+  shortsCountFromApi = signal(0);
+  topPosts           = signal<Post[]>([]);
+
   isLoggedIn   = computed(() => this.auth.isAuthorized());
   currentUid   = computed(() => this.auth.userId());
   isOwnProfile = computed(() => !!this.currentUid() && this.currentUid() === (this.author() as any)?._id);
 
-  totalViews = computed(() => this.posts().reduce((s, p) => s + (p.views ?? 0), 0));
-  totalLikes = computed(() => this.posts().reduce((s, p) => s + (p.likesCount ?? 0), 0));
+  totalViews = computed(() => this.totalViewsFromApi() || this.posts().reduce((s, p) => s + (p.views ?? 0), 0));
+  totalLikes = computed(() => this.totalLikesFromApi() || this.posts().reduce((s, p) => s + (p.likesCount ?? 0), 0));
 
   get authorName(): string    { return (this.author() as any)?.name     ?? 'Anonymous'; }
   get authorInitial(): string { return this.authorName.charAt(0).toUpperCase(); }
@@ -88,6 +94,10 @@ export class AuthorPage implements OnInit {
             this.followersCount.set((res as any).followersCount ?? 0);
             this.followingCount.set((res as any).followingCount ?? 0);
             this.isFollowing.set((res as any).isFollowing ?? false);
+            this.totalViewsFromApi.set((res as any).totalViews ?? 0);
+            this.totalLikesFromApi.set((res as any).totalLikes ?? 0);
+            this.shortsCountFromApi.set((res as any).shortsCount ?? 0);
+            this.topPosts.set((res as any).topPosts ?? []);
             // Show the profile immediately — don't wait for posts/shorts to load
             this.isLoading.set(false);
             this.setMeta(user);

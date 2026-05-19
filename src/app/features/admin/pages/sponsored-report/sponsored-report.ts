@@ -81,6 +81,7 @@ export class SponsoredReport implements OnInit {
   inquiries        = signal<Inquiry[]>([]);
   inquiriesLoading = signal(true);
   newInquiryCount  = computed(() => this.inquiries().filter(i => i.status === 'new').length);
+  activeInquiry    = signal<Inquiry | null>(null);
 
   filtered = computed(() => {
     const f = this.filter();
@@ -126,6 +127,9 @@ export class SponsoredReport implements OnInit {
         error: () => this.inquiriesLoading.set(false),
       });
   }
+
+  openMessage(inq: Inquiry): void  { this.activeInquiry.set(inq); }
+  closeMessage(): void { this.activeInquiry.set(null); }
 
   updateInquiryStatus(inq: Inquiry, status: 'new' | 'contacted' | 'closed'): void {
     this.http.patch<{ status: number; data: Inquiry }>(`${this.inquiryApi}/${inq._id}/status`, { status, read: true })

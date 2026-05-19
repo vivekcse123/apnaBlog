@@ -1,10 +1,10 @@
 <div class="ms-page">
 
-  <!-- Header -->
+  <!-- ── Header ── -->
   <div class="ms-header">
     <div>
       <h2 class="ms-title">Sponsorship</h2>
-      <p class="ms-sub">Inquiries from brands and sponsored short performance</p>
+      <p class="ms-sub">Brand inquiries and sponsored short performance</p>
     </div>
     @if (activeTab() === 'performance') {
       <button class="sp-export-btn" (click)="exportCSV()" [disabled]="isLoading() || !shorts().length">
@@ -17,11 +17,12 @@
     }
   </div>
 
-  <!-- Tab switcher -->
+  <!-- ── Tab switcher ── -->
   <div class="sp-main-tabs">
     <button class="sp-main-tab" [class.sp-main-tab--active]="activeTab() === 'inquiries'" (click)="activeTab.set('inquiries')">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><path d="M22 6l-10 7L2 6"/>
+        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+        <path d="M22 6l-10 7L2 6"/>
       </svg>
       Inquiries
       @if (newInquiryCount() > 0) {
@@ -30,14 +31,16 @@
     </button>
     <button class="sp-main-tab" [class.sp-main-tab--active]="activeTab() === 'performance'" (click)="activeTab.set('performance')">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>
+        <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
+        <polyline points="16 7 22 7 22 13"/>
       </svg>
       Performance
     </button>
   </div>
 
-  <!-- ── Inquiries tab ── -->
+  <!-- ══════════ INQUIRIES TAB ══════════ -->
   @if (activeTab() === 'inquiries') {
+
     @if (inquiriesLoading()) {
       <div class="ms-skeletons">
         @for (i of [1,2,3]; track i) {
@@ -51,10 +54,11 @@
     } @else if (inquiries().length === 0) {
       <div class="ms-empty">
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--border-strong)" stroke-width="1.5" stroke-linecap="round">
-          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><path d="M22 6l-10 7L2 6"/>
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+          <path d="M22 6l-10 7L2 6"/>
         </svg>
         <p>No inquiries yet</p>
-        <span style="font-size:12px;color:var(--text-muted)">Brands submit inquiries via the Advertise page</span>
+        <span class="ms-sub">Brands submit inquiries via the Advertise page</span>
       </div>
     } @else {
       <div class="ms-card">
@@ -74,7 +78,8 @@
             <tbody>
               @for (inq of inquiries(); track inq._id) {
                 <tr [class.sp-row--new]="inq.status === 'new'">
-                  <td>
+
+                  <td data-label="Company">
                     <div class="sp-company-cell">
                       @if (!inq.read && inq.status === 'new') {
                         <span class="sp-unread-dot"></span>
@@ -82,7 +87,8 @@
                       <span class="sp-company-name">{{ inq.company }}</span>
                     </div>
                   </td>
-                  <td>
+
+                  <td data-label="Contact">
                     <div class="sp-contact-cell">
                       <span class="sp-contact-name">{{ inq.name }}</span>
                       <a [href]="'mailto:' + inq.email" class="sp-contact-email">{{ inq.email }}</a>
@@ -91,13 +97,21 @@
                       }
                     </div>
                   </td>
-                  <td><span class="sp-ad-badge">{{ adTypeLabel(inq.adType) }}</span></td>
-                  <td class="sp-budget">{{ inq.budget }}</td>
-                  <td class="sp-message-cell">
-                    <span class="sp-message-preview" [title]="inq.message">{{ inq.message }}</span>
+
+                  <td data-label="Ad Type">
+                    <span class="sp-ad-badge">{{ adTypeLabel(inq.adType) }}</span>
                   </td>
-                  <td class="ms-td-date">{{ formatDate(inq.createdAt) }}</td>
-                  <td>
+
+                  <td data-label="Budget" class="sp-budget">{{ inq.budget }}</td>
+
+                  <td data-label="Message" class="sp-message-cell" (click)="openMessage(inq)">
+                    <span class="sp-message-preview">{{ inq.message }}</span>
+                    <span class="sp-read-more">Read more</span>
+                  </td>
+
+                  <td data-label="Received" class="ms-td-date">{{ formatDate(inq.createdAt) }}</td>
+
+                  <td data-label="Status">
                     <select class="sp-status-select"
                             [value]="inq.status"
                             (change)="updateInquiryStatus(inq, $any($event.target).value)">
@@ -106,244 +120,280 @@
                       <option value="closed">🟢 Closed</option>
                     </select>
                   </td>
+
                 </tr>
               }
             </tbody>
           </table>
         </div>
       </div>
+    }
+
+  }
+
+  <!-- ══════════ PERFORMANCE TAB ══════════ -->
+  @if (activeTab() === 'performance') {
+
+    @if (isLoading()) {
+      <div class="ms-skeletons">
+        @for (i of [1,2,3,4]; track i) {
+          <div class="ms-skeleton-row">
+            <div class="sk sk-thumb"></div>
+            <div class="sk sk-line sk-lg"></div>
+            <div class="sk sk-line sk-sm"></div>
+            <div class="sk sk-line sk-xs"></div>
+          </div>
+        }
+      </div>
+    } @else if (!stats()) {
+      <div class="ms-empty">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--border-strong)" stroke-width="1.5" stroke-linecap="round">
+          <path d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.9L15 14v-4z"/>
+          <rect x="3" y="6" width="12" height="12" rx="2"/>
+        </svg>
+        <p>No sponsored shorts yet</p>
+      </div>
+    } @else {
+
+      <!-- Stat cards -->
+      <div class="stats-bar">
+        <div class="stat-card">
+          <div class="stat-icon-wrap" style="background:rgba(24,90,157,.12)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#185a9d" stroke-width="2" stroke-linecap="round">
+              <path d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.9L15 14v-4z"/>
+              <rect x="3" y="6" width="12" height="12" rx="2"/>
+            </svg>
+          </div>
+          <div class="stat-body">
+            <span class="stat-label">Total Sponsored</span>
+            <span class="stat-value">{{ stats()!.total }}</span>
+            <span class="stat-chip" style="color:#185a9d;background:rgba(24,90,157,.08)">All time</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon-wrap" style="background:rgba(22,163,74,.12)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-5"/>
+            </svg>
+          </div>
+          <div class="stat-body">
+            <span class="stat-label">Active Now</span>
+            <span class="stat-value" style="color:#16a34a">{{ stats()!.active }}</span>
+            <span class="stat-chip" style="color:#16a34a;background:rgba(22,163,74,.08)">Live in feed</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon-wrap" style="background:rgba(67,206,162,.12)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#43cea2" stroke-width="2" stroke-linecap="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+            </svg>
+          </div>
+          <div class="stat-body">
+            <span class="stat-label">Total Views</span>
+            <span class="stat-value" style="color:#43cea2">{{ formatCount(stats()!.totalViews) }}</span>
+            <span class="stat-chip" style="color:#43cea2;background:rgba(67,206,162,.08)">Impressions</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon-wrap" style="background:rgba(239,68,68,.12)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
+            </svg>
+          </div>
+          <div class="stat-body">
+            <span class="stat-label">Total Likes</span>
+            <span class="stat-value" style="color:#ef4444">{{ formatCount(stats()!.totalLikes) }}</span>
+            <span class="stat-chip" style="color:#ef4444;background:rgba(239,68,68,.08)">Engagement</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top performers -->
+      @if (topByViews().length > 0) {
+        <div class="sp-top-section">
+          <h3 class="sp-section-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>
+            </svg>
+            Top Performers by Views
+          </h3>
+          <div class="sp-top-grid">
+            @for (s of topByViews(); track s._id; let i = $index) {
+              <div class="sp-top-card">
+                <div class="sp-top-rank" [class.sp-rank--gold]="i===0" [class.sp-rank--silver]="i===1" [class.sp-rank--bronze]="i===2">
+                  #{{ i + 1 }}
+                </div>
+                @if (s.thumbnailUrl) {
+                  <img [src]="s.thumbnailUrl" [alt]="s.title" class="sp-top-thumb" />
+                } @else {
+                  <div class="sp-top-thumb sp-top-thumb--empty">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="1.5"><path d="M8 5v14l11-7z"/></svg>
+                  </div>
+                }
+                <div class="sp-top-info">
+                  <span class="sp-top-title">{{ s.title }}</span>
+                  <div class="sp-top-metrics">
+                    <span>👁 {{ formatCount(s.views) }}</span>
+                    <span>❤️ {{ formatCount(s.likesCount) }}</span>
+                    <span>💬 {{ formatCount(s.commentsCount) }}</span>
+                  </div>
+                </div>
+                <span class="sp-status-badge" [class.sp-status-badge--active]="s.isActive" [class.sp-status-badge--expired]="s.isExpired">
+                  {{ s.isActive ? 'Active' : s.isExpired ? 'Expired' : '∞' }}
+                </span>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Filter tabs -->
+      <div class="sp-filter-tabs">
+        <button class="sp-tab" [class.sp-tab--active]="filter() === 'all'" (click)="setFilter('all')">
+          All ({{ stats()!.total }})
+        </button>
+        <button class="sp-tab" [class.sp-tab--active]="filter() === 'active'" (click)="setFilter('active')">
+          Active ({{ stats()!.active }})
+        </button>
+        <button class="sp-tab" [class.sp-tab--active]="filter() === 'expired'" (click)="setFilter('expired')">
+          Expired ({{ stats()!.expired }})
+        </button>
+      </div>
+
+      <!-- Table -->
+      @if (filtered().length === 0) {
+        <div class="ms-empty"><p>No shorts in this filter</p></div>
+      } @else {
+        <div class="ms-card">
+          <div class="ms-table-wrap">
+            <table class="ms-table">
+              <thead>
+                <tr>
+                  <th>Short</th>
+                  <th>Performance</th>
+                  <th>Duration</th>
+                  <th>Status</th>
+                  <th>Expiry Date</th>
+                  <th>On Expiry</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (s of filtered(); track s._id) {
+                  <tr>
+                    <td>
+                      <div class="ms-td-short">
+                        <div class="ms-thumb-wrap">
+                          @if (s.thumbnailUrl) {
+                            <img [src]="s.thumbnailUrl" [alt]="s.title" class="ms-thumb" loading="lazy" />
+                          } @else {
+                            <div class="ms-thumb ms-thumb--placeholder">
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="1.5"><path d="M8 5v14l11-7z"/></svg>
+                            </div>
+                          }
+                        </div>
+                        <div class="ms-short-info">
+                          <span class="ms-short-title">{{ s.title }}</span>
+                          <span class="ms-short-author">{{ s.category }} · &#64;{{ s.user?.name }}</span>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td data-label="Performance">
+                      <div class="sp-metrics">
+                        <span class="sp-metric">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                          {{ formatCount(s.views) }} views
+                        </span>
+                        <span class="sp-metric">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+                          {{ formatCount(s.likesCount) }} likes
+                        </span>
+                        <span class="sp-metric">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                          {{ formatCount(s.commentsCount) }} comments
+                        </span>
+                      </div>
+                    </td>
+
+                    <td data-label="Duration">
+                      <div class="sp-duration-wrap">
+                        <span class="sp-duration-ran">{{ s.daysRan }}d ran</span>
+                        @if (s.isActive && s.daysLeft !== null) {
+                          <span class="sp-duration-left">{{ s.daysLeft }}d left</span>
+                        }
+                      </div>
+                    </td>
+
+                    <td data-label="Status">
+                      <span class="sp-status-badge"
+                            [class.sp-status-badge--active]="s.isActive"
+                            [class.sp-status-badge--expired]="s.isExpired"
+                            [class.sp-status-badge--unlimited]="!s.isExpired && !s.daysLeft">
+                        @if (s.isActive) { 🟢 Active }
+                        @else if (s.isExpired) { ⚫ Expired }
+                        @else { 🔵 No Expiry }
+                      </span>
+                    </td>
+
+                    <td data-label="Expiry Date" class="ms-td-date">
+                      {{ s.sponsoredUntil ? formatDate(s.sponsoredUntil) : '—' }}
+                    </td>
+
+                    <td data-label="On Expiry">
+                      @if (s.sponsoredExpiryAction === 'delete') {
+                        <span class="sp-expiry-badge sp-expiry-badge--delete">Delete</span>
+                      } @else if (s.sponsoredExpiryAction === 'keep') {
+                        <span class="sp-expiry-badge sp-expiry-badge--keep">Keep</span>
+                      } @else {
+                        <span class="ms-td-date">—</span>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+
     }
   }
 
-  <!-- ── Performance tab ── -->
-  @if (activeTab() === 'performance') {
-  @if (isLoading()) {
-    <div class="ms-skeletons">
-      @for (i of [1,2,3,4]; track i) {
-        <div class="ms-skeleton-row">
-          <div class="sk sk-thumb"></div>
-          <div class="sk sk-line sk-lg"></div>
-          <div class="sk sk-line sk-sm"></div>
-          <div class="sk sk-line sk-xs"></div>
-        </div>
-      }
-    </div>
-  } @else if (!stats()) {
-    <div class="ms-empty">
-      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--border-strong)" stroke-width="1.5" stroke-linecap="round">
-        <path d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.9L15 14v-4z"/>
-        <rect x="3" y="6" width="12" height="12" rx="2"/>
-      </svg>
-      <p>No sponsored shorts yet</p>
-    </div>
-  } @else {
-
-    <!-- Stats -->
-    <div class="stats-bar">
-      <div class="stat-card">
-        <div class="stat-icon-wrap" style="background:rgba(24,90,157,.12)">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#185a9d" stroke-width="2" stroke-linecap="round">
-            <path d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.9L15 14v-4z"/>
-            <rect x="3" y="6" width="12" height="12" rx="2"/>
-          </svg>
-        </div>
-        <div class="stat-body">
-          <span class="stat-label">Total Sponsored</span>
-          <span class="stat-value">{{ stats()!.total }}</span>
-          <span class="stat-chip" style="color:#185a9d;background:rgba(24,90,157,.08)">All time</span>
-        </div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-icon-wrap" style="background:rgba(22,163,74,.12)">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-5"/>
-          </svg>
-        </div>
-        <div class="stat-body">
-          <span class="stat-label">Active Now</span>
-          <span class="stat-value" style="color:#16a34a">{{ stats()!.active }}</span>
-          <span class="stat-chip" style="color:#16a34a;background:rgba(22,163,74,.08)">Live in feed</span>
-        </div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-icon-wrap" style="background:rgba(67,206,162,.12)">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#43cea2" stroke-width="2" stroke-linecap="round">
-            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
-          </svg>
-        </div>
-        <div class="stat-body">
-          <span class="stat-label">Total Views</span>
-          <span class="stat-value" style="color:#43cea2">{{ formatCount(stats()!.totalViews) }}</span>
-          <span class="stat-chip" style="color:#43cea2;background:rgba(67,206,162,.08)">Impressions</span>
-        </div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-icon-wrap" style="background:rgba(239,68,68,.12)">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
-          </svg>
-        </div>
-        <div class="stat-body">
-          <span class="stat-label">Total Likes</span>
-          <span class="stat-value" style="color:#ef4444">{{ formatCount(stats()!.totalLikes) }}</span>
-          <span class="stat-chip" style="color:#ef4444;background:rgba(239,68,68,.08)">Engagement</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Top performers -->
-    @if (topByViews().length > 0) {
-      <div class="sp-top-section">
-        <h3 class="sp-section-title">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>
-          </svg>
-          Top Performers by Views
-        </h3>
-        <div class="sp-top-grid">
-          @for (s of topByViews(); track s._id; let i = $index) {
-            <div class="sp-top-card">
-              <div class="sp-top-rank" [class.sp-rank--gold]="i===0" [class.sp-rank--silver]="i===1" [class.sp-rank--bronze]="i===2">
-                #{{ i + 1 }}
-              </div>
-              @if (s.thumbnailUrl) {
-                <img [src]="s.thumbnailUrl" [alt]="s.title" class="sp-top-thumb" />
-              } @else {
-                <div class="sp-top-thumb sp-top-thumb--empty">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="1.5"><path d="M8 5v14l11-7z"/></svg>
-                </div>
-              }
-              <div class="sp-top-info">
-                <span class="sp-top-title">{{ s.title }}</span>
-                <div class="sp-top-metrics">
-                  <span>👁 {{ formatCount(s.views) }}</span>
-                  <span>❤️ {{ formatCount(s.likesCount) }}</span>
-                  <span>💬 {{ formatCount(s.commentsCount) }}</span>
-                </div>
-              </div>
-              <span class="sp-status-badge" [class.sp-status-badge--active]="s.isActive" [class.sp-status-badge--expired]="s.isExpired">
-                {{ s.isActive ? 'Active' : s.isExpired ? 'Expired' : '∞' }}
-              </span>
-            </div>
-          }
-        </div>
-      </div>
-    }
-
-    <!-- Filter tabs -->
-    <div class="sp-filter-tabs">
-      <button class="sp-tab" [class.sp-tab--active]="filter() === 'all'"     (click)="setFilter('all')">
-        All ({{ stats()!.total }})
-      </button>
-      <button class="sp-tab" [class.sp-tab--active]="filter() === 'active'"  (click)="setFilter('active')">
-        Active ({{ stats()!.active }})
-      </button>
-      <button class="sp-tab" [class.sp-tab--active]="filter() === 'expired'" (click)="setFilter('expired')">
-        Expired ({{ stats()!.expired }})
-      </button>
-    </div>
-
-    <!-- Table -->
-    @if (filtered().length === 0) {
-      <div class="ms-empty"><p>No shorts in this category</p></div>
-    } @else {
-      <div class="ms-card">
-        <div class="ms-table-wrap">
-          <table class="ms-table">
-            <thead>
-              <tr>
-                <th>Short</th>
-                <th>Performance</th>
-                <th>Duration</th>
-                <th>Status</th>
-                <th>Expiry Date</th>
-                <th>On Expiry</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (s of filtered(); track s._id) {
-                <tr>
-                  <!-- Short info -->
-                  <td class="ms-td-short">
-                    <div class="ms-thumb-wrap">
-                      @if (s.thumbnailUrl) {
-                        <img [src]="s.thumbnailUrl" [alt]="s.title" class="ms-thumb" loading="lazy" />
-                      } @else {
-                        <div class="ms-thumb ms-thumb--placeholder">
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="1.5"><path d="M8 5v14l11-7z"/></svg>
-                        </div>
-                      }
-                    </div>
-                    <div class="ms-short-info">
-                      <span class="ms-short-title">{{ s.title }}</span>
-                      <span class="ms-short-author">{{ s.category }} · &#64;{{ s.user?.name }}</span>
-                    </div>
-                  </td>
-
-                  <!-- Performance -->
-                  <td data-label="Performance">
-                    <div class="sp-metrics">
-                      <span class="sp-metric">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                        {{ formatCount(s.views) }}
-                      </span>
-                      <span class="sp-metric">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
-                        {{ formatCount(s.likesCount) }}
-                      </span>
-                      <span class="sp-metric">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-                        {{ formatCount(s.commentsCount) }}
-                      </span>
-                    </div>
-                  </td>
-
-                  <!-- Duration -->
-                  <td data-label="Duration" class="sp-td-duration">
-                    <span class="sp-duration-ran">{{ s.daysRan }}d ran</span>
-                    @if (s.isActive && s.daysLeft !== null) {
-                      <span class="sp-duration-left">{{ s.daysLeft }}d left</span>
-                    }
-                  </td>
-
-                  <!-- Status -->
-                  <td data-label="Status">
-                    <span class="sp-status-badge"
-                          [class.sp-status-badge--active]="s.isActive"
-                          [class.sp-status-badge--expired]="s.isExpired"
-                          [class.sp-status-badge--unlimited]="!s.isExpired && !s.daysLeft">
-                      @if (s.isActive) { 🟢 Active }
-                      @else if (s.isExpired) { ⚫ Expired }
-                      @else { 🔵 No Expiry }
-                    </span>
-                  </td>
-
-                  <!-- Expiry date -->
-                  <td data-label="Expiry Date" class="ms-td-date">
-                    {{ s.sponsoredUntil ? formatDate(s.sponsoredUntil) : '—' }}
-                  </td>
-
-                  <!-- On expiry -->
-                  <td data-label="On Expiry">
-                    @if (s.sponsoredExpiryAction === 'delete') {
-                      <span class="sp-expiry-badge sp-expiry-badge--delete">Delete</span>
-                    } @else if (s.sponsoredExpiryAction === 'keep') {
-                      <span class="sp-expiry-badge sp-expiry-badge--keep">Keep</span>
-                    } @else {
-                      <span class="ms-td-date">—</span>
-                    }
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      </div>
-    }
-
-  } <!-- /performance tab -->
-
 </div>
+
+<!-- ── Full message modal ── -->
+@if (activeInquiry()) {
+  <div class="ms-modal-backdrop" (click)="closeMessage()">
+    <div class="sp-msg-modal" (click)="$event.stopPropagation()">
+      <div class="sp-msg-modal-header">
+        <div>
+          <h3>{{ activeInquiry()!.company }}</h3>
+          <span class="sp-ad-badge">{{ adTypeLabel(activeInquiry()!.adType) }}</span>
+        </div>
+        <button class="sp-msg-close" (click)="closeMessage()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div class="sp-msg-meta">
+        <span>{{ activeInquiry()!.name }}</span>
+        <a [href]="'mailto:' + activeInquiry()!.email" class="sp-contact-email">{{ activeInquiry()!.email }}</a>
+        @if (activeInquiry()!.phone) { <span>{{ activeInquiry()!.phone }}</span> }
+        <span class="sp-budget">{{ activeInquiry()!.budget }}</span>
+        <span class="ms-td-date">{{ formatDate(activeInquiry()!.createdAt) }}</span>
+      </div>
+      <p class="sp-msg-body">{{ activeInquiry()!.message }}</p>
+      <div class="sp-msg-footer">
+        <a [href]="'mailto:' + activeInquiry()!.email" class="sp-reply-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+            <path d="M22 6l-10 7L2 6"/>
+          </svg>
+          Reply via Email
+        </a>
+        <button class="ms-modal-cancel" (click)="closeMessage()">Close</button>
+      </div>
+    </div>
+  </div>
+}

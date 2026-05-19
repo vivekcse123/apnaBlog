@@ -67,6 +67,17 @@
 .ms-spin { display:inline-block;width:12px;height:12px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite; }
 @keyframes spin { to{transform:rotate(360deg)} }
 
+/* ── Header actions ── */
+.ms-header-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.sp-export-btn {
+  display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px;
+  border-radius: 10px; border: 1px solid var(--border); background: var(--bg-surface);
+  color: var(--text-secondary); font-size: 13px; font-weight: 600;
+  font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all .15s;
+}
+.sp-export-btn:hover:not(:disabled) { border-color: #43cea2; color: #43cea2; }
+.sp-export-btn:disabled { opacity: .4; cursor: not-allowed; }
+
 /* ── Send Newsletter button ── */
 .nl-send-btn {
   display: inline-flex; align-items: center; gap: 8px;

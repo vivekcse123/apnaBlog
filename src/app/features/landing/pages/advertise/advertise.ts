@@ -1,9 +1,11 @@
-import { Component, inject, signal, PLATFORM_ID } from '@angular/core';
+import { Component, inject, signal, PLATFORM_ID, OnInit } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule, NgForm } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import { Meta, Title } from '@angular/platform-browser';
+import { DOCUMENT } from '@angular/common';
 import { environment } from '../../../../../environments/environment';
 
 interface InquiryForm {
@@ -23,9 +25,12 @@ interface InquiryForm {
   templateUrl: './advertise.html',
   styleUrl:    './advertise.css',
 })
-export class Advertise {
+export class Advertise implements OnInit {
   private http       = inject(HttpClient);
   private platformId = inject(PLATFORM_ID);
+  private meta       = inject(Meta);
+  private titleSvc   = inject(Title);
+  private document   = inject(DOCUMENT);
 
   navMenuOpen   = false;
   submitted     = false;
@@ -73,6 +78,33 @@ export class Advertise {
     'Under ₹2,000', '₹2,000 – ₹5,000', '₹5,000 – ₹15,000',
     '₹15,000 – ₹50,000', 'Above ₹50,000', 'Let\'s discuss',
   ];
+
+  ngOnInit(): void { this.setMeta(); }
+
+  private setMeta(): void {
+    this.titleSvc.setTitle('Advertise with ApnaInsights | Reach India\'s Digital Audience');
+    this.meta.updateTag({ name: 'description', content: 'Partner with ApnaInsights — India\'s community blogging platform. Advertise via sponsored shorts, blog features, and newsletter placements. Reach engaged readers across 14 categories including Technology, Health, Sports and more.' });
+    this.meta.updateTag({ name: 'keywords', content: 'advertise on ApnaInsights, sponsored content India, blog advertising India, digital advertising India, sponsored shorts, content marketing India' });
+    this.meta.updateTag({ name: 'robots', content: 'index, follow' });
+    this.meta.updateTag({ property: 'og:type',        content: 'website' });
+    this.meta.updateTag({ property: 'og:title',       content: 'Advertise with ApnaInsights | Reach India\'s Digital Audience' });
+    this.meta.updateTag({ property: 'og:description', content: 'Partner with ApnaInsights to reach engaged Indian readers. Sponsored shorts, blog features, newsletter ads — flexible packages for every budget.' });
+    this.meta.updateTag({ property: 'og:url',         content: 'https://apnainsights.com/advertise' });
+    this.meta.updateTag({ property: 'og:site_name',   content: 'ApnaInsights' });
+    this.meta.updateTag({ property: 'og:image',       content: 'https://apnainsights.com/og-image.png' });
+    this.meta.updateTag({ name: 'twitter:card',        content: 'summary_large_image' });
+    this.meta.updateTag({ name: 'twitter:title',       content: 'Advertise with ApnaInsights' });
+    this.meta.updateTag({ name: 'twitter:description', content: 'Reach India\'s growing digital audience. Sponsored shorts, blog features, newsletter ads.' });
+    this.meta.updateTag({ name: 'twitter:image',       content: 'https://apnainsights.com/og-image.png' });
+
+    let canonical = this.document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
+    if (!canonical) {
+      canonical = this.document.createElement('link');
+      canonical.setAttribute('rel', 'canonical');
+      this.document.head.appendChild(canonical);
+    }
+    canonical.setAttribute('href', 'https://apnainsights.com/advertise');
+  }
 
   readonly adTypes = [
     { value: 'sponsored_short', label: 'Sponsored Short' },

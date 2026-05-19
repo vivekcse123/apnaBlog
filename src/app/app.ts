@@ -9,6 +9,7 @@ import { LoaderService } from './core/services/loader-service';
 import { AliveService } from './core/services/alive-server/alive-service';
 import { VisitorService } from './core/services/visitor';
 import { Auth } from './core/services/auth';
+import { PushNotificationService } from './core/services/push-notification.service';
 
 @Component({
   selector: 'app-root',
@@ -25,6 +26,7 @@ export class App implements OnInit, OnDestroy {
   private visitorService = inject(VisitorService);
   private authService    = inject(Auth);
   private platformId     = inject(PLATFORM_ID);
+  private pushService    = inject(PushNotificationService);
   private aliveStarted   = false;
   private isFirstNav     = true;
 
@@ -34,6 +36,11 @@ export class App implements OnInit, OnDestroy {
     // Only logout if a token EXISTS but has expired — not for unauthenticated visitors
     if (isPlatformBrowser(this.platformId) && this.authService.getToken() && this.authService.isTokenExpired()) {
       this.authService.logout();
+    }
+
+    // Register service worker + restore push subscription state
+    if (isPlatformBrowser(this.platformId)) {
+      this.pushService.init();
     }
 
     this.routerSub = this.router.events.subscribe(event => {

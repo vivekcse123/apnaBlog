@@ -830,6 +830,25 @@
 </button>
 
 <!-- ── Newsletter Subscribe ── -->
+<!-- ── Push Notification banner ── -->
+@if (pushService.isSupported && pushService.permission() !== 'denied') {
+  @if (!pushService.subscribed()) {
+    <div class="push-banner">
+      <div class="push-banner-left">
+        <div class="push-banner-icon">🔔</div>
+        <div>
+          <strong>Get notified instantly</strong>
+          <p>Enable push notifications to know when new stories are published.</p>
+        </div>
+      </div>
+      <button class="push-banner-btn" (click)="pushService.requestAndSubscribe()" [disabled]="pushService.loading()">
+        @if (pushService.loading()) { <span class="nl-spinner"></span> Enabling… }
+        @else { Enable Notifications }
+      </button>
+    </div>
+  }
+}
+
 <section class="newsletter-section" aria-labelledby="newsletter-heading">
   <div class="newsletter-inner">
     <div class="newsletter-text">

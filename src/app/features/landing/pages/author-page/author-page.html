@@ -99,8 +99,13 @@
         </div>
         <div class="ap-stat-div"></div>
         <div class="ap-stat">
-          <strong>{{ fmtCount(shorts().length) }}</strong>
+          <strong>{{ fmtCount(shortsCountFromApi()) }}</strong>
           <span>Shorts</span>
+        </div>
+        <div class="ap-stat-div"></div>
+        <div class="ap-stat">
+          <strong>{{ fmtCount(totalViews()) }}</strong>
+          <span>Views</span>
         </div>
         <div class="ap-stat-div"></div>
         <div class="ap-stat">
@@ -139,6 +144,39 @@
     <!-- ── Posts tab ── -->
     @if (selectedTab() === 'posts') {
       <main class="ap-main">
+
+        <!-- Top Stories -->
+        @if (topPosts().length > 0) {
+          <section class="ap-top-section">
+            <h2 class="ap-top-title">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>
+              </svg>
+              Top Stories
+            </h2>
+            <div class="ap-top-grid">
+              @for (p of topPosts(); track p._id; let i = $index) {
+                <article class="ap-top-card" (click)="navigateToBlog(p)" role="button" tabindex="0" (keydown.enter)="navigateToBlog(p)">
+                  <div class="ap-top-rank">{{ i + 1 }}</div>
+                  @if (p.featuredImage) {
+                    <img [src]="p.featuredImage" [alt]="p.title" class="ap-top-img" loading="lazy" />
+                  } @else {
+                    <div class="ap-top-img ap-top-img--empty">{{ p.title.charAt(0) }}</div>
+                  }
+                  <div class="ap-top-info">
+                    <span class="ap-top-cat">{{ p.categories[0] }}</span>
+                    <h3 class="ap-top-name">{{ p.title }}</h3>
+                    <div class="ap-top-meta">
+                      <span>👁 {{ fmtCount(p.views) }}</span>
+                      <span>❤️ {{ fmtCount(p.likesCount) }}</span>
+                    </div>
+                  </div>
+                </article>
+              }
+            </div>
+          </section>
+        }
+
         @if (posts().length === 0) {
           <div class="ap-empty">
             <span class="ap-empty-icon">📭</span>

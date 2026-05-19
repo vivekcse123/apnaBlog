@@ -145,7 +145,17 @@ export class CreatePost implements OnInit, OnDestroy {
     tags:        this.fb.array(this.tagOptions.map(() => this.fb.control(false))),
     comments:    [''],
     status:      ['', Validators.required],
+    scheduledAt: [''],
   });
+
+  get isScheduled(): boolean {
+    return this.createBlogForm.get('status')?.value === 'scheduled';
+  }
+
+  get minScheduleDate(): string {
+    const d = new Date(Date.now() + 5 * 60 * 1000); // min 5 minutes from now
+    return d.toISOString().slice(0, 16);
+  }
 
   get tagsArray(): FormArray {
     return this.createBlogForm.get('tags') as FormArray;
@@ -1068,6 +1078,9 @@ export class CreatePost implements OnInit, OnDestroy {
       status:        this.createBlogForm.value.status,
       comments:      this.createBlogForm.value.comments,
       user:          userId,
+      ...(this.isScheduled && this.createBlogForm.value.scheduledAt
+        ? { scheduledAt: new Date(this.createBlogForm.value.scheduledAt).toISOString() }
+        : {}),
     };
 
     this.isSubmitting.set(true);
@@ -1076,9 +1089,11 @@ export class CreatePost implements OnInit, OnDestroy {
       next: (res) => {
         this.isSubmitting.set(false);
         this.successMessage.set(
-          this.isAdmin()
-            ? 'Post published successfully!'
-            : 'Post submitted for review. You\'ll be notified once approved!'
+          this.isScheduled
+            ? `Post scheduled! It will publish automatically on ${new Date(this.createBlogForm.value.scheduledAt).toLocaleString()}.`
+            : this.isAdmin()
+              ? 'Post published successfully!'
+              : 'Post submitted for review. You\'ll be notified once approved!'
         );
         this.isSubmitted.set(false);
         if (isPlatformBrowser(this.platformId)) localStorage.removeItem(this.AUTOSAVE_KEY);

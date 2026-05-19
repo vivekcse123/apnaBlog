@@ -31,7 +31,8 @@ export interface Post {
   commentsCount: number;
   comments: Comment[];   // ← fixed from string[]
   views: number;
-  status: 'pending' | 'draft' | 'published' | 'rejected';
+  status: 'pending' | 'draft' | 'published' | 'rejected' | 'scheduled';
+  scheduledAt?: string | Date | null;
   rejectionReason?: string | null;
   createdAt: Date;
   updatedAt: Date;

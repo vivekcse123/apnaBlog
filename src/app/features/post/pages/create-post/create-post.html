@@ -480,7 +480,8 @@
           <select formControlName="status">
             <option value="" disabled selected>Select Status</option>
             <option value="draft">Draft</option>
-            <option value="published">Published</option>
+            <option value="published">Publish Now</option>
+            <option value="scheduled">⏰ Schedule</option>
           </select>
           @if (createBlogForm.get('status')?.invalid && (isSubmitted() || createBlogForm.get('status')?.touched)) {
             @if (createBlogForm.get('status')?.errors?.['required']) {
@@ -488,6 +489,24 @@
             }
           }
         </div>
+
+        @if (isScheduled) {
+          <div class="form-field schedule-field">
+            <label class="schedule-label">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+              Publish Date &amp; Time
+            </label>
+            <input type="datetime-local" formControlName="scheduledAt"
+                   class="schedule-input" [min]="minScheduleDate" />
+            @if (isScheduled && !createBlogForm.get('scheduledAt')?.value && isSubmitted()) {
+              <small class="error">Please pick a future date and time</small>
+            }
+            <small class="schedule-hint">Post will auto-publish at the selected time. You can cancel it from Manage Blogs anytime before then.</small>
+          </div>
+        }
       } @else {
         <!-- Non-admin: show info banner instead -->
         <div class="pending-notice">

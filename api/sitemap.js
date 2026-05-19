@@ -44,6 +44,7 @@ export default async function handler(req, res) {
     const staticLinks = [
       { url: '/',               changefreq: 'daily',   priority: 1.0, lastmod: new Date().toISOString() },
       { url: '/about',          changefreq: 'monthly', priority: 0.8, lastmod: '2026-01-01T00:00:00.000Z' },
+      { url: '/advertise',      changefreq: 'monthly', priority: 0.7, lastmod: new Date().toISOString() },
       { url: '/privacy-policy', changefreq: 'yearly',  priority: 0.3, lastmod: '2026-04-01T00:00:00.000Z' },
       { url: '/terms',          changefreq: 'yearly',  priority: 0.3, lastmod: '2026-04-01T00:00:00.000Z' },
       { url: '/disclaimer',     changefreq: 'yearly',  priority: 0.3, lastmod: '2026-04-24T00:00:00.000Z' },

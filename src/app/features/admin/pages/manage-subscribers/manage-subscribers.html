@@ -6,7 +6,15 @@
       <h2 class="ms-title">Newsletter Subscribers</h2>
       <p class="ms-sub">Manage email subscribers and send newsletters</p>
     </div>
-    <button class="nl-send-btn" (click)="openNewsletter()" [disabled]="activeCount() === 0">
+    <div class="ms-header-actions">
+      <button class="sp-export-btn" (click)="exportCSV()" [disabled]="!subscribers().length" title="Export as CSV">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Export CSV
+      </button>
+      <button class="nl-send-btn" (click)="openNewsletter()" [disabled]="activeCount() === 0">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
       </svg>
@@ -14,7 +22,8 @@
       @if (activeCount() > 0) {
         <span class="nl-send-count">{{ activeCount() }}</span>
       }
-    </button>
+      </button>
+    </div>
   </div>
 
   <!-- Stats -->
@@ -57,6 +66,20 @@
           <span class="stat-chip" style="color:#43cea2;background:rgba(67,206,162,.08)">New signups</span>
         </div>
       </div>
+      <div class="stat-card">
+        <div class="stat-icon-wrap" style="background:rgba(139,92,246,.12)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 01-3.46 0"/>
+          </svg>
+        </div>
+        <div class="stat-body">
+          <span class="stat-label">Push Subscribers</span>
+          <span class="stat-value" style="color:#8b5cf6">{{ pushCount() }}</span>
+          <span class="stat-chip" style="color:#8b5cf6;background:rgba(139,92,246,.08)">Browser push</span>
+        </div>
+      </div>
+
       @if (stats()!.today > 0) {
         <div class="stat-card">
           <div class="stat-icon-wrap" style="background:rgba(245,158,11,.12)">
