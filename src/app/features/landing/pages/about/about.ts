@@ -7,6 +7,7 @@ import { FormsModule, NgForm } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ContactService } from '../../../../core/services/contact-service';
 import { PostService } from '../../../post/services/post-service';
+import { Auth } from '../../../../core/services/auth';
 
 interface ContactData {
   name: string;
@@ -35,8 +36,18 @@ export class About implements OnInit, OnDestroy {
   private contactService = inject(ContactService);
   private postService    = inject(PostService);
   private platformId     = inject(PLATFORM_ID);
+  private auth           = inject(Auth);
 
   navMenuOpen = false;
+
+  get isLoggedIn(): boolean    { return this.auth.isAuthorized(); }
+  get dashboardRoute(): string {
+    const role = this.auth.userRole() ?? 'user';
+    const id   = this.auth.userId()   ?? '';
+    if (role === 'admin')       return `/admin/${id}/dashboard`;
+    if (role === 'super_admin') return `/super-admin/${id}/dashboard`;
+    return `/user/${id}/profile`;
+  }
   formSubmitted = false;
   currentYear = new Date().getFullYear();
 

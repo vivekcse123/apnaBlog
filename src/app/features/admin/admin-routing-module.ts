@@ -9,6 +9,8 @@ import { CreateUser } from './pages/create-user/create-user';
 import { Settings } from './pages/settings/settings';
 import { Visitor } from './pages/visitor/visitor';
 import { ManageShorts } from './pages/manage-shorts/manage-shorts';
+import { ManageSubscribers } from './pages/manage-subscribers/manage-subscribers';
+import { SponsoredReport } from './pages/sponsored-report/sponsored-report';
 
 const routes: Routes = [
   {
@@ -54,6 +56,16 @@ const routes: Routes = [
         path: 'manage-shorts',
         component: ManageShorts,
         title: 'ApnaInsights - Manage Shorts'
+      },
+      {
+        path: 'subscribers',
+        component: ManageSubscribers,
+        title: 'ApnaInsights - Newsletter Subscribers'
+      },
+      {
+        path: 'sponsored-report',
+        component: SponsoredReport,
+        title: 'ApnaInsights - Sponsored Report'
       }
     ]
   }
