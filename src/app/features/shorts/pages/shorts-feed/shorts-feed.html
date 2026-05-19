@@ -12,9 +12,9 @@
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
           <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
         </svg>
-        <input type="search" class="sf-search-input" placeholder="Search shorts…"
-               autocomplete="off" [value]="searchQuery()"
-               (input)="onSearchInput($any($event.target).value)" />
+        <input id="shorts-search" name="shorts-search" type="search" class="sf-search-input"
+               placeholder="Search shorts…" autocomplete="off"
+               [value]="searchQuery()" (input)="onSearchInput($any($event.target).value)" />
         @if (searchQuery()) {
           <button class="sf-search-clear" (click)="onSearchInput('')" aria-label="Clear">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
@@ -83,7 +83,7 @@
           <video class="sf-video"
                  [src]="short.videoUrl"
                  [poster]="short.thumbnailUrl || ''"
-                 muted playsinline webkit-playsinline preload="metadata">
+                 muted playsinline preload="metadata">
           </video>
         } @else {
           <div class="sf-fallback">
@@ -149,69 +149,62 @@
           <div class="sf-progress-fill"></div>
         </div>
 
-        <!-- ══ Right sidebar ══ -->
+        <!-- ══ Right sidebar — Instagram Reels style ══ -->
         <aside class="sf-sidebar" (touchend)="$event.stopPropagation()" (click)="$event.stopPropagation()">
 
-          <!-- Author avatar -->
+          <!-- Author avatar with white ring -->
           <div class="sf-side-item">
             <a class="sf-av-wrap" [routerLink]="['/author', short.user._id]" (click)="$event.stopPropagation()">
               <div class="sf-av">{{ userInitial(short.user) }}</div>
             </a>
           </div>
 
-          <!-- Like -->
+          <!-- Like — plain icon, no button bg -->
           <div class="sf-side-item">
-            <button class="sf-side-btn" [class.sf-side-btn--liked]="isLiked(short._id)"
+            <button class="sf-icon-action" [class.sf-icon-action--liked]="isLiked(short._id)"
                     (click)="toggleLike(short, $event)" aria-label="Like">
-              <svg width="26" height="26" viewBox="0 0 24 24"
-                   [attr.fill]="isLiked(short._id) ? '#fe2c55' : 'none'"
-                   [attr.stroke]="isLiked(short._id) ? '#fe2c55' : 'white'"
-                   stroke-width="1.8" stroke-linecap="round">
+              <svg width="30" height="30" viewBox="0 0 24 24"
+                   [attr.fill]="isLiked(short._id) ? '#fe2c55' : 'white'"
+                   stroke="none">
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
               </svg>
             </button>
-            <button class="sf-side-label sf-side-label--tap" (click)="openLikes(short, $event)">
+            <button class="sf-icon-count" (click)="openLikes(short, $event)">
               {{ formatCount(short.likesCount) }}
             </button>
           </div>
 
-          <!-- Comment -->
+          <!-- Comment — plain icon -->
           <div class="sf-side-item">
-            <button class="sf-side-btn" (click)="openComments(short, $event)" aria-label="Comments">
-              <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round">
+            <button class="sf-icon-action" (click)="openComments(short, $event)" aria-label="Comments">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
               </svg>
             </button>
-            <span class="sf-side-label">{{ formatCount(short.commentsCount) }}</span>
+            <span class="sf-icon-count">{{ formatCount(short.commentsCount) }}</span>
           </div>
 
-          <!-- Share -->
+          <!-- Share — plain icon -->
           <div class="sf-side-item">
-            <button class="sf-side-btn" (click)="share(short, $event)" aria-label="Share">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round">
-                <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
-                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
-                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+            <button class="sf-icon-action" (click)="share(short, $event)" aria-label="Share">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="22" y1="2" x2="11" y2="13"/>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
               </svg>
             </button>
-            <span class="sf-side-label">Share</span>
+            <span class="sf-icon-count">Share</span>
           </div>
 
           <!-- Views -->
           <div class="sf-side-item">
-            <div class="sf-side-btn sf-side-btn--static">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round">
+            <div class="sf-icon-action sf-icon-action--static">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round">
                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
                 <circle cx="12" cy="12" r="3"/>
               </svg>
             </div>
-            <span class="sf-side-label">{{ formatCount(short.views) }}</span>
+            <span class="sf-icon-count">{{ formatCount(short.views) }}</span>
           </div>
-
-          <!-- Duration badge -->
-          @if (short.duration) {
-            <div class="sf-duration-badge">{{ formatDuration(short.duration) }}</div>
-          }
 
         </aside>
 
@@ -388,9 +381,10 @@
 
             @if (replyingToId() === c._id) {
               <div class="sf-reply-row">
-                <input class="sf-reply-input" type="text" placeholder="Write a reply…"
+                <input id="reply-{{ c._id }}" name="reply" class="sf-reply-input" type="text"
+                       placeholder="Write a reply…" autocomplete="off"
                        [ngModel]="replyText()" (ngModelChange)="replyText.set($event)"
-                       (keydown.enter)="submitReply(c._id)" [disabled]="isReplying()" autocomplete="off"/>
+                       (keydown.enter)="submitReply(c._id)" [disabled]="isReplying()"/>
                 <button class="sf-send-btn sf-send-btn--sm" (click)="submitReply(c._id)"
                         [disabled]="!replyText().trim() || isReplying()">
                   @if (isReplying()) { <div class="sf-spin-sm"></div> }
@@ -441,9 +435,10 @@
 
     @if (isLoggedIn()) {
       <div class="sf-drawer-input">
-        <input class="sf-comment-input" type="text" placeholder="Add a comment…"
-               [ngModel]="commentText()" (ngModelChange)="commentText.set($event)"
-               (keydown.enter)="submitComment()" [disabled]="isSending()" autocomplete="off"/>
+        <input id="short-comment" name="comment" class="sf-comment-input" type="text"
+             placeholder="Add a comment…" autocomplete="off"
+             [ngModel]="commentText()" (ngModelChange)="commentText.set($event)"
+             (keydown.enter)="submitComment()" [disabled]="isSending()"/>
         <button class="sf-send-btn" (click)="submitComment()"
                 [disabled]="!commentText().trim() || isSending()" aria-label="Send">
           @if (isSending()) { <div class="sf-spin-sm"></div> }

@@ -159,6 +159,10 @@ export class ShortsService {
     );
   }
 
+  updateShort(id: string, data: { title: string; caption?: string; category: string }): Observable<{ status: number; data: VideoShort }> {
+    return this.http.patch<{ status: number; data: VideoShort }>(`${this.endpoint}/${id}`, data);
+  }
+
   updateStatus(id: string, status: 'published' | 'pending'): Observable<{ status: number; data: VideoShort }> {
     return this.http.patch<{ status: number; data: VideoShort }>(
       `${this.endpoint}/${id}/status`, { status }
