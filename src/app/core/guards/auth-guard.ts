@@ -30,6 +30,8 @@ export const guestGuard: CanActivateFn = () => {
     router.navigate(['/super-admin', userId]);
   } else if (authService.isAdmin()) {
     router.navigate(['/admin', userId]);
+  } else if (authService.isSponsor()) {
+    router.navigate(['/sponsor', userId]);
   } else {
     router.navigate(['/user', userId]);
   }

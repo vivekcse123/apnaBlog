@@ -6,6 +6,7 @@ import { authGuard, guestGuard } from './core/guards/auth-guard';
 import { adminGuard } from './core/guards/admin-guard';
 import { superAdminGuard } from './core/guards/super-admin-guard';
 import { roleGuard } from './core/guards/role-guard';
+import { sponsorGuard } from './core/guards/sponsor-guard';
 
 export const routes: Routes = [
     {
@@ -128,6 +129,13 @@ export const routes: Routes = [
                 canActivate: [superAdminGuard, roleGuard],
                 loadChildren: () => import('./features/super-admin/super-admin.module').then(m => m.SuperAdminModule),
                 data: { role: 'super_admin' }
+            },
+            {
+                path: 'sponsor/:id',
+                title: 'Sponsor Dashboard | ApnaInsights',
+                canActivate: [sponsorGuard, roleGuard],
+                loadComponent: () => import('./features/sponsor/pages/sponsor-dashboard/sponsor-dashboard').then(m => m.SponsorDashboard),
+                data: { role: 'sponsor' }
             }
         ]
     },

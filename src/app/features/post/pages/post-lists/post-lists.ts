@@ -474,6 +474,7 @@ private _fetchUserPosts(uid: string, showLoader = false): void {
   sponsorHasExpiry    = signal(false);
   sponsorDays         = signal(30);
   sponsorExpiryAction = signal<'delete' | 'keep'>('keep');
+  sponsorPriority     = signal(1);
   isSponsorSaving     = signal(false);
 
   openSponsorModal(blog: Post): void {
@@ -482,6 +483,7 @@ private _fetchUserPosts(uid: string, showLoader = false): void {
     this.sponsorHasExpiry.set(false);
     this.sponsorDays.set(30);
     this.sponsorExpiryAction.set('keep');
+    this.sponsorPriority.set(blog.sponsorPriority ?? 1);
     this.showSponsorModal.set(true);
   }
 
@@ -497,7 +499,8 @@ private _fetchUserPosts(uid: string, showLoader = false): void {
     this.isSponsorSaving.set(true);
     const days         = this.sponsorHasExpiry() ? this.sponsorDays() : undefined;
     const expiryAction = this.sponsorHasExpiry() ? this.sponsorExpiryAction() : undefined;
-    this.postService.sponsorPost(id, days, expiryAction).subscribe({
+    const priority     = this.sponsorPriority();
+    this.postService.sponsorPost(id, days, expiryAction, priority).subscribe({
       next: res => {
         this.allBlogs.update(blogs => blogs.map(b => b._id === id ? { ...b, ...res.data } : b));
         this.dashboardCache.invalidateAdminPosts();

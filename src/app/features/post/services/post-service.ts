@@ -202,18 +202,33 @@ export class PostService {
 
   // ── Sponsorship ───────────────────────────────────────────────────────────
 
+  getSponsoredPosts(): Observable<apiResponse<Post[]>> {
+    return this.http.get<apiResponse<Post[]>>(`${this.endPoint}/sponsored`);
+  }
+
   getSponsoredBlogsReport(): Observable<{ status: number; data: any[]; stats: any }> {
     return this.http.get<any>(`${this.endPoint}/admin/sponsored-report`);
   }
 
-  sponsorPost(id: string, days?: number, expiryAction?: 'delete' | 'keep'): Observable<apiResponse<Post>> {
-    this.invalidatePost(id);
-    return this.http.patch<apiResponse<Post>>(`${this.endPoint}/${id}/sponsor`, { days, expiryAction });
+  sponsorPost(id: string, days?: number, expiryAction?: 'delete' | 'keep', priority = 10): Observable<apiResponse<Post>> {
+    const sponsoredUntil = days
+      ? new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString()
+      : null;
+    return this.updatePost(id, {
+      isSponsored:           true,
+      sponsoredUntil,
+      sponsoredExpiryAction: expiryAction ?? null,
+      sponsorPriority:       priority,
+    });
   }
 
   unsponsorPost(id: string): Observable<apiResponse<Post>> {
-    this.invalidatePost(id);
-    return this.http.patch<apiResponse<Post>>(`${this.endPoint}/${id}/unsponsor`, {});
+    return this.updatePost(id, {
+      isSponsored:           false,
+      sponsoredUntil:        null,
+      sponsoredExpiryAction: null,
+      sponsorPriority:       10,
+    });
   }
 
   // ── Paragraph reactions ────────────────────────────────────────────────────

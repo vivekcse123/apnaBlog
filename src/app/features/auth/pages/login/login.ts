@@ -82,6 +82,8 @@ export class Login implements OnInit {
             this.router.navigate(['/super-admin', userId]);
           } else if (role === 'admin') {
             this.router.navigate(['/admin', userId]);
+          } else if (role === 'sponsor') {
+            this.router.navigate(['/sponsor', userId]);
           } else {
             this.router.navigate(['/user', userId]);
           }

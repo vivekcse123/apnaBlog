@@ -255,7 +255,7 @@
                   @if (blog.description) {
                     <div class="blog-sub">{{ blog.description }}</div>
                   }
-                  @if (blog.isSponsored) {
+                  @if ((role() === 'admin' || role() === 'super_admin') && blog.isSponsored) {
                     <span class="sponsored-tag">★ Sponsored</span>
                   }
                   @if (blog.deleteRequested) {
@@ -596,20 +596,35 @@
 <!-- ── Sponsor Modal ── -->
 @if (showSponsorModal()) {
   <div class="modal-overlay" (click)="closeSponsorModal()">
-    <div class="sponsor-box" (click)="$event.stopPropagation()">
+    <div class="sp-modal" (click)="$event.stopPropagation()">
 
-      <div class="sponsor-box-header">
-        <div class="confirm-icon sponsor-icon">
+      <div class="sp-modal-header">
+        <div class="sp-modal-icon">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
           </svg>
         </div>
         <h3>Sponsor Blog</h3>
-        <p class="sponsor-blog-title">{{ sponsorTargetTitle() }}</p>
+        <p class="sp-modal-subtitle">{{ sponsorTargetTitle() }}</p>
       </div>
 
-      <!-- Expiry toggle -->
-      <label class="sponsor-toggle-label">
+      <!-- Priority picker -->
+      <div class="sp-field">
+        <label class="sp-field-label">Priority</label>
+        <div class="sp-priority-group">
+          <button type="button" class="sp-priority-btn" [class.active]="sponsorPriority() === 1" (click)="sponsorPriority.set(1)">
+            <span class="sp-priority-dot sp-priority-dot--1"></span> 1 · High
+          </button>
+          <button type="button" class="sp-priority-btn" [class.active]="sponsorPriority() === 2" (click)="sponsorPriority.set(2)">
+            <span class="sp-priority-dot sp-priority-dot--2"></span> 2 · Medium
+          </button>
+          <button type="button" class="sp-priority-btn" [class.active]="sponsorPriority() === 3" (click)="sponsorPriority.set(3)">
+            <span class="sp-priority-dot sp-priority-dot--3"></span> 3 · Standard
+          </button>
+        </div>
+      </div>
+
+      <label class="sp-toggle">
         <input type="checkbox"
                [checked]="sponsorHasExpiry()"
                (change)="sponsorHasExpiry.set($any($event.target).checked)" />
@@ -617,47 +632,31 @@
       </label>
 
       @if (sponsorHasExpiry()) {
-        <div class="sponsor-field">
-          <label class="sponsor-field-label">Duration (days)</label>
-          <input type="number" class="sponsor-days-input"
+        <div class="sp-field">
+          <label class="sp-field-label">Duration (days)</label>
+          <input type="number" class="sp-days-input"
                  min="1" max="365"
                  [value]="sponsorDays()"
                  (input)="sponsorDays.set(+$any($event.target).value)" />
         </div>
-
-        <div class="sponsor-field">
-          <label class="sponsor-field-label">On expiry</label>
-          <div class="sponsor-radio-group">
-            <label class="sponsor-radio-label" [class.active]="sponsorExpiryAction() === 'keep'"
-                   (click)="sponsorExpiryAction.set('keep')">
-              <input type="radio" name="expiryAction" value="keep"
-                     [checked]="sponsorExpiryAction() === 'keep'"
-                     style="display:none" />
-              Keep blog
-            </label>
-            <label class="sponsor-radio-label" [class.active]="sponsorExpiryAction() === 'delete'"
-                   (click)="sponsorExpiryAction.set('delete')">
-              <input type="radio" name="expiryAction" value="delete"
-                     [checked]="sponsorExpiryAction() === 'delete'"
-                     style="display:none" />
-              Delete blog
-            </label>
+        <div class="sp-field">
+          <label class="sp-field-label">On expiry</label>
+          <div class="sp-radios">
+            <label class="sp-radio" [class.active]="sponsorExpiryAction() === 'keep'"
+                   (click)="sponsorExpiryAction.set('keep')">Keep blog</label>
+            <label class="sp-radio" [class.active]="sponsorExpiryAction() === 'delete'"
+                   (click)="sponsorExpiryAction.set('delete')">Delete blog</label>
           </div>
         </div>
       } @else {
-        <p class="sponsor-unlimited-note">This blog will be sponsored indefinitely with no expiry date.</p>
+        <p class="sp-note">This blog will be sponsored indefinitely with no expiry date.</p>
       }
 
-      <div class="confirm-actions">
-        <button class="btn-cancel" (click)="closeSponsorModal()" [disabled]="isSponsorSaving()">Cancel</button>
-        <button class="btn-confirm btn-sponsor"
-                [disabled]="isSponsorSaving()"
-                (click)="submitSponsor()">
-          @if (isSponsorSaving()) {
-            <span class="btn-spinner"></span> Saving…
-          } @else {
-            Mark as Sponsored
-          }
+      <div class="sp-actions">
+        <button class="sp-btn-cancel" [disabled]="isSponsorSaving()" (click)="closeSponsorModal()">Cancel</button>
+        <button class="sp-btn-submit" [disabled]="isSponsorSaving()" (click)="submitSponsor()">
+          @if (isSponsorSaving()) { <span class="sp-spinner"></span> Saving… }
+          @else { Mark as Sponsored }
         </button>
       </div>
 

@@ -97,8 +97,9 @@ export class Home implements OnInit, OnDestroy {
   @Input() standalone = true;
   @ViewChild('searchInput') searchInputEl?: ElementRef<HTMLInputElement>;
 
-  allPosts         = signal<PostWithTs[]>([]);
-  isLoading        = signal(true);
+  allPosts           = signal<PostWithTs[]>([]);
+  sponsoredFromApi   = signal<PostWithTs[]>([]);
+  isLoading          = signal(true);
   menuOpen: WritableSignal<boolean> = signal(false);
   searchQuery      = signal('');
   selectedCategory = signal('');
@@ -174,15 +175,24 @@ export class Home implements OnInit, OnDestroy {
 
   private readingTimeCache = new Map<string, number>();
 
-  private byLikes = computed(() =>
-    [...this.allPosts()].sort((a, b) => b.likesCount - a.likesCount)
-  );
-  private byViews = computed(() =>
-    [...this.allPosts()].sort((a, b) => b.views - a.views)
-  );
-  private byDate = computed(() =>
-    [...this.allPosts()].sort((a, b) => b._ts - a._ts)
-  );
+  private byLikes = computed(() => {
+    const all = this.allPosts();
+    const sponsored = all.filter(p => p.isSponsored).sort((a, b) => b.likesCount - a.likesCount);
+    const regular   = all.filter(p => !p.isSponsored).sort((a, b) => b.likesCount - a.likesCount);
+    return [...sponsored, ...regular];
+  });
+  private byViews = computed(() => {
+    const all = this.allPosts();
+    const sponsored = all.filter(p => p.isSponsored).sort((a, b) => b.views - a.views);
+    const regular   = all.filter(p => !p.isSponsored).sort((a, b) => b.views - a.views);
+    return [...sponsored, ...regular];
+  });
+  private byDate = computed(() => {
+    const all = this.allPosts();
+    const sponsored = all.filter(p => p.isSponsored).sort((a, b) => b._ts - a._ts);
+    const regular   = all.filter(p => !p.isSponsored).sort((a, b) => b._ts - a._ts);
+    return [...sponsored, ...regular];
+  });
 
   trendingPosts = computed(() => {
     const start = this.trendingPage() * PAGE_SIZE;
@@ -318,10 +328,8 @@ export class Home implements OnInit, OnDestroy {
   showFavorites   = computed(() => this.favoritePosts().length > 0);
   showRecommended = computed(() => this.recommendedPosts().length > 0);
 
-  /** Active sponsored posts — shown in the Featured spotlight section. */
-  sponsoredPosts = computed(() =>
-    this.allPosts().filter(p => p.isSponsored).slice(0, 4)
-  );
+  /** Sponsored posts — sourced only from the dedicated API call (never from stale cache). */
+  sponsoredPosts = computed(() => this.sponsoredFromApi().slice(0, 4));
   showSponsored = computed(() => this.sponsoredPosts().length > 0);
 
   navCatOpen = signal(false);
@@ -336,6 +344,7 @@ export class Home implements OnInit, OnDestroy {
     if (!id) return '/auth/login';
     if (role === 'admin')       return `/admin/${id}`;
     if (role === 'super_admin') return `/super-admin/${id}`;
+    if (role === 'sponsor')     return `/sponsor/${id}`;
     return `/user/${id}`;
   }
 
@@ -457,6 +466,22 @@ export class Home implements OnInit, OnDestroy {
 
     this.fetchCurrentUser();
     this.fetchAccurateStats();
+    this.loadSponsoredPosts();
+  }
+
+  private loadSponsoredPosts(): void {
+    this.postService.getSponsoredPosts()
+      .pipe(takeUntilDestroyed(this.destroyRef), catchError(() => of(null)))
+      .subscribe(res => {
+        if (!res?.data?.length) return;
+        const posts: PostWithTs[] = res.data.map((p: Post) => ({
+          ...p,
+          _ts:        new Date(p.createdAt).getTime(),
+          views:      (p as any).views      ?? 0,
+          likesCount: (p as any).likesCount ?? 0,
+        }));
+        this.sponsoredFromApi.set(posts);
+      });
   }
 
   /**
@@ -1005,6 +1030,7 @@ export class Home implements OnInit, OnDestroy {
     if (!id) return '/';
     if (role === 'admin')       return `/admin/${id}`;
     if (role === 'super_admin') return `/super-admin/${id}`;
+    if (role === 'sponsor')     return `/sponsor/${id}`;
     return `/user/${id}`;
   }
 

@@ -75,8 +75,8 @@ export class Advertise implements OnInit {
   ];
 
   readonly budgets = [
-    'Under ₹2,000', '₹2,000 – ₹5,000', '₹5,000 – ₹15,000',
-    '₹15,000 – ₹50,000', 'Above ₹50,000', 'Let\'s discuss',
+    'Under ₹500', '₹500 – ₹1,000', '₹1,000 – ₹3,000',
+    '₹3,000 – ₹10,000', 'Above ₹10,000', 'Let\'s discuss',
   ];
 
   ngOnInit(): void { this.setMeta(); }

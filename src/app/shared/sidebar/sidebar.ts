@@ -38,6 +38,7 @@ export class Sidebar {
   get roleLabel(): string {
     if (this.userRole === 'super_admin') return 'Super Admin';
     if (this.userRole === 'admin') return 'Admin';
+    if (this.userRole === 'sponsor') return 'Sponsor';
     return 'User';
   }
 

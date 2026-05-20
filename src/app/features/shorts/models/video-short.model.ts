@@ -36,4 +36,5 @@ export interface VideoShort {
   isSponsored?:           boolean;
   sponsoredUntil?:        string | null;
   sponsoredExpiryAction?: 'delete' | 'keep' | null;
+  sponsorPriority?:       number;
 }

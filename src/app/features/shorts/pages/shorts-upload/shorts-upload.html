@@ -197,65 +197,67 @@
         }
       </div>
 
-      <!-- Sponsored toggle -->
-      <div class="up-sponsored-row">
-        <label class="up-sponsored-label">
-          <div class="up-sponsored-info">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-            </svg>
-            <div>
-              <span class="up-sponsored-title">Mark as Sponsored</span>
-              <span class="up-sponsored-sub">Appears at the top of the feed</span>
+      <!-- Sponsored toggle — hidden for sponsors, admin handles this -->
+      @if (!isSponsor) {
+        <div class="up-sponsored-row">
+          <label class="up-sponsored-label">
+            <div class="up-sponsored-info">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+              </svg>
+              <div>
+                <span class="up-sponsored-title">Mark as Sponsored</span>
+                <span class="up-sponsored-sub">Appears at the top of the feed</span>
+              </div>
             </div>
-          </div>
-          <div class="up-toggle" [class.up-toggle--on]="form.get('isSponsored')?.value">
-            <div class="up-toggle-thumb"></div>
-          </div>
-          <input type="checkbox" formControlName="isSponsored" style="display:none" />
-        </label>
-      </div>
-
-      @if (form.get('isSponsored')?.value) {
-        <!-- Duration -->
-        <div class="up-field">
-          <label class="up-label">Show for</label>
-          <div class="up-dur-grid">
-            @for (opt of SPONSORED_DURATION_OPTIONS; track opt.value) {
-              <button type="button" class="up-dur-btn"
-                      [class.up-dur-btn--on]="form.get('sponsoredDays')?.value === opt.value"
-                      (click)="form.get('sponsoredDays')?.setValue(opt.value)">{{ opt.label }}</button>
-            }
-          </div>
+            <div class="up-toggle" [class.up-toggle--on]="form.get('isSponsored')?.value">
+              <div class="up-toggle-thumb"></div>
+            </div>
+            <input type="checkbox" formControlName="isSponsored" style="display:none" />
+          </label>
         </div>
 
-        <!-- Expiry action -->
-        @if ((form.get('sponsoredDays')?.value ?? 0) > 0) {
+        @if (form.get('isSponsored')?.value) {
+          <!-- Duration -->
           <div class="up-field">
-            <label class="up-label">When duration ends</label>
-            <div class="up-expiry-grid">
-              <label class="up-expiry-card" [class.up-expiry-card--on]="form.get('sponsoredExpiryAction')?.value === 'keep'">
-                <input type="radio" formControlName="sponsoredExpiryAction" value="keep" style="display:none" />
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                </svg>
-                <div>
-                  <strong>Keep</strong>
-                  <small>Remove badge, stay in feed</small>
-                </div>
-              </label>
-              <label class="up-expiry-card" [class.up-expiry-card--on]="form.get('sponsoredExpiryAction')?.value === 'delete'">
-                <input type="radio" formControlName="sponsoredExpiryAction" value="delete" style="display:none" />
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-                  <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-                </svg>
-                <div>
-                  <strong>Delete</strong>
-                  <small>Auto-remove when expired</small>
-                </div>
-              </label>
+            <label class="up-label">Show for</label>
+            <div class="up-dur-grid">
+              @for (opt of SPONSORED_DURATION_OPTIONS; track opt.value) {
+                <button type="button" class="up-dur-btn"
+                        [class.up-dur-btn--on]="form.get('sponsoredDays')?.value === opt.value"
+                        (click)="form.get('sponsoredDays')?.setValue(opt.value)">{{ opt.label }}</button>
+              }
             </div>
           </div>
+
+          <!-- Expiry action -->
+          @if ((form.get('sponsoredDays')?.value ?? 0) > 0) {
+            <div class="up-field">
+              <label class="up-label">When duration ends</label>
+              <div class="up-expiry-grid">
+                <label class="up-expiry-card" [class.up-expiry-card--on]="form.get('sponsoredExpiryAction')?.value === 'keep'">
+                  <input type="radio" formControlName="sponsoredExpiryAction" value="keep" style="display:none" />
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                  </svg>
+                  <div>
+                    <strong>Keep</strong>
+                    <small>Remove badge, stay in feed</small>
+                  </div>
+                </label>
+                <label class="up-expiry-card" [class.up-expiry-card--on]="form.get('sponsoredExpiryAction')?.value === 'delete'">
+                  <input type="radio" formControlName="sponsoredExpiryAction" value="delete" style="display:none" />
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                  </svg>
+                  <div>
+                    <strong>Delete</strong>
+                    <small>Auto-remove when expired</small>
+                  </div>
+                </label>
+              </div>
+            </div>
+          }
         }
       }
 
@@ -274,6 +276,21 @@
       </button>
 
     </form>
+  }
+
+  <!-- ── Step 4: Review submitted (sponsor only) ── -->
+  @if (step() === 'review') {
+    <div class="up-body up-review">
+      <div class="up-review-icon">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+      </div>
+      <h3 class="up-review-title">Submitted for Review</h3>
+      <p class="up-review-msg">Your short has been submitted and is pending admin approval. You'll be able to see it in your dashboard once it goes live.</p>
+      <button class="up-primary-btn" (click)="close.emit()">Done</button>
+    </div>
   }
 
 </div>

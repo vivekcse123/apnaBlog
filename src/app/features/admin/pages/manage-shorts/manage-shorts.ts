@@ -50,8 +50,11 @@ export class ManageShorts implements OnInit {
   private search$ = new Subject<string>();
 
   readonly categories = [
-    'News','Sports','Technology','Entertainment',
-    'Lifestyle','Health','Business','Education',
+    'News', 'Sports', 'Technology', 'Entertainment',
+    'Lifestyle', 'Health', 'Business', 'Education',
+    'Finance', 'Travel', 'Food', 'Fashion',
+    'Fitness', 'Gaming', 'Comedy', 'Motivation',
+    'Politics', 'Science', 'Art', 'Music',
   ];
 
   totalShorts    = computed(() => this.totalCount());
@@ -196,12 +199,32 @@ export class ManageShorts implements OnInit {
 
   // ── Sponsor Short ─────────────────────────────────────────────────────────
 
+  previewShort = signal<VideoShort | null>(null);
+
+  openPreview(s: VideoShort): void  { this.previewShort.set(s); }
+  closePreview(): void              { this.previewShort.set(null); }
+
+  approveFromPreview(): void {
+    const s = this.previewShort();
+    if (!s) return;
+    this.closePreview();
+    this.toggleStatus(s);
+  }
+
+  rejectFromPreview(): void {
+    const s = this.previewShort();
+    if (!s) return;
+    this.closePreview();
+    this.confirmDelete(s._id);
+  }
+
   showSponsorModal    = signal(false);
   sponsorTargetId     = signal('');
   sponsorTargetTitle  = signal('');
   sponsorHasExpiry    = signal(false);
   sponsorDays         = signal(30);
   sponsorExpiryAction = signal<'delete' | 'keep'>('keep');
+  sponsorPriority     = signal(1);
   isSponsorSaving     = signal(false);
 
   openSponsorModal(s: VideoShort): void {
@@ -210,6 +233,7 @@ export class ManageShorts implements OnInit {
     this.sponsorHasExpiry.set(false);
     this.sponsorDays.set(30);
     this.sponsorExpiryAction.set('keep');
+    this.sponsorPriority.set(s.sponsorPriority ?? 1);
     this.showSponsorModal.set(true);
   }
 
@@ -225,7 +249,8 @@ export class ManageShorts implements OnInit {
     this.isSponsorSaving.set(true);
     const days         = this.sponsorHasExpiry() ? this.sponsorDays() : undefined;
     const expiryAction = this.sponsorHasExpiry() ? this.sponsorExpiryAction() : undefined;
-    this.service.sponsorShort(id, days, expiryAction)
+    const priority     = this.sponsorPriority();
+    this.service.sponsorShort(id, days, expiryAction, priority)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: res => {

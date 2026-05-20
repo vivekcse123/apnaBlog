@@ -51,4 +51,5 @@ export interface Post {
   isSponsored?:           boolean;
   sponsoredUntil?:        string | Date | null;
   sponsoredExpiryAction?: 'delete' | 'keep' | null;
+  sponsorPriority?:       number;
 }

@@ -6,8 +6,9 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ShortsService, CreateShortPayload } from '../../services/shorts.service';
 import { UploadService } from '../../../../features/post/services/upload-service';
 import { VideoShort } from '../../models/video-short.model';
+import { Auth } from '../../../../core/services/auth';
 
-type Step = 'pick' | 'trim' | 'form';
+type Step = 'pick' | 'trim' | 'form' | 'review';
 
 @Component({
   selector: 'app-shorts-upload',
@@ -21,6 +22,9 @@ export class ShortsUpload {
   private service       = inject(ShortsService);
   private uploadService = inject(UploadService);
   private platformId    = inject(PLATFORM_ID);
+  private auth          = inject(Auth);
+
+  get isSponsor(): boolean { return this.auth.isSponsor(); }
 
   @ViewChild('trimVideoEl') trimVideoRef?: ElementRef<HTMLVideoElement>;
 
@@ -46,6 +50,9 @@ export class ShortsUpload {
   readonly CATEGORIES = [
     'News', 'Sports', 'Technology', 'Entertainment',
     'Lifestyle', 'Health', 'Business', 'Education',
+    'Finance', 'Travel', 'Food', 'Fashion',
+    'Fitness', 'Gaming', 'Comedy', 'Motivation',
+    'Politics', 'Science', 'Art', 'Music',
   ];
 
   form = this.fb.group({
@@ -190,7 +197,14 @@ export class ShortsUpload {
     this.errorMsg.set('');
 
     this.service.createShort(payload).subscribe({
-      next: res => { this.isSubmitting.set(false); this.created.emit(res.data); },
+      next: res => {
+        this.isSubmitting.set(false);
+        if (this.isSponsor) {
+          this.step.set('review');
+        } else {
+          this.created.emit(res.data);
+        }
+      },
       error: err => {
         this.isSubmitting.set(false);
         this.errorMsg.set(err?.error?.message ?? 'Something went wrong. Try again.');
@@ -200,7 +214,9 @@ export class ShortsUpload {
 
   back(): void {
     const s = this.step();
-    if (s === 'form' || s === 'trim') {
+    if (s === 'review') {
+      this.close.emit();
+    } else if (s === 'form' || s === 'trim') {
       this.step.set('pick');
       this.videoFile.set(null);
       this.videoPreview.set('');

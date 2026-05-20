@@ -173,12 +173,25 @@ export class ShortsService {
     return this.http.delete<{ status: number; message: string }>(`${this.endpoint}/${id}`);
   }
 
-  sponsorShort(id: string, days?: number, expiryAction?: 'delete' | 'keep'): Observable<{ status: number; data: VideoShort }> {
-    return this.http.patch<{ status: number; data: VideoShort }>(`${this.endpoint}/${id}/sponsor`, { days, expiryAction });
+  sponsorShort(id: string, days?: number, expiryAction?: 'delete' | 'keep', priority = 10): Observable<{ status: number; data: VideoShort }> {
+    const sponsoredUntil = days
+      ? new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString()
+      : null;
+    return this.http.patch<{ status: number; data: VideoShort }>(`${this.endpoint}/${id}/sponsor`, {
+      isSponsored:           true,
+      sponsoredUntil,
+      sponsoredExpiryAction: expiryAction ?? null,
+      sponsorPriority:       priority,
+    });
   }
 
   unsponsorShort(id: string): Observable<{ status: number; data: VideoShort }> {
-    return this.http.patch<{ status: number; data: VideoShort }>(`${this.endpoint}/${id}/unsponsor`, {});
+    return this.http.patch<{ status: number; data: VideoShort }>(`${this.endpoint}/${id}/sponsor`, {
+      isSponsored:           false,
+      sponsoredUntil:        null,
+      sponsoredExpiryAction: null,
+      sponsorPriority:       10,
+    });
   }
 
   /** Extract YouTube video ID from any YouTube URL format. */

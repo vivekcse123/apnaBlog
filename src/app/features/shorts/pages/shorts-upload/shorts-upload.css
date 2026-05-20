@@ -410,3 +410,30 @@
   position: absolute; inset: 0; background: rgba(0,0,0,.3);
   display: flex; align-items: center; justify-content: center;
 }
+
+/* ── Review / pending screen ─────────────────────────── */
+.up-review {
+  align-items: center;
+  text-align: center;
+  gap: 16px;
+  padding: 40px 24px;
+}
+.up-review-icon {
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  background: rgba(245,158,11,.1);
+  display: flex; align-items: center; justify-content: center;
+}
+.up-review-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+.up-review-msg {
+  font-size: .83rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+  max-width: 300px;
+  margin: 0;
+}

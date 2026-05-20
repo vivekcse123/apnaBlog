@@ -44,25 +44,32 @@ export class Auth {
     this.isBrowser ? localStorage.getItem('sessionId') : null
   );
 
+  userName = signal<string | null>(
+    this.isBrowser ? localStorage.getItem('userName') : null
+  );
+
   isAuthorized  = computed(() => !!this.token());
   isAdmin       = computed(() => this.userRole() === 'admin' || this.userRole() === 'super_admin');
   isSuperAdmin  = computed(() => this.userRole() === 'super_admin');
+  isSponsor     = computed(() => this.userRole() === 'sponsor');
 
   login(userCred: { email: string; password: string }): Observable<apiResponse<User>> {
     return this.http.post<apiResponse<User>>(`${this.authEndpoint}login`, userCred).pipe(
       tap((res) => {
-        const { _id, role, token, sessionId } = res.data as any;
+        const { _id, role, token, sessionId, name } = res.data as any;
 
         this.userId.set(_id);
         this.userRole.set(role);
         this.token.set(token);
         this.sessionId.set(sessionId ?? null);
+        this.userName.set(name ?? null);
 
         if (this.isBrowser) {
           localStorage.setItem('userId', _id);
           localStorage.setItem('role', role);
           localStorage.setItem('token', token);
           if (sessionId) localStorage.setItem('sessionId', sessionId);
+          if (name) localStorage.setItem('userName', name);
         }
       })
     );
@@ -74,11 +81,14 @@ export class Auth {
     this.token.set(null);
     this.sessionId.set(null);
 
+    this.userName.set(null);
+
     if (this.isBrowser) {
       localStorage.removeItem('userId');
       localStorage.removeItem('role');
       localStorage.removeItem('token');
       localStorage.removeItem('sessionId');
+      localStorage.removeItem('userName');
     }
 
     this.router.navigate(['/']);

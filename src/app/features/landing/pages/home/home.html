@@ -541,18 +541,35 @@
   }
 
   @if (!isFiltering() && showSponsored()) {
-    <section class="section section--featured" aria-labelledby="featured-heading">
-      <div class="section-header">
-        <span class="section-pill featured" aria-hidden="true">FEATURED</span>
-        <h2 class="section-title section-title--featured" id="featured-heading">★ Featured Stories</h2>
-      </div>
-      <div class="blog-grid">
+    <div class="feat-section" role="region" aria-label="Sponsored stories">
+      <div class="feat-row">
         @for (blog of sponsoredPosts(); track blog._id) {
-          <ng-container [ngTemplateOutlet]="blogCard"
-                        [ngTemplateOutletContext]="{ $implicit: blog }"></ng-container>
+          <article class="feat-item" (click)="readBlog(blog.slug || blog._id)"
+                   [attr.aria-label]="blog.title">
+            <div class="feat-item-img">
+              @if (blog.featuredImage) {
+                <img [src]="blog.featuredImage" [alt]="blog.title" loading="lazy" />
+              } @else {
+                <div class="feat-item-noimg">{{ blog.title.charAt(0).toUpperCase() }}</div>
+              }
+            </div>
+            <div class="feat-item-body">
+              <div class="feat-item-top">
+                <span class="feat-item-cat">{{ blog.categories[0] }}</span>
+                <span class="feat-item-sp">Sponsored</span>
+              </div>
+              <h4 class="feat-item-title">{{ blog.title }}</h4>
+              <p class="feat-item-desc">{{ blog.description }}</p>
+              <div class="feat-item-foot">
+                <span class="feat-item-author">{{ blog.user.name }}</span>
+                <span class="feat-item-dot" aria-hidden="true">·</span>
+                <span class="feat-item-time">{{ getReadingTime(blog) }} min read</span>
+              </div>
+            </div>
+          </article>
         }
       </div>
-    </section>
+    </div>
   }
 
   @defer (on idle) {
@@ -771,7 +788,17 @@
         </div>
         <h3 itemprop="name">{{ blog.title }}</h3>
         <p itemprop="abstract">{{ blog.description }}</p>
-        <span class="card-reading-time">⏱ {{ getReadingTime(blog) }} min read</span>
+        <div class="card-meta-row">
+          <span class="card-reading-time">⏱ {{ getReadingTime(blog) }} min read</span>
+          @if (blog.isSponsored) {
+            <span class="card-sponsored-pill">
+              <svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+              </svg>
+              Sponsored
+            </span>
+          }
+        </div>
 
         @if (blog.tags?.length) {
           <div class="card-tags" aria-label="Story tags">

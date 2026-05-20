@@ -44,7 +44,14 @@ export class CreateUser {
       Validators.minLength(5),
       Validators.maxLength(15)
     ]],
+    role: ['user', Validators.required],
   });
+
+  readonly roles = [
+    { value: 'user',    label: 'User' },
+    { value: 'sponsor', label: 'Sponsor' },
+    { value: 'admin',   label: 'Admin' },
+  ];
 
   closeModal() {
     this.close.emit();
