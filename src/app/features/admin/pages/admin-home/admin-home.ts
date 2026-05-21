@@ -10,6 +10,7 @@ import { catchError } from 'rxjs/operators';
 import { Chart, registerables } from 'chart.js';
 import { PostService } from '../../../post/services/post-service';
 import { AdminService } from '../../services/admin-service';
+import { ShortsService } from '../../../shorts/services/shorts.service';
 import { CreatePost } from '../../../post/pages/create-post/create-post';
 import { CreateUser } from '../create-user/create-user';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -41,6 +42,7 @@ export class AdminHome implements OnInit, AfterViewInit, OnDestroy {
   // ── Services ───────────────────────────────────────────────
   private postService     = inject(PostService);
   private adminService    = inject(AdminService);
+  private shortsService   = inject(ShortsService);
   private destroyRef      = inject(DestroyRef);
   private authService     = inject(Auth);
   private dashboardCache  = inject(DashboardCache);
@@ -68,7 +70,8 @@ export class AdminHome implements OnInit, AfterViewInit, OnDestroy {
   newBlogs      = signal<number>(0);
   newUsers      = signal<number>(0);
   newPublished  = signal<number>(0);
-  pendingReview = signal<number>(0);
+  pendingReview       = signal<number>(0);
+  pendingShortsCount  = signal<number>(0);
 
   weekViews    = signal<number>(0);
   weekComments = signal<number>(0);
@@ -97,6 +100,7 @@ export class AdminHome implements OnInit, AfterViewInit, OnDestroy {
   ngOnInit(): void {
     this.meta.updateTag({ name: 'robots', content: 'noindex, nofollow' });
     this.loadDashboardData();
+    this.loadPendingShortsCount();
     document.addEventListener('visibilitychange', this._onVisibilityChange);
   }
 
@@ -135,6 +139,12 @@ export class AdminHome implements OnInit, AfterViewInit, OnDestroy {
 
     // No cache — show loader and fetch fresh
     this.fetchFresh(true);
+  }
+
+  private loadPendingShortsCount(): void {
+    this.shortsService.getAllShortsAdmin({ page: 1, limit: 1, status: 'pending' })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(res => this.pendingShortsCount.set(res.total ?? 0));
   }
 
   private fetchFresh(showLoader: boolean): void {

@@ -1,0 +1,110 @@
+<div class="modal-backdrop" (click)="closeModal()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+
+    <button class="close-btn" (click)="closeModal()">&#x2715;</button>
+
+    <div class="heading">
+      <div class="sp-icon">⭐</div>
+      <h2>Create Sponsor Account</h2>
+      <p>Fill in the business details to onboard a new sponsor</p>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+
+      <!-- Contact Person Name -->
+      <div class="field-group">
+        <label class="field-label">Contact Person Name <span class="req">*</span></label>
+        <input type="text" placeholder="Full name" formControlName="name" />
+        @if (form.get('name')?.invalid && (isSubmitted() || form.get('name')?.touched)) {
+          <small class="error">Name must be 3–40 characters</small>
+        }
+      </div>
+
+      <!-- Email -->
+      <div class="field-group">
+        <label class="field-label">Email Address <span class="req">*</span></label>
+        <input type="email" placeholder="business@company.com" formControlName="email" />
+        @if (form.get('email')?.invalid && (isSubmitted() || form.get('email')?.touched)) {
+          <small class="error">Valid email is required</small>
+        }
+      </div>
+
+      <!-- Company Name -->
+      <div class="field-group">
+        <label class="field-label">Company / Brand Name <span class="req">*</span></label>
+        <input type="text" placeholder="e.g. Acme Corp" formControlName="companyName" />
+        @if (form.get('companyName')?.invalid && (isSubmitted() || form.get('companyName')?.touched)) {
+          <small class="error">Company name is required</small>
+        }
+      </div>
+
+      <!-- Phone -->
+      <div class="field-group">
+        <label class="field-label">Phone Number <span class="req">*</span></label>
+        <input type="tel" placeholder="+91 98765 43210" formControlName="phone" />
+        @if (form.get('phone')?.invalid && (isSubmitted() || form.get('phone')?.touched)) {
+          <small class="error">Valid phone number is required</small>
+        }
+      </div>
+
+      <!-- Website + Industry side by side -->
+      <div class="field-row">
+        <div class="field-group">
+          <label class="field-label">Website <span class="opt">optional</span></label>
+          <input type="url" placeholder="https://yoursite.com" formControlName="website" />
+          @if (form.get('website')?.invalid && form.get('website')?.touched) {
+            <small class="error">Enter a valid URL</small>
+          }
+        </div>
+        <div class="field-group">
+          <label class="field-label">Industry <span class="opt">optional</span></label>
+          <select formControlName="industry" class="field-select">
+            <option value="">Select industry</option>
+            @for (ind of industries; track ind) {
+              <option [value]="ind">{{ ind }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <!-- Password -->
+      <div class="field-group">
+        <label class="field-label">Password <span class="req">*</span></label>
+        <div class="password-wrap">
+          <input [type]="showPassword ? 'text' : 'password'"
+                 placeholder="Min 8 characters" formControlName="password" />
+          <button type="button" class="eye-btn" (click)="showPassword = !showPassword" [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'">
+            @if (showPassword) {
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/>
+                <path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/>
+                <line x1="1" y1="1" x2="23" y2="23"/>
+              </svg>
+            } @else {
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            }
+          </button>
+        </div>
+        @if (form.get('password')?.invalid && (isSubmitted() || form.get('password')?.touched)) {
+          <small class="error">Password must be 8–32 characters</small>
+        }
+      </div>
+
+      <div class="actions">
+        <button type="button" class="cancel-btn" (click)="closeModal()">Cancel</button>
+        <button type="submit" class="submit-btn">Create Sponsor</button>
+      </div>
+
+      @if (errorMessage()) {
+        <span class="error-message">{{ errorMessage() }}</span>
+      }
+      @if (successMessage()) {
+        <span class="success-message">{{ successMessage() }}</span>
+      }
+
+    </form>
+  </div>
+</div>

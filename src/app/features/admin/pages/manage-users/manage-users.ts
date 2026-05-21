@@ -8,6 +8,7 @@ import { finalize } from 'rxjs';
 import { ViewUser } from '../../../../shared/view-user/view-user';
 import { DisabledDirective } from '../../../../shared/directives/highlight';
 import { CreateUser } from '../create-user/create-user';
+import { CreateSponsor } from '../create-sponsor/create-sponsor';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NotificationNavEvent, NotificationNavigationService, USER_NOTIFICATION_TYPES } from '../../../../core/services/open-notification/notification-navigation';
 import { Auth } from '../../../../core/services/auth';
@@ -17,7 +18,7 @@ import { DashboardCache } from '../../../../core/services/dashboard-cache';
 @Component({
   selector: 'app-manage-users',
   standalone: true,
-  imports: [CommonModule, FormsModule, ViewUser, DisabledDirective, CreateUser],
+  imports: [CommonModule, FormsModule, ViewUser, DisabledDirective, CreateUser, CreateSponsor],
   templateUrl: './manage-users.html',
   styleUrls: ['./manage-users.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -49,6 +50,7 @@ export class ManageUsers implements OnInit, OnDestroy {
   activeCount   = computed(() => this.allUsers().filter(u => u.status === 'active').length);
   inactiveCount = computed(() => this.allUsers().filter(u => u.status !== 'active').length);
   adminCount    = computed(() => this.allUsers().filter(u => u.role === 'admin' || u.role === 'super_admin').length);
+  sponsorCount  = computed(() => this.allUsers().filter(u => u.role === 'sponsor').length);
 
   todayCount = computed(() => {
     const today = new Date();
@@ -93,7 +95,8 @@ export class ManageUsers implements OnInit, OnDestroy {
   isProfileOpened  = signal(false);
   selectedUserId   = signal<string>('');
   selectedUserObj  = signal<any>(null);
-  showCreateModal  = signal(false);
+  showCreateModal        = signal(false);
+  showCreateSponsorModal = signal(false);
   showConfirm      = signal(false);
   pendingUser      = signal<any>(null);
   showDeleteConfirm  = signal(false);

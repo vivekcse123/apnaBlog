@@ -52,4 +52,6 @@ export interface Post {
   sponsoredUntil?:        string | Date | null;
   sponsoredExpiryAction?: 'delete' | 'keep' | null;
   sponsorPriority?:       number;
+  sponsorCtaText?:        string | null;
+  sponsorCtaUrl?:         string | null;
 }

@@ -14,6 +14,8 @@ import { of, Subject, EMPTY } from 'rxjs';
 import { debounceTime, distinctUntilChanged, catchError, expand, reduce, timeout } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { PostService } from '../../../post/services/post-service';
+import { ShortsService } from '../../../shorts/services/shorts.service';
+import { VideoShort } from '../../../shorts/models/video-short.model';
 import { Post } from '../../../../core/models/post.model';
 import { ThemeService } from '../../../../core/services/theme-service';
 import { Auth } from '../../../../core/services/auth';
@@ -76,6 +78,7 @@ function persistStats(total: number, totalViews: number, categoryCounts: Record<
 })
 export class Home implements OnInit, OnDestroy {
   private postService     = inject(PostService);
+  private shortsService   = inject(ShortsService);
   private postCache       = inject(PostCache);
   private allPostsCache   = inject(AllPostsCache);
   private readingHistory  = inject(ReadingHistory);
@@ -98,7 +101,9 @@ export class Home implements OnInit, OnDestroy {
   @ViewChild('searchInput') searchInputEl?: ElementRef<HTMLInputElement>;
 
   allPosts           = signal<PostWithTs[]>([]);
-  sponsoredFromApi   = signal<PostWithTs[]>([]);
+  sponsoredFromApi    = signal<PostWithTs[]>([]);
+  sponsoredShorts     = signal<VideoShort[]>([]);
+  showSponsoredShorts = computed(() => this.sponsoredShorts().length > 0);
   isLoading          = signal(true);
   menuOpen: WritableSignal<boolean> = signal(false);
   searchQuery      = signal('');
@@ -467,6 +472,13 @@ export class Home implements OnInit, OnDestroy {
     this.fetchCurrentUser();
     this.fetchAccurateStats();
     this.loadSponsoredPosts();
+    this.loadSponsoredShorts();
+  }
+
+  private loadSponsoredShorts(): void {
+    this.shortsService.getSponsoredShorts()
+      .pipe(takeUntilDestroyed(this.destroyRef), catchError(() => of({ status: 200, data: [] })))
+      .subscribe(res => this.sponsoredShorts.set(res.data ?? []));
   }
 
   private loadSponsoredPosts(): void {

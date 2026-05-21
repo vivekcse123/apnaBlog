@@ -181,6 +181,21 @@
     linear-gradient(to bottom, rgba(0,0,0,.5) 0%, transparent 22%);
 }
 
+/* ── Watermark ───────────────────────────────────────── */
+.sf-watermark {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  color: rgba(255,255,255,.45);
+  pointer-events: none;
+  user-select: none;
+  z-index: 3;
+  text-shadow: 0 1px 3px rgba(0,0,0,.6);
+}
+
 /* ── Progress bar ────────────────────────────────────── */
 .sf-progress-track {
   position: absolute;
@@ -375,6 +390,23 @@
   color: #fbbf24;
   width: fit-content;
 }
+.sf-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 16px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  width: fit-content;
+  transition: opacity .15s, transform .15s;
+  margin-bottom: 4px;
+}
+.sf-cta-btn:hover { opacity: .88; transform: scale(1.03); }
+
 .sf-title {
   margin: 0;
   font-size: 13px;

@@ -244,6 +244,40 @@
   color: var(--text-muted);
 }
 
+.ms-author-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.ms-sponsor-user-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(245,158,11,.12);
+  color: #d97706;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.ms-sponsor-request-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-top: 3px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, rgba(139,92,246,.12), rgba(245,158,11,.1));
+  border: 1px solid rgba(139,92,246,.25);
+  color: #7c3aed;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .01em;
+}
+
 /* ── Badges ── */
 .ms-cat-badge {
   padding: 3px 9px;
@@ -596,6 +630,16 @@
 .sp-toggle:hover { border-color: #f59e0b; }
 .sp-field { display: flex; flex-direction: column; gap: 5px; }
 .sp-field-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); }
+.sp-opt { font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--text-muted); opacity: .7; }
+.sp-req { color: #ef4444; }
+.sp-select {
+  height: 36px; padding: 0 10px; border-radius: 8px;
+  border: 1px solid var(--input-border); background: var(--input-bg);
+  color: var(--text-primary); font-size: 13px; font-family: 'DM Sans', sans-serif;
+  outline: none; width: 100%; cursor: pointer;
+  transition: border-color .2s, box-shadow .2s;
+}
+.sp-select:focus { border-color: #f59e0b; box-shadow: 0 0 0 3px rgba(245,158,11,.12); }
 .sp-days-input {
   height: 36px; padding: 0 10px; border-radius: 8px;
   border: 1px solid var(--input-border); background: var(--input-bg);

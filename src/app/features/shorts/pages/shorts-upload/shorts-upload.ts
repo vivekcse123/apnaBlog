@@ -24,8 +24,6 @@ export class ShortsUpload {
   private platformId    = inject(PLATFORM_ID);
   private auth          = inject(Auth);
 
-  get isSponsor(): boolean { return this.auth.isSponsor(); }
-
   @ViewChild('trimVideoEl') trimVideoRef?: ElementRef<HTMLVideoElement>;
 
   close   = output<void>();
@@ -56,24 +54,12 @@ export class ShortsUpload {
   ];
 
   form = this.fb.group({
-    title:                 ['', [Validators.required, Validators.minLength(3), Validators.maxLength(80)]],
-    caption:               ['', Validators.maxLength(150)],
-    category:              ['', Validators.required],
-    isSponsored:           [false],
-    sponsoredDays:         [7],
-    sponsoredExpiryAction: ['keep'],
+    title:   ['', [Validators.required, Validators.minLength(3), Validators.maxLength(80)]],
+    caption: ['', Validators.maxLength(200)],
+    category:['', Validators.required],
   });
 
-  readonly SPONSORED_DURATION_OPTIONS = [
-    { label: '1 day',    value: 1  },
-    { label: '3 days',   value: 3  },
-    { label: '1 week',   value: 7  },
-    { label: '2 weeks',  value: 14 },
-    { label: '1 month',  value: 30 },
-    { label: 'No expiry',value: 0  },
-  ];
-
-  readonly MAX_DURATION_SEC = 60;
+  readonly MAX_DURATION_SEC = 30;
 
   // ── File pick ─────────────────────────────────────────────────────────────
 
@@ -130,6 +116,8 @@ export class ShortsUpload {
 
   // ── Trim step ─────────────────────────────────────────────────────────────
 
+  isPlaying = signal(false);
+
   get trimMax(): number { return Math.max(0, this.rawDuration() - this.MAX_DURATION_SEC); }
   get trimEnd(): number { return Math.min(this.trimStart() + this.MAX_DURATION_SEC, this.rawDuration()); }
 
@@ -137,12 +125,42 @@ export class ShortsUpload {
     const val = parseFloat((event.target as HTMLInputElement).value);
     this.trimStart.set(val);
     const vid = this.trimVideoRef?.nativeElement;
-    if (vid) vid.currentTime = val;
+    if (!vid) return;
+    this.stopPreview();
+    vid.currentTime = val;
+  }
+
+  togglePreview(): void {
+    const vid = this.trimVideoRef?.nativeElement;
+    if (!vid) return;
+    if (this.isPlaying()) {
+      this.stopPreview();
+    } else {
+      vid.currentTime = this.trimStart();
+      vid.play();
+      this.isPlaying.set(true);
+    }
+  }
+
+  stopPreview(): void {
+    const vid = this.trimVideoRef?.nativeElement;
+    if (vid) vid.pause();
+    this.isPlaying.set(false);
+  }
+
+  onVideoTimeUpdate(): void {
+    const vid = this.trimVideoRef?.nativeElement;
+    if (!vid) return;
+    if (vid.currentTime >= this.trimEnd) {
+      this.stopPreview();
+      vid.currentTime = this.trimStart();
+    }
   }
 
   confirmTrim(): void {
     const file = this.videoFile();
     if (!file) return;
+    this.stopPreview();
     this.uploadToCloudinary(file, this.trimStart());
   }
 
@@ -178,19 +196,16 @@ export class ShortsUpload {
     if (this.form.invalid || this.isSubmitting()) return;
     if (!this.uploadedUrl()) { this.errorMsg.set('Video not yet uploaded.'); return; }
 
-    const { title, caption, category, isSponsored, sponsoredDays, sponsoredExpiryAction } = this.form.value;
+    const { title, caption, category } = this.form.value;
 
     const payload: CreateShortPayload = {
-      title:                 title!,
-      caption:               caption ?? undefined,
-      category:              category!,
-      videoType:             'upload',
-      videoUrl:              this.uploadedUrl(),
-      thumbnailUrl:          this.thumbUrl() || undefined,
-      duration:              this.uploadedDuration() ?? undefined,
-      isSponsored:           !!isSponsored,
-      sponsoredDays:         isSponsored ? (sponsoredDays ?? 7)           : undefined,
-      sponsoredExpiryAction: isSponsored ? (sponsoredExpiryAction as any) : undefined,
+      title:       title!,
+      caption:     caption ?? undefined,
+      category:    category!,
+      videoType:   'upload',
+      videoUrl:    this.uploadedUrl(),
+      thumbnailUrl:this.thumbUrl() || undefined,
+      duration:    this.uploadedDuration() ?? undefined,
     };
 
     this.isSubmitting.set(true);
@@ -199,7 +214,7 @@ export class ShortsUpload {
     this.service.createShort(payload).subscribe({
       next: res => {
         this.isSubmitting.set(false);
-        if (this.isSponsor) {
+        if (this.auth.isSponsor()) {
           this.step.set('review');
         } else {
           this.created.emit(res.data);

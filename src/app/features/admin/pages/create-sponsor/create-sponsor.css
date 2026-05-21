@@ -1,0 +1,123 @@
+/* Reuses create-user base styles + sponsor-specific additions */
+.modal-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.55);
+  backdrop-filter: blur(6px);
+  display: flex; justify-content: center; align-items: center;
+  z-index: 1000;
+  animation: fadeIn .2s ease;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.modal-box {
+  position: relative;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 15px;
+  padding: 48px 40px 36px;
+  width: 90%;
+  max-width: 560px;
+  max-height: 92vh;
+  overflow-y: auto;
+  box-shadow: var(--card-shadow-lg);
+  animation: slideUp .25s ease;
+}
+@keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+.close-btn {
+  position: absolute; top: 15px; right: 18px;
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 1.5px solid var(--border);
+  background: var(--bg-surface-alt);
+  font-size: 16px; color: var(--text-muted);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: background .2s, color .2s, border-color .2s, transform .2s;
+}
+.close-btn:hover { background: color-mix(in srgb,#ef4444 10%,transparent); color: #ef4444; border-color: #ef4444; transform: rotate(90deg); }
+
+/* ── Heading ── */
+.heading { text-align: center; margin-bottom: 28px; }
+.sp-icon { font-size: 2rem; margin-bottom: 6px; }
+.heading h2 { font-size: 1.2rem; font-weight: 700; color: var(--text-primary); margin: 0 0 4px; }
+.heading p  { font-size: .82rem; color: var(--text-muted); margin: 0; }
+
+/* ── Field group ── */
+.field-group { display: flex; flex-direction: column; gap: 5px; margin-bottom: 16px; }
+.field-label { font-size: .78rem; font-weight: 600; color: var(--text-secondary); }
+.req { color: #ef4444; margin-left: 2px; }
+.opt { color: var(--text-muted); font-weight: 400; margin-left: 4px; font-size: .72rem; }
+
+form input, .field-select {
+  width: 100%; padding: 11px 13px;
+  border-radius: 8px; border: 1px solid var(--input-border);
+  background: var(--input-bg); color: var(--text-primary);
+  font-size: .87rem; font-family: 'DM Sans', sans-serif;
+  outline: none; transition: border-color .2s, box-shadow .2s;
+  box-sizing: border-box;
+}
+form input::placeholder { color: var(--text-muted); }
+form input:focus, .field-select:focus { border-color: #43cea2; box-shadow: 0 0 0 3px rgba(67,206,162,.18); }
+.field-select { height: 42px; cursor: pointer; }
+
+/* ── Side-by-side row ── */
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+/* ── Error ── */
+.error { font-size: .75rem; color: var(--error, #ef4444); margin-top: 2px; }
+
+/* ── Password with eye toggle ── */
+.password-wrap {
+  position: relative;
+}
+.password-wrap input {
+  padding-right: 42px;
+  box-sizing: border-box;
+}
+.eye-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  border-radius: 4px;
+  transition: color .15s;
+}
+.eye-btn:hover { color: var(--text-primary); }
+
+/* ── Actions ── */
+.actions { display: flex; gap: 12px; margin-top: 8px; }
+.cancel-btn {
+  flex: 1; padding: 12px; border: 1px solid var(--border); border-radius: 8px;
+  background: var(--bg-surface); color: var(--text-secondary);
+  font-size: .87rem; font-weight: 500; cursor: pointer; font-family: 'DM Sans', sans-serif;
+  transition: background .2s, border-color .2s;
+}
+.cancel-btn:hover { background: var(--bg-hover); border-color: var(--border-strong); }
+.submit-btn {
+  flex: 1; padding: 12px; border: none; border-radius: 8px;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #fff; font-size: .87rem; font-weight: 600;
+  cursor: pointer; font-family: 'DM Sans', sans-serif;
+  transition: opacity .2s, transform .2s;
+}
+.submit-btn:hover { opacity: .9; transform: translateY(-1px); }
+
+/* ── Messages ── */
+.success-message, .error-message {
+  display: block; margin-top: 12px; padding: 10px 14px;
+  border-radius: 8px; font-size: .82rem; font-weight: 500;
+}
+.success-message { background: var(--success-bg, rgba(22,163,74,.08)); color: #16a34a; border: 1px solid rgba(22,163,74,.2); }
+.error-message   { background: var(--error-bg,   rgba(239,68,68,.08)); color: #ef4444; border: 1px solid rgba(239,68,68,.2); }
+
+@media (max-width: 520px) {
+  .modal-box { padding: 40px 18px 28px; }
+  .field-row  { grid-template-columns: 1fr; }
+  .actions    { flex-direction: column; }
+}

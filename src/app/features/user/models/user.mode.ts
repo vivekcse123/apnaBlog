@@ -16,5 +16,9 @@ export interface User {
   deletionScheduledAt: any;
   avatar: string;
   followersCount?: number;
-  isFollowing?: boolean;
+  isFollowing?:   boolean;
+  companyName?:   string | null;
+  phone?:         string | null;
+  website?:       string | null;
+  industry?:      string | null;
 }

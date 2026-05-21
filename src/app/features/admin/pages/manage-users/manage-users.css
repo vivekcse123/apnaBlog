@@ -256,6 +256,13 @@
   box-shadow: 0 6px 18px rgba(67, 206, 162, 0.3);
 }
 
+.add-btn--sponsor {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+.add-btn--sponsor:hover {
+  box-shadow: 0 6px 18px rgba(245, 158, 11, 0.3);
+}
+
 /* ── Table Card ── */
 .table-card {
   background: var(--bg-surface);
@@ -365,9 +372,10 @@ tbody > tr:hover td { background: var(--bg-hover); }
   white-space: nowrap;
 }
 
-.role-badge--user  { background: color-mix(in srgb, #43cea2 14%, transparent); color: #1d9e78; }
-.role-badge--admin { background: color-mix(in srgb, #8b5cf6 14%, transparent); color: #7c3aed; }
-.role-badge--super { background: color-mix(in srgb, #185a9d 14%, transparent); color: #1e4d9b; }
+.role-badge--user    { background: color-mix(in srgb, #43cea2 14%, transparent); color: #1d9e78; }
+.role-badge--admin   { background: color-mix(in srgb, #8b5cf6 14%, transparent); color: #7c3aed; }
+.role-badge--super   { background: color-mix(in srgb, #185a9d 14%, transparent); color: #1e4d9b; }
+.role-badge--sponsor { background: rgba(245,158,11,.14); color: #d97706; }
 
 /* ── Status Badge ── */
 .status-badge {

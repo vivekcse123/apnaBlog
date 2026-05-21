@@ -82,6 +82,32 @@
               <p>{{ user()?.dob | date:'dd MMM yyyy' }}</p>
             </div>
           </div>
+
+          @if (user()?.role === 'sponsor') {
+            <div class="sponsor-info-section">
+              <h5 class="sponsor-info-title">⭐ Sponsor Details</h5>
+              <div class="details-grid">
+                <div class="detail-item">
+                  <span>Company</span>
+                  <p>{{ user()?.companyName || '—' }}</p>
+                </div>
+                <div class="detail-item">
+                  <span>Phone</span>
+                  <p>{{ user()?.phone || '—' }}</p>
+                </div>
+                <div class="detail-item">
+                  <span>Website</span>
+                  @if (user()?.website) {
+                    <a [href]="user()!.website" target="_blank" rel="noopener" class="sponsor-link">{{ user()!.website }}</a>
+                  } @else { <p>—</p> }
+                </div>
+                <div class="detail-item">
+                  <span>Industry</span>
+                  <p>{{ user()?.industry || '—' }}</p>
+                </div>
+              </div>
+            </div>
+          }
         }
 
         @if (isEditing()) {
@@ -118,6 +144,7 @@
                 <label>Role</label>
                 <select formControlName="role">
                   <option value="user">User</option>
+                  <option value="sponsor">Sponsor</option>
                   <option value="admin">Admin</option>
                 </select>
               </div>

@@ -17,7 +17,7 @@ getAllUsers(page: number, limit: number): Observable<apiResponse<User[]>> {
     .pipe(
       map(res => ({
         ...res,
-        data: res.data.filter(user => user.role === 'user')
+        data: res.data.filter(user => user.role === 'user' || user.role === 'sponsor')
       }))
     );
 }
