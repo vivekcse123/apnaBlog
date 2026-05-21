@@ -455,3 +455,5 @@
   max-width: 300px;
   margin: 0;
 }
+
+@media (max-width: 640px) { .up-back-btn { width: 38px; height: 38px; } }

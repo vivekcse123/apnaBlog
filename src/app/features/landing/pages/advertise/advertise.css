@@ -466,5 +466,7 @@
   .form-row { grid-template-columns: 1fr; }
   .form-card { padding: 24px 18px; }
   .pkg-grid { grid-template-columns: 1fr; }
+  .adv-nav .back-btn { display: flex !important; align-items: center !important; justify-content: center !important; width: 38px !important; height: 38px !important; border-radius: 50% !important; padding: 0 !important; background: var(--bg-surface) !important; border: 1.5px solid var(--border) !important; color: var(--text-secondary) !important; flex-shrink: 0; }
+  .adv-nav .back-btn span { display: none !important; }
   .why-grid { grid-template-columns: 1fr; }
 }

@@ -1,7 +1,9 @@
 {
+  "id": "/",
   "name": "ApnaInsights",
   "short_name": "ApnaInsights",
-  "description": "Real Stories, Real Voices",
+  "description": "Real Stories, Real Voices — India's Community Blogging Platform",
+  "categories": ["news", "education", "entertainment"],
   "icons": [
     {
       "src": "/logo.png",
@@ -41,7 +43,34 @@
     }
   ],
   "theme_color": "#43cea2",
-  "background_color": "#43cea2",
+  "background_color": "#ffffff",
   "display": "standalone",
-  "start_url": "/"
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "portrait-primary",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "prefer_related_applications": false,
+  "shortcuts": [
+    {
+      "name": "Explore Stories",
+      "short_name": "Explore",
+      "description": "Browse the latest stories",
+      "url": "/?source=pwa-shortcut",
+      "icons": [{ "src": "/favicon-96x96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Watch Shorts",
+      "short_name": "Shorts",
+      "description": "Watch short videos",
+      "url": "/shorts?source=pwa-shortcut",
+      "icons": [{ "src": "/favicon-96x96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Trending Now",
+      "short_name": "Trending",
+      "description": "See what's trending",
+      "url": "/?sort=trending&source=pwa-shortcut",
+      "icons": [{ "src": "/favicon-96x96.png", "sizes": "96x96" }]
+    }
+  ]
 }

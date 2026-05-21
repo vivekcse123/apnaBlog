@@ -24,10 +24,9 @@
 .history-back {
   display: flex;
   align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 99px;
   border: 1.5px solid var(--border);
   background: var(--bg-surface);
   color: var(--text-secondary);
@@ -337,4 +336,6 @@
   .history-title { font-size: 18px; }
   .history-read-btn { display: none; }
   .history-item-title { font-size: 14px; }
+  .history-back { width: 38px; height: 38px; border-radius: 50%; padding: 0; justify-content: center; }
+  .history-back .btn-label { display: none; }
 }

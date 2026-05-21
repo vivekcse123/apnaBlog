@@ -69,7 +69,6 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
   // ── Private state ──────────────────────────────────────────────────────────
   private page                = 1;
   private observer!:          IntersectionObserver;
-  private adObserver!:        IntersectionObserver;
   private viewedSet           = new Set<string>();
   private viewTimers          = new Map<number, ReturnType<typeof setTimeout>>();
   private scrollRafId         = 0;
@@ -156,16 +155,21 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
   ngAfterViewInit(): void {
     if (!isPlatformBrowser(this.platformId)) return;
     this.setupObserver();
-    this.initAdObserver();
     this.cardRefs.changes.subscribe(() => this.observeAll());
     this.setupGestureUnlock();
     this.setupScrollGesturePlay();
     this.setupScrollEndPlay();
+    this.initBottomAd();
+  }
+
+  private initBottomAd(): void {
+    try {
+      ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
+    } catch { /* AdSense not loaded */ }
   }
 
   ngOnDestroy(): void {
     this.observer?.disconnect();
-    this.adObserver?.disconnect();
     this.viewTimers.forEach(t => clearTimeout(t));
     if (this.scrollRafId)       cancelAnimationFrame(this.scrollRafId);
     if (this.scrollSettleTimer) clearTimeout(this.scrollSettleTimer);
@@ -265,7 +269,6 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
         if (isPlatformBrowser(this.platformId)) {
           requestAnimationFrame(() => requestAnimationFrame(() => {
             this.observeAll();
-            this.observeAdCards();
             this.resolveDeepLink(reset);
           }));
         }
@@ -334,28 +337,6 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
       if (el.scrollHeight - el.scrollTop - el.clientHeight < 200
           && this.hasMore() && !this.isLoading()) this.loadShorts();
     });
-  }
-
-  isAdSlot(i: number): boolean { return i >= 6 && (i - 6) % 8 === 0; }
-
-  private initAdObserver(): void {
-    if (!isPlatformBrowser(this.platformId)) return;
-    this.adObserver?.disconnect();
-    this.adObserver = new IntersectionObserver(entries => {
-      for (const e of entries) {
-        if (!e.isIntersecting) continue;
-        const ins = e.target.querySelector<HTMLElement>('ins.adsbygoogle');
-        if (!ins || ins.dataset['adLoaded']) continue;
-        ins.dataset['adLoaded'] = 'true';
-        this.adObserver.unobserve(e.target);
-        try { ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({}); } catch { /* already init */ }
-      }
-    }, { threshold: 0.5 });
-  }
-
-  private observeAdCards(): void {
-    if (!this.adObserver || !this.feedRef) return;
-    this.feedRef.nativeElement.querySelectorAll<HTMLElement>('.reel-ad-card').forEach(card => this.adObserver.observe(card));
   }
 
   // ── IntersectionObserver ───────────────────────────────────────────────────

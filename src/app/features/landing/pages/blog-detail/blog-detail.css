@@ -1578,6 +1578,7 @@ body {
   .app-logo-text      { display: none; }
   .header-center      { display: none; }
   .progress-ring-wrap { display: none; }
+  .hdr-back-btn { width: 38px; height: 38px; border-radius: 50%; padding: 0; justify-content: center; flex-shrink: 0; }
   .hdr-back-btn span   { display: none; }
 
   .cat-dropdown {

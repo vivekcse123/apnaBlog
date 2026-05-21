@@ -6,9 +6,31 @@
 
 /* ── Hero ── */
 .search-hero {
+  position: relative;
   background: linear-gradient(135deg, #0d5e46 0%, #0c3366 60%, #071e42 100%);
   padding: 60px 24px 48px;
 }
+
+.search-back-btn {
+  position: absolute;
+  top: calc(16px + env(safe-area-inset-top));
+  left: 16px;
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 14px;
+  border-radius: 99px;
+  border: 1px solid rgba(255,255,255,.2);
+  background: rgba(255,255,255,.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: #fff;
+  font-size: 13px; font-weight: 600;
+  cursor: pointer;
+  transition: background .15s, transform .1s;
+  z-index: 2;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.search-back-btn:active { transform: scale(.9); background: rgba(255,255,255,.2); }
 
 .search-hero-inner {
   max-width: 680px;
@@ -268,26 +290,20 @@
 .search-empty p  { font-size: 14px; margin: 0; }
 .search-empty-link { color: #43cea2; text-decoration: none; font-weight: 600; }
 
-/* ── Back button ── */
-.search-back-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin: 40px auto 0;
-  width: fit-content;
-  padding: 10px 20px;
-  border-radius: 10px;
-  background: var(--border);
-  color: var(--text);
-  font-size: 14px;
-  text-decoration: none;
-  transition: opacity 0.15s;
-}
-.search-back-btn:hover { opacity: 0.75; }
-
 /* ── Mobile ── */
 @media (max-width: 640px) {
-  .search-hero { padding: 40px 16px 32px; }
+  .search-hero {
+    padding: 52px 16px 32px;
+  }
+  .search-back-btn {
+    top: calc(12px + env(safe-area-inset-top));
+    left: 12px;
+    width: 38px; height: 38px;
+    padding: 0;
+    justify-content: center;
+    border-radius: 50%;
+  }
+  .search-back-btn .btn-label { display: none; }
   .search-hero-title { font-size: 22px; }
   .search-grid { grid-template-columns: 1fr; gap: 16px; }
   .search-results { padding: 24px 16px 0; }

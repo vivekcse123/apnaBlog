@@ -150,4 +150,6 @@
   .tp-grid { grid-template-columns: 1fr; }
   .tp-hero { padding: 32px 5% 28px; }
   .tp-footer-inner { flex-direction: column; align-items: flex-start; }
+  .tp-back-btn { width: 38px; height: 38px; border-radius: 50%; padding: 0; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .tp-back-btn .btn-label { display: none; }
 }

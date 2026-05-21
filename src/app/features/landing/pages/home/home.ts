@@ -114,6 +114,8 @@ export class Home implements OnInit, OnDestroy {
   showScrollTop    = signal(false);
 
   showWelcomeModal  = signal(false);
+  showInstallBanner = signal(false);
+  private installPrompt: any = null;
   private welcomeTimerId: ReturnType<typeof setTimeout> | null = null;
 
   // Server-side pagination state
@@ -397,6 +399,18 @@ export class Home implements OnInit, OnDestroy {
       if (!alreadySeen) {
         const delay = 2000 + Math.random() * 1000;
         this.welcomeTimerId = setTimeout(() => this.showWelcomeModal.set(true), delay);
+      }
+
+      // PWA install prompt — only show if not already installed and not dismissed recently
+      const dismissed = localStorage.getItem('apna_install_dismissed');
+      const dismissedAt = dismissed ? parseInt(dismissed) : 0;
+      const sevenDays = 7 * 24 * 60 * 60 * 1000;
+      if (Date.now() - dismissedAt > sevenDays) {
+        window.addEventListener('beforeinstallprompt', (e: Event) => {
+          e.preventDefault();
+          this.installPrompt = e;
+          setTimeout(() => this.showInstallBanner.set(true), 3000);
+        });
       }
     }
 
@@ -777,6 +791,25 @@ export class Home implements OnInit, OnDestroy {
     this.showWelcomeModal.set(false);
     if (isPlatformBrowser(this.platformId)) {
       sessionStorage.setItem('apna_welcome_seen', '1');
+    }
+  }
+
+  async installApp(): Promise<void> {
+    if (!this.installPrompt) return;
+    this.showInstallBanner.set(false);
+    await this.installPrompt.prompt();
+    const { outcome } = await this.installPrompt.userChoice;
+    this.installPrompt = null;
+    if (outcome === 'dismissed' && isPlatformBrowser(this.platformId)) {
+      localStorage.setItem('apna_install_dismissed', String(Date.now()));
+    }
+  }
+
+  dismissInstallBanner(): void {
+    this.showInstallBanner.set(false);
+    this.installPrompt = null;
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.setItem('apna_install_dismissed', String(Date.now()));
     }
   }
 

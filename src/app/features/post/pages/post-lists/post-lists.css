@@ -180,6 +180,11 @@
   gap: 10px;
   flex-wrap: wrap;
 }
+.filter-btns-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 
 .filter-select {
   height: 40px;
@@ -879,6 +884,8 @@ tbody > tr:hover td { background: var(--bg-hover); }
   }
   .filter-select { width: 100%; }
   .filters-spacer { display: none; }
+  .filter-btns-row { grid-column: 1 / -1; width: 100%; flex-wrap: nowrap; }
+  .filter-btns-row .filter-btn { flex: 1; justify-content: center; min-width: 0; width: auto; }
   .filter-btn { width: 100%; justify-content: center; }
   .add-btn { grid-column: 1 / -1; width: 100%; justify-content: center; }
 

@@ -3,7 +3,7 @@ import {
   DestroyRef, PLATFORM_ID, ChangeDetectionStrategy,
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { CommonModule, isPlatformBrowser, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
@@ -26,6 +26,7 @@ import { TimeAgoPipe } from '../../../../shared/pipes/time-ago-pipe';
 export class SearchPage implements OnInit {
   private route       = inject(ActivatedRoute);
   private router      = inject(Router);
+  private location    = inject(Location);
   private postService    = inject(PostService);
   private allPostsCache  = inject(AllPostsCache);
   private destroyRef  = inject(DestroyRef);
@@ -83,6 +84,11 @@ export class SearchPage implements OnInit {
   clearSearch(): void {
     this.query.set('');
     this.searchInput$.next('');
+  }
+
+  goBack(): void {
+    const hasPrev = this.router.lastSuccessfulNavigation?.previousNavigation != null;
+    hasPrev ? this.location.back() : this.router.navigate(['/']);
   }
 
   private loadPosts(): void {

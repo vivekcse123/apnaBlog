@@ -110,24 +110,26 @@
       <option value="pending">Pending</option>
     </select>
 
-    <button class="ms-today-btn" [class.ms-today-btn--active]="filterToday()" (click)="toggleToday()">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-        <rect x="3" y="4" width="18" height="18" rx="2"/>
-        <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
-        <line x1="3" y1="10" x2="21" y2="10"/>
-      </svg>
-      Today
-    </button>
+    <div class="ms-filter-btns">
+      <button class="ms-today-btn" [class.ms-today-btn--active]="filterToday()" (click)="toggleToday()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <rect x="3" y="4" width="18" height="18" rx="2"/>
+          <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+          <line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+        Today
+      </button>
 
-    <button class="ms-today-btn ms-sponsor-btn" [class.ms-today-btn--active]="filterSponsored()" (click)="toggleSponsored()">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-      </svg>
-      Sponsored
-      @if (sponsorTotalCount() > 0) {
-        <span class="ms-sponsor-count">{{ sponsorTotalCount() }}</span>
-      }
-    </button>
+      <button class="ms-today-btn ms-sponsor-btn" [class.ms-today-btn--active]="filterSponsored()" (click)="toggleSponsored()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+        Sponsored
+        @if (sponsorTotalCount() > 0) {
+          <span class="ms-sponsor-count">{{ sponsorTotalCount() }}</span>
+        }
+      </button>
+    </div>
   </div>
 
   <!-- ── Table ── -->

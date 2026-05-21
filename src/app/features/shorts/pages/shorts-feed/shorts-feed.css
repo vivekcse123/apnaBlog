@@ -618,7 +618,7 @@
 .sf-fab {
   position: fixed;
   right: 18px;
-  bottom: calc(28px + env(safe-area-inset-bottom));
+  bottom: calc(88px + env(safe-area-inset-bottom));
   width: 52px; height: 52px;
   border-radius: 50%;
   border: none;
@@ -631,37 +631,33 @@
 }
 .sf-fab:active { transform: scale(.9); box-shadow: 0 2px 10px rgba(67,206,162,.3); }
 
-/* ── Ad card ─────────────────────────────────────────── */
-.sf-ad-card {
-  position: relative;
-  width: 100%;
-  height: 100dvh;
-  background: #0d0d0d;
+/* ── Sticky bottom ad banner ─────────────────────────── */
+.sf-ad-banner {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  z-index: 65;
+  min-height: 60px;
+  background: rgba(0,0,0,.88);
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 16px;
-  scroll-snap-align: start;
+  padding-bottom: env(safe-area-inset-bottom);
+  border-top: 1px solid rgba(255,255,255,.06);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
-.sf-ad-label {
-  font-size: 11px;
-  color: rgba(255,255,255,.3);
-  letter-spacing: .08em;
-  text-transform: uppercase;
+/* Auto-hide when AdSense reports unfilled — no blank bar */
+.sf-ad-banner:has(.sf-ad-ins[data-ad-status="unfilled"]) {
+  display: none;
 }
-.sf-ad-inner {
-  width: 90%;
-  max-width: 380px;
-  border-radius: 16px;
-  overflow: hidden;
-  background: #1a1a1a;
-  border: 1px solid rgba(255,255,255,.07);
+/* When hidden, FAB drops back to default position */
+.sf-ad-banner:has(.sf-ad-ins[data-ad-status="unfilled"]) ~ .sf-fab {
+  bottom: calc(28px + env(safe-area-inset-bottom));
 }
-.sf-ad-shimmer {
-  width: 100%; height: 6px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,.05), transparent);
-  animation: shimmer 1.8s infinite;
+.sf-ad-ins {
+  display: block;
+  width: 100%;
+  min-height: 50px;
 }
 @keyframes shimmer {
   from { background-position: -200% 0; }

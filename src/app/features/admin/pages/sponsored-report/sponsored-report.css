@@ -232,9 +232,12 @@
   .ms-header { flex-direction:column; gap:10px; }
   .stats-bar { display:grid;grid-template-columns:1fr 1fr;gap:8px; }
   .stat-value { font-size:18px; }
-  .sp-filter-tabs { flex-wrap:wrap; }
+  .sp-filter-tabs { flex-wrap:nowrap; width:100%; }
+  .sp-filter-tabs .sp-tab { flex:1; justify-content:center; text-align:center; min-width:0; padding:8px 6px; font-size:12px; }
   .sp-top-grid { gap:8px; }
   .sp-main-tabs { overflow-x:auto; }
+  .sp-perf-tabs { width:100%; flex-wrap:nowrap; }
+  .sp-perf-tab { flex:1; justify-content:center; min-width:0; font-size:12px; padding:9px 10px; }
 
   /* ── Table → Card transformation ── */
   .ms-card { border-radius:0; border-left:none; border-right:none; }

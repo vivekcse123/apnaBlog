@@ -704,6 +704,13 @@
 .ms-edit-input:focus, .ms-edit-select:focus { border-color: #43cea2; }
 .ms-req { color: #ef4444; }
 
+/* Today + Sponsored button row */
+.ms-filter-btns {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
 /* Today filter button */
 .ms-today-btn {
   height: 40px;
@@ -775,6 +782,8 @@
   .ms-filters { flex-direction: column; gap: 8px; }
   .ms-search, .ms-select { width: 100% !important; box-sizing: border-box; }
   .ms-search input { width: 100%; }
+  .ms-filter-btns { width: 100%; }
+  .ms-filter-btns .ms-today-btn { flex: 1; justify-content: center; }
 
   /* ── Table → Card transformation ── */
   .ms-card { border-radius: 0; border-left: none; border-right: none; }

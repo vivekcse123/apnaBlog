@@ -393,6 +393,7 @@
   .policy-hero { padding: 40px 5% 32px; }
   .policy-content { padding: 32px 5%; }
   .policy-section h2 { font-size: 20px; }
+  .back-btn { width: 38px; height: 38px; border-radius: 50%; padding: 0; justify-content: center; flex-shrink: 0; }
   .back-label { display: none; }
   .policy-footer-inner { flex-direction: column; align-items: flex-start; }
 }

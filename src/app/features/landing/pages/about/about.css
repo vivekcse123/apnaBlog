@@ -1434,8 +1434,7 @@ a.contact-info-value:hover { color: var(--accent-text); }
   .stat-num      { font-size: 22px; }
   .footer-links  { flex-wrap: wrap; justify-content: center; }
   .form-row      { grid-template-columns: 1fr; }
-  .back-label    { display: none; }
-  .back-btn      { padding: 8px 10px; }
+  .back-label, .btn-label { display: none; }
 
   .inspiration-card { padding: 24px 16px; }
   .inspiration-name { font-size: 22px; }
@@ -1450,4 +1449,8 @@ a.contact-info-value:hover { color: var(--accent-text); }
   .about-nav, .nav-dropdown, .hero-cta, .contact-form-wrap,
   .back-btn, .nav-menu-btn { display: none !important; }
   .about-page { background: white; color: black; }
+}
+@media (max-width: 640px) {
+  .about-nav .back-btn { display: flex !important; align-items: center !important; justify-content: center !important; width: 38px !important; height: 38px !important; border-radius: 50% !important; padding: 0 !important; background: var(--bg-surface) !important; border: 1.5px solid var(--border) !important; color: var(--text-secondary) !important; }
+  .about-nav .back-btn span { display: none !important; }
 }
