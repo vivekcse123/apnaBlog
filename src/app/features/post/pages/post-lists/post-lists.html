@@ -258,6 +258,9 @@
                   @if ((role() === 'admin' || role() === 'super_admin') && blog.isSponsored) {
                     <span class="sponsored-tag">★ Sponsored</span>
                   }
+                  @if ((role() === 'admin' || role() === 'super_admin') && blog.user.role === 'sponsor' && !blog.isSponsored) {
+                    <span class="sponsor-request-tag">📋 Sponsor Request</span>
+                  }
                   @if (blog.deleteRequested) {
                     <span class="del-req-tag">Deletion Requested</span>
                   }
@@ -650,6 +653,32 @@
         </div>
       } @else {
         <p class="sp-note">This blog will be sponsored indefinitely with no expiry date.</p>
+      }
+
+      <!-- CTA -->
+      <div class="sp-field">
+        <label class="sp-field-label">CTA Button Text <span class="sp-opt">optional</span></label>
+        <select class="sp-select"
+                [value]="sponsorCtaText()"
+                (change)="sponsorCtaText.set($any($event.target).value)">
+          <option value="">No button</option>
+          <option value="Visit Website">Visit Website</option>
+          <option value="Learn More">Learn More</option>
+          <option value="Sign Up">Sign Up</option>
+          <option value="Shop Now">Shop Now</option>
+          <option value="Get Started">Get Started</option>
+          <option value="Book Now">Book Now</option>
+          <option value="Contact Us">Contact Us</option>
+        </select>
+      </div>
+      @if (sponsorCtaText()) {
+        <div class="sp-field">
+          <label class="sp-field-label">CTA URL <span class="sp-req">*</span></label>
+          <input type="url" class="sp-days-input" style="width:100%;box-sizing:border-box"
+                 placeholder="https://example.com"
+                 [value]="sponsorCtaUrl()"
+                 (input)="sponsorCtaUrl.set($any($event.target).value)" />
+        </div>
       }
 
       <div class="sp-actions">

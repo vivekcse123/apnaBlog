@@ -210,7 +210,7 @@ export class PostService {
     return this.http.get<any>(`${this.endPoint}/admin/sponsored-report`);
   }
 
-  sponsorPost(id: string, days?: number, expiryAction?: 'delete' | 'keep', priority = 10): Observable<apiResponse<Post>> {
+  sponsorPost(id: string, days?: number, expiryAction?: 'delete' | 'keep', priority = 10, ctaText?: string, ctaUrl?: string): Observable<apiResponse<Post>> {
     const sponsoredUntil = days
       ? new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString()
       : null;
@@ -219,6 +219,8 @@ export class PostService {
       sponsoredUntil,
       sponsoredExpiryAction: expiryAction ?? null,
       sponsorPriority:       priority,
+      sponsorCtaText:        ctaText ?? null,
+      sponsorCtaUrl:         ctaUrl  ?? null,
     });
   }
 
@@ -228,6 +230,8 @@ export class PostService {
       sponsoredUntil:        null,
       sponsoredExpiryAction: null,
       sponsorPriority:       10,
+      sponsorCtaText:        null,
+      sponsorCtaUrl:         null,
     });
   }
 

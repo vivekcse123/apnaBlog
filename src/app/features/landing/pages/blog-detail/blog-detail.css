@@ -2871,3 +2871,50 @@ body {
   padding: 0 6px;
   white-space: nowrap;
 }
+
+/* ── Sponsor CTA bar ── */
+.sponsor-cta-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 20px 24px;
+  margin: 28px 0;
+  background: linear-gradient(135deg, rgba(245,158,11,.06), rgba(217,119,6,.04));
+  border: 1px solid rgba(245,158,11,.25);
+  border-radius: 14px;
+  text-align: center;
+}
+.sponsor-cta-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: #d97706;
+  background: rgba(245,158,11,.12);
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+.sponsor-cta-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 0;
+}
+.sponsor-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 22px;
+  border-radius: 24px;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: opacity .15s, transform .15s, box-shadow .15s;
+}
+.sponsor-cta-btn:hover {
+  opacity: .9;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(245,158,11,.35);
+}

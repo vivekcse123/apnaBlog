@@ -57,12 +57,13 @@ export class ManageShorts implements OnInit {
     'Politics', 'Science', 'Art', 'Music',
   ];
 
-  totalShorts    = computed(() => this.totalCount());
-  pageStart      = computed(() => (this.currentPage() - 1) * this.LIMIT + 1);
-  pageEnd        = computed(() => Math.min(this.currentPage() * this.LIMIT, this.totalCount()));
-  publishedCount = computed(() => this.shorts().filter(s => s.status === 'published').length);
-  pendingCount   = computed(() => this.shorts().filter(s => s.status === 'pending').length);
-  sponsorCount   = computed(() => this.shorts().filter(s => s.isSponsored).length);
+  totalShorts      = computed(() => this.totalCount());
+  pageStart        = computed(() => (this.currentPage() - 1) * this.LIMIT + 1);
+  pageEnd          = computed(() => Math.min(this.currentPage() * this.LIMIT, this.totalCount()));
+  publishedCount   = computed(() => this.shorts().filter(s => s.status === 'published').length);
+  pendingCount     = computed(() => this.shorts().filter(s => s.status === 'pending').length);
+  sponsorCount     = computed(() => this.shorts().filter(s => s.isSponsored).length);
+  sponsorTotalCount = signal(0);
   todayCount     = computed(() => {
     const today = new Date(); today.setHours(0, 0, 0, 0);
     return this.shorts().filter(s => new Date(s.createdAt) >= today).length;
@@ -86,32 +87,34 @@ export class ManageShorts implements OnInit {
     this.search$.pipe(debounceTime(350), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.load(1));
     this.load(1);
+    this.loadSponsorCount();
+  }
+
+  private loadSponsorCount(): void {
+    this.service.getAllShortsAdmin({ page: 1, limit: 1, isSponsored: true })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(res => this.sponsorTotalCount.set(res.total ?? 0));
   }
 
   load(page = this.currentPage()): void {
     this.isLoading.set(true);
-    const today = this.filterToday() ? new Date().toISOString().slice(0, 10) : undefined;
     this.service.getAllShortsAdmin({
       page,
-      limit:    this.LIMIT,
-      search:   this.searchQuery.trim() || undefined,
-      category: this.selectedCategory() || undefined,
-      status:   this.selectedStatus()   || undefined,
-      ...(today ? { search: (this.searchQuery.trim() || '') } : {}),
+      limit:       this.LIMIT,
+      search:      this.searchQuery.trim() || undefined,
+      category:    this.selectedCategory() || undefined,
+      status:      this.selectedStatus()   || undefined,
+      isSponsored: this.filterSponsored()  || undefined,
     }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(res => {
       let data = res.data ?? [];
       if (this.filterToday()) {
         const start = new Date(); start.setHours(0, 0, 0, 0);
         data = data.filter(s => new Date(s.createdAt) >= start);
       }
-      if (this.filterSponsored()) {
-        data = data.filter(s => s.isSponsored);
-      }
-      const clientFiltered = this.filterToday() || this.filterSponsored();
       this.shorts.set(data);
-      this.totalCount.set(clientFiltered ? data.length : (res.total ?? 0));
+      this.totalCount.set(this.filterToday() ? data.length : (res.total ?? 0));
       this.currentPage.set(res.page ?? page);
-      this.totalPages.set(clientFiltered ? 1 : (res.totalPages ?? 1));
+      this.totalPages.set(this.filterToday() ? 1 : (res.totalPages ?? 1));
       this.isLoading.set(false);
     });
   }
@@ -225,6 +228,8 @@ export class ManageShorts implements OnInit {
   sponsorDays         = signal(30);
   sponsorExpiryAction = signal<'delete' | 'keep'>('keep');
   sponsorPriority     = signal(1);
+  sponsorCtaText      = signal('');
+  sponsorCtaUrl       = signal('');
   isSponsorSaving     = signal(false);
 
   openSponsorModal(s: VideoShort): void {
@@ -234,6 +239,8 @@ export class ManageShorts implements OnInit {
     this.sponsorDays.set(30);
     this.sponsorExpiryAction.set('keep');
     this.sponsorPriority.set(s.sponsorPriority ?? 1);
+    this.sponsorCtaText.set(s.sponsorCtaText ?? '');
+    this.sponsorCtaUrl.set(s.sponsorCtaUrl ?? '');
     this.showSponsorModal.set(true);
   }
 
@@ -250,7 +257,9 @@ export class ManageShorts implements OnInit {
     const days         = this.sponsorHasExpiry() ? this.sponsorDays() : undefined;
     const expiryAction = this.sponsorHasExpiry() ? this.sponsorExpiryAction() : undefined;
     const priority     = this.sponsorPriority();
-    this.service.sponsorShort(id, days, expiryAction, priority)
+    const ctaText      = this.sponsorCtaText().trim() || undefined;
+    const ctaUrl       = this.sponsorCtaUrl().trim()  || undefined;
+    this.service.sponsorShort(id, days, expiryAction, priority, ctaText, ctaUrl)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: res => {

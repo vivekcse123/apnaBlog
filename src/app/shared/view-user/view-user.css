@@ -478,3 +478,26 @@
   }
   .stat-item:last-child { border-right: none; }
 }
+/* ── Sponsor info section ── */
+.sponsor-info-section {
+  margin-top: 16px;
+  padding: 14px 16px;
+  background: rgba(245,158,11,.05);
+  border: 1px solid rgba(245,158,11,.2);
+  border-radius: 10px;
+}
+.sponsor-info-title {
+  font-size: .78rem;
+  font-weight: 700;
+  color: #d97706;
+  margin: 0 0 12px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.sponsor-link {
+  font-size: .82rem;
+  color: #185a9d;
+  text-decoration: none;
+  word-break: break-all;
+}
+.sponsor-link:hover { text-decoration: underline; }

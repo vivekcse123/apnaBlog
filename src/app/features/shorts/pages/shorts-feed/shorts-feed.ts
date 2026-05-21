@@ -103,6 +103,9 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
   categories = [
     'All', 'News', 'Sports', 'Technology', 'Entertainment',
     'Lifestyle', 'Health', 'Business', 'Education',
+    'Finance', 'Travel', 'Food', 'Fashion',
+    'Fitness', 'Gaming', 'Comedy', 'Motivation',
+    'Politics', 'Science', 'Art', 'Music',
   ];
 
   // ── Lifecycle ──────────────────────────────────────────────────────────────

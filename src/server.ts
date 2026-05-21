@@ -92,7 +92,7 @@ app.get('/sitemap.xml', async (_req: Request, res: Response) => {
     };
 
     type PostEntry  = { slug?: string; _id?: string; updatedAt?: string; tags?: string[]; user?: { name?: string; _id?: string } };
-    type ShortEntry = { _id?: string; updatedAt?: string; createdAt?: string };
+    type ShortEntry = { _id?: string; updatedAt?: string; createdAt?: string; isSponsored?: boolean };
 
     const [posts, shorts] = await Promise.all([
       fetchAll<PostEntry>(`${API_BASE}/post?status=published`),
@@ -132,7 +132,8 @@ app.get('/sitemap.xml', async (_req: Request, res: Response) => {
         priority:   0.8,
       })),
       // Individual short pages — crawlable by Google, eligible for AdSense
-      ...shorts.map(s => ({
+      // Sponsored shorts excluded (paid content, not for indexing)
+      ...shorts.filter(s => !s.isSponsored).map(s => ({
         url:        `/shorts/${s._id}`,
         lastmod:    s.updatedAt ?? s.createdAt,
         changefreq: 'weekly' as const,

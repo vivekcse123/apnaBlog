@@ -70,8 +70,8 @@
       </div>
     }
 
-    @if (sponsorCount() > 0) {
-      <div class="stat-card">
+    @if (sponsorTotalCount() > 0) {
+      <div class="stat-card" style="cursor:pointer" (click)="filterSponsored.set(true); filterToday.set(false); load(1)">
         <div class="stat-icon-wrap" style="background:rgba(245,158,11,.12)">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
@@ -79,7 +79,7 @@
         </div>
         <div class="stat-body">
           <span class="stat-label">Sponsored</span>
-          <span class="stat-value" style="color:#f59e0b">{{ sponsorCount() }}</span>
+          <span class="stat-value" style="color:#f59e0b">{{ sponsorTotalCount() }}</span>
           <span class="stat-chip" style="color:#d97706;background:rgba(245,158,11,.08)">Featured</span>
         </div>
       </div>
@@ -124,8 +124,8 @@
         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
       </svg>
       Sponsored
-      @if (sponsorCount() > 0) {
-        <span class="ms-sponsor-count">{{ sponsorCount() }}</span>
+      @if (sponsorTotalCount() > 0) {
+        <span class="ms-sponsor-count">{{ sponsorTotalCount() }}</span>
       }
     </button>
   </div>
@@ -194,7 +194,15 @@
                   @if (s.caption) {
                     <span class="ms-short-caption">{{ s.caption }}</span>
                   }
-                  <span class="ms-short-author">&#64;{{ s.user.name }}</span>
+                  <div class="ms-author-row">
+                    <span class="ms-short-author">&#64;{{ s.user.name }}</span>
+                    @if (s.user.role === 'sponsor') {
+                      <span class="ms-sponsor-user-tag">⭐ Sponsor</span>
+                    }
+                  </div>
+                  @if (s.status === 'pending' && s.user.role === 'sponsor') {
+                    <span class="ms-sponsor-request-tag">📋 Sponsor Request</span>
+                  }
                   @if (s.isSponsored) {
                     <span class="ms-sponsored-tag">★ Sponsored</span>
                   }
@@ -461,6 +469,32 @@
         </div>
       } @else {
         <p class="sp-note">This short will be sponsored indefinitely with no expiry date.</p>
+      }
+
+      <!-- CTA -->
+      <div class="sp-field">
+        <label class="sp-field-label">CTA Button Text <span class="sp-opt">optional</span></label>
+        <select class="sp-select"
+                [value]="sponsorCtaText()"
+                (change)="sponsorCtaText.set($any($event.target).value)">
+          <option value="">No button</option>
+          <option value="Visit Website">Visit Website</option>
+          <option value="Learn More">Learn More</option>
+          <option value="Sign Up">Sign Up</option>
+          <option value="Shop Now">Shop Now</option>
+          <option value="Get Started">Get Started</option>
+          <option value="Book Now">Book Now</option>
+          <option value="Contact Us">Contact Us</option>
+        </select>
+      </div>
+      @if (sponsorCtaText()) {
+        <div class="sp-field">
+          <label class="sp-field-label">CTA URL <span class="sp-req">*</span></label>
+          <input type="url" class="sp-days-input" style="width:100%;box-sizing:border-box"
+                 placeholder="https://example.com"
+                 [value]="sponsorCtaUrl()"
+                 (input)="sponsorCtaUrl.set($any($event.target).value)" />
+        </div>
       }
 
       <div class="sp-actions">

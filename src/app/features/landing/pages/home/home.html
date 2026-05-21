@@ -560,6 +560,18 @@
               </div>
               <h4 class="feat-item-title">{{ blog.title }}</h4>
               <p class="feat-item-desc">{{ blog.description }}</p>
+              @if (blog.sponsorCtaText && blog.sponsorCtaUrl) {
+                <a class="feat-cta-btn"
+                   [href]="blog.sponsorCtaUrl"
+                   target="_blank" rel="noopener sponsored"
+                   (click)="$event.stopPropagation()">
+                  {{ blog.sponsorCtaText }}
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                    <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
+                    <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+                  </svg>
+                </a>
+              }
               <div class="feat-item-foot">
                 <span class="feat-item-author">{{ blog.user.name }}</span>
                 <span class="feat-item-dot" aria-hidden="true">·</span>
@@ -567,6 +579,58 @@
               </div>
             </div>
           </article>
+        }
+      </div>
+    </div>
+  }
+
+  @if (!isFiltering() && showSponsoredShorts()) {
+    <div class="sp-shorts-section" role="region" aria-label="Sponsored shorts">
+      <div class="sp-shorts-header">
+        <div class="sp-shorts-header-left">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.9L15 14v-4z"/>
+            <rect x="3" y="6" width="12" height="12" rx="2"/>
+          </svg>
+          <span>Featured Shorts</span>
+          <span class="sp-shorts-sp-pill">Sponsored</span>
+        </div>
+        <a class="sp-shorts-all" routerLink="/shorts">Watch all →</a>
+      </div>
+
+      <div class="sp-shorts-grid">
+        @for (s of sponsoredShorts(); track s._id) {
+          <a class="sp-sc" [routerLink]="['/shorts']" [fragment]="s._id">
+            <div class="sp-sc-thumb">
+              @if (s.thumbnailUrl) {
+                <img [src]="s.thumbnailUrl" [alt]="s.title" loading="lazy" />
+              } @else {
+                <div class="sp-sc-noimg">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="rgba(255,255,255,.3)"><path d="M8 5v14l11-7z"/></svg>
+                </div>
+              }
+              <div class="sp-sc-grad"></div>
+              <div class="sp-sc-play">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+              </div>
+              <span class="sp-sc-cat">{{ s.category }}</span>
+            </div>
+            <div class="sp-sc-body">
+              <p class="sp-sc-title">{{ s.title }}</p>
+              @if (s.sponsorCtaText && s.sponsorCtaUrl) {
+                <a class="sp-sc-cta"
+                   [href]="s.sponsorCtaUrl"
+                   target="_blank" rel="noopener sponsored"
+                   (click)="$event.stopPropagation()">
+                  {{ s.sponsorCtaText }}
+                  <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                    <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
+                    <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+                  </svg>
+                </a>
+              }
+            </div>
+          </a>
         }
       </div>
     </div>

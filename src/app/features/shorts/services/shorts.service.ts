@@ -38,6 +38,12 @@ export class ShortsService {
     ).pipe(catchError(() => of({ status: 200, data: [], total: 0, page: 1, totalPages: 1 })));
   }
 
+  getSponsoredShorts(): Observable<{ status: number; data: VideoShort[] }> {
+    return this.http.get<{ status: number; data: VideoShort[] }>(`${this.endpoint}/sponsored`).pipe(
+      catchError(() => of({ status: 200, data: [] }))
+    );
+  }
+
   getShorts(page = 1, limit = 8, category?: string, search?: string): Observable<ShortsPage> {
     let url = `${this.endpoint}?page=${page}&limit=${limit}`;
     if (category && category !== 'All') url += `&category=${encodeURIComponent(category)}`;
@@ -145,15 +151,16 @@ export class ShortsService {
   getAllShortsAdmin(params: {
     page?: number; limit?: number;
     category?: string; status?: string;
-    type?: string; search?: string;
+    type?: string; search?: string; isSponsored?: boolean;
   } = {}): Observable<ShortsPage> {
     const p = new URLSearchParams();
-    if (params.page)     p.set('page',     String(params.page));
-    if (params.limit)    p.set('limit',    String(params.limit));
-    if (params.category) p.set('category', params.category);
-    if (params.status)   p.set('status',   params.status);
-    if (params.type)     p.set('type',     params.type);
-    if (params.search)   p.set('search',   params.search);
+    if (params.page)        p.set('page',        String(params.page));
+    if (params.limit)       p.set('limit',       String(params.limit));
+    if (params.category)    p.set('category',    params.category);
+    if (params.status)      p.set('status',      params.status);
+    if (params.type)        p.set('type',        params.type);
+    if (params.search)      p.set('search',      params.search);
+    if (params.isSponsored) p.set('isSponsored', 'true');
     return this.http.get<ShortsPage>(`${this.endpoint}/admin/all?${p.toString()}`).pipe(
       catchError(() => of({ status: 200, data: [], total: 0, page: 1, totalPages: 1 }))
     );
@@ -173,7 +180,7 @@ export class ShortsService {
     return this.http.delete<{ status: number; message: string }>(`${this.endpoint}/${id}`);
   }
 
-  sponsorShort(id: string, days?: number, expiryAction?: 'delete' | 'keep', priority = 10): Observable<{ status: number; data: VideoShort }> {
+  sponsorShort(id: string, days?: number, expiryAction?: 'delete' | 'keep', priority = 10, ctaText?: string, ctaUrl?: string): Observable<{ status: number; data: VideoShort }> {
     const sponsoredUntil = days
       ? new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString()
       : null;
@@ -182,6 +189,8 @@ export class ShortsService {
       sponsoredUntil,
       sponsoredExpiryAction: expiryAction ?? null,
       sponsorPriority:       priority,
+      sponsorCtaText:        ctaText ?? null,
+      sponsorCtaUrl:         ctaUrl  ?? null,
     });
   }
 
@@ -191,6 +200,8 @@ export class ShortsService {
       sponsoredUntil:        null,
       sponsoredExpiryAction: null,
       sponsorPriority:       10,
+      sponsorCtaText:        null,
+      sponsorCtaUrl:         null,
     });
   }
 

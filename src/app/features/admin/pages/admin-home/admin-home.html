@@ -27,14 +27,13 @@
     </div>
   </header>
 
-  <!-- ── Pending Review Alert ── -->
+  <!-- ── Pending Review Alerts ── -->
   @if (!isLoading() && totalPending() > 0) {
     <div class="pending-alert" role="alert">
       <div class="pending-alert-icon" aria-hidden="true">
         <svg width="20" height="20" viewBox="0 0 22 22" fill="none">
           <circle cx="11" cy="11" r="8" stroke="#dc2626" stroke-width="2" fill="none"/>
-          <path d="M11 7v4M11 15h.01" stroke="#dc2626" stroke-width="2"
-            stroke-linecap="round"/>
+          <path d="M11 7v4M11 15h.01" stroke="#dc2626" stroke-width="2" stroke-linecap="round"/>
         </svg>
       </div>
       <div class="pending-alert-body">
@@ -44,6 +43,26 @@
       <a [routerLink]="['/admin', userId, 'manage-blogs']"
          [queryParams]="{ status: 'pending' }"
          class="pending-alert-cta">
+        Review Now →
+      </a>
+    </div>
+  }
+
+  @if (!isLoading() && pendingShortsCount() > 0) {
+    <div class="pending-alert pending-alert--shorts" role="alert">
+      <div class="pending-alert-icon" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round">
+          <path d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.9L15 14v-4z"/>
+          <rect x="3" y="6" width="12" height="12" rx="2"/>
+        </svg>
+      </div>
+      <div class="pending-alert-body">
+        <strong>{{ pendingShortsCount() }} sponsor short{{ pendingShortsCount() === 1 ? '' : 's' }} awaiting review</strong>
+        <span>Preview and approve or reject sponsor-submitted shorts</span>
+      </div>
+      <a [routerLink]="['/admin', userId, 'manage-shorts']"
+         [queryParams]="{ status: 'pending' }"
+         class="pending-alert-cta pending-alert-cta--shorts">
         Review Now →
       </a>
     </div>

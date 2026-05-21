@@ -181,6 +181,18 @@
   background: rgba(220, 38, 38, 0.1);
 }
 
+.pending-alert--shorts {
+  background: rgba(124,58,237,.06);
+  border-color: rgba(124,58,237,.22);
+  border-left-color: #7c3aed;
+}
+.pending-alert--shorts .pending-alert-body strong { color: #7c3aed; }
+.pending-alert-cta--shorts {
+  color: #7c3aed;
+  border-color: rgba(124,58,237,.3);
+}
+.pending-alert-cta--shorts:hover { background: rgba(124,58,237,.1); }
+
 /* ════════════════════════════
    Skeleton shimmer
 ════════════════════════════ */

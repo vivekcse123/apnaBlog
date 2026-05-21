@@ -70,6 +70,19 @@
       </div>
     </div>
 
+    @if (sponsorCount() > 0) {
+      <div class="stat-card" style="cursor:pointer" (click)="selectedRole.set('sponsor'); currentPage.set(1)">
+        <div class="stat-icon-wrap" style="background:rgba(245,158,11,.12)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </div>
+        <div class="stat-body">
+          <span class="stat-label">Sponsors</span>
+          <span class="stat-value" style="color:#f59e0b">{{ sponsorCount() }}</span>
+          <span class="stat-chip" style="color:#d97706;background:rgba(245,158,11,.1)">Stakeholders</span>
+        </div>
+      </div>
+    }
+
     @if (todayCount() > 0) {
       <div class="stat-card">
         <div class="stat-icon-wrap today-icon">
@@ -93,6 +106,7 @@
       (ngModelChange)="selectedRole.set($event); currentPage.set(1)">
       <option value="">Filter by Role</option>
       <option value="user">User</option>
+      <option value="sponsor">Sponsor</option>
       <option value="admin">Admin</option>
       <option value="super_admin">Super Admin</option>
     </select>
@@ -119,6 +133,12 @@
       Today
     </button>
     <div class="filters-spacer"></div>
+    <button class="add-btn add-btn--sponsor" (click)="showCreateSponsorModal.set(true)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+      </svg>
+      Add Sponsor
+    </button>
     <button class="add-btn" (click)="showCreateModal.set(true)">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
            stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
@@ -193,6 +213,7 @@
                   <span class="role-badge"
                     [class.role-badge--admin]="user.role === 'admin'"
                     [class.role-badge--super]="user.role === 'super_admin'"
+                    [class.role-badge--sponsor]="user.role === 'sponsor'"
                     [class.role-badge--user]="user.role === 'user'">
                     {{ user.role === 'super_admin' ? 'Super Admin' : (user.role | titlecase) }}
                   </span>
@@ -320,6 +341,13 @@
   <app-create-user
     (close)="showCreateModal.set(false)"
     (userCreated)="loadUsers()"
+  />
+}
+
+@if (showCreateSponsorModal()) {
+  <app-create-sponsor
+    (close)="showCreateSponsorModal.set(false)"
+    (sponsorCreated)="loadUsers()"
   />
 }
 
