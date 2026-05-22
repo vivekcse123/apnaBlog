@@ -116,6 +116,7 @@ export class Home implements OnInit, OnDestroy {
   showWelcomeModal  = signal(false);
   showInstallBanner = signal(false);
   pwaInstalls       = signal(0);
+  installToast      = signal('');
   private installPrompt: any = null;
   private welcomeTimerId: ReturnType<typeof setTimeout> | null = null;
 
@@ -821,6 +822,37 @@ export class Home implements OnInit, OnDestroy {
     this.showWelcomeModal.set(false);
     if (isPlatformBrowser(this.platformId)) {
       sessionStorage.setItem('apna_welcome_seen', '1');
+    }
+  }
+
+  canInstallNatively(): boolean {
+    return !!this.installPrompt || !!(isPlatformBrowser(this.platformId) && (window as any).__pwaPrompt);
+  }
+
+  showManualInstallToast(): void {
+    const isIos = isPlatformBrowser(this.platformId) && /iphone|ipad|ipod/i.test(navigator.userAgent);
+    const msg = isIos
+      ? '📱 Tap the Share button → "Add to Home Screen"'
+      : '📱 Tap the browser menu (⋮) → "Add to Home Screen"';
+    this.installToast.set(msg);
+    setTimeout(() => this.installToast.set(''), 5000);
+    this.showInstallBanner.set(false);
+  }
+
+  triggerInstall(): void {
+    // Pick up prompt from global capture if not already stored
+    if (!this.installPrompt && isPlatformBrowser(this.platformId)) {
+      const early = (window as any).__pwaPrompt;
+      if (early) {
+        this.installPrompt = early;
+        (window as any).__pwaPrompt = null;
+      }
+    }
+    if (this.installPrompt) {
+      this.installApp();
+    } else {
+      // No native prompt — show banner with manual instructions
+      this.showInstallBanner.set(true);
     }
   }
 

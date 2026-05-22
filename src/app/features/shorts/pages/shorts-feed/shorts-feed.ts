@@ -470,8 +470,9 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     if (!vid) return;
     this.attachProgress(cardIdx, vid);
     if (!vid.paused) {
-      // Already playing — ensure mute state matches preference.
-      vid.muted = !this.gestureUnlocked || this.isMuted();
+      // Already playing — ensure mute state matches user preference.
+      const shouldMute = !this.gestureUnlocked || this.isMuted();
+      if (vid.muted !== shouldMute) vid.muted = shouldMute;
       return;
     }
     // Unmuted when user has already scrolled/tapped (gesture unlocked).
@@ -483,10 +484,16 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
         this.ngZone.run(() => this.isMuted.set(vid.muted));
       })
       .catch(() => {
-        // Browser blocked (e.g. data-saver policy) — fall back to muted.
+        // Play failed — retry muted without changing user's mute preference.
         vid.muted = true;
-        this.ngZone.run(() => this.isMuted.set(true));
-        vid.play().catch(() => { this.pendingPlayIdx = cardIdx; });
+        vid.play()
+          .then(() => {
+            // Playing muted as fallback — only reflect this if user hasn't unlocked audio yet.
+            if (!this.gestureUnlocked) {
+              this.ngZone.run(() => this.isMuted.set(true));
+            }
+          })
+          .catch(() => { this.pendingPlayIdx = cardIdx; });
       });
   }
 
