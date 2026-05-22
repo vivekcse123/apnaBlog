@@ -115,6 +115,7 @@ export class Home implements OnInit, OnDestroy {
 
   showWelcomeModal  = signal(false);
   showInstallBanner = signal(false);
+  pwaInstalls       = signal(0);
   private installPrompt: any = null;
   private welcomeTimerId: ReturnType<typeof setTimeout> | null = null;
 
@@ -393,6 +394,7 @@ export class Home implements OnInit, OnDestroy {
     this.restoreLikedIds();
     this.bookmarkService.syncFromServer();
     this.restoreReadHistory();
+    this.loadPwaInstalls();
 
     if (isPlatformBrowser(this.platformId)) {
       const alreadySeen = sessionStorage.getItem('apna_welcome_seen');
@@ -432,6 +434,11 @@ export class Home implements OnInit, OnDestroy {
           });
         }
       }
+
+      // Track installs via browser menu "Add to Home Screen" (no prompt dialog)
+      window.addEventListener('appinstalled', () => {
+        this.recordPwaInstall();
+      });
     }
 
     this.route.queryParamMap
@@ -823,9 +830,25 @@ export class Home implements OnInit, OnDestroy {
     await this.installPrompt.prompt();
     const { outcome } = await this.installPrompt.userChoice;
     this.installPrompt = null;
-    if (outcome === 'dismissed' && isPlatformBrowser(this.platformId)) {
+    if (outcome === 'accepted') {
+      this.recordPwaInstall();
+    } else if (isPlatformBrowser(this.platformId)) {
       localStorage.setItem('apna_install_dismissed', String(Date.now()));
     }
+  }
+
+  private recordPwaInstall(): void {
+    this.http.post(`${environment.apiUrl}/visitor/pwa-install`, {}).subscribe({
+      next: (res: any) => this.pwaInstalls.set(res.pwaInstalls ?? 0),
+      error: () => {},
+    });
+  }
+
+  loadPwaInstalls(): void {
+    this.http.get<{ pwaInstalls: number }>(`${environment.apiUrl}/visitor/pwa-stats`).subscribe({
+      next: res => this.pwaInstalls.set(res.pwaInstalls ?? 0),
+      error: () => {},
+    });
   }
 
   dismissInstallBanner(): void {

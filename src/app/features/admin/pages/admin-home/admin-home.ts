@@ -1,3 +1,4 @@
+import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import {
   Component, DestroyRef, inject, OnInit, OnDestroy,
@@ -16,6 +17,7 @@ import { CreateUser } from '../create-user/create-user';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Auth } from '../../../../core/services/auth';
 import { DashboardCache } from '../../../../core/services/dashboard-cache';
+import { environment } from '../../../../../environments/environment';
 
 Chart.register(...registerables);
 
@@ -43,6 +45,7 @@ export class AdminHome implements OnInit, AfterViewInit, OnDestroy {
   private postService     = inject(PostService);
   private adminService    = inject(AdminService);
   private shortsService   = inject(ShortsService);
+  private http            = inject(HttpClient);
   private destroyRef      = inject(DestroyRef);
   private authService     = inject(Auth);
   private dashboardCache  = inject(DashboardCache);
@@ -72,6 +75,7 @@ export class AdminHome implements OnInit, AfterViewInit, OnDestroy {
   newPublished  = signal<number>(0);
   pendingReview       = signal<number>(0);
   pendingShortsCount  = signal<number>(0);
+  pwaInstalls         = signal<number>(0);
 
   weekViews    = signal<number>(0);
   weekComments = signal<number>(0);
@@ -101,6 +105,7 @@ export class AdminHome implements OnInit, AfterViewInit, OnDestroy {
     this.meta.updateTag({ name: 'robots', content: 'noindex, nofollow' });
     this.loadDashboardData();
     this.loadPendingShortsCount();
+    this.loadPwaInstalls();
     document.addEventListener('visibilitychange', this._onVisibilityChange);
   }
 
@@ -145,6 +150,12 @@ export class AdminHome implements OnInit, AfterViewInit, OnDestroy {
     this.shortsService.getAllShortsAdmin({ page: 1, limit: 1, status: 'pending' })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(res => this.pendingShortsCount.set(res.total ?? 0));
+  }
+
+  private loadPwaInstalls(): void {
+    this.http.get<{ pwaInstalls: number }>(`${environment.apiUrl}/visitor/pwa-stats`)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({ next: res => this.pwaInstalls.set(res.pwaInstalls ?? 0), error: () => {} });
   }
 
   private fetchFresh(showLoader: boolean): void {

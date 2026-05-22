@@ -338,7 +338,8 @@
 .likes-icon     { background: rgba(217, 83,  79,  0.12); }
 .active-icon    { background: rgba(92,  184, 92,  0.12); }
 .inactive-icon  { background: rgba(220, 38,  38,  0.10); }
-.followers-icon { background: rgba(24,  90,  157, 0.12); }
+.followers-icon    { background: rgba(24,  90,  157, 0.12); }
+.pwa-install-icon  { background: rgba(67, 206, 162, 0.12); }
 .pending-icon   { background: rgba(220, 38,  38,  0.10); }
 
 .stat-body {
@@ -390,6 +391,7 @@
 .comments-chip  { background: rgba(55,  138, 221, 0.12); color: #185a9d; }
 .likes-chip     { background: rgba(217, 83,  79,  0.12); color: #c9302c; }
 .followers-chip { background: rgba(24,  90,  157, 0.12); color: #185a9d; }
+.pwa-chip       { background: rgba(67, 206, 162, 0.12); color: #0d9488; }
 
 [data-theme="dark"] .blog-chip      { color: #43cea2; }
 [data-theme="dark"] .published-chip { color: #34d399; }
