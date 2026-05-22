@@ -311,9 +311,9 @@ body {
 .share-menu-close {
   background: none; border: none; cursor: pointer;
   font-size: 16px; color: var(--text-muted);
-  width: 24px; height: 24px;
+  width: 36px; height: 36px;
   display: flex; align-items: center; justify-content: center;
-  border-radius: 4px; transition: background 0.2s, color 0.2s;
+  border-radius: 6px; transition: background 0.2s, color 0.2s;
 }
 
 .share-menu-close:hover { background: var(--bg-surface-alt); color: var(--text-primary); }
@@ -1578,8 +1578,8 @@ body {
   .app-logo-text      { display: none; }
   .header-center      { display: none; }
   .progress-ring-wrap { display: none; }
-  .hdr-back-btn { width: 38px; height: 38px; border-radius: 50%; padding: 0; justify-content: center; flex-shrink: 0; }
-  .hdr-back-btn span   { display: none; }
+  .hdr-back-btn { width: 38px !important; height: 38px !important; border-radius: 50% !important; padding: 0 !important; justify-content: center; flex-shrink: 0; background: var(--bg-surface) !important; border: 1.5px solid var(--border) !important; color: var(--text-secondary) !important; }
+  .hdr-back-btn .btn-label { display: none; }
 
   .cat-dropdown {
     position: fixed !important;
@@ -1590,7 +1590,7 @@ body {
     max-height: 65vh;
     overflow-y: auto;
   }
-  .hdr-back-btn        { padding: 7px 10px; }
+  .hdr-back-btn        { padding: 0 !important; }
   .cat-btn-full        { display: none; }
   .cat-btn-short       { display: inline; }
   .hdr-cat-btn         { padding: 7px 10px; gap: 5px; }

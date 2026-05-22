@@ -378,6 +378,7 @@
           aria-label="Search community stories"
           autocomplete="off"
           (input)="onSearchInput($any($event.target).value)"
+          (keydown.enter)="scrollToResultsPublic()"
         />
         <kbd class="search-shortcut" aria-label="Press / to focus search">/</kbd>
       </div>

@@ -67,6 +67,7 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
   private searchDebounce: ReturnType<typeof setTimeout> | null = null;
 
   // ── Private state ──────────────────────────────────────────────────────────
+  private categoryCache       = new Map<string, VideoShort[]>();
   private page                = 1;
   private observer!:          IntersectionObserver;
   private viewedSet           = new Set<string>();
@@ -253,6 +254,7 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     if (reset) { this.page = 1; this.hasMore.set(true); }
     this.isLoading.set(true);
     const cat    = this.selectedCat() === 'All' ? undefined : this.selectedCat();
+    const catKey = this.selectedCat();
     const search = this.searchQuery().trim() || undefined;
     this.service.getShorts(this.page, 8, cat, search).subscribe({
       next: res => {
@@ -262,6 +264,8 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
           const seen = new Set(cur.map(s => s._id));
           return [...cur, ...items.filter(s => !seen.has(s._id))];
         });
+        // Cache first page results per category for instant switching
+        if (reset && !search) this.categoryCache.set(catKey, this.shorts());
         this.hasMore.set(this.page < (res.totalPages ?? 1));
         this.page++;
         this.isLoading.set(false);
@@ -319,12 +323,24 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     this.manuallyPausedSet.clear();
     this.progressBound.clear();
     this.loadShorts(true);
-    this.feedRef?.nativeElement.scrollTo({ top: 0, behavior: 'instant' });
+    if (!this.categoryCache.has(this.selectedCat())) {
+      this.feedRef?.nativeElement.scrollTo({ top: 0, behavior: 'instant' });
+    }
   }
 
   onCategorySelect(cat: string): void {
     if (cat === this.selectedCat() && !this.isLoading()) return;
     this.selectedCat.set(cat);
+    // Show cached instantly if available
+    const cached = this.categoryCache.get(cat);
+    if (cached?.length) {
+      this.shorts.set(cached);
+      this.feedRef?.nativeElement.scrollTo({ top: 0, behavior: 'instant' });
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        this.observeAll();
+        this.autoPlayVideo(0);
+      }));
+    }
     this.resetFeed();
   }
 

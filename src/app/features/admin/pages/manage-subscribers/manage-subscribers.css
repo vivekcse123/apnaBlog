@@ -30,7 +30,7 @@
 .ms-td-date { font-size:12px;color:var(--text-muted);white-space:nowrap; }
 .ms-td-actions { white-space:nowrap; }
 .ms-actions-wrap { display:flex;align-items:center;gap:6px; }
-.ms-action-btn { width:34px;height:34px;border-radius:8px;border:1px solid var(--border);background:var(--bg-surface-alt);color:var(--text-muted);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-size:0;line-height:0;flex-shrink:0;transition:background .15s,color .15s,border-color .15s; }
+.ms-action-btn { width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:var(--bg-surface-alt);color:var(--text-muted);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-size:0;line-height:0;flex-shrink:0;transition:background .15s,color .15s,border-color .15s; }
 .ms-action-btn svg { flex-shrink:0; }
 .ms-action-btn--edit:hover { background:color-mix(in srgb,#f59e0b 12%,transparent);border-color:#f59e0b;color:#f59e0b; }
 .ms-action-btn--delete:hover { background:color-mix(in srgb,#ef4444 12%,transparent);border-color:#ef4444;color:#ef4444; }

@@ -442,11 +442,11 @@ tbody > tr:hover td { background: var(--bg-hover); }
 }
 
 .action-btn {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   padding: 0;
   border: none;
-  border-radius: 7px;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 13px;
   display: inline-flex;
@@ -658,7 +658,7 @@ tbody > tr:hover td { background: var(--bg-hover); }
 }
 
 @media (max-width: 768px) {
-  .user-page { padding: 16px 20px; }
+  .user-page { padding: 16px 14px; }
 
   .page-header { flex-direction: column; align-items: stretch; }
   .search-input { width: 100%; }
@@ -683,13 +683,10 @@ tbody > tr:hover td { background: var(--bg-hover); }
   .stat-icon-wrap { width: 32px; height: 32px; }
   .stat-value { font-size: 18px; }
   .stat-chip { display: none; }
-}
 
-@media (max-width: 600px) {
+  /* Card layout — active from 768px not just 600px */
   .pagination { justify-content: center; }
   .pg-info    { width: 100%; text-align: center; }
-
-  /* Card layout for small screens */
   .table-scroll { overflow-x: visible; }
   table         { display: block; min-width: unset; }
   thead         { display: none; }
@@ -745,10 +742,11 @@ tbody > tr:hover td { background: var(--bg-hover); }
   }
   td.cell-actions::before { display: none; }
 
-  .action-btn { width: 36px; height: 36px; border-radius: 8px; }
+  /* Larger touch targets on mobile */
+  .action-btn { width: 38px; height: 38px; border-radius: 8px; }
 
   .sk-row { border-radius: 12px; overflow: hidden; }
   .sk-row td { display: block; padding: 10px 14px; }
 
-  .confirm-box { margin: 0 16px; }
+  .confirm-box { margin: 0 12px; width: calc(100% - 24px); max-width: unset; }
 }

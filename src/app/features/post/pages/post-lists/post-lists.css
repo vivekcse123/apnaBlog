@@ -488,11 +488,11 @@ tbody > tr:hover td { background: var(--bg-hover); }
 }
 
 .action-btn {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   padding: 0;
   border: none;
-  border-radius: 7px;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 13px;
   display: inline-flex;

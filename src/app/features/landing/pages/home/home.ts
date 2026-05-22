@@ -401,16 +401,36 @@ export class Home implements OnInit, OnDestroy {
         this.welcomeTimerId = setTimeout(() => this.showWelcomeModal.set(true), delay);
       }
 
-      // PWA install prompt — only show if not already installed and not dismissed recently
+      // PWA install prompt — show from 2nd visit onwards, respect 7-day dismiss cooldown
       const dismissed = localStorage.getItem('apna_install_dismissed');
       const dismissedAt = dismissed ? parseInt(dismissed) : 0;
       const sevenDays = 7 * 24 * 60 * 60 * 1000;
-      if (Date.now() - dismissedAt > sevenDays) {
-        window.addEventListener('beforeinstallprompt', (e: Event) => {
-          e.preventDefault();
-          this.installPrompt = e;
+      const notDismissed = Date.now() - dismissedAt > sevenDays;
+
+      // Track visit count (increment each session using sessionStorage flag)
+      const alreadyCountedThisSession = sessionStorage.getItem('apna_visit_counted');
+      if (!alreadyCountedThisSession) {
+        sessionStorage.setItem('apna_visit_counted', '1');
+        const visits = parseInt(localStorage.getItem('apna_visit_count') || '0') + 1;
+        localStorage.setItem('apna_visit_count', String(visits));
+      }
+      const visitCount = parseInt(localStorage.getItem('apna_visit_count') || '0');
+
+      if (notDismissed && visitCount >= 2) {
+        // Use already-captured prompt (may have fired before Angular booted)
+        const early = (window as any).__pwaPrompt;
+        if (early) {
+          this.installPrompt = early;
+          (window as any).__pwaPrompt = null;
           setTimeout(() => this.showInstallBanner.set(true), 3000);
-        });
+        } else {
+          // Fallback: still listen in case it fires after boot
+          window.addEventListener('beforeinstallprompt', (e: Event) => {
+            e.preventDefault();
+            this.installPrompt = e;
+            setTimeout(() => this.showInstallBanner.set(true), 3000);
+          });
+        }
       }
     }
 
@@ -435,7 +455,10 @@ export class Home implements OnInit, OnDestroy {
       debounceTime(350),
       distinctUntilChanged(),
       takeUntilDestroyed(this.destroyRef)
-    ).subscribe(val => this.searchQuery.set(val));
+    ).subscribe(val => {
+      this.searchQuery.set(val);
+      if (val.trim()) setTimeout(() => this.scrollToSearchInput(), 400);
+    });
 
     this.loadInitialData();
     this.taxonomyService.load().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
@@ -818,6 +841,10 @@ export class Home implements OnInit, OnDestroy {
     this.resetVisibleCounts();
   }
 
+  scrollToResultsPublic(): void {
+    setTimeout(() => this.scrollToSearchInput(), 300);
+  }
+
   isNew(post: Post): boolean {
     return (Date.now() - new Date(post.createdAt).getTime()) < 48 * 60 * 60 * 1000;
   }
@@ -846,6 +873,18 @@ export class Home implements OnInit, OnDestroy {
 
   private resetVisibleCounts(): void {
     this.filteredPage.set(0);
+  }
+
+  private scrollToSearchInput(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    const resultsEl = this.document.getElementById('filtered-results');
+    if (!resultsEl) return;
+    const headerEl = this.document.querySelector('.header') as HTMLElement;
+    const filterWrap = this.document.querySelector('.filter-wrap') as HTMLElement;
+    const headerH = headerEl ? headerEl.offsetHeight : 64;
+    const filterH = filterWrap ? filterWrap.offsetHeight : 50;
+    const top = resultsEl.getBoundingClientRect().top + window.scrollY - headerH - filterH - 8;
+    window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
   }
 
   private scrollToResults(): void {

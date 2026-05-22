@@ -11,6 +11,12 @@
         document.documentElement.setAttribute('data-theme', saved || (isNight ? 'dark' : 'light'));
       } catch (e) { /* SSR / private browsing */ }
     })();
+
+    // Capture beforeinstallprompt immediately — fires before Angular boots
+    window.addEventListener('beforeinstallprompt', function(e) {
+      e.preventDefault();
+      window.__pwaPrompt = e;
+    });
   </script>
   <meta name="google-adsense-account" content="ca-pub-6477809641944524">
   <meta charset="utf-8">

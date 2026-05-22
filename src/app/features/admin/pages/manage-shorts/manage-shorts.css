@@ -369,8 +369,8 @@
   gap: 6px;
 }
 .ms-action-btn {
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   border-radius: 8px;
   border: 1px solid var(--border);
   background: var(--bg-surface-alt);
