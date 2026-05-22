@@ -1014,11 +1014,14 @@
           class="newsletter-input"
           placeholder="Enter your email address"
           [(ngModel)]="subscribeEmail"
+          (ngModelChange)="onEmailInput($event)"
           required
           autocomplete="email"
           [disabled]="subscribing()"
+          [class.newsletter-input--invalid]="emailInputError()"
+          [class.newsletter-input--valid]="subscribeEmail && !emailInputError()"
         />
-        <button type="submit" class="newsletter-btn" [disabled]="subscribing() || !subscribeEmail.trim()">
+        <button type="submit" class="newsletter-btn" [disabled]="subscribing() || !subscribeEmail.trim() || !!emailInputError()">
           @if (subscribing()) {
             <span class="nl-spinner"></span>
           } @else {
@@ -1026,7 +1029,9 @@
           }
         </button>
       </form>
-      @if (subscribeError()) {
+      @if (emailInputError()) {
+        <p class="newsletter-error newsletter-error--inline" role="alert">{{ emailInputError() }}</p>
+      } @else if (subscribeError()) {
         <p class="newsletter-error" role="alert">{{ subscribeError() }}</p>
       }
     }

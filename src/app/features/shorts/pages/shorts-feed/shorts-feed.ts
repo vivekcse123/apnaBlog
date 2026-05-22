@@ -1,6 +1,6 @@
 import {
   Component, inject, signal, computed, OnInit, OnDestroy, AfterViewInit,
-  NgZone, PLATFORM_ID, ViewChildren, QueryList, ElementRef, ViewChild,
+  NgZone, PLATFORM_ID, ViewChildren, QueryList, ElementRef, ViewChild, HostListener,
 } from '@angular/core';
 import { isPlatformBrowser, CommonModule, Location, DOCUMENT } from '@angular/common';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
@@ -32,6 +32,7 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
 
   @ViewChildren('reelCard') cardRefs!: QueryList<ElementRef<HTMLElement>>;
   @ViewChild('reelFeed')    feedRef!:  ElementRef<HTMLElement>;
+  @ViewChild('catNav')      catNavRef!: ElementRef<HTMLElement>;
 
   // ── Signals ────────────────────────────────────────────────────────────────
   shorts             = signal<VideoShort[]>([]);
@@ -57,9 +58,12 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
   endedCards         = signal<Set<number>>(new Set());
   likedIds           = signal<Set<string>>(this.loadLikedFromStorage());
   isMuted            = signal(false);
+  showUnmuteHint     = signal(false);
+  showSwipeHint      = signal(false);
   pauseIndicatorIdx  = signal(-1);
   indicatorIsPlaying = signal(false);
   likeFlashIdx       = signal(-1);
+  likedPopIdx        = signal(-1);
   holdingIdx         = signal(-1);
   expandedCaptions   = signal<Set<string>>(new Set());
   showSearch         = signal(false);
@@ -78,14 +82,18 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
   private manuallyPausedSet   = new Set<number>();
   private gestureUnlocked     = false;
   private progressBound       = new Set<number>();
-  private touchStartPos       = { x: 0, y: 0 };
-  private lastTouchToggleTime = 0;
-  private lastTapIdx          = -1;
-  private lastTapTime         = 0;
-  private piTimer:        ReturnType<typeof setTimeout> | null = null;
-  private holdTimer:      ReturnType<typeof setTimeout> | null = null;
-  private likeFlashTimer: ReturnType<typeof setTimeout> | null = null;
-  private seekTimer:      ReturnType<typeof setTimeout> | null = null;
+  private touchStartPos        = { x: 0, y: 0 };
+  private lastTouchToggleTime  = 0;
+  private lastTapIdx           = -1;
+  private lastTapTime          = 0;
+  private userExplicitlyMuted  = false;
+  private piTimer:          ReturnType<typeof setTimeout> | null = null;
+  private holdTimer:        ReturnType<typeof setTimeout> | null = null;
+  private likeFlashTimer:   ReturnType<typeof setTimeout> | null = null;
+  private seekTimer:        ReturnType<typeof setTimeout> | null = null;
+  private unmuteHintTimer:  ReturnType<typeof setTimeout> | null = null;
+  private swipeHintTimer:   ReturnType<typeof setTimeout> | null = null;
+  private likedPopTimer:    ReturnType<typeof setTimeout> | null = null;
   private targetShortId:  string | null = null;
 
   // Seek config
@@ -114,6 +122,25 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     this.applyMeta();
     this.targetShortId = this.route.snapshot.fragment ?? null;
     this.loadShorts(true);
+    if (isPlatformBrowser(this.platformId)) this.initSwipeHint();
+  }
+
+  private initSwipeHint(): void {
+    try {
+      if (localStorage.getItem('apna_swipe_hint_seen')) return;
+      this.swipeHintTimer = setTimeout(() => {
+        this.ngZone.run(() => this.showSwipeHint.set(true));
+        this.swipeHintTimer = setTimeout(() => {
+          this.ngZone.run(() => this.showSwipeHint.set(false));
+          try { localStorage.setItem('apna_swipe_hint_seen', '1'); } catch { /* quota */ }
+        }, 2500);
+      }, 1800);
+    } catch { /* private browsing */ }
+  }
+
+  private clearUnmuteHint(): void {
+    if (this.unmuteHintTimer) { clearTimeout(this.unmuteHintTimer); this.unmuteHintTimer = null; }
+    this.showUnmuteHint.set(false);
   }
 
   private applyMeta(): void {
@@ -179,6 +206,9 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     if (this.likeFlashTimer)    clearTimeout(this.likeFlashTimer);
     if (this.seekTimer)         clearTimeout(this.seekTimer);
     if (this.searchDebounce)    clearTimeout(this.searchDebounce);
+    if (this.unmuteHintTimer)   clearTimeout(this.unmuteHintTimer);
+    if (this.swipeHintTimer)    clearTimeout(this.swipeHintTimer);
+    if (this.likedPopTimer)     clearTimeout(this.likedPopTimer);
   }
 
   // ── Gesture unlock ─────────────────────────────────────────────────────────
@@ -186,6 +216,8 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
   unlockAudio(event?: Event): void {
     event?.stopPropagation();
     this.gestureUnlocked = true;
+    this.userExplicitlyMuted = false;
+    this.clearUnmuteHint();
     const idx = this.activeIndex();
     const vid = this.getVideoAt(idx);
     if (vid) {
@@ -202,7 +234,20 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private setupGestureUnlock(): void {
-    const unlock = () => { this.gestureUnlocked = true; };
+    const unlock = () => {
+      if (this.gestureUnlocked) return;
+      this.gestureUnlocked = true;
+      // Any first interaction satisfies browser autoplay policy — unmute unless user chose mute.
+      if (!this.userExplicitlyMuted) {
+        this.ngZone.run(() => {
+          this.clearUnmuteHint();
+          this.showSwipeHint.set(false);
+          this.isMuted.set(false);
+          const vid = this.getVideoAt(this.activeIndex());
+          if (vid) vid.muted = false;
+        });
+      }
+    };
     document.addEventListener('touchend', unlock, { once: true, passive: true });
     document.addEventListener('click',    unlock, { once: true, passive: true });
   }
@@ -220,6 +265,13 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
       // Scroll is a user gesture — unlock audio immediately on current card.
       if (!this.gestureUnlocked) {
         this.gestureUnlocked = true;
+        if (!this.userExplicitlyMuted) {
+          this.ngZone.run(() => {
+            this.clearUnmuteHint();
+            this.showSwipeHint.set(false);
+            this.isMuted.set(false);
+          });
+        }
         const vid = this.getVideoAt(this.activeIndex());
         if (vid && !this.isMuted()) vid.muted = false;
       }
@@ -235,7 +287,16 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
       const idx = Math.round(container.scrollTop / container.clientHeight);
       // Settling after a scroll = confirmed user gesture → unlock audio.
       this.gestureUnlocked = true;
-      this.ngZone.run(() => { this.activeIndex.set(idx); this.autoPlayVideo(idx); });
+      this.ngZone.run(() => {
+        // Clear browser-forced mute so next video plays with audio (user's default preference).
+        if (!this.userExplicitlyMuted) {
+          this.clearUnmuteHint();
+          this.showSwipeHint.set(false);
+          this.isMuted.set(false);
+        }
+        this.activeIndex.set(idx);
+        this.autoPlayVideo(idx);
+      });
     };
     if ('onscrollend' in window) {
       container.addEventListener('scrollend', onSettle, { passive: true });
@@ -259,6 +320,14 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     this.service.getShorts(this.page, 8, cat, search).subscribe({
       next: res => {
         const items = res.data ?? [];
+        // Seed liked IDs from server so previously-liked videos show red heart immediately.
+        if (this.isLoggedIn()) {
+          const serverLiked = items.filter(s => s.isLikedByMe).map(s => s._id);
+          if (serverLiked.length) {
+            this.likedIds.update(cur => { const n = new Set(cur); serverLiked.forEach(id => n.add(id)); return n; });
+            this.saveLikedToStorage();
+          }
+        }
         this.shorts.update(cur => {
           if (reset) return items;
           const seen = new Set(cur.map(s => s._id));
@@ -315,6 +384,11 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     this.searchDebounce = setTimeout(() => this.resetFeed(), 400);
   }
 
+  watchAgain(): void {
+    this.feedRef?.nativeElement.scrollTo({ top: 0, behavior: 'instant' });
+    this.resetFeed();
+  }
+
   private resetFeed(): void {
     this.pendingPlayIdx = -1;
     this.viewedSet.clear();
@@ -331,6 +405,14 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
   onCategorySelect(cat: string): void {
     if (cat === this.selectedCat() && !this.isLoading()) return;
     this.selectedCat.set(cat);
+    // Scroll the selected pill to center of the nav bar.
+    requestAnimationFrame(() => {
+      const nav = this.catNavRef?.nativeElement;
+      if (!nav) return;
+      const idx = this.categories.indexOf(cat);
+      const pill = nav.children[idx] as HTMLElement;
+      if (pill) nav.scrollTo({ left: pill.offsetLeft - nav.clientWidth / 2 + pill.offsetWidth / 2, behavior: 'smooth' });
+    });
     // Show cached instantly if available
     const cached = this.categoryCache.get(cat);
     if (cached?.length) {
@@ -350,7 +432,7 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
       this.scrollRafId = 0;
       if (!this.feedRef) return;
       const el = this.feedRef.nativeElement;
-      if (el.scrollHeight - el.scrollTop - el.clientHeight < 200
+      if (el.scrollHeight - el.scrollTop - el.clientHeight < el.clientHeight
           && this.hasMore() && !this.isLoading()) this.loadShorts();
     });
   }
@@ -449,8 +531,11 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     const card = this.feedRef?.nativeElement.querySelector<HTMLElement>(`[data-idx="${cardIdx}"]`);
     if (!card) return;
     vid.addEventListener('timeupdate', () => {
-      if (vid.duration > 0)
-        card.style.setProperty('--vp', `${(vid.currentTime / vid.duration) * 100}%`);
+      if (vid.duration > 0) {
+        const n = vid.currentTime / vid.duration;
+        card.style.setProperty('--vp',   `${n * 100}%`);
+        card.style.setProperty('--vp-n', `${n}`);
+      }
     }, { passive: true });
     vid.addEventListener('ended', () => {
       card.style.setProperty('--vp', '100%');
@@ -480,15 +565,26 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     vid.muted = !this.gestureUnlocked || this.isMuted();
     vid.play()
       .then(() => {
-        // Confirm icon matches reality.
-        this.ngZone.run(() => this.isMuted.set(vid.muted));
+        // Only reflect the muted state when it's browser-forced (gesture not yet unlocked).
+        // After gesture unlock, isMuted already reflects the user's explicit preference.
+        if (!this.gestureUnlocked) {
+          this.ngZone.run(() => {
+            this.isMuted.set(true);
+            // Show "tap to unmute" hint for 3s on the first muted video.
+            if (!this.showUnmuteHint()) {
+              this.showUnmuteHint.set(true);
+              this.unmuteHintTimer = setTimeout(() => {
+                this.ngZone.run(() => this.showUnmuteHint.set(false));
+              }, 3000);
+            }
+          });
+        }
       })
       .catch(() => {
         // Play failed — retry muted without changing user's mute preference.
         vid.muted = true;
         vid.play()
           .then(() => {
-            // Playing muted as fallback — only reflect this if user hasn't unlocked audio yet.
             if (!this.gestureUnlocked) {
               this.ngZone.run(() => this.isMuted.set(true));
             }
@@ -541,12 +637,17 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
+    // First-ever tap: let setupGestureUnlock handle the unmute — don't pause the video.
+    if (!this.gestureUnlocked) return;
+
     this.lastTouchToggleTime = Date.now();
     this.doToggle(cardIdx, e.currentTarget as HTMLElement);
   }
 
   onCardClick(cardIdx: number, event: Event): void {
     if (Date.now() - this.lastTouchToggleTime < 600) return;
+    // First-ever click: let setupGestureUnlock handle the unmute — don't pause the video.
+    if (!this.gestureUnlocked) return;
     const target = event.target as HTMLElement;
     if (target.closest('button, a, input, .reel-actions, .reel-info, .reel-progress-track')) return;
     this.doToggle(cardIdx, event.currentTarget as HTMLElement);
@@ -630,6 +731,7 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
   toggleMute(event: Event): void {
     event.stopPropagation();
     const newMuted = !this.isMuted();
+    this.userExplicitlyMuted = newMuted;
     this.isMuted.set(newMuted);
     if (!newMuted) { this.gestureUnlocked = true; }
     if (!this.feedRef?.nativeElement) return;
@@ -649,7 +751,14 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     this.likedIds.update(s => { const n = new Set(s); n.add(short._id); return n; });
     this.shorts.update(list => list.map(s => s._id === short._id ? { ...s, likesCount: s.likesCount + 1 } : s));
     this.saveLikedToStorage();
+    this.haptic(40);
     this.service.likeShort(short._id).subscribe({ error: () => this.revertLike(short, false) });
+  }
+
+  private haptic(ms: number): void {
+    if (isPlatformBrowser(this.platformId) && 'vibrate' in navigator) {
+      navigator.vibrate(ms);
+    }
   }
 
   isLiked(id: string): boolean { return this.likedIds().has(id); }
@@ -667,9 +776,18 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     event.stopPropagation();
     if (!this.isLoggedIn()) { this.router.navigate(['/auth/login']); return; }
     const liked = this.isLiked(short._id);
+    const idx   = this.shorts().findIndex(s => s._id === short._id);
     this.likedIds.update(s => { const n = new Set(s); liked ? n.delete(short._id) : n.add(short._id); return n; });
     this.shorts.update(list => list.map(s => s._id === short._id ? { ...s, likesCount: s.likesCount + (liked ? -1 : 1) } : s));
     this.saveLikedToStorage();
+    if (!liked) {
+      this.haptic(40);
+      this.likedPopIdx.set(idx);
+      if (this.likedPopTimer) clearTimeout(this.likedPopTimer);
+      this.likedPopTimer = setTimeout(() => this.ngZone.run(() => this.likedPopIdx.set(-1)), 500);
+    } else {
+      this.haptic(15);
+    }
     (liked ? this.service.unlikeShort(short._id) : this.service.likeShort(short._id))
       .subscribe({ error: () => this.revertLike(short, liked) });
   }
@@ -865,6 +983,10 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
 
   // ── Helpers ────────────────────────────────────────────────────────────────
 
+  onVideoData(event: Event): void {
+    (event.target as HTMLVideoElement).classList.add('sf-video--ready');
+  }
+
   formatCount(n: number): string {
     if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
     if (n >= 1_000)     return (n / 1_000).toFixed(1).replace(/\.0$/, '') + 'k';
@@ -892,5 +1014,44 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
   goBack(): void {
     const hasPrev = this.router.lastSuccessfulNavigation?.previousNavigation != null;
     hasPrev ? this.location.back() : this.router.navigate(['/']);
+  }
+
+  // ── Keyboard shortcuts (desktop) ───────────────────────────────────────────
+  @HostListener('document:keydown', ['$event'])
+  onKeyDown(e: KeyboardEvent): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    const tag = (e.target as HTMLElement).tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+    if (this.showComments() || this.showLikes() || this.showUpload()) return;
+    const idx = this.activeIndex();
+    switch (e.key) {
+      case ' ': case 'k':
+        e.preventDefault();
+        this.doTogglePublic(idx, e as any);
+        break;
+      case 'ArrowDown': case 'j':
+        e.preventDefault();
+        this.navigateCard(1);
+        break;
+      case 'ArrowUp': case 'i':
+        e.preventDefault();
+        this.navigateCard(-1);
+        break;
+      case 'm': case 'M':
+        this.toggleMute(e as any);
+        break;
+      case 'l': case 'L': {
+        const short = this.shorts()[idx];
+        if (short && this.isLoggedIn()) this.toggleLike(short, e as any);
+        break;
+      }
+    }
+  }
+
+  private navigateCard(delta: number): void {
+    const next = Math.max(0, Math.min(this.activeIndex() + delta, this.shorts().length - 1));
+    if (next === this.activeIndex()) return;
+    this.scrollToCard(next);
+    this.autoPlayVideo(next);
   }
 }

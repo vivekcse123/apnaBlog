@@ -154,13 +154,42 @@ export class AuthorPage implements OnInit {
     const bio  = (user as any).bio  ?? `Read all blogs by ${name} on ApnaInsights.`;
     const url  = `https://apnainsights.com/author/${(user as any)._id}`;
 
+    const avatar = (user as any).avatar || 'https://apnainsights.com/og-image.png';
+
     this.titleSvc.setTitle(`${name} — Author | ApnaInsights`);
-    this.meta.updateTag({ name: 'description',        content: bio });
-    this.meta.updateTag({ name: 'robots',             content: 'index, follow' });
-    this.meta.updateTag({ property: 'og:title',       content: `${name} — Author | ApnaInsights` });
-    this.meta.updateTag({ property: 'og:description', content: bio });
-    this.meta.updateTag({ property: 'og:url',         content: url });
-    this.meta.updateTag({ property: 'og:type',        content: 'profile' });
+    this.meta.updateTag({ name: 'description',          content: bio });
+    this.meta.updateTag({ name: 'robots',               content: 'index, follow' });
+    this.meta.updateTag({ property: 'og:title',         content: `${name} — Author | ApnaInsights` });
+    this.meta.updateTag({ property: 'og:description',   content: bio });
+    this.meta.updateTag({ property: 'og:url',           content: url });
+    this.meta.updateTag({ property: 'og:type',          content: 'profile' });
+    this.meta.updateTag({ property: 'og:image',         content: avatar });
+    this.meta.updateTag({ property: 'og:image:width',   content: '400' });
+    this.meta.updateTag({ property: 'og:image:height',  content: '400' });
+    this.meta.updateTag({ name: 'twitter:card',         content: 'summary' });
+    this.meta.updateTag({ name: 'twitter:title',        content: `${name} — Author | ApnaInsights` });
+    this.meta.updateTag({ name: 'twitter:description',  content: bio });
+    this.meta.updateTag({ name: 'twitter:image',        content: avatar });
+
+    // Person structured data
+    const schema = {
+      '@context': 'https://schema.org',
+      '@type': 'Person',
+      name,
+      url,
+      image: avatar,
+      description: bio,
+      sameAs: [url],
+      worksFor: { '@type': 'Organization', name: 'ApnaInsights', url: 'https://apnainsights.com' },
+    };
+    let sd = this.document.getElementById('author-schema') as HTMLScriptElement | null;
+    if (!sd) {
+      sd = this.document.createElement('script');
+      sd.id   = 'author-schema';
+      sd.type = 'application/ld+json';
+      this.document.head.appendChild(sd);
+    }
+    sd.textContent = JSON.stringify(schema);
 
     let canonical = this.document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
     if (!canonical) {

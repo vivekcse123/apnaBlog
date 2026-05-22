@@ -156,7 +156,86 @@ app.get('/sitemap.xml', async (_req: Request, res: Response) => {
   }
 });
 
-// 301 redirect: /blog/:objectId  →  /blog/:slug
+// ── RSS Feed (/rss.xml) ───────────────────────────────────────────────────────
+let rssCache: string | null = null;
+let rssCachedAt = 0;
+const RSS_TTL = 60 * 60 * 1000;
+
+app.get(['/rss.xml', '/feed', '/feed.xml'], async (_req: Request, res: Response) => {
+  try {
+    if (rssCache && Date.now() - rssCachedAt < RSS_TTL) {
+      res.setHeader('Content-Type', 'application/rss+xml; charset=utf-8');
+      res.setHeader('Cache-Control', 'public, max-age=3600');
+      return res.send(rssCache);
+    }
+
+    const r = await fetch(`${API_BASE}/post?limit=20`, {
+      headers: { Accept: 'application/json' },
+      signal: AbortSignal.timeout(8000),
+    });
+    const body = await r.json() as { data?: any[] };
+    const posts: any[] = (body?.data ?? []).filter((p: any) => p.status === 'published' && p.title);
+
+    const esc = (s: string) => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const strip = (s: string) => String(s ?? '').replace(/<[^>]*>/g, '').trim();
+
+    const items = posts.map((p: any) => {
+      const url  = `${SITE_ORIGIN}/blog/${esc(p.slug || p._id)}`;
+      const date = new Date(p.updatedAt || p.createdAt).toUTCString();
+      const desc = esc((p.description || strip(p.content || '')).slice(0, 300));
+      const img  = p.featuredImage ? `<enclosure url="${esc(p.featuredImage)}" type="image/jpeg" length="0"/>` : '';
+      const cats = (p.categories ?? []).map((c: string) => `<category>${esc(c)}</category>`).join('');
+      return `<item><title>${esc(p.title)}</title><link>${url}</link><guid isPermaLink="true">${url}</guid><description>${desc}</description><pubDate>${date}</pubDate>${cats}${img}</item>`;
+    }).join('');
+
+    const xml = `<?xml version="1.0" encoding="UTF-8"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>ApnaInsights — Real Stories, Real Voices</title><link>${SITE_ORIGIN}</link><description>India's community blogging platform.</description><language>en-IN</language><lastBuildDate>${new Date().toUTCString()}</lastBuildDate><ttl>60</ttl><atom:link href="${SITE_ORIGIN}/rss.xml" rel="self" type="application/rss+xml"/>${items}</channel></rss>`;
+
+    rssCache = xml; rssCachedAt = Date.now();
+    res.setHeader('Content-Type', 'application/rss+xml; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    return res.send(xml);
+  } catch (err) {
+    console.error('[RSS] failed:', err);
+    return res.status(500).send('RSS temporarily unavailable');
+  }
+});
+
+// ── News Sitemap (/news-sitemap.xml) ─────────────────────────────────────────
+app.get('/news-sitemap.xml', async (_req: Request, res: Response) => {
+  try {
+    const r = await fetch(`${API_BASE}/post?limit=50`, {
+      headers: { Accept: 'application/json' },
+      signal: AbortSignal.timeout(8000),
+    });
+    const body = await r.json() as { data?: any[] };
+    const posts: any[] = (body?.data ?? []).filter((p: any) => p.status === 'published' && p.title);
+
+    const esc = (s: string) => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const twoDaysAgo = Date.now() - 2 * 24 * 60 * 60 * 1000;
+    const recent = posts.filter((p: any) => new Date(p.createdAt).getTime() > twoDaysAgo);
+
+    const urls = recent.map((p: any) => `
+  <url>
+    <loc>${SITE_ORIGIN}/blog/${esc(p.slug || p._id)}</loc>
+    <news:news>
+      <news:publication><news:name>ApnaInsights</news:name><news:language>en</news:language></news:publication>
+      <news:publication_date>${new Date(p.createdAt).toISOString()}</news:publication_date>
+      <news:title>${esc(p.title)}</news:title>
+    </news:news>
+  </url>`).join('');
+
+    const xml = `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">${urls}</urlset>`;
+
+    res.setHeader('Content-Type', 'application/xml');
+    res.setHeader('Cache-Control', 'public, max-age=1800');
+    return res.send(xml);
+  } catch (err) {
+    console.error('[News sitemap] failed:', err);
+    return res.status(500).send('News sitemap temporarily unavailable');
+  }
+});
+
+// ── 301 redirect: /blog/:objectId  →  /blog/:slug ─────────────────────────────
 // Prevents duplicate-content indexing of old MongoDB ObjectId URLs.
 const OBJECT_ID_RE = /^[0-9a-f]{24}$/i;
 const API_BASE = process.env['API_URL'] ?? 'https://apnablogserver.onrender.com/api';

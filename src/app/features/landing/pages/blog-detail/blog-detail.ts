@@ -1,6 +1,6 @@
 import {
   Component, inject, signal, OnInit, OnDestroy, DestroyRef,
-  PLATFORM_ID, computed, AfterViewInit, ElementRef,
+  PLATFORM_ID, computed, AfterViewInit, ElementRef, NgZone,
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule, isPlatformBrowser, DOCUMENT, Location } from '@angular/common';
@@ -82,6 +82,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   readonly auth         = inject(Auth);
   private userService   = inject(UserService);
   private platformId    = inject(PLATFORM_ID);
+  private ngZone        = inject(NgZone);
   private meta          = inject(Meta);
   private titleService  = inject(Title);
   private elementRef    = inject(ElementRef);
@@ -849,7 +850,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  // ── Enrich DOM (headings, code buttons, ToC, AdSense) ─────────────────────
+  // ── Enrich DOM (headings, code buttons, ToC, AdSense, lightbox) ──────────
   private _enrichDom(): void {
     if (!isPlatformBrowser(this.platformId)) return;
     this.contentEl = this.elementRef.nativeElement.querySelector('.blog-content');
@@ -857,8 +858,21 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     this.generateTableOfContents();
     this.addHeadingIds();
     this.addCodeCopyButtons();
+    this.addContentImageLightbox();
     this.pushAdSense();
     this.updateReactionStrips();
+  }
+
+  private addContentImageLightbox(): void {
+    if (!this.contentEl) return;
+    this.contentEl.querySelectorAll<HTMLImageElement>('img').forEach(img => {
+      if (img.closest('a') || img.dataset['lightboxBound']) return;
+      img.dataset['lightboxBound'] = '1';
+      img.style.cursor = 'zoom-in';
+      img.addEventListener('click', () => {
+        this.ngZone.run(() => this.openLightbox(img.src, img.alt || ''));
+      });
+    });
   }
 
   // ── AdSense ───────────────────────────────────────────────────────────────
@@ -984,16 +998,10 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
-    this.postService.getAllPost(1, 30)
+    this.postService.getRelatedPosts(currentPost._id)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (res) => {
-          const posts = res.data ?? [];
-          if (posts.length) {
-            this.postCache.set(posts.map((p: Post) => ({ ...p, _ts: Date.now() })));
-          }
-          this._processRelatedAndAuthor(currentPost, posts);
-        },
+        next: (res) => this._processRelatedAndAuthor(currentPost, res.data ?? []),
         error: () => this.relatedPosts.set([]),
       });
   }
@@ -1160,10 +1168,12 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
       },
       error: (err: any) => {
         this.commentSubmitting.set(false);
+        // Keep comment text so user doesn't lose their message on a transient error
         this.commentFeedback.set({
           type: 'error',
-          msg:  err?.error?.message ?? 'Failed to post comment.',
+          msg:  err?.error?.message ?? 'Failed to post comment. Please try again.',
         });
+        setTimeout(() => this.commentFeedback.set(null), 4000);
       },
     });
   }

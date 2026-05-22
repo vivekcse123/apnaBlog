@@ -7,21 +7,20 @@ Allow: /
 Disallow: /admin/
 Disallow: /super-admin/
 Disallow: /user/
+Disallow: /auth/
+Disallow: /sponsor/
+Disallow: /search
 
-# ── Google AdSense &amp; Ads crawlers (must be explicitly allowed) ────────────────
-# Mediapartners-Google: crawls pages to select relevant ads
+# ── Google AdSense & Ads crawlers (must be explicitly allowed) ────────────────
 User-agent: Mediapartners-Google
 Allow: /
 
-# AdsBot-Google: validates landing pages for Google Ads quality
 User-agent: AdsBot-Google
 Allow: /
 
-# AdsBot-Google-Mobile: same as above for mobile user-agent
 User-agent: AdsBot-Google-Mobile
 Allow: /
 
-# ── Sitemap ───────────────────────────────────────────────────────────────────
+# ── Sitemaps ──────────────────────────────────────────────────────────────────
 Sitemap: https://apnainsights.com/sitemap.xml
 Sitemap: https://apnainsights.com/news-sitemap.xml
-Sitemap: https://apnainsights.com/api/rss

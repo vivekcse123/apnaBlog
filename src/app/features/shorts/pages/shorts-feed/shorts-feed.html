@@ -45,8 +45,8 @@
           } @else {
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round">
               <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
-              <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
-              <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+              <path class="sf-sound-wave" d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+              <path class="sf-sound-wave sf-sound-wave--outer" d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
             </svg>
           }
         </button>
@@ -56,7 +56,7 @@
 
   <!-- ══ Category pills ══ -->
   @if (!showSearch()) {
-    <nav class="sf-cats" aria-label="Categories">
+    <nav class="sf-cats" #catNav aria-label="Categories">
       @for (cat of categories; track cat) {
         <button class="sf-cat" [class.sf-cat--on]="selectedCat() === cat"
                 (click)="onCategorySelect(cat)">{{ cat }}</button>
@@ -78,12 +78,20 @@
                (touchend)="onCardTouchEnd(i, $event)"
                (click)="onCardClick(i, $event)">
 
+        <!-- Placeholder shown while video is loading (prevents black flash) -->
+        <div class="sf-card-bg">
+          @if (short.thumbnailUrl) {
+            <img class="sf-card-thumb" [src]="short.thumbnailUrl" alt="" loading="lazy" decoding="async">
+          }
+        </div>
+
         <!-- Video -->
         @if (short.videoType === 'upload' && short.videoUrl) {
           <video class="sf-video"
                  [src]="short.videoUrl"
-                 [poster]="short.thumbnailUrl || ''"
-                 muted playsinline preload="metadata">
+                 [attr.poster]="short.thumbnailUrl || null"
+                 muted playsinline preload="metadata"
+                 (loadeddata)="onVideoData($event)">
           </video>
         } @else {
           <div class="sf-fallback">
@@ -144,6 +152,27 @@
           </div>
         }
 
+        <!-- Tap to unmute hint (first muted video only) -->
+        @if (showUnmuteHint() && activeIndex() === i) {
+          <div class="sf-unmute-hint" (click)="unlockAudio($event)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+              <line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>
+            </svg>
+            <span>Tap to unmute</span>
+          </div>
+        }
+
+        <!-- Swipe up hint (first visit) -->
+        @if (showSwipeHint() && i === 0) {
+          <div class="sf-swipe-hint">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
+              <path d="M12 19V5M5 12l7-7 7 7"/>
+            </svg>
+            <span>Swipe up</span>
+          </div>
+        }
+
         <!-- Progress bar -->
         <div class="sf-progress-track"
              (touchstart)="$event.stopPropagation()"
@@ -155,20 +184,27 @@
         <!-- ══ Right sidebar — Instagram Reels style ══ -->
         <aside class="sf-sidebar" (touchend)="$event.stopPropagation()" (click)="$event.stopPropagation()">
 
-          <!-- Author avatar with white ring -->
+          <!-- Author avatar with video-progress ring -->
           <div class="sf-side-item">
             <a class="sf-av-wrap" [routerLink]="['/author', short.user._id]" (click)="$event.stopPropagation()">
+              <svg class="sf-av-ring" viewBox="0 0 52 52" fill="none">
+                <circle class="sf-av-ring-bg"       cx="26" cy="26" r="23"/>
+                <circle class="sf-av-ring-progress" cx="26" cy="26" r="23"/>
+              </svg>
               <div class="sf-av">{{ userInitial(short.user) }}</div>
             </a>
           </div>
 
           <!-- Like — plain icon, no button bg -->
           <div class="sf-side-item">
-            <button class="sf-icon-action" [class.sf-icon-action--liked]="isLiked(short._id)"
+            <button class="sf-icon-action"
+                    [class.sf-icon-action--liked]="isLiked(short._id)"
+                    [class.sf-icon-action--pop]="likedPopIdx() === i"
                     (click)="toggleLike(short, $event)" aria-label="Like">
               <svg width="30" height="30" viewBox="0 0 24 24"
-                   [attr.fill]="isLiked(short._id) ? '#fe2c55' : 'white'"
-                   stroke="none">
+                   [attr.fill]="isLiked(short._id) ? '#fe2c55' : 'none'"
+                   [attr.stroke]="isLiked(short._id) ? '#fe2c55' : 'white'"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
               </svg>
             </button>
@@ -270,9 +306,9 @@
 
     }
 
-    <!-- Loading spinner -->
+    <!-- Loading spinner — small strip, no snap slot -->
     @if (isLoading()) {
-      <div class="sf-state">
+      <div class="sf-load-more">
         <div class="sf-spinner"></div>
       </div>
     }
@@ -286,7 +322,7 @@
           </svg>
         </div>
         <p class="sf-state-text">You're all caught up</p>
-        <button class="sf-state-btn" (click)="onCategorySelect(selectedCat())">Watch again</button>
+        <button class="sf-state-btn" (click)="watchAgain()">Watch again</button>
       </div>
     }
 

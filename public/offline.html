@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>You're Offline — ApnaInsights</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f9fafb;
+      color: #111827;
+      min-height: 100dvh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 4px 32px rgba(0,0,0,.08);
+      padding: 48px 40px;
+      max-width: 420px;
+      width: 100%;
+      text-align: center;
+    }
+    .icon {
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(67,206,162,.15), rgba(24,90,157,.15));
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 24px;
+    }
+    h1 { font-size: 22px; font-weight: 800; margin-bottom: 10px; }
+    p  { font-size: 15px; color: #6b7280; line-height: 1.65; margin-bottom: 32px; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: linear-gradient(135deg, #43cea2, #185a9d);
+      color: #fff;
+      border: none; border-radius: 12px;
+      padding: 14px 28px;
+      font-size: 15px; font-weight: 700;
+      cursor: pointer;
+      transition: opacity .15s, transform .1s;
+      text-decoration: none;
+    }
+    .btn:active { opacity: .85; transform: scale(.97); }
+    .brand {
+      margin-top: 32px;
+      font-size: 13px; font-weight: 800; letter-spacing: .04em;
+      background: linear-gradient(135deg, #43cea2, #185a9d);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon">
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="url(#g)" stroke-width="2" stroke-linecap="round">
+        <defs>
+          <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#43cea2"/>
+            <stop offset="100%" stop-color="#185a9d"/>
+          </linearGradient>
+        </defs>
+        <line x1="1" y1="1" x2="23" y2="23"/>
+        <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/>
+        <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/>
+        <path d="M10.71 5.05A16 16 0 0 1 22.56 9"/>
+        <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/>
+        <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
+        <circle cx="12" cy="20" r="1"/>
+      </svg>
+    </div>
+    <h1>You're offline</h1>
+    <p>No internet connection right now. Check your network and try again — your saved stories and bookmarks are still available.</p>
+    <button class="btn" onclick="location.reload()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+        <path d="M23 4v6h-6"/><path d="M1 20v-6h6"/>
+        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+      </svg>
+      Try again
+    </button>
+    <div class="brand">ApnaInsights</div>
+  </div>
+</body>
+</html>

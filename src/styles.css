@@ -1,5 +1,24 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap');
 
+/* ── View Transitions (route cross-fade) ─────────────────────────────────────
+   Angular's withViewTransitions() hooks into the browser View Transitions API.
+   These rules define the enter/leave animation for the whole page swap.       */
+@keyframes vt-fade-in  { from { opacity: 0; transform: translateY(6px); } }
+@keyframes vt-fade-out { to   { opacity: 0; transform: translateY(-4px); } }
+
+::view-transition-old(root) {
+  animation: 180ms ease-in  vt-fade-out;
+}
+::view-transition-new(root) {
+  animation: 220ms ease-out vt-fade-in;
+}
+
+/* Respect prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) { animation: none; }
+}
+
 * {
   padding: 0;
   margin: 0;

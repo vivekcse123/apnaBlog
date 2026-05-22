@@ -17,6 +17,13 @@
       e.preventDefault();
       window.__pwaPrompt = e;
     });
+
+    // Register SW on every page load so Chrome evaluates PWA installability
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function() {});
+      });
+    }
   </script>
   <meta name="google-adsense-account" content="ca-pub-6477809641944524">
   <meta charset="utf-8">

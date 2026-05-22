@@ -161,6 +161,17 @@ export class Home implements OnInit, OnDestroy {
   subscribeSuccess = signal(false);
   subscribeMessage = signal('');
   subscribeError   = signal('');
+  emailInputError  = signal('');
+
+  private static readonly EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  onEmailInput(value: string): void {
+    this.subscribeEmail = value;
+    if (!value.trim()) { this.emailInputError.set(''); return; }
+    this.emailInputError.set(
+      Home.EMAIL_RE.test(value.trim()) ? '' : 'Please enter a valid email address'
+    );
+  }
 
 
   private currentUserData = signal<User | null>(null);
@@ -882,17 +893,21 @@ export class Home implements OnInit, OnDestroy {
   }
 
   private recordPwaInstall(): void {
-    this.http.post(`${environment.apiUrl}/visitor/pwa-install`, {}).subscribe({
-      next: (res: any) => this.pwaInstalls.set(res.pwaInstalls ?? 0),
-      error: () => {},
-    });
+    this.http.post(`${environment.apiUrl}/visitor/pwa-install`, {})
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res: any) => this.pwaInstalls.set(res.pwaInstalls ?? 0),
+        error: () => {},
+      });
   }
 
   loadPwaInstalls(): void {
-    this.http.get<{ pwaInstalls: number }>(`${environment.apiUrl}/visitor/pwa-stats`).subscribe({
-      next: res => this.pwaInstalls.set(res.pwaInstalls ?? 0),
-      error: () => {},
-    });
+    this.http.get<{ pwaInstalls: number }>(`${environment.apiUrl}/visitor/pwa-stats`)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: res => this.pwaInstalls.set(res.pwaInstalls ?? 0),
+        error: () => {},
+      });
   }
 
   dismissInstallBanner(): void {
@@ -1056,7 +1071,7 @@ export class Home implements OnInit, OnDestroy {
     this.subscribeError.set('');
     this.http.post<{ status: number; message: string }>(
       `${environment.apiUrl}/subscribers/subscribe`, { email }
-    ).subscribe({
+    ).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: res => {
         this.subscribing.set(false);
         this.subscribeSuccess.set(true);

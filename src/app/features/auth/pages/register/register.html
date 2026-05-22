@@ -93,7 +93,7 @@
             <input id="reg-name" type="text"
               placeholder="e.g. Vivek Verma"
               formControlName="name"
-              autocomplete="name"
+              autocomplete="name" autofocus
               [class.field-error]="registerForm.get('name')?.invalid &&
                 (isSubmitted() || registerForm.get('name')?.touched)">
           </div>

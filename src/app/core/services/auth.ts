@@ -6,6 +6,7 @@ import { apiResponse } from '../models/api-response.model';
 import { User } from '../../features/user/models/user.mode';
 import { isPlatformBrowser } from '@angular/common';
 import { environment } from '../../../environments/environment';
+import { PushNotificationService } from './push-notification.service';
 
 export interface ActiveSession {
   sessionId:  string;
@@ -23,10 +24,11 @@ export interface ActiveSession {
 export class Auth {
   private authEndpoint = environment.apiAuthEndpoint;
 
-  private http = inject(HttpClient);
-  private router = inject(Router);
+  private http       = inject(HttpClient);
+  private router     = inject(Router);
   private platformId = inject(PLATFORM_ID);
-  private isBrowser = isPlatformBrowser(this.platformId);
+  private push       = inject(PushNotificationService);
+  private isBrowser  = isPlatformBrowser(this.platformId);
 
   userId = signal<string | null>(
     this.isBrowser ? localStorage.getItem('userId') : null
@@ -76,11 +78,13 @@ export class Auth {
   }
 
   logout(): void {
+    // Unsubscribe push notifications before clearing credentials
+    if (this.push.subscribed()) this.push.unsubscribe();
+
     this.userId.set(null);
     this.userRole.set(null);
     this.token.set(null);
     this.sessionId.set(null);
-
     this.userName.set(null);
 
     if (this.isBrowser) {

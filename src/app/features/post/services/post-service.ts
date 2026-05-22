@@ -113,6 +113,10 @@ export class PostService {
     );
   }
 
+  getRelatedPosts(id: string): Observable<apiResponse<Post[]>> {
+    return this.http.get<apiResponse<Post[]>>(`${this.endPoint}/${id}/related`);
+  }
+
   getComments(postId: string, skip = 0, limit = 10): Observable<CommentsResponse> {
     const params = new HttpParams().set('skip', skip).set('limit', limit);
     return this.dedupe(`comments_${postId}_${skip}_${limit}`,

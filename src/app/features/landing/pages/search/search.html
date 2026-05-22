@@ -17,7 +17,7 @@
       </h1>
       <p class="search-hero-sub">Find articles by title, topic, or keyword</p>
 
-      <div class="search-input-wrap">
+      <div class="search-input-wrap" style="position:relative">
         <svg class="search-input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
              stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
           <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
@@ -28,9 +28,13 @@
           placeholder="Search by title, category, or tag…"
           [ngModel]="query()"
           (ngModelChange)="onInput($event)"
+          (keydown)="onKeyDown($event)"
+          (blur)="hideSuggestions()"
           autofocus
           autocomplete="off"
           aria-label="Search articles"
+          aria-autocomplete="list"
+          [attr.aria-expanded]="showSuggestions()"
         />
         @if (hasQuery()) {
           <button class="search-clear-btn" (click)="clearSearch()" aria-label="Clear search">
@@ -38,6 +42,25 @@
               <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
             </svg>
           </button>
+        }
+
+        <!-- Autocomplete dropdown -->
+        @if (showSuggestions() && suggestions().length) {
+          <ul class="search-suggestions" role="listbox">
+            @for (s of suggestions(); track s._id; let i = $index) {
+              <li class="search-suggestion-item" role="option"
+                  [class.search-suggestion-item--active]="activeSuggIdx() === i"
+                  (mousedown)="pickSuggestion(s)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="sugg-icon">
+                  <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+                </svg>
+                <span class="sugg-title">{{ s.title }}</span>
+                @if (s.categories?.[0]) {
+                  <span class="sugg-cat">{{ s.categories![0] }}</span>
+                }
+              </li>
+            }
+          </ul>
         }
       </div>
 

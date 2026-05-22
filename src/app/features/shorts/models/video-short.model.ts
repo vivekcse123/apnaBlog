@@ -26,6 +26,7 @@ export interface VideoShort {
   thumbnailUrl?: string;
   duration?: number;
   likesCount: number;
+  isLikedByMe?: boolean;
   recentLikers?: { _id: string; name: string }[];
   commentsCount: number;
   views: number;

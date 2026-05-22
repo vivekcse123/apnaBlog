@@ -75,7 +75,10 @@ export class CreatePost implements OnInit, OnDestroy {
   wordCount = signal(0);
 
   private updateWordCount(html: string): void {
-    const text  = html.replace(/<[^>]*>/g, ' ').replace(/&[a-z]+;/gi, ' ');
+    // Use a temp DOM element to strip tags accurately (handles nested tags, entities, &nbsp;)
+    const tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    const text  = (tmp.textContent || tmp.innerText || '');
     const words = text.trim().split(/\s+/).filter((w: string) => w.length > 0);
     this.wordCount.set(words.length);
   }
@@ -1096,7 +1099,10 @@ export class CreatePost implements OnInit, OnDestroy {
               : 'Post submitted for review. You\'ll be notified once approved!'
         );
         this.isSubmitted.set(false);
-        if (isPlatformBrowser(this.platformId)) localStorage.removeItem(this.AUTOSAVE_KEY);
+        if (isPlatformBrowser(this.platformId)) {
+          localStorage.removeItem(this.AUTOSAVE_KEY);
+          if (this.isAdmin() && !this.isScheduled) this.launchConfetti();
+        }
         this.hasDraft.set(false);
         setTimeout(() => {
           this.postCreated.emit(res.data);
@@ -1127,4 +1133,50 @@ export class CreatePost implements OnInit, OnDestroy {
   }
 
   openBlog = input(false);
+
+  private launchConfetti(): void {
+    const canvas = document.createElement('canvas');
+    Object.assign(canvas.style, {
+      position: 'fixed', inset: '0', width: '100%', height: '100%',
+      pointerEvents: 'none', zIndex: '99999',
+    });
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+    document.body.appendChild(canvas);
+
+    const ctx = canvas.getContext('2d')!;
+    const COLORS = ['#43cea2','#185a9d','#fe2c55','#fbbf24','#a78bfa','#f472b6'];
+    const pieces = Array.from({ length: 120 }, () => ({
+      x:  Math.random() * canvas.width,
+      y:  Math.random() * -canvas.height,
+      r:  Math.random() * 6 + 3,
+      d:  Math.random() * 4 + 2,
+      c:  COLORS[Math.floor(Math.random() * COLORS.length)],
+      tilt: Math.random() * 10 - 5,
+      tiltSpeed: Math.random() * 0.1 + 0.05,
+      angle: 0,
+    }));
+
+    let frame = 0;
+    const animate = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      pieces.forEach(p => {
+        p.angle += p.tiltSpeed;
+        p.tilt = Math.sin(p.angle) * 12;
+        p.y += p.d;
+        p.x += Math.sin(p.angle) * 1.5;
+        ctx.beginPath();
+        ctx.fillStyle = p.c;
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.tilt * Math.PI / 180);
+        ctx.fillRect(-p.r / 2, -p.r / 2, p.r, p.r * 0.6);
+        ctx.restore();
+      });
+      frame++;
+      if (frame < 180) requestAnimationFrame(animate);
+      else canvas.remove();
+    };
+    requestAnimationFrame(animate);
+  }
 }

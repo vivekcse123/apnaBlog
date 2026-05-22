@@ -6,14 +6,16 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule, isPlatformBrowser, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, Subject, switchMap } from 'rxjs';
 import { Meta, Title } from '@angular/platform-browser';
+import { HttpClient } from '@angular/common/http';
 import { PostService } from '../../../post/services/post-service';
 import { AllPostsCache } from '../../../../core/services/all-posts-cache';
 import { Post } from '../../../../core/models/post.model';
 import { catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { TimeAgoPipe } from '../../../../shared/pipes/time-ago-pipe';
+import { environment } from '../../../../../environments/environment';
 
 @Component({
   selector: 'app-search',
@@ -24,21 +26,26 @@ import { TimeAgoPipe } from '../../../../shared/pipes/time-ago-pipe';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SearchPage implements OnInit {
-  private route       = inject(ActivatedRoute);
-  private router      = inject(Router);
-  private location    = inject(Location);
-  private postService    = inject(PostService);
-  private allPostsCache  = inject(AllPostsCache);
-  private destroyRef  = inject(DestroyRef);
-  private platformId  = inject(PLATFORM_ID);
-  private meta        = inject(Meta);
-  private titleSvc    = inject(Title);
+  private route         = inject(ActivatedRoute);
+  private router        = inject(Router);
+  private location      = inject(Location);
+  private http          = inject(HttpClient);
+  private postService   = inject(PostService);
+  private allPostsCache = inject(AllPostsCache);
+  private destroyRef    = inject(DestroyRef);
+  private platformId    = inject(PLATFORM_ID);
+  private meta          = inject(Meta);
+  private titleSvc      = inject(Title);
 
-  query    = signal('');
-  allPosts = signal<Post[]>([]);
-  isLoading = signal(true);
+  query        = signal('');
+  allPosts     = signal<Post[]>([]);
+  isLoading    = signal(true);
+  suggestions  = signal<{ _id: string; title: string; slug: string; categories?: string[] }[]>([]);
+  showSuggestions = signal(false);
+  activeSuggIdx   = signal(-1);
 
-  private searchInput$ = new Subject<string>();
+  private searchInput$   = new Subject<string>();
+  private suggestInput$  = new Subject<string>();
 
   results = computed(() => {
     const q     = this.query().trim().toLowerCase();
@@ -73,17 +80,68 @@ export class SearchPage implements OnInit {
         });
       });
 
+    // Autocomplete suggestions — separate stream with faster debounce
+    this.suggestInput$
+      .pipe(
+        debounceTime(150),
+        distinctUntilChanged(),
+        switchMap(q => q.trim().length >= 2
+          ? this.http.get<{ status: number; data: any[] }>(
+              `${environment.apiUrl}/post/search/suggestions?q=${encodeURIComponent(q)}`
+            ).pipe(catchError(() => of({ data: [] })))
+          : of({ data: [] })
+        ),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe(res => {
+        this.suggestions.set(res.data ?? []);
+        this.activeSuggIdx.set(-1);
+        this.showSuggestions.set((res.data ?? []).length > 0);
+      });
+
     this.loadPosts();
   }
 
   onInput(q: string): void {
     this.query.set(q);
     this.searchInput$.next(q);
+    this.suggestInput$.next(q);
+    if (!q.trim()) { this.showSuggestions.set(false); this.suggestions.set([]); }
+  }
+
+  onKeyDown(e: KeyboardEvent): void {
+    const list = this.suggestions();
+    if (!this.showSuggestions() || !list.length) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      this.activeSuggIdx.set(Math.min(this.activeSuggIdx() + 1, list.length - 1));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      this.activeSuggIdx.set(Math.max(this.activeSuggIdx() - 1, -1));
+    } else if (e.key === 'Enter' && this.activeSuggIdx() >= 0) {
+      e.preventDefault();
+      this.pickSuggestion(list[this.activeSuggIdx()]);
+    } else if (e.key === 'Escape') {
+      this.showSuggestions.set(false);
+    }
+  }
+
+  pickSuggestion(s: { _id: string; title: string; slug: string }): void {
+    this.showSuggestions.set(false);
+    this.suggestions.set([]);
+    this.router.navigate(['/blog', s.slug || s._id]);
+  }
+
+  hideSuggestions(): void {
+    // Small delay so click on suggestion fires before blur hides the list
+    setTimeout(() => this.showSuggestions.set(false), 150);
   }
 
   clearSearch(): void {
     this.query.set('');
     this.searchInput$.next('');
+    this.suggestions.set([]);
+    this.showSuggestions.set(false);
   }
 
   goBack(): void {
