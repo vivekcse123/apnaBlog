@@ -312,20 +312,37 @@
             </div>
           </div>
 
-          <!-- App Installs -->
-          @if (pwaInstalls() > 0) {
-            <div class="hero-stat-box hero-stat-box--clickable" (click)="triggerInstall()" role="button" tabindex="0" aria-label="Download the app">
-              <div class="hero-stat-icon hero-stat-icon--teal">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
-                  <path d="M12 8v8M8 13l4 4 4-4"/>
+          <!-- App Install CTA -->
+          @if (isAppInstalled()) {
+            <div class="app-install-cta app-install-cta--installed">
+              <div class="app-install-cta-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <polyline points="20 6 9 17 4 12"/>
                 </svg>
               </div>
-              <div class="hero-stat-info">
-                <strong class="hero-stat-num">{{ pwaInstalls() }}+</strong>
-                <span class="hero-stat-label">DOWNLOADS ↓</span>
+              <div class="app-install-cta-body">
+                <span class="app-install-cta-title">App Installed</span>
+                <span class="app-install-cta-sub">You're on the latest version</span>
               </div>
             </div>
+          } @else {
+            <button class="app-install-cta" (click)="triggerInstall()" aria-label="Install the app">
+              <div class="app-install-cta-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                  <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+              </div>
+              <div class="app-install-cta-body">
+                <span class="app-install-cta-title">
+                  @if (pwaInstalls() > 0) { {{ pwaInstalls() }}+ Downloads · } Get the App
+                </span>
+                <span class="app-install-cta-sub">Free · No app store needed</span>
+              </div>
+              <svg class="app-install-cta-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+                <path d="M9 18l6-6-6-6"/>
+              </svg>
+            </button>
           }
 
           @if (readingStreak() >= 2) {
@@ -1081,11 +1098,11 @@
       </div>
     </div>
     <div class="pwa-banner-actions">
-      <button class="pwa-btn-dismiss" (click)="dismissInstallBanner()">Not now</button>
-      @if (canInstallNatively()) {
-        <button class="pwa-btn-install" (click)="installApp()">Install</button>
-      } @else {
+      <button class="pwa-btn-dismiss" (click)="dismissInstallBanner()">Cancel</button>
+      @if (isIos()) {
         <button class="pwa-btn-install" (click)="showManualInstallToast()">How to Install</button>
+      } @else {
+        <button class="pwa-btn-install" (click)="handleAndroidInstall()">Install</button>
       }
     </div>
   </div>

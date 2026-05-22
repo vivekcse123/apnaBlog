@@ -117,6 +117,7 @@ export class Home implements OnInit, OnDestroy {
   showInstallBanner = signal(false);
   pwaInstalls       = signal(0);
   installToast      = signal('');
+  isAppInstalled    = signal(false);
   private installPrompt: any = null;
   private welcomeTimerId: ReturnType<typeof setTimeout> | null = null;
 
@@ -398,45 +399,50 @@ export class Home implements OnInit, OnDestroy {
     this.loadPwaInstalls();
 
     if (isPlatformBrowser(this.platformId)) {
+      // Detect if already running as installed PWA (standalone mode)
+      const standalone = window.matchMedia('(display-mode: standalone)').matches
+        || (navigator as any).standalone === true;
+      this.isAppInstalled.set(standalone);
+    }
+
+    if (isPlatformBrowser(this.platformId)) {
       const alreadySeen = sessionStorage.getItem('apna_welcome_seen');
       if (!alreadySeen) {
         const delay = 2000 + Math.random() * 1000;
         this.welcomeTimerId = setTimeout(() => this.showWelcomeModal.set(true), delay);
       }
 
-      // PWA install prompt — show from 2nd visit onwards, respect 7-day dismiss cooldown
-      const dismissed = localStorage.getItem('apna_install_dismissed');
-      const dismissedAt = dismissed ? parseInt(dismissed) : 0;
-      const sevenDays = 7 * 24 * 60 * 60 * 1000;
-      const notDismissed = Date.now() - dismissedAt > sevenDays;
+      // Always capture prompt so clicking Downloads works anytime
+      const capturePrompt = (prompt: any) => {
+        this.installPrompt = prompt;
+        (window as any).__pwaPrompt = null;
 
-      // Track visit count (increment each session using sessionStorage flag)
-      const alreadyCountedThisSession = sessionStorage.getItem('apna_visit_counted');
-      if (!alreadyCountedThisSession) {
-        sessionStorage.setItem('apna_visit_counted', '1');
-        const visits = parseInt(localStorage.getItem('apna_visit_count') || '0') + 1;
-        localStorage.setItem('apna_visit_count', String(visits));
-      }
-      const visitCount = parseInt(localStorage.getItem('apna_visit_count') || '0');
-
-      if (notDismissed && visitCount >= 2) {
-        // Use already-captured prompt (may have fired before Angular booted)
-        const early = (window as any).__pwaPrompt;
-        if (early) {
-          this.installPrompt = early;
-          (window as any).__pwaPrompt = null;
-          setTimeout(() => this.showInstallBanner.set(true), 3000);
-        } else {
-          // Fallback: still listen in case it fires after boot
-          window.addEventListener('beforeinstallprompt', (e: Event) => {
-            e.preventDefault();
-            this.installPrompt = e;
-            setTimeout(() => this.showInstallBanner.set(true), 3000);
-          });
+        // Auto-show banner only from 2nd visit & not recently dismissed
+        const dismissed = localStorage.getItem('apna_install_dismissed');
+        const notDismissed = Date.now() - parseInt(dismissed || '0') > 7 * 24 * 60 * 60 * 1000;
+        const alreadyCountedThisSession = sessionStorage.getItem('apna_visit_counted');
+        if (!alreadyCountedThisSession) {
+          sessionStorage.setItem('apna_visit_counted', '1');
+          const v = parseInt(localStorage.getItem('apna_visit_count') || '0') + 1;
+          localStorage.setItem('apna_visit_count', String(v));
         }
+        const visitCount = parseInt(localStorage.getItem('apna_visit_count') || '0');
+        if (notDismissed && visitCount >= 2) {
+          setTimeout(() => this.showInstallBanner.set(true), 3000);
+        }
+      };
+
+      const early = (window as any).__pwaPrompt;
+      if (early) {
+        capturePrompt(early);
+      } else {
+        window.addEventListener('beforeinstallprompt', (e: Event) => {
+          e.preventDefault();
+          capturePrompt(e);
+        });
       }
 
-      // Track installs via browser menu "Add to Home Screen" (no prompt dialog)
+      // Track installs via browser menu "Add to Home Screen"
       window.addEventListener('appinstalled', () => {
         this.recordPwaInstall();
       });
@@ -825,34 +831,40 @@ export class Home implements OnInit, OnDestroy {
     }
   }
 
+  isIos(): boolean {
+    return isPlatformBrowser(this.platformId) && /iphone|ipad|ipod/i.test(navigator.userAgent);
+  }
+
   canInstallNatively(): boolean {
     return !!this.installPrompt || !!(isPlatformBrowser(this.platformId) && (window as any).__pwaPrompt);
   }
 
   showManualInstallToast(): void {
-    const isIos = isPlatformBrowser(this.platformId) && /iphone|ipad|ipod/i.test(navigator.userAgent);
-    const msg = isIos
-      ? '📱 Tap the Share button → "Add to Home Screen"'
-      : '📱 Tap the browser menu (⋮) → "Add to Home Screen"';
-    this.installToast.set(msg);
-    setTimeout(() => this.installToast.set(''), 5000);
+    this.installToast.set('📱 Tap the Share button ⬆ → "Add to Home Screen"');
+    setTimeout(() => this.installToast.set(''), 6000);
     this.showInstallBanner.set(false);
   }
 
-  triggerInstall(): void {
-    // Pick up prompt from global capture if not already stored
-    if (!this.installPrompt && isPlatformBrowser(this.platformId)) {
-      const early = (window as any).__pwaPrompt;
-      if (early) {
-        this.installPrompt = early;
-        (window as any).__pwaPrompt = null;
-      }
-    }
-    if (this.installPrompt) {
+  handleAndroidInstall(): void {
+    if (this.canInstallNatively()) {
       this.installApp();
     } else {
-      // No native prompt — show banner with manual instructions
-      this.showInstallBanner.set(true);
+      // Prompt not available — guide user via browser menu
+      this.installToast.set('📱 Tap the browser menu ⋮ → "Add to Home Screen" or "Install App"');
+      setTimeout(() => this.installToast.set(''), 6000);
+      this.showInstallBanner.set(false);
+    }
+  }
+
+  triggerInstall(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    if (this.installPrompt) {
+      this.installApp();
+    } else if (this.isIos()) {
+      this.showManualInstallToast();
+    } else {
+      this.installToast.set('📱 Open Chrome menu ⋮ → "Install App" or "Add to Home Screen"');
+      setTimeout(() => this.installToast.set(''), 6000);
     }
   }
 
