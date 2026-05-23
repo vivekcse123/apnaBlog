@@ -199,7 +199,7 @@
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 14px;
 }
 
@@ -812,6 +812,12 @@
   color: var(--text-muted);
 }
 
+.lb-stats span {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
 .lb-empty {
   text-align: center;
   padding: 24px;
@@ -1137,6 +1143,12 @@
   color: var(--text-muted);
 }
 
+.blog-modal-stats span {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
 .blog-modal-view-btn {
   padding: 7px 16px;
   border-radius: 9px;
@@ -1255,7 +1267,7 @@
    RESPONSIVE — Tablet 1280px
 ══════════════════════════════════════════ */
 @media (max-width: 1280px) {
-  .stats-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .stats-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
 /* ══════════════════════════════════════════

@@ -1,4 +1,6 @@
-import { Component, effect, inject, input, OnDestroy, OnInit, output, signal, untracked } from '@angular/core';
+import {
+  ChangeDetectionStrategy, Component, OnDestroy, OnInit, effect, inject, input, output, signal, untracked
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Subject, takeUntil, finalize } from 'rxjs';
@@ -10,6 +12,7 @@ import { ToastService } from '../../core/services/toast.service';
 @Component({
   selector: 'app-view-user',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './view-user.html',
   styleUrl: './view-user.css'
@@ -47,9 +50,7 @@ user = signal<User | null>(null);
     });
   }
 
-  ngOnInit(): void {
-    console.log(this.user()?.dob);
-  }
+  ngOnInit(): void {}
 
 
   loadUser(id: string, preload: any = null): void {

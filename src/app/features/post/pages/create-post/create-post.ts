@@ -1,7 +1,5 @@
 import {
-  Component, ElementRef, HostListener, ViewChild,
-  inject, input, output, signal, computed, NgZone,
-  OnInit, OnDestroy, PLATFORM_ID,
+  ChangeDetectionStrategy, Component, ElementRef, HostListener, NgZone, OnDestroy, OnInit, PLATFORM_ID, ViewChild, computed, inject, input, output, signal
 } from '@angular/core';
 import { isPlatformBrowser, DecimalPipe } from '@angular/common';
 import {
@@ -29,6 +27,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 @Component({
   selector: 'app-create-blog',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ReactiveFormsModule, DecimalPipe],
   templateUrl: './create-post.html',
   styleUrl: './create-post.css',

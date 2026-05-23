@@ -1,8 +1,8 @@
 import {
-  Component, inject, signal, OnInit, OnDestroy, DestroyRef,
-  PLATFORM_ID, computed, AfterViewInit, ElementRef, NgZone,
+  AfterViewInit, ChangeDetectionStrategy, Component, DestroyRef, ElementRef, NgZone, OnDestroy, OnInit, PLATFORM_ID, computed, inject, signal
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { environment } from '../../../../../environments/environment';
 import { CommonModule, isPlatformBrowser, DOCUMENT, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { fromEvent } from 'rxjs';
@@ -62,6 +62,7 @@ const VISIBLE_STATUSES = new Set(['published', 'draft', 'pending']);
 @Component({
   selector:    'app-blog-detail',
   standalone:  true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports:     [RouterLink, CommonModule, FormsModule, TimeAgoPipe],
   templateUrl: './blog-detail.html',
   styleUrl:    './blog-detail.css',
@@ -767,7 +768,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
         },
 
         error: (err) => {
-          console.error('Post load failed:', err);
+          
           if (isBrowser) {
             this.isLoading.set(false);
             // Only show error when there is genuinely nothing displayed.
@@ -1296,9 +1297,9 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private updateMetaTags(post: Post): void {
-    const canonicalUrl = `https://apnainsights.com/blog/${post.slug || post._id}`;
+    const canonicalUrl = `${environment.siteUrl}/blog/${post.slug || post._id}`;
     const desc         = post.description || post.title;
-    const image        = post.featuredImage || 'https://apnainsights.com/og-image.png';
+    const image        = post.featuredImage || environment.ogImage;
 
     this.titleService.setTitle(`${post.title} | ApnaInsights`);
 
@@ -1386,19 +1387,19 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
 
   private injectArticleSchema(post: Post): void {
     try {
-      const postUrl    = `https://apnainsights.com/blog/${post.slug || post._id}`;
+      const postUrl    = `${environment.siteUrl}/blog/${post.slug || post._id}`;
       const authorName = (post.user as any)?.name ?? 'Anonymous Author';
       const authorId   = (post.user as any)?._id ?? (post.user as any);
       const wordCount  = (post.content ?? '').replace(/<[^>]*>/g, '').trim().split(/\s+/).length;
 
       const breadcrumbItems: any[] = [
-        { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://apnainsights.com' },
+        { '@type': 'ListItem', position: 1, name: 'Home', item: environment.siteUrl },
       ];
       if (post.categories?.length) {
         breadcrumbItems.push({
           '@type': 'ListItem', position: 2,
           name: post.categories[0],
-          item: `https://apnainsights.com/category/${post.categories[0].toLowerCase()}`,
+          item: `${environment.siteUrl}/category/${post.categories[0].toLowerCase()}`,
         });
         breadcrumbItems.push({ '@type': 'ListItem', position: 3, name: post.title, item: postUrl });
       } else {
@@ -1417,13 +1418,13 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
           timeRequired:    `PT${Math.ceil(wordCount / 200)}M`,
           image: post.featuredImage
             ? { '@type': 'ImageObject', url: post.featuredImage, caption: post.title, width: 1200, height: 630 }
-            : { '@type': 'ImageObject', url: 'https://apnainsights.com/og-image.png', width: 1200, height: 630 },
+            : { '@type': 'ImageObject', url: environment.ogImage, width: 1200, height: 630 },
           datePublished:   new Date(post.createdAt).toISOString(),
           dateModified:    new Date(post.updatedAt ?? post.createdAt).toISOString(),
           author: {
             '@type': 'Person',
             name:    authorName,
-            ...(authorId ? { url: `https://apnainsights.com/author/${authorId}` } : {}),
+            ...(authorId ? { url: `${environment.siteUrl}/author/${authorId}` } : {}),
           },
           keywords:        post.categories?.join(', ') || undefined,
           articleSection:  post.categories?.[0] || undefined,
@@ -1591,7 +1592,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
 
   private shareUrl(): string {
     const p = this.post();
-    return p ? `https://apnainsights.com/blog/${p.slug || p._id}` : '';
+    return p ? `${environment.siteUrl}/blog/${p.slug || p._id}` : '';
   }
 
   private loadShareCount(postId: string): void {

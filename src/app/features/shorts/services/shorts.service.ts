@@ -11,6 +11,8 @@ export interface ShortsPage {
   total: number;
   page: number;
   totalPages: number;
+  publishedCount?: number;
+  pendingCount?: number;
 }
 
 export interface CreateShortPayload {
@@ -36,6 +38,14 @@ export class ShortsService {
     return this.http.get<ShortsPage>(
       `${this.endpoint}/user/${userId}?page=${page}&limit=${limit}`
     ).pipe(catchError(() => of({ status: 200, data: [], total: 0, page: 1, totalPages: 1 })));
+  }
+
+  getMyShorts(page = 1, limit = 20, status?: 'published' | 'pending'): Observable<ShortsPage> {
+    let url = `${this.endpoint}/my?page=${page}&limit=${limit}`;
+    if (status) url += `&status=${status}`;
+    return this.http.get<ShortsPage>(url).pipe(
+      catchError(() => of({ status: 200, data: [], total: 0, page: 1, totalPages: 1 }))
+    );
   }
 
   getSponsoredShorts(): Observable<{ status: number; data: VideoShort[] }> {
@@ -73,7 +83,7 @@ export class ShortsService {
           comments:     [],
           user:         { _id: 'local', name: 'You' },
           createdAt:    new Date(),
-          status:       'published',
+          status:       'pending',
         };
         return of({ status: 200, data: mock });
       })

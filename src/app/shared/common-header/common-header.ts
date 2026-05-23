@@ -1,4 +1,6 @@
-import { Component, ElementRef, EventEmitter, HostListener, Input, OnInit, Output, ViewChild, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy, Component, ElementRef, EventEmitter, HostListener, Input, OnInit, Output, ViewChild, inject
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -15,6 +17,7 @@ interface Suggestion { label: string; emoji: string; route: string; queryParams?
 @Component({
   selector: 'app-common-header',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink, RouterLinkActive, CommonModule, NotificationPanel, FormsModule],
   templateUrl: './common-header.html',
   styleUrls: ['./common-header.css'],

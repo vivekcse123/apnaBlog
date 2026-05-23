@@ -49,7 +49,7 @@ export class PostLists implements OnInit, OnDestroy {
   showDeletionRequestOnly = signal<boolean>(false);
   showSponsoredOnly       = signal<boolean>(false);
 
-  private debounceTimer: any;
+  private debounceTimer: ReturnType<typeof setTimeout> | undefined = undefined;
 
   currentPage  = signal<number>(1);
   itemsPerPage = signal<number>(6);

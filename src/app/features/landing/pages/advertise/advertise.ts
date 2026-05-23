@@ -1,4 +1,6 @@
-import { Component, inject, signal, PLATFORM_ID, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy, Component, OnInit, PLATFORM_ID, inject, signal
+} from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule, NgForm } from '@angular/forms';
@@ -21,6 +23,7 @@ interface InquiryForm {
 @Component({
   selector: 'app-advertise',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink, FormsModule, CommonModule],
   templateUrl: './advertise.html',
   styleUrl:    './advertise.css',

@@ -1,4 +1,6 @@
-import { Component, inject, signal, computed, OnInit, DestroyRef } from '@angular/core';
+import {
+  ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
@@ -40,6 +42,7 @@ interface ReportStats {
 @Component({
   selector: 'app-sponsor-dashboard',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, RouterLink, CreatePost, ShortsUpload],
   templateUrl: './sponsor-dashboard.html',
   styleUrl:    './sponsor-dashboard.css',

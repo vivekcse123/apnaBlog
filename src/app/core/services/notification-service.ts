@@ -11,6 +11,9 @@ import { NotificationResponse, Notification } from '../../shared/models/notifica
 import { Auth } from './auth';
 import { environment } from '../../../environments/environment';
 
+const POLL_INTERVAL_MS  = 60_000; // 1 minute
+const VISIBILITY_TTL_MS = 5 * 60_000; // refresh if tab was hidden > 5 min
+
 @Injectable({ providedIn: 'root' })
 export class NotificationService implements OnDestroy {
 
@@ -20,7 +23,11 @@ export class NotificationService implements OnDestroy {
   private _notifications$ = new BehaviorSubject<Notification[]>([]);
   private _unreadCount$   = new BehaviorSubject<number>(0);
   private _loading$       = new BehaviorSubject<boolean>(false);
-  private _initialized    = false; // guard: don't re-fetch if already loaded
+  private _initialized    = false;
+
+  private _lastFetchAt       = 0;
+  private _pollTimer: ReturnType<typeof setInterval> | undefined = undefined;
+  private _visibilityHandler: (() => void) | undefined = undefined;
 
   notifications$ = this._notifications$.asObservable();
   unreadCount$   = this._unreadCount$.asObservable();
@@ -38,18 +45,18 @@ export class NotificationService implements OnDestroy {
       if (!isPlatformBrowser(this.platformId)) return;
 
       if (token && role) {
-        // Only fetch once per login session
         if (!this._initialized) {
           this._initialized = true;
           this.fetchNotifications();
+          this._startPolling();
+          this._setupVisibilityRefresh();
         }
       } else {
-        this._reset(); // logout → clear everything
+        this._reset();
       }
     });
   }
 
-  // Manual refresh (called by refresh button only)
   fetchNotifications(page = 1, limit = 20): void {
     this._loading$.next(true);
     const params = new HttpParams()
@@ -58,12 +65,12 @@ export class NotificationService implements OnDestroy {
 
     this.http
       .get<NotificationResponse>(this.api, { params })
-      .pipe(catchError(err => {
-        console.error('Notification fetch error:', err);
-        return of(null);
-      }))
+      .pipe(catchError(() => of(null)))
       .subscribe(res => {
-        if (res) this._apply(res);
+        if (res) {
+          this._apply(res);
+          this._lastFetchAt = Date.now();
+        }
         this._loading$.next(false);
       });
   }
@@ -73,10 +80,7 @@ export class NotificationService implements OnDestroy {
       .patch<void>(`${this.api}/${id}/read`, {})
       .pipe(
         tap(() => this._markReadLocally(id)),
-        catchError(err => {
-          console.error('Mark as read error:', err);
-          return of(void 0);
-        }),
+        catchError(() => of(void 0)),
       );
   }
 
@@ -90,10 +94,7 @@ export class NotificationService implements OnDestroy {
           );
           this._unreadCount$.next(0);
         }),
-        catchError(err => {
-          console.error('Mark all read error:', err);
-          return of(void 0);
-        }),
+        catchError(() => of(void 0)),
       );
   }
 
@@ -106,10 +107,7 @@ export class NotificationService implements OnDestroy {
           this._notifications$.next(filtered);
           this._unreadCount$.next(filtered.filter(n => !n.isRead).length);
         }),
-        catchError(err => {
-          console.error('Delete error:', err);
-          return of(void 0);
-        }),
+        catchError(() => of(void 0)),
       );
   }
 
@@ -121,10 +119,7 @@ export class NotificationService implements OnDestroy {
           this._notifications$.next([]);
           this._unreadCount$.next(0);
         }),
-        catchError(err => {
-          console.error('Delete all notifications error:', err);
-          return of(void 0);
-        }),
+        catchError(() => of(void 0)),
       );
   }
 
@@ -137,10 +132,48 @@ export class NotificationService implements OnDestroy {
   }
 
   private _reset(): void {
-    this._initialized = false; // allow re-fetch on next login
+    this._initialized = false;
+    this._lastFetchAt = 0;
+    this._stopPolling();
+    this._removeVisibilityListener();
     this._notifications$.next([]);
     this._unreadCount$.next(0);
     this._loading$.next(false);
+  }
+
+  private _startPolling(): void {
+    this._stopPolling();
+    if (!isPlatformBrowser(this.platformId)) return;
+    this._pollTimer = setInterval(() => {
+      if (document.visibilityState === 'hidden') return;
+      if (!this.authService.token()) return;
+      this.fetchNotifications();
+    }, POLL_INTERVAL_MS);
+  }
+
+  private _stopPolling(): void {
+    if (this._pollTimer != null) {
+      clearInterval(this._pollTimer);
+      this._pollTimer = undefined;
+    }
+  }
+
+  private _setupVisibilityRefresh(): void {
+    if (this._visibilityHandler || !isPlatformBrowser(this.platformId)) return;
+    this._visibilityHandler = () => {
+      if (document.visibilityState !== 'visible') return;
+      if (Date.now() - this._lastFetchAt > VISIBILITY_TTL_MS) {
+        this.fetchNotifications();
+      }
+    };
+    document.addEventListener('visibilitychange', this._visibilityHandler);
+  }
+
+  private _removeVisibilityListener(): void {
+    if (this._visibilityHandler && isPlatformBrowser(this.platformId)) {
+      document.removeEventListener('visibilitychange', this._visibilityHandler);
+      this._visibilityHandler = undefined;
+    }
   }
 
   private _markReadLocally(id: string): void {

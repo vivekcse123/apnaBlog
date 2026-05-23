@@ -1,5 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, inject, OnInit, signal, computed } from '@angular/core';
+import {
+  ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal
+} from '@angular/core';
 import { CommonHeader } from '../../../../shared/common-header/common-header';
 import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
 import { UserService } from '../../services/user-service';
@@ -11,6 +13,7 @@ import { Sidebar } from '../../../../shared/sidebar/sidebar';
 @Component({
   selector: 'app-user-dashboard',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, CommonHeader, UserProfile, RouterOutlet, Sidebar],
   templateUrl: './user-dashboard.html',
   styleUrl: './user-dashboard.css',
@@ -53,7 +56,7 @@ export class UserDashboard implements OnInit {
           // ── avatar ──
           this.avatar.set(u.avatar ?? null);
         },
-        error: (err) => console.error('Failed to load user:', err),
+        error: () => {},
       });
   }
 

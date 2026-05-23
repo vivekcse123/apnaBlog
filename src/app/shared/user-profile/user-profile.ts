@@ -1,5 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, EventEmitter, Input, Output, HostListener, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy, Component, ElementRef, EventEmitter, HostListener, Input, Output, inject
+} from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormatCountPipe } from '../pipes/format-count-pipe';
 import { ThemeService } from '../../core/services/theme-service';
@@ -9,6 +11,7 @@ interface NavItem { label: string; route: string[]; icon: string; }
 @Component({
   selector: 'app-user-profile',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
   templateUrl: './user-profile.html',
   styleUrl: './user-profile.css',

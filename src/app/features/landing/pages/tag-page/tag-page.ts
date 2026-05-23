@@ -1,7 +1,8 @@
 import {
-  Component, OnInit, inject, signal, computed, DestroyRef, PLATFORM_ID, HostListener
+  ChangeDetectionStrategy, Component, DestroyRef, HostListener, OnInit, PLATFORM_ID, computed, inject, signal
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { environment } from '../../../../../environments/environment';
 import { CommonModule, DatePipe, isPlatformBrowser } from '@angular/common';
 import { Meta, Title } from '@angular/platform-browser';
 import { DOCUMENT } from '@angular/common';
@@ -16,6 +17,7 @@ import { TimeAgoPipe } from '../../../../shared/pipes/time-ago-pipe';
 @Component({
   selector: 'app-tag-page',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink, CommonModule, DatePipe, TimeAgoPipe],
   templateUrl: './tag-page.html',
   styleUrl: './tag-page.css',
@@ -82,7 +84,7 @@ export class TagPage implements OnInit {
 
   private setMeta(tag: string): void {
     const display = tag.charAt(0).toUpperCase() + tag.slice(1);
-    const url     = `https://apnainsights.com/tag/${tag.toLowerCase()}`;
+    const url     = `${environment.siteUrl}/tag/${tag.toLowerCase()}`;
 
     this.titleSvc.setTitle(`#${display} Stories | ApnaInsights`);
     this.meta.updateTag({ name: 'description',        content: `Read the latest stories tagged #${display} on ApnaInsights — community blogs written by real people.` });
@@ -107,13 +109,13 @@ export class TagPage implements OnInit {
         name: `#${display} Stories`,
         description: `Read the latest #${display} stories on ApnaInsights.`,
         url,
-        isPartOf: { '@type': 'WebSite', url: 'https://apnainsights.com', name: 'ApnaInsights' },
+        isPartOf: { '@type': 'WebSite', url: environment.siteUrl, name: 'ApnaInsights' },
       },
       {
         '@context': 'https://schema.org',
         '@type': 'BreadcrumbList',
         itemListElement: [
-          { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://apnainsights.com' },
+          { '@type': 'ListItem', position: 1, name: 'Home', item: environment.siteUrl },
           { '@type': 'ListItem', position: 2, name: `#${display}`, item: url },
         ],
       },

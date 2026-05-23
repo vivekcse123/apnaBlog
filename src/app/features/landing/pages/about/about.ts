@@ -1,4 +1,6 @@
-import { Component, OnInit, OnDestroy, inject, signal, PLATFORM_ID } from '@angular/core';
+import {
+  ChangeDetectionStrategy, Component, OnDestroy, OnInit, PLATFORM_ID, inject, signal
+} from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { Meta, Title } from '@angular/platform-browser';
 import { DOCUMENT } from '@angular/common';
@@ -24,6 +26,7 @@ interface FAQ {
 @Component({
   selector: 'app-about',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink, FormsModule, CommonModule],
   templateUrl: './about.html',
   styleUrl: './about.css'

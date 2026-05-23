@@ -1,4 +1,4 @@
-import { Injectable, signal, effect, inject, PLATFORM_ID } from '@angular/core';
+import { Injectable, signal, effect, inject, PLATFORM_ID, OnDestroy } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 
 export type Theme    = 'light' | 'dark';
@@ -8,13 +8,15 @@ const NIGHT_START = 18; // 6 PM → dark
 const NIGHT_END   = 6;  // 6 AM → light
 
 @Injectable({ providedIn: 'root' })
-export class ThemeService {
+export class ThemeService implements OnDestroy {
   private platformId = inject(PLATFORM_ID);
   private isBrowser  = isPlatformBrowser(this.platformId);
   private userId: string | null = null;
 
-  private autoTimer:       ReturnType<typeof setInterval> | null = null;
-  private lastCheckedHour  = -1;
+  private autoTimer:          ReturnType<typeof setInterval> | null = null;
+  private lastCheckedHour     = -1;
+  private mediaQueryListener: ((e: MediaQueryListEvent) => void) | null = null;
+  private mediaQuery:         MediaQueryList | null = null;
 
   theme    = signal<Theme>('light');
   language = signal<Language>('en');
@@ -29,11 +31,13 @@ export class ThemeService {
       document.documentElement.setAttribute('data-theme', initial);
 
       // Follow OS changes only when user hasn't manually set a preference
-      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+      this.mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      this.mediaQueryListener = (e: MediaQueryListEvent) => {
         if (!localStorage.getItem('app-theme')) {
           this.theme.set(e.matches ? 'dark' : 'light');
         }
-      });
+      };
+      this.mediaQuery.addEventListener('change', this.mediaQueryListener);
 
       this.startAutoTheme();
     }
@@ -67,6 +71,16 @@ export class ThemeService {
     this.theme.set(savedTheme ?? (this.isNightTime() ? 'dark' : 'light'));
     this.language.set(savedLang ?? 'en');
     document.documentElement.setAttribute('data-theme', this.theme());
+  }
+
+  ngOnDestroy(): void {
+    if (this.autoTimer !== null) {
+      clearInterval(this.autoTimer);
+      this.autoTimer = null;
+    }
+    if (this.mediaQuery && this.mediaQueryListener) {
+      this.mediaQuery.removeEventListener('change', this.mediaQueryListener);
+    }
   }
 
   toggleTheme(): void {

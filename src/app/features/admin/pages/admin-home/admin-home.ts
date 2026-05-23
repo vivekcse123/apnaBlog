@@ -1,8 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import {
-  Component, DestroyRef, inject, OnInit, OnDestroy,
-  AfterViewInit, ViewChild, ElementRef, signal
+  AfterViewInit, ChangeDetectionStrategy, Component, DestroyRef, ElementRef, OnDestroy, OnInit, ViewChild, inject, signal
 } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { Meta } from '@angular/platform-browser';
@@ -24,6 +23,7 @@ Chart.register(...registerables);
 @Component({
   selector: 'app-admin-home',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, RouterModule, CreatePost, CreateUser],
   templateUrl: './admin-home.html',
   styleUrl: './admin-home.css',
@@ -188,7 +188,7 @@ export class AdminHome implements OnInit, AfterViewInit, OnDestroy {
         setTimeout(() => this.buildAllCharts(), 100);
       },
       error: (err) => {
-        console.error('Dashboard load error:', err);
+        
         this.isLoading.set(false);
         this.isRefreshing.set(false);
       },

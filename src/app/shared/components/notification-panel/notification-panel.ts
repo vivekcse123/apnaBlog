@@ -3,6 +3,7 @@ import {
   ElementRef, inject, ChangeDetectionStrategy, signal
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { filter, Subject, take, takeUntil } from 'rxjs';
 
 import {
@@ -11,14 +12,74 @@ import {
 import { NotificationService } from '../../../core/services/notification-service';
 import { NotificationNavigationService, NON_NAVIGABLE_TYPES } from '../../../core/services/open-notification/notification-navigation';
 
-// These notification types are only triggered by admin/super-admin actions.
-// Display the actor as "Admin" to avoid revealing names.
 const ADMIN_ONLY_TYPES = new Set<NotificationType>([
   'POST_APPROVED',
   'USER_FROZEN', 'USER_UNFROZEN',
   'USER_DELETED', 'USER_UPDATED',
   'USER_DELETION_REQUESTED', 'USER_DELETION_CANCELLED',
 ]);
+
+// SVG paths keyed by icon category
+const ICON_SVGS: Record<string, string> = {
+  login:    `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>`,
+  user:     `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`,
+  follow:   `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>`,
+  bell:     `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>`,
+  key:      `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>`,
+  lock:     `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>`,
+  edit:     `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`,
+  trash:    `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>`,
+  trophy:   `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9H4.5a2.5 2.5 0 010-5H6"/><path d="M18 9h1.5a2.5 2.5 0 000-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0012 0V2z"/></svg>`,
+  heart:    `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>`,
+  clock:    `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
+  check:    `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>`,
+  reject:   `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>`,
+  comment:  `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>`,
+  reply:    `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 00-4-4H4"/></svg>`,
+  freeze:   `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>`,
+  unfreeze: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`,
+  settings: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>`,
+  xmark:    `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`,
+  warn:     `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
+  info:     `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
+  video:    `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>`,
+};
+
+const ICON_MAP: Partial<Record<NotificationType, string>> = {
+  USER_LOGIN:               'login',
+  USER_REGISTERED:          'user',
+  USER_FOLLOWED:            'follow',
+  SUBSCRIBER_ADDED:         'bell',
+  PASSWORD_CHANGED:         'key',
+  PASSWORD_RESET_REQUESTED: 'lock',
+  PASSWORD_RESET_COMPLETED: 'check',
+  POST_PUBLISHED:           'edit',
+  POST_UPDATED:             'edit',
+  POST_DELETED:             'trash',
+  POST_MILESTONE:           'trophy',
+  POST_LIKED:               'heart',
+  POST_PENDING_REVIEW:      'clock',
+  POST_APPROVED:            'check',
+  POST_REJECTED:            'reject',
+  COMMENT_ADDED:            'comment',
+  COMMENT_DELETED:          'trash',
+  COMMENT_REPLIED:          'reply',
+  SHORT_PUBLISHED:          'video',
+  SHORT_LIKED:              'heart',
+  SHORT_COMMENTED:          'comment',
+  SHORT_APPROVED:           'check',
+  SHORT_REJECTED:           'reject',
+  USER_FROZEN:              'freeze',
+  USER_UNFROZEN:            'unfreeze',
+  USER_UPDATED:             'settings',
+  USER_DELETED:             'xmark',
+  USER_DELETION_REQUESTED:  'warn',
+  USER_DELETION_CANCELLED:  'check',
+  info:                     'info',
+  warning:                  'warn',
+  success:                  'check',
+  error:                    'xmark',
+};
 
 @Component({
   selector: 'app-notification-panel',
@@ -30,10 +91,11 @@ const ADMIN_ONLY_TYPES = new Set<NotificationType>([
 })
 export class NotificationPanel implements OnInit, OnDestroy {
 
-  private svc      = inject(NotificationService);
-  private navSvc   = inject(NotificationNavigationService);
-  private elRef    = inject(ElementRef);
-  private destroy$ = new Subject<void>();
+  private svc       = inject(NotificationService);
+  private navSvc    = inject(NotificationNavigationService);
+  private elRef     = inject(ElementRef);
+  private sanitizer = inject(DomSanitizer);
+  private destroy$  = new Subject<void>();
 
   notifications = signal<Notification[]>([]);
   unreadCount   = signal(0);
@@ -64,7 +126,12 @@ export class NotificationPanel implements OnInit, OnDestroy {
   }
 
   getMeta(type: NotificationType) {
-    return this.meta[type] ?? { icon: 'notifications', color: '#999', label: 'Unknown' };
+    return this.meta[type] ?? { icon: '', color: '#999', label: 'Unknown' };
+  }
+
+  getIconSvg(type: NotificationType): SafeHtml {
+    const key = ICON_MAP[type] ?? 'bell';
+    return this.sanitizer.bypassSecurityTrustHtml(ICON_SVGS[key] ?? ICON_SVGS['bell']);
   }
 
   isNavigable(type: NotificationType): boolean {
@@ -83,6 +150,11 @@ export class NotificationPanel implements OnInit, OnDestroy {
     }
   }
 
+  @HostListener('keydown.escape')
+  onEscape(): void {
+    this.panelOpen.set(false);
+  }
+
   onNotificationClick(notification: Notification): void {
     if (!notification?.id) return;
 
@@ -97,7 +169,7 @@ export class NotificationPanel implements OnInit, OnDestroy {
           resourceId: notification.resourceId,
           metadata:   notification.metadata ?? {},
         },
-        notification.resourceUrl   // pass resourceUrl so user notifications navigate to /blog/:id directly
+        notification.resourceUrl,
       );
       this.panelOpen.set(false);
     }
@@ -138,25 +210,16 @@ export class NotificationPanel implements OnInit, OnDestroy {
       .subscribe(() => this.refreshing.set(false));
   }
 
-  /** Returns actor display name, anonymizing admin actors as "Admin". */
   getActorDisplay(n: Notification): string | null {
     if (!n.actorName) return null;
     return ADMIN_ONLY_TYPES.has(n.type) ? 'Admin' : n.actorName;
   }
 
-  /**
-   * Returns the correct display message for each notification type.
-   * User notifications (userId != null) use first-person "your" language.
-   * Admin notifications (userId == null) use third-person informational language.
-   * Falls back to the backend message for any unhandled type.
-   */
   getDisplayMessage(n: Notification): string {
     const isUser = n.userId !== null;
-    const title  = n.metadata?.['postTitle'] ?? '';
+    const title  = n.metadata?.['postTitle'] ?? n.metadata?.['shortTitle'] ?? '';
 
     switch (n.type) {
-
-      // ── Post events ─────────────────────────────────────────────────────────
 
       case 'POST_LIKED':
         if (isUser) {
@@ -196,10 +259,8 @@ export class NotificationPanel implements OnInit, OnDestroy {
 
       case 'POST_MILESTONE': {
         const milestone = n.metadata?.['milestone'];
-        return milestone ? `"${title}" reached ${milestone} likes! 🎉` : n.message;
+        return milestone ? `"${title}" reached ${milestone} likes!` : n.message;
       }
-
-      // ── Comment events ───────────────────────────────────────────────────────
 
       case 'COMMENT_ADDED':
         if (isUser) {
@@ -213,7 +274,15 @@ export class NotificationPanel implements OnInit, OnDestroy {
           return `A comment on your post${title ? ` "${title}"` : ''} was removed by an admin.`;
         return n.message;
 
-      // ── Account events ────────────────────────────────────────────────────────
+      case 'COMMENT_REPLIED': {
+        if (isUser) {
+          const actor = n.actorName?.split(' ')[0] || 'Someone';
+          return title
+            ? `${actor} replied to your comment on "${title}".`
+            : `${actor} replied to your comment.`;
+        }
+        return n.message;
+      }
 
       case 'USER_FROZEN':
         if (isUser)
@@ -230,8 +299,6 @@ export class NotificationPanel implements OnInit, OnDestroy {
           return 'An admin updated your profile information. Review the changes in your settings.';
         return n.message;
 
-      // ── Social events ────────────────────────────────────────────────────────
-
       case 'USER_FOLLOWED': {
         if (isUser) {
           const actor = n.actorName?.split(' ')[0] || 'Someone';
@@ -240,23 +307,53 @@ export class NotificationPanel implements OnInit, OnDestroy {
         return n.message;
       }
 
-      case 'COMMENT_REPLIED': {
+      case 'SUBSCRIBER_ADDED': {
         if (isUser) {
           const actor = n.actorName?.split(' ')[0] || 'Someone';
-          return title
-            ? `${actor} replied to your comment on "${title}".`
-            : `${actor} replied to your comment.`;
+          return `${actor} subscribed to your channel.`;
         }
         return n.message;
       }
 
-      // ── All other types: use backend message as-is ───────────────────────────
+      case 'SHORT_LIKED':
+        if (isUser) {
+          const count = n.metadata?.['likesCount'];
+          const base  = `Someone liked your short${title ? ` "${title}"` : ''}!`;
+          return count ? `${base} It now has ${count} ${count === 1 ? 'like' : 'likes'}.` : base;
+        }
+        return n.message;
+
+      case 'SHORT_COMMENTED':
+        if (isUser) {
+          const actor = n.actorName?.trim() || 'Someone';
+          return `${actor} commented on your short${title ? ` "${title}"` : ''}.`;
+        }
+        return n.message;
+
+      case 'SHORT_APPROVED':
+        if (isUser)
+          return `Your short${title ? ` "${title}"` : ''} has been approved and is now live!`;
+        return n.message;
+
+      case 'SHORT_REJECTED':
+        if (isUser) {
+          const reason = n.metadata?.['rejectionReason'];
+          return reason
+            ? `Your short${title ? ` "${title}"` : ''} was not approved. Reason: ${reason}.`
+            : `Your short${title ? ` "${title}"` : ''} was not approved. Please review and resubmit.`;
+        }
+        return n.message;
+
+      case 'SHORT_PUBLISHED':
+        if (isUser)
+          return `Your short${title ? ` "${title}"` : ''} is now live and visible to everyone!`;
+        return n.message;
+
       default:
         return n.message;
     }
   }
 
-  /** Human-readable relative time: "just now", "5m ago", "3h ago", "yesterday", etc. */
   timeAgo(date: string | Date | undefined): string {
     if (!date) return '';
     const diff = Math.floor((Date.now() - new Date(date).getTime()) / 1000);

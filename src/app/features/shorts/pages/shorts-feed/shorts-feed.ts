@@ -1,6 +1,5 @@
 import {
-  Component, inject, signal, computed, OnInit, OnDestroy, AfterViewInit,
-  NgZone, PLATFORM_ID, ViewChildren, QueryList, ElementRef, ViewChild, HostListener,
+  AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, HostListener, NgZone, OnDestroy, OnInit, PLATFORM_ID, QueryList, ViewChild, ViewChildren, computed, inject, signal
 } from '@angular/core';
 import { isPlatformBrowser, CommonModule, Location, DOCUMENT } from '@angular/common';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
@@ -14,6 +13,7 @@ import { ShortsUpload } from '../shorts-upload/shorts-upload';
 @Component({
   selector: 'app-shorts-feed',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, RouterLink, FormsModule, ShortsUpload],
   templateUrl: './shorts-feed.html',
   styleUrl: './shorts-feed.css',
@@ -441,6 +441,12 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
 
   private setupObserver(): void {
     this.observer = new IntersectionObserver(entries => {
+      // Collect the best candidate to play from all entries in this batch.
+      // IntersectionObserver does not guarantee entry order, so processing
+      // each intersecting entry independently causes a race: the last-processed
+      // entry wins via pauseAllExcept(), which can leave the wrong card playing.
+      let bestPlayIdx = -1;
+
       for (const e of entries) {
         const idx = Number(e.target.getAttribute('data-idx'));
         if (isNaN(idx)) continue;
@@ -457,13 +463,28 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
           continue;
         }
 
-        // Card is >= 80 % visible — it is now the active card.
+        // Card is >= 80% visible — pick the one closest to the current
+        // scroll position when multiple entries are intersecting in the same batch.
+        if (bestPlayIdx === -1) {
+          bestPlayIdx = idx;
+        } else {
+          const container = this.feedRef?.nativeElement;
+          if (container && container.clientHeight > 0) {
+            const scrollIdx = Math.round(container.scrollTop / container.clientHeight);
+            if (Math.abs(idx - scrollIdx) < Math.abs(bestPlayIdx - scrollIdx)) {
+              bestPlayIdx = idx;
+            }
+          }
+        }
+      }
+
+      if (bestPlayIdx >= 0) {
         this.ngZone.run(() => {
-          this.activeIndex.set(idx);
-          this.scheduleView(idx);
-          this.preloadAdjacent(idx);
+          this.activeIndex.set(bestPlayIdx);
+          this.scheduleView(bestPlayIdx);
+          this.preloadAdjacent(bestPlayIdx);
           // autoPlayVideo handles mute/unmute based on gestureUnlocked.
-          this.autoPlayVideo(idx);
+          this.autoPlayVideo(bestPlayIdx);
         });
       }
     }, { threshold: [0, 0.8] });
@@ -507,7 +528,10 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
       const short = this.shorts()[currentIdx + offset];
       if (short?.videoType === 'upload') {
         const vid = this.getVideoAt(currentIdx + offset);
-        if (vid && vid.preload !== 'auto') { vid.preload = 'auto'; vid.load(); }
+        // Only hint preload="auto" — avoid calling vid.load() which resets
+        // the media element and causes iOS Safari to suspend the active video
+        // when too many elements are loading concurrently.
+        if (vid && vid.preload !== 'auto') vid.preload = 'auto';
       }
     }
   }

@@ -1,11 +1,15 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject
+} from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { DOCUMENT } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { environment } from '../../../../../environments/environment';
 
 @Component({
   selector: 'app-privacy-policy',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink],
   templateUrl: './privacy-policy.html',
   styleUrl: './privacy-policy.css'
@@ -27,7 +31,7 @@ export class PrivacyPolicy implements OnInit, OnDestroy {
     this.meta.updateTag({ property: 'og:type', content: 'website' });
     this.meta.updateTag({ property: 'og:title', content: 'Privacy Policy | ApnaInsights' });
     this.meta.updateTag({ property: 'og:description', content: 'ApnaInsights Privacy Policy — how we handle your data and use of third-party advertising.' });
-    this.meta.updateTag({ property: 'og:url', content: 'https://apnainsights.com/privacy-policy' });
+    this.meta.updateTag({ property: 'og:url', content: environment.siteUrl + '/privacy-policy' });
 
     let canonical = this.document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
     if (!canonical) {
@@ -35,7 +39,7 @@ export class PrivacyPolicy implements OnInit, OnDestroy {
       canonical.setAttribute('rel', 'canonical');
       this.document.head.appendChild(canonical);
     }
-    canonical.setAttribute('href', 'https://apnainsights.com/privacy-policy');
+    canonical.setAttribute('href', environment.siteUrl + '/privacy-policy');
   }
 
   ngOnDestroy(): void {

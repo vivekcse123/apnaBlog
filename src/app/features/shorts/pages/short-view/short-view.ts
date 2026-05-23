@@ -1,5 +1,5 @@
 import {
-  Component, OnInit, inject, signal, PLATFORM_ID, AfterViewInit
+  AfterViewInit, ChangeDetectionStrategy, Component, OnInit, PLATFORM_ID, inject, signal
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
@@ -11,6 +11,7 @@ import { VideoShort } from '../../models/video-short.model';
 @Component({
   selector: 'app-short-view',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, RouterLink],
   templateUrl: './short-view.html',
   styleUrl: './short-view.css',

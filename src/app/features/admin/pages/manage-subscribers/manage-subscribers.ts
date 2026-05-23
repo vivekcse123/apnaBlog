@@ -1,4 +1,6 @@
-import { Component, inject, signal, computed, OnInit, DestroyRef, PLATFORM_ID } from '@angular/core';
+import {
+  ChangeDetectionStrategy, Component, DestroyRef, OnInit, PLATFORM_ID, computed, inject, signal
+} from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -25,6 +27,7 @@ interface Post {
 @Component({
   selector: 'app-manage-subscribers',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, FormsModule],
   templateUrl: './manage-subscribers.html',
   styleUrl:    './manage-subscribers.css',

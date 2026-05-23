@@ -25,6 +25,11 @@
   color: var(--text-primary);
 }
 
+.bell-btn.panel-open {
+  background: var(--accent-subtle);
+  color: var(--accent);
+}
+
 .bell-btn mat-icon {
   font-size: 22px;
   width: 22px;
@@ -48,7 +53,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid transparent;
+  border: 2px solid var(--bg-surface);
   line-height: 1;
 }
 
@@ -173,8 +178,12 @@
 }
 .css-spinner--lg { width: 28px; height: 28px; border-width: 3px; }
 
-/* Emoji icon in notification type badge */
-.notif-emoji { font-size: 16px; line-height: 1; }
+/* SVG icon in notification type badge */
+.notif-icon svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
 
 /* ── Notification list ──────────────────────────────────────────────────────── */
 .notification-list {
@@ -254,6 +263,8 @@
 
 .notification-item.unread {
   background: var(--accent-subtle);
+  border-left: 3px solid var(--accent);
+  padding-left: 11px;
 }
 
 .notification-item.unread:hover {

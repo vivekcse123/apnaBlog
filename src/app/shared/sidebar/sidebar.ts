@@ -1,4 +1,6 @@
-import { Component, EventEmitter, HostListener, Input, Output, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy, Component, EventEmitter, HostListener, Input, Output, inject
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { ThemeService } from '../../core/services/theme-service';
@@ -13,6 +15,7 @@ export interface SidebarLink {
 @Component({
   selector: 'app-sidebar',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, RouterLink, RouterLinkActive],
   templateUrl: './sidebar.html',
   styleUrl: './sidebar.css',

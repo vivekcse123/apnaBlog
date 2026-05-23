@@ -12,6 +12,7 @@ import { provideClientHydration, withEventReplay } from '@angular/platform-brows
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 import { loaderInterceptor } from './core/interceptors/loader-interceptor';
 import { authInterceptor } from './core/interceptors/auth-interceptor';
+import { dedupeInterceptor } from './core/interceptors/dedupe-interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -27,6 +28,6 @@ export const appConfig: ApplicationConfig = {
       withViewTransitions(),
     ),
     provideClientHydration(withEventReplay()),
-    provideHttpClient(withFetch(), withInterceptors([loaderInterceptor, authInterceptor])),
+    provideHttpClient(withFetch(), withInterceptors([dedupeInterceptor, loaderInterceptor, authInterceptor])),
   ]
 };

@@ -133,12 +133,23 @@
   display: flex;
   align-items: flex-start;
   gap: 14px;
-  transition: box-shadow 0.2s, border-color 0.2s;
+  transition: box-shadow 0.2s, border-color 0.2s, transform 0.25s;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #43cea2, #185a9d);
 }
 
 .stat-card:hover {
   box-shadow: var(--card-shadow-lg);
   border-color: var(--border-strong);
+  transform: translateY(-2px);
 }
 
 .stat-icon {

@@ -1,9 +1,11 @@
-import { Component, inject, signal, computed, OnInit, DestroyRef } from '@angular/core';
+import {
+  ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, forkJoin, Subject } from 'rxjs';
 import { ShortsService } from '../../../shorts/services/shorts.service';
 import { VideoShort } from '../../../shorts/models/video-short.model';
 import { ToastService } from '../../../../core/services/toast.service';
@@ -11,6 +13,7 @@ import { ToastService } from '../../../../core/services/toast.service';
 @Component({
   selector: 'app-manage-shorts',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './manage-shorts.html',
   styleUrl:    './manage-shorts.css',
@@ -20,9 +23,10 @@ export class ManageShorts implements OnInit {
   private toast      = inject(ToastService);
   private destroyRef = inject(DestroyRef);
 
+  // ── Table state ────────────────────────────────────────────────────────────
   shorts      = signal<VideoShort[]>([]);
   isLoading   = signal(true);
-  totalCount  = signal(0);
+  totalCount  = signal(0);   // filtered count — used for pagination display only
   currentPage = signal(1);
   totalPages  = signal(1);
   readonly LIMIT = 10;
@@ -30,17 +34,24 @@ export class ManageShorts implements OnInit {
   searchQuery      = '';
   selectedCategory = signal('');
   selectedStatus   = signal('');
-  filterToday      = signal(false);
   filterSponsored  = signal(false);
 
-  // Delete
+  // ── Global stats — reflect actual DB counts regardless of table filters ────
+  // Loaded fresh on init and after every mutation (create / edit / delete / status).
+  globalTotal   = signal(0);   // all shorts in DB
+  globalLive    = signal(0);   // published shorts
+  globalPending = signal(0);   // pending shorts
+  globalSponsored = signal(0); // sponsored shorts
+  statsLoading  = signal(false);
+
+  // ── Delete ─────────────────────────────────────────────────────────────────
   pendingDeleteId = signal<string | null>(null);
   isDeleting      = signal(false);
 
-  // Status toggle
+  // ── Status toggle ──────────────────────────────────────────────────────────
   togglingId = signal<string | null>(null);
 
-  // Edit modal
+  // ── Edit modal ─────────────────────────────────────────────────────────────
   editShort    = signal<VideoShort | null>(null);
   editTitle    = '';
   editCaption  = '';
@@ -57,18 +68,9 @@ export class ManageShorts implements OnInit {
     'Politics', 'Science', 'Art', 'Music',
   ];
 
-  totalShorts      = computed(() => this.totalCount());
-  pageStart        = computed(() => (this.currentPage() - 1) * this.LIMIT + 1);
-  pageEnd          = computed(() => Math.min(this.currentPage() * this.LIMIT, this.totalCount()));
-  publishedCount   = computed(() => this.shorts().filter(s => s.status === 'published').length);
-  pendingCount     = computed(() => this.shorts().filter(s => s.status === 'pending').length);
-  sponsorCount     = computed(() => this.shorts().filter(s => s.isSponsored).length);
-  sponsorTotalCount = signal(0);
-  todayCount     = computed(() => {
-    const today = new Date(); today.setHours(0, 0, 0, 0);
-    return this.shorts().filter(s => new Date(s.createdAt) >= today).length;
-  });
-
+  // Pagination helpers
+  pageStart   = computed(() => this.totalCount() === 0 ? 0 : (this.currentPage() - 1) * this.LIMIT + 1);
+  pageEnd     = computed(() => Math.min(this.currentPage() * this.LIMIT, this.totalCount()));
   pageNumbers = computed(() => {
     const total = this.totalPages(), current = this.currentPage();
     const pages: (number | '...')[] = [];
@@ -87,14 +89,34 @@ export class ManageShorts implements OnInit {
     this.search$.pipe(debounceTime(350), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.load(1));
     this.load(1);
-    this.loadSponsorCount();
+    this.loadGlobalStats();
   }
 
-  private loadSponsorCount(): void {
-    this.service.getAllShortsAdmin({ page: 1, limit: 1, isSponsored: true })
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(res => this.sponsorTotalCount.set(res.total ?? 0));
+  // ── Stats ──────────────────────────────────────────────────────────────────
+  // Four parallel limit:1 requests — each returns only the `total` field we need.
+  // Refreshed after every mutation so the stats bar is always in sync.
+
+  loadGlobalStats(): void {
+    this.statsLoading.set(true);
+    forkJoin({
+      all:       this.service.getAllShortsAdmin({ page: 1, limit: 1 }),
+      live:      this.service.getAllShortsAdmin({ page: 1, limit: 1, status: 'published' }),
+      pending:   this.service.getAllShortsAdmin({ page: 1, limit: 1, status: 'pending' }),
+      sponsored: this.service.getAllShortsAdmin({ page: 1, limit: 1, isSponsored: true }),
+    }).pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: res => {
+          this.globalTotal.set(res.all.total       ?? 0);
+          this.globalLive.set(res.live.total        ?? 0);
+          this.globalPending.set(res.pending.total  ?? 0);
+          this.globalSponsored.set(res.sponsored.total ?? 0);
+          this.statsLoading.set(false);
+        },
+        error: () => this.statsLoading.set(false),
+      });
   }
+
+  // ── Table load ─────────────────────────────────────────────────────────────
 
   load(page = this.currentPage()): void {
     this.isLoading.set(true);
@@ -106,29 +128,29 @@ export class ManageShorts implements OnInit {
       status:      this.selectedStatus()   || undefined,
       isSponsored: this.filterSponsored()  || undefined,
     }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(res => {
-      let data = res.data ?? [];
-      if (this.filterToday()) {
-        const start = new Date(); start.setHours(0, 0, 0, 0);
-        data = data.filter(s => new Date(s.createdAt) >= start);
-      }
-      this.shorts.set(data);
-      this.totalCount.set(this.filterToday() ? data.length : (res.total ?? 0));
+      this.shorts.set(res.data ?? []);
+      this.totalCount.set(res.total ?? 0);
       this.currentPage.set(res.page ?? page);
-      this.totalPages.set(this.filterToday() ? 1 : (res.totalPages ?? 1));
+      this.totalPages.set(res.totalPages ?? 1);
       this.isLoading.set(false);
     });
   }
 
   onSearch(val: string): void { this.searchQuery = val; this.search$.next(val); }
   onFilter(): void { this.load(1); }
-  toggleToday(): void { this.filterToday.update(v => !v); if (this.filterToday()) this.filterSponsored.set(false); this.load(1); }
-  toggleSponsored(): void { this.filterSponsored.update(v => !v); if (this.filterSponsored()) this.filterToday.set(false); this.load(1); }
+  toggleSponsored(): void { this.filterSponsored.update(v => !v); this.load(1); }
+
+  filterByStatus(status: string): void {
+    this.selectedStatus.set(status);
+    this.filterSponsored.set(false);
+    this.load(1);
+  }
 
   prevPage(): void { if (this.currentPage() > 1) this.load(this.currentPage() - 1); }
   nextPage(): void { if (this.currentPage() < this.totalPages()) this.load(this.currentPage() + 1); }
   goToPage(p: number | '...'): void { if (typeof p === 'number') this.load(p); }
 
-  // ── Delete ────────────────────────────────────────────────────────────────
+  // ── Delete ─────────────────────────────────────────────────────────────────
 
   confirmDelete(id: string): void { this.pendingDeleteId.set(id); }
   cancelDelete():  void { this.pendingDeleteId.set(null); }
@@ -140,16 +162,20 @@ export class ManageShorts implements OnInit {
     this.service.deleteShort(id).subscribe({
       next: () => {
         this.shorts.update(list => list.filter(s => s._id !== id));
-        this.totalCount.update(n => n - 1);
+        this.totalCount.update(n => Math.max(0, n - 1));
         this.pendingDeleteId.set(null);
         this.isDeleting.set(false);
         this.toast.show('Short deleted.', 'success');
+        this.loadGlobalStats();
       },
-      error: err => { this.isDeleting.set(false); this.toast.show(err?.error?.message ?? 'Delete failed.', 'error'); },
+      error: err => {
+        this.isDeleting.set(false);
+        this.toast.show(err?.error?.message ?? 'Delete failed.', 'error');
+      },
     });
   }
 
-  // ── Edit ──────────────────────────────────────────────────────────────────
+  // ── Edit ───────────────────────────────────────────────────────────────────
 
   openEdit(s: VideoShort): void {
     this.editShort.set(s);
@@ -165,8 +191,6 @@ export class ManageShorts implements OnInit {
     if (!s || this.isSaving()) return;
     if (!this.editTitle.trim()) { this.toast.show('Title is required.', 'error'); return; }
     this.isSaving.set(true);
-
-    // Reuse createShort payload shape — backend route is PATCH /:id
     this.service.updateShort(s._id, {
       title:    this.editTitle.trim(),
       caption:  this.editCaption.trim() || undefined,
@@ -177,6 +201,7 @@ export class ManageShorts implements OnInit {
         this.isSaving.set(false);
         this.editShort.set(null);
         this.toast.show('Short updated.', 'success');
+        // Edit doesn't change counts, no stats refresh needed
       },
       error: err => {
         this.isSaving.set(false);
@@ -185,7 +210,7 @@ export class ManageShorts implements OnInit {
     });
   }
 
-  // ── Status toggle ─────────────────────────────────────────────────────────
+  // ── Status toggle ──────────────────────────────────────────────────────────
 
   toggleStatus(short: VideoShort): void {
     const next = short.status === 'published' ? 'pending' : 'published';
@@ -194,13 +219,17 @@ export class ManageShorts implements OnInit {
       next: res => {
         this.shorts.update(list => list.map(s => s._id === short._id ? { ...s, status: res.data.status } : s));
         this.togglingId.set(null);
-        this.toast.show(`Short marked as ${next}.`, 'success');
+        this.toast.show(`Short is now ${next === 'published' ? 'live' : 'pending'}.`, 'success');
+        this.loadGlobalStats();
       },
-      error: err => { this.togglingId.set(null); this.toast.show(err?.error?.message ?? 'Status update failed.', 'error'); },
+      error: err => {
+        this.togglingId.set(null);
+        this.toast.show(err?.error?.message ?? 'Status update failed.', 'error');
+      },
     });
   }
 
-  // ── Sponsor Short ─────────────────────────────────────────────────────────
+  // ── Preview modal ──────────────────────────────────────────────────────────
 
   previewShort = signal<VideoShort | null>(null);
 
@@ -220,6 +249,8 @@ export class ManageShorts implements OnInit {
     this.closePreview();
     this.confirmDelete(s._id);
   }
+
+  // ── Sponsor modal ──────────────────────────────────────────────────────────
 
   showSponsorModal    = signal(false);
   sponsorTargetId     = signal('');
@@ -267,6 +298,7 @@ export class ManageShorts implements OnInit {
           this.isSponsorSaving.set(false);
           this.closeSponsorModal();
           this.toast.show('Short marked as sponsored.', 'success');
+          this.loadGlobalStats();
         },
         error: err => {
           this.isSponsorSaving.set(false);
@@ -282,12 +314,13 @@ export class ManageShorts implements OnInit {
         next: res => {
           this.shorts.update(list => list.map(x => x._id === s._id ? { ...x, ...res.data } : x));
           this.toast.show('Sponsorship removed.', 'success');
+          this.loadGlobalStats();
         },
         error: err => this.toast.show(err?.error?.message ?? 'Failed to remove sponsorship.', 'error'),
       });
   }
 
-  // ── Helpers ───────────────────────────────────────────────────────────────
+  // ── Helpers ────────────────────────────────────────────────────────────────
 
   thumbnail(s: VideoShort): string { return s.thumbnailUrl ?? ''; }
 

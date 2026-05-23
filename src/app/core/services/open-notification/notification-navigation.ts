@@ -12,18 +12,24 @@ export interface NotificationNavEvent {
 
 export const POST_NOTIFICATION_TYPES: NotificationType[] = [
   'POST_LIKED', 'POST_MILESTONE', 'COMMENT_ADDED',
-  'COMMENT_DELETED', 'POST_PUBLISHED', 'POST_UPDATED',
+  'COMMENT_DELETED', 'COMMENT_REPLIED', 'POST_PUBLISHED', 'POST_UPDATED',
   'POST_PENDING_REVIEW', 'POST_APPROVED',
+];
+
+export const SHORT_NOTIFICATION_TYPES: NotificationType[] = [
+  'SHORT_PUBLISHED', 'SHORT_LIKED', 'SHORT_COMMENTED', 'SHORT_APPROVED',
 ];
 
 export const USER_NOTIFICATION_TYPES: NotificationType[] = [
   'USER_REGISTERED', 'USER_LOGIN', 'USER_FROZEN', 'USER_UNFROZEN',
   'USER_UPDATED', 'USER_DELETION_REQUESTED', 'USER_DELETION_CANCELLED',
   'PASSWORD_CHANGED', 'PASSWORD_RESET_REQUESTED', 'PASSWORD_RESET_COMPLETED',
+  'USER_FOLLOWED', 'SUBSCRIBER_ADDED',
 ];
 
 export const NON_NAVIGABLE_TYPES: NotificationType[] = [
-  'POST_DELETED', 'POST_REJECTED', 'USER_DELETED', 'info', 'warning', 'success', 'error',
+  'POST_DELETED', 'POST_REJECTED', 'SHORT_REJECTED', 'USER_DELETED',
+  'info', 'warning', 'success', 'error',
 ];
 
 @Injectable({ providedIn: 'root' })
@@ -52,9 +58,11 @@ export class NotificationNavigationService {
       const prefix = isSuperAdmin ? 'super-admin' : 'admin';
       const targetPath = POST_NOTIFICATION_TYPES.includes(event.type)
         ? [prefix, adminId, 'manage-blogs']
-        : USER_NOTIFICATION_TYPES.includes(event.type)
-          ? [prefix, adminId, 'manage-users']
-          : null;
+        : SHORT_NOTIFICATION_TYPES.includes(event.type)
+          ? [prefix, adminId, 'manage-shorts']
+          : USER_NOTIFICATION_TYPES.includes(event.type)
+            ? [prefix, adminId, 'manage-users']
+            : null;
 
       if (!targetPath) return;
 
@@ -80,6 +88,8 @@ export class NotificationNavigationService {
         this.router.navigateByUrl(resourceUrl!);
       } else if (POST_NOTIFICATION_TYPES.includes(event.type)) {
         this.router.navigate(['/blog', event.resourceId]);
+      } else if (SHORT_NOTIFICATION_TYPES.includes(event.type)) {
+        this.router.navigate(['/shorts', event.resourceId]);
       }
     }
   }

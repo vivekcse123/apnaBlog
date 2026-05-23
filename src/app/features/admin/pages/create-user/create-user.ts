@@ -1,4 +1,6 @@
-import { Component, signal, inject, output, DestroyRef } from '@angular/core';
+import {
+  ChangeDetectionStrategy, Component, DestroyRef, inject, output, signal
+} from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -8,6 +10,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 @Component({
   selector: 'app-create-user',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './create-user.html',
   styleUrl: './create-user.css'

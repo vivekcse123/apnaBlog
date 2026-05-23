@@ -70,9 +70,9 @@
 
 /* ── Stats Bar ── */
 .stats-bar {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
 }
 
 .stat-card {
@@ -87,7 +87,6 @@
   position: relative;
   overflow: hidden;
   min-width: 0;
-  flex: 1;
   transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
 }
 

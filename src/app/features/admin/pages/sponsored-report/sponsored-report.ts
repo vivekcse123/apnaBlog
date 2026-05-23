@@ -1,4 +1,6 @@
-import { Component, inject, signal, computed, OnInit, DestroyRef, PLATFORM_ID } from '@angular/core';
+import {
+  ChangeDetectionStrategy, Component, DestroyRef, OnInit, PLATFORM_ID, computed, inject, signal
+} from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -78,6 +80,7 @@ const AD_TYPE_LABELS: Record<string, string> = {
 @Component({
   selector: 'app-sponsored-report',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, FormsModule],
   templateUrl: './sponsored-report.html',
   styleUrl:    './sponsored-report.css',

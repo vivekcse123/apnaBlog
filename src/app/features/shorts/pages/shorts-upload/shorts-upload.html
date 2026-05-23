@@ -66,13 +66,21 @@
             </div>
             <span class="up-drop-title">Tap to select a video</span>
             <span class="up-drop-hint">MP4 · WebM · MOV · AVI</span>
-            <span class="up-drop-hint">Max 30 seconds · Under 50 MB</span>
+            <span class="up-drop-hint">Under 50 MB</span>
           </label>
         } @else if (isUploading()) {
           <div class="up-uploading">
-            <div class="up-upload-ring"></div>
-            <span class="up-upload-text">Uploading video…</span>
-            <span class="up-upload-name">{{ videoFile()?.name }}</span>
+            @if (isProcessing()) {
+              <div class="up-upload-ring"></div>
+              <span class="up-upload-text">Processing…</span>
+              <span class="up-upload-name">Optimising &amp; adding watermark</span>
+            } @else {
+              <span class="up-upload-text">Uploading {{ uploadPercent() }}%</span>
+              <div class="up-progress-track">
+                <div class="up-progress-fill" [style.width.%]="uploadPercent()"></div>
+              </div>
+              <span class="up-upload-name">{{ videoFile()?.name }}</span>
+            }
           </div>
         } @else if (uploadedUrl()) {
           <div class="up-upload-done">
@@ -92,23 +100,22 @@
 
   <!-- ── Step 2: Trim ── -->
   @if (step() === 'trim') {
-    <div class="up-body">
-      <p class="up-trim-hint">
-        Video is <strong>{{ fmtSec(rawDuration()) }}</strong> long.
-        Pick the best <strong>30-second</strong> clip.
-      </p>
+    <div class="up-trim-body">
 
-      <div class="up-preview-wrap">
-        <video #trimVideoEl class="up-preview-video"
-               [src]="videoPreview()" muted playsinline preload="metadata"
+      <!-- Video preview -->
+      <div class="up-trim-preview">
+        <video #trimVideoEl class="up-trim-video"
+               [src]="videoPreview()" muted playsinline preload="auto"
                (timeupdate)="onVideoTimeUpdate()">
         </video>
-
-        <!-- Play overlay button -->
-        <button class="up-play-overlay" type="button" (click)="togglePreview()">
+        <div class="up-trim-time-badge">
+          {{ fmtSec(currentTime()) }} / {{ fmtSec(rawDuration()) }}
+        </div>
+        <button class="up-trim-play-btn" type="button" (click)="togglePreview()" aria-label="Play / pause">
           @if (isPlaying()) {
             <svg width="22" height="22" viewBox="0 0 24 24" fill="white">
-              <rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>
+              <rect x="6" y="4" width="4" height="16" rx="1"/>
+              <rect x="14" y="4" width="4" height="16" rx="1"/>
             </svg>
           } @else {
             <svg width="22" height="22" viewBox="0 0 24 24" fill="white">
@@ -116,43 +123,106 @@
             </svg>
           }
         </button>
-
-        <div class="up-trim-bar">
-          <div class="up-trim-fill"
-               [style.left.%]="(trimStart() / rawDuration()) * 100"
-               [style.width.%]="(MAX_DURATION_SEC / rawDuration()) * 100">
-            <div class="up-trim-handle up-trim-handle--l"></div>
-            <div class="up-trim-handle up-trim-handle--r"></div>
-          </div>
-        </div>
       </div>
 
+      <!-- Time labels -->
       <div class="up-trim-labels">
-        <div class="up-trim-tag">
-          <span class="up-trim-tag-label">Start</span>
-          <span class="up-trim-tag-val">{{ fmtSec(trimStart()) }}</span>
+        <div class="up-trim-label-item">
+          <span class="up-trim-label-key">Start</span>
+          <span class="up-trim-label-val" [class.up-trim-label-val--active]="activeDragSide() === 'left'">
+            {{ fmtSec(trimStart(), true) }}
+          </span>
         </div>
-        <span class="up-trim-dur">30 s clip</span>
-        <div class="up-trim-tag">
-          <span class="up-trim-tag-label">End</span>
-          <span class="up-trim-tag-val">{{ fmtSec(trimEnd) }}</span>
+        <span class="up-trim-dur-badge">{{ fmtSec(clipDur()) }} selected</span>
+        <div class="up-trim-label-item up-trim-label-item--right">
+          <span class="up-trim-label-key">End</span>
+          <span class="up-trim-label-val" [class.up-trim-label-val--active]="activeDragSide() === 'right'">
+            {{ fmtSec(trimEnd(), true) }}
+          </span>
         </div>
       </div>
 
-      <input type="range" class="up-slider"
-             [min]="0" [max]="trimMax" [step]="0.1"
-             [value]="trimStart()"
-             (input)="onTrimSlider($event)" />
+      <!-- Filmstrip timeline -->
+      <div class="up-trim-timeline" #timelineRef>
 
+        <!-- Filmstrip frames -->
+        <div class="up-trim-filmstrip">
+          @for (url of frameUrls(); track $index) {
+            <img [src]="url" class="up-trim-frame" draggable="false" alt="" />
+          }
+          @for (n of skeletonFrames; track $index) {
+            <div class="up-trim-frame up-trim-frame--sk"></div>
+          }
+        </div>
+
+        <!-- Dim region before selection -->
+        <div class="up-trim-dim up-trim-dim--l"
+             [style.width.%]="startPct()">
+        </div>
+
+        <!-- Dim region after selection -->
+        <div class="up-trim-dim up-trim-dim--r"
+             [style.width.%]="100 - endPct()">
+        </div>
+
+        <!-- Selection bracket — visual only, no pointer events -->
+        <div class="up-trim-sel"
+             [style.left.%]="startPct()"
+             [style.width.%]="selWidthPct()">
+        </div>
+
+        <!-- Left drag handle — sibling of sel, NOT a child, so pointer-events
+             inheritance from sel's pointer-events:none cannot affect it -->
+        <div class="up-trim-hdl up-trim-hdl--l"
+             [class.up-trim-hdl--active]="activeDragSide() === 'left'"
+             [style.left.%]="startPct()"
+             (pointerdown)="startDrag('left', $event)"
+             role="slider"
+             aria-label="Trim start"
+             [attr.aria-valuenow]="trimStart() | number:'1.0-1'">
+          <span class="up-trim-hdl-bar"></span>
+          <span class="up-trim-hdl-bar"></span>
+        </div>
+
+        <!-- Right drag handle — same pattern -->
+        <div class="up-trim-hdl up-trim-hdl--r"
+             [class.up-trim-hdl--active]="activeDragSide() === 'right'"
+             [style.left.%]="endPct()"
+             (pointerdown)="startDrag('right', $event)"
+             role="slider"
+             aria-label="Trim end"
+             [attr.aria-valuenow]="trimEnd() | number:'1.0-1'">
+          <span class="up-trim-hdl-bar"></span>
+          <span class="up-trim-hdl-bar"></span>
+        </div>
+
+        <!-- Playhead -->
+        @if (rawDuration() > 0) {
+          <div class="up-trim-playhead" [style.left.%]="headPct()"></div>
+        }
+      </div>
+
+      <!-- Trim hint -->
+      <p class="up-trim-hint">Drag the yellow handles to set your clip's start and end points.</p>
+
+      <!-- Actions -->
       @if (isUploading()) {
-        <div class="up-uploading up-uploading--inline">
-          <div class="up-upload-ring"></div>
-          <span class="up-upload-text">Uploading video…</span>
+        <div class="up-trim-upload-row">
+          @if (isProcessing()) {
+            <div class="up-upload-ring"></div>
+            <span class="up-upload-text">Processing…</span>
+          } @else {
+            <div class="up-progress-track" style="flex:1">
+              <div class="up-progress-fill" [style.width.%]="uploadPercent()"></div>
+            </div>
+            <span class="up-upload-text">{{ uploadPercent() }}%</span>
+          }
         </div>
       } @else {
         <button class="up-primary-btn" (click)="confirmTrim()">
           Use this clip
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2.5" stroke-linecap="round">
             <path d="M5 12h14M12 5l7 7-7 7"/>
           </svg>
         </button>
@@ -212,7 +282,6 @@
         }
       </div>
 
-
       @if (errorMsg()) { <p class="up-error">{{ errorMsg() }}</p> }
 
       <button type="submit" class="up-primary-btn up-submit-btn"
@@ -230,18 +299,19 @@
     </form>
   }
 
-  <!-- ── Step 4: Review submitted (sponsor only) ── -->
+  <!-- ── Step 4: Submitted for review ── -->
   @if (step() === 'review') {
     <div class="up-body up-review">
       <div class="up-review-icon">
-        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="10"/>
-          <polyline points="12 6 12 12 16 14"/>
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#43cea2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
         </svg>
       </div>
-      <h3 class="up-review-title">Submitted for Review</h3>
-      <p class="up-review-msg">Your short has been submitted and is pending admin approval. You'll be able to see it in your dashboard once it goes live.</p>
-      <button class="up-primary-btn" (click)="close.emit()">Done</button>
+      <div class="up-review-text">
+        <h3 class="up-review-title">Submitted for Review</h3>
+        <p class="up-review-msg">Your short is pending admin approval and will appear in the feed once it goes live. You can track its status in <strong>My Shorts</strong>.</p>
+      </div>
+      <button class="up-review-done-btn" (click)="close.emit()">Done</button>
     </div>
   }
 

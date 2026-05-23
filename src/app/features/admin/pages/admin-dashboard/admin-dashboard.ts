@@ -1,5 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject, signal
+} from '@angular/core';
 import { Auth } from '../../../../core/services/auth';
 import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
 import { UserService } from '../../../user/services/user-service';
@@ -12,6 +14,7 @@ import { Sidebar } from '../../../../shared/sidebar/sidebar';
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, RouterOutlet, CommonHeader, UserProfile, Sidebar],
   templateUrl: './admin-dashboard.html',
   styleUrl: './admin-dashboard.css',

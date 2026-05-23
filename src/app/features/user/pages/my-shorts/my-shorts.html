@@ -1,0 +1,218 @@
+<div class="ms-page">
+
+  <!-- Header -->
+  <div class="ms-header">
+    <div>
+      <h2 class="ms-title">My Shorts</h2>
+      <p class="ms-sub">Manage your uploaded short videos</p>
+    </div>
+    <div class="ms-header-actions">
+      <a class="ms-feed-link" routerLink="/shorts">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        View Feed
+      </a>
+      <button class="ms-upload-btn" (click)="showUpload.set(true)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+        Upload Short
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="ms-stats">
+    <div class="ms-stat-card ms-stat-card--total" (click)="setFilter('all')" [class.active]="activeFilter() === 'all'">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <path d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.9L15 14v-4z"/>
+        <rect x="3" y="6" width="12" height="12" rx="2"/>
+      </svg>
+      <div>
+        <span class="ms-stat-value">{{ publishedCount() + pendingCount() }}</span>
+        <span class="ms-stat-label">Total</span>
+      </div>
+    </div>
+    <div class="ms-stat-card ms-stat-card--published" (click)="setFilter('published')" [class.active]="activeFilter() === 'published'">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-5"/>
+      </svg>
+      <div>
+        <span class="ms-stat-value">{{ publishedCount() }}</span>
+        <span class="ms-stat-label">Published</span>
+      </div>
+    </div>
+    <div class="ms-stat-card ms-stat-card--pending" (click)="setFilter('pending')" [class.active]="activeFilter() === 'pending'">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      <div>
+        <span class="ms-stat-value">{{ pendingCount() }}</span>
+        <span class="ms-stat-label">Pending</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- List -->
+  @if (isLoading()) {
+    <div class="ms-skeletons">
+      @for (i of [1,2,3,4]; track i) {
+        <div class="ms-skeleton-row">
+          <div class="sk sk-thumb"></div>
+          <div class="sk-lines">
+            <div class="sk sk-line sk-lg"></div>
+            <div class="sk sk-line sk-sm"></div>
+          </div>
+        </div>
+      }
+    </div>
+  } @else if (shorts().length === 0) {
+    <div class="ms-empty">
+      <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="var(--border-strong)" stroke-width="1.3" stroke-linecap="round">
+        <path d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.9L15 14v-4z"/>
+        <rect x="3" y="6" width="12" height="12" rx="2"/>
+      </svg>
+      @if (activeFilter() === 'pending') {
+        <p>No shorts pending review</p>
+      } @else if (activeFilter() === 'published') {
+        <p>No published shorts yet</p>
+        <span>Your shorts appear here once an admin approves them.</span>
+      } @else {
+        <p>You haven't uploaded any shorts yet</p>
+        <button class="ms-empty-btn" (click)="showUpload.set(true)">Upload your first short</button>
+      }
+    </div>
+  } @else {
+    <div class="ms-list">
+      @for (s of shorts(); track trackById($index, s)) {
+        <div class="ms-item" [class.ms-item--pending]="s.status === 'pending'">
+
+          <!-- Thumbnail -->
+          <div class="ms-thumb-wrap">
+            @if (s.thumbnailUrl) {
+              <img [src]="s.thumbnailUrl" [alt]="s.title" class="ms-thumb" loading="lazy" />
+            } @else {
+              <div class="ms-thumb ms-thumb--placeholder">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1.5"><path d="M8 5v14l11-7z"/></svg>
+              </div>
+            }
+            <!-- Status pill over thumb -->
+            <span class="ms-status-pill" [class.ms-status-pill--published]="s.status === 'published'"
+                  [class.ms-status-pill--pending]="s.status === 'pending'">
+              @if (s.status === 'published') { Live } @else { Pending }
+            </span>
+          </div>
+
+          <!-- Info -->
+          <div class="ms-item-info">
+            <span class="ms-item-title">{{ s.title }}</span>
+            @if (s.caption) {
+              <span class="ms-item-caption">{{ s.caption }}</span>
+            }
+            <div class="ms-item-meta">
+              <span class="ms-cat-badge">{{ s.category }}</span>
+              <span class="ms-item-time">{{ timeAgo(s.createdAt) }}</span>
+            </div>
+
+            @if (s.status === 'pending') {
+              <p class="ms-pending-note">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                  <circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                Awaiting admin approval — not visible in the feed yet.
+              </p>
+            }
+          </div>
+
+          <!-- Stats -->
+          <div class="ms-item-stats">
+            <span title="Views">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+              </svg>
+              {{ formatCount(s.views) }}
+            </span>
+            <span title="Likes">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+              </svg>
+              {{ formatCount(s.likesCount) }}
+            </span>
+            <span title="Comments">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+              </svg>
+              {{ formatCount(s.commentsCount) }}
+            </span>
+          </div>
+
+          <!-- Actions -->
+          <div class="ms-item-actions">
+            @if (s.status === 'published') {
+              <a class="ms-action-btn ms-action-btn--view" [routerLink]="['/shorts']" [fragment]="s._id" title="View in feed">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                </svg>
+              </a>
+            }
+            <button class="ms-action-btn ms-action-btn--delete"
+                    [disabled]="deletingId() === s._id"
+                    (click)="confirmDelete(s._id)" title="Delete">
+              @if (deletingId() === s._id) {
+                <span class="ms-spin"></span>
+              } @else {
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="3 6 5 6 21 6"/>
+                  <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+                  <path d="M10 11v6M14 11v6M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+                </svg>
+              }
+            </button>
+          </div>
+
+        </div>
+      }
+    </div>
+
+    <!-- Pagination -->
+    @if (totalPages() > 1) {
+      <div class="ms-pagination">
+        <button class="ms-pg-btn" [disabled]="currentPage() === 1" (click)="prevPage()">← Prev</button>
+        <span class="ms-pg-info">{{ currentPage() }} / {{ totalPages() }}</span>
+        <button class="ms-pg-btn" [disabled]="currentPage() === totalPages()" (click)="nextPage()">Next →</button>
+      </div>
+    }
+  }
+
+</div>
+
+<!-- Delete confirm modal -->
+@if (confirmId()) {
+  <div class="ms-modal-backdrop" (click)="cancelDelete()">
+    <div class="ms-modal" (click)="$event.stopPropagation()">
+      <div class="ms-modal-icon">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+          <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+        </svg>
+      </div>
+      <h3>Delete Short?</h3>
+      <p>This will permanently remove the short and cannot be undone.</p>
+      <div class="ms-modal-actions">
+        <button class="ms-modal-cancel" [disabled]="!!deletingId()" (click)="cancelDelete()">Cancel</button>
+        <button class="ms-modal-delete" [disabled]="!!deletingId()" (click)="proceedDelete()">
+          @if (deletingId()) { <span class="ms-spin"></span> Deleting… } @else { Yes, Delete }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Upload sheet -->
+@if (showUpload()) {
+  <app-shorts-upload
+    (close)="onUploadClose()"
+    (created)="onShortCreated($event)">
+  </app-shorts-upload>
+}

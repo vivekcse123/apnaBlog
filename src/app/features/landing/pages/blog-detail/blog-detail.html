@@ -237,7 +237,7 @@
           @for (img of carouselImages(); track img; let i = $index) {
             <button class="carousel-thumb" [class.active]="i === currentSlide()"
               (click)="goToSlide(i)" [attr.aria-label]="'Go to image ' + (i + 1)">
-              <img [src]="img" [alt]="'Thumbnail ' + (i + 1)" />
+              <img [src]="img" [alt]="'Thumbnail ' + (i + 1)" width="80" height="56" loading="lazy" />
             </button>
           }
         </div>
@@ -259,7 +259,7 @@
         [attr.aria-label]="'View author: ' + authorName">
         <div class="author-avatar-sm">
           @if (authorAvatar) {
-            <img [src]="authorAvatar" class="author-avatar-img" [alt]="authorName" />
+            <img [src]="authorAvatar" class="author-avatar-img" [alt]="authorName" width="32" height="32" />
           } @else {
             {{ authorInitial }}
           }
@@ -408,7 +408,7 @@
       <button class="author-card-avatar" type="button" (click)="openAuthorModal()"
         [attr.aria-label]="'View profile of ' + authorName">
         @if (authorAvatar) {
-          <img [src]="authorAvatar" class="author-card-avatar-img" [alt]="authorName" />
+          <img [src]="authorAvatar" class="author-card-avatar-img" [alt]="authorName" width="64" height="64" />
         } @else {
           {{ authorInitial }}
         }
@@ -563,7 +563,7 @@
           <div class="apos-header-left">
             <div class="apos-header-avatar">
               @if (authorAvatar) {
-                <img [src]="authorAvatar" class="apos-avatar-img" [alt]="authorName" />
+                <img [src]="authorAvatar" class="apos-avatar-img" [alt]="authorName" width="56" height="56" />
               } @else {
                 {{ authorInitial }}
               }
@@ -660,7 +660,7 @@
           <div class="apos-header-left">
             <div class="apos-header-avatar">
               @if (authorAvatar) {
-                <img [src]="authorAvatar" class="apos-avatar-img" [alt]="authorName" />
+                <img [src]="authorAvatar" class="apos-avatar-img" [alt]="authorName" width="56" height="56" />
               } @else {
                 {{ authorInitial }}
               }
@@ -691,7 +691,7 @@
                 <button class="apos-item" type="button" (click)="navigateFromAuthorModal(ap.slug || ap._id)">
                   <div class="apos-thumb">
                     @if (ap.featuredImage) {
-                      <img [src]="ap.featuredImage" [alt]="ap.title" loading="lazy"/>
+                      <img [src]="ap.featuredImage" [alt]="ap.title" loading="lazy" width="80" height="56" />
                     } @else {
                       <div class="apos-thumb-fallback">{{ ap.title.charAt(0).toUpperCase() }}</div>
                     }

@@ -1,11 +1,15 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject
+} from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { DOCUMENT } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { environment } from '../../../../../environments/environment';
 
 @Component({
   selector: 'app-terms',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink],
   templateUrl: './terms.html',
   styleUrl: './terms.css'
@@ -27,7 +31,7 @@ export class Terms implements OnInit, OnDestroy {
     this.meta.updateTag({ property: 'og:type', content: 'website' });
     this.meta.updateTag({ property: 'og:title', content: 'Terms of Service | ApnaInsights' });
     this.meta.updateTag({ property: 'og:description', content: 'ApnaInsights Terms of Service — rules and guidelines for using our community blogging platform.' });
-    this.meta.updateTag({ property: 'og:url', content: 'https://apnainsights.com/terms' });
+    this.meta.updateTag({ property: 'og:url', content: environment.siteUrl + '/terms' });
 
     let canonical = this.document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
     if (!canonical) {
@@ -35,7 +39,7 @@ export class Terms implements OnInit, OnDestroy {
       canonical.setAttribute('rel', 'canonical');
       this.document.head.appendChild(canonical);
     }
-    canonical.setAttribute('href', 'https://apnainsights.com/terms');
+    canonical.setAttribute('href', environment.siteUrl + '/terms');
   }
 
   ngOnDestroy(): void {

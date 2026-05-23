@@ -101,7 +101,7 @@
          [attr.aria-label]="'Dashboard — ' + loggedInFirstName"
          [title]="loggedInFirstName">
         @if (loggedInAvatar) {
-          <img [src]="loggedInAvatar" [alt]="loggedInFirstName" />
+          <img [src]="loggedInAvatar" [alt]="loggedInFirstName" width="32" height="32" />
         } @else {
           {{ loggedInFirstName.charAt(0).toUpperCase() }}
         }
@@ -325,6 +325,21 @@
                 <span class="app-install-cta-sub">You're on the latest version</span>
               </div>
             </div>
+          } @else if (isAndroid()) {
+            <!-- Android: full-width install button, direct action, no popup -->
+            <button class="android-install-hero-btn" (click)="triggerInstall()" aria-label="Install ApnaInsights app">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              <span class="android-install-hero-label">
+                <strong>Install App</strong>
+                <span>Free · No Play Store needed</span>
+              </span>
+              @if (pwaInstalls() > 0) {
+                <span class="android-install-hero-count">{{ pwaInstalls() }}+ installs</span>
+              }
+            </button>
           } @else {
             <button class="app-install-cta" (click)="triggerInstall()" aria-label="Install the app">
               <div class="app-install-cta-icon">
@@ -1088,7 +1103,7 @@
   </div>
 </footer>
 
-<!-- ── PWA Install Banner ── -->
+<!-- ── PWA Install Banner (auto-shown on returning visits) ── -->
 @if (installToast()) {
   <div class="install-toast">{{ installToast() }}</div>
 }
@@ -1103,12 +1118,181 @@
       </div>
     </div>
     <div class="pwa-banner-actions">
-      <button class="pwa-btn-dismiss" (click)="dismissInstallBanner()">Cancel</button>
-      @if (isIos()) {
-        <button class="pwa-btn-install" (click)="showManualInstallToast()">How to Install</button>
-      } @else {
-        <button class="pwa-btn-install" (click)="handleAndroidInstall()">Install</button>
-      }
+      <button class="pwa-btn-dismiss" (click)="dismissInstallBanner()">Not now</button>
+      <button class="pwa-btn-install" (click)="handleAndroidInstall()">Install</button>
     </div>
+  </div>
+}
+
+<!-- ── Android "Add to Home Screen" Steps Card ── -->
+@if (showAndroidSteps()) {
+  <div class="android-steps-backdrop" (click)="dismissAndroidSteps()" aria-hidden="true"></div>
+  <div class="android-steps-card" role="dialog" aria-modal="true" aria-label="Install ApnaInsights on Android" (click)="$event.stopPropagation()">
+    <button class="android-steps-close" (click)="dismissAndroidSteps()" aria-label="Close">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+    <div class="android-steps-head">
+      <div class="android-steps-dl-badge" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+      </div>
+      <div>
+        <span class="android-steps-title">APK downloading…</span>
+        <span class="android-steps-sub">Follow these steps to complete the install</span>
+      </div>
+    </div>
+    <ol class="android-steps-list">
+      <li>
+        <span class="android-step-num">1</span>
+        <span>Open the <strong>notification bar</strong> or <strong>Downloads</strong> app</span>
+      </li>
+      <li>
+        <span class="android-step-num">2</span>
+        <span>Tap <strong>ApnaInsights.apk</strong> to open it</span>
+      </li>
+      <li>
+        <span class="android-step-num">3</span>
+        <span>If prompted, tap <strong>Settings</strong> → enable <strong>"Install unknown apps"</strong> → go back</span>
+      </li>
+      <li>
+        <span class="android-step-num">4</span>
+        <span>Tap <strong>Install</strong> to finish</span>
+      </li>
+    </ol>
+  </div>
+}
+
+<!-- ── Install Modal (iOS & desktop only — Android uses direct APK/PWA prompt) ── -->
+@if (showInstallModal()) {
+  <div class="im-backdrop" (click)="closeInstallModal()" role="presentation" aria-hidden="true"></div>
+
+  <div class="im-sheet" role="dialog" aria-modal="true" aria-label="Install ApnaInsights" (click)="$event.stopPropagation()">
+
+    <!-- Close -->
+    <button class="im-close" (click)="closeInstallModal()" aria-label="Close">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+
+    <!-- App identity -->
+    <div class="im-identity">
+      <img src="/logo-96.png" alt="ApnaInsights" class="im-app-icon" />
+      <div class="im-app-meta">
+        <span class="im-app-name">ApnaInsights</span>
+        <span class="im-app-domain">apnainsights.com</span>
+      </div>
+    </div>
+
+    <!-- Feature bullets -->
+    <ul class="im-features">
+      <li>
+        <span class="im-feature-icon im-feature-icon--green">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>
+        </span>
+        Works offline — read without internet
+      </li>
+      <li>
+        <span class="im-feature-icon im-feature-icon--blue">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        </span>
+        Lightning fast — no Play Store needed
+      </li>
+      <li>
+        <span class="im-feature-icon im-feature-icon--purple">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+        </span>
+        Free · No account required to read
+      </li>
+    </ul>
+
+    <div class="im-divider"></div>
+
+    <!-- ── Desktop with native PWA prompt ── -->
+    @if (canInstallNatively()) {
+      <div class="im-section">
+        <p class="im-section-label">Ready to install</p>
+        <button class="im-install-btn" (click)="installFromModal()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          Install App
+        </button>
+        <p class="im-install-note">Click Install to add ApnaInsights to your device.</p>
+      </div>
+    }
+
+    <!-- ── iOS Safari ── -->
+    @else if (isIos()) {
+      <div class="im-section">
+        <p class="im-section-label">Install on iPhone / iPad</p>
+        <ol class="im-steps">
+          <li>
+            <span class="im-step-num">1</span>
+            <span class="im-step-text">
+              Tap the <strong>Share</strong> button
+              <span class="im-step-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/>
+                  <polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/>
+                </svg>
+              </span>
+              at the bottom of Safari
+            </span>
+          </li>
+          <li>
+            <span class="im-step-num">2</span>
+            <span class="im-step-text">Scroll down and tap <strong>"Add to Home Screen"</strong></span>
+          </li>
+          <li>
+            <span class="im-step-num">3</span>
+            <span class="im-step-text">Tap <strong>Add</strong> in the top-right corner</span>
+          </li>
+        </ol>
+      </div>
+    }
+
+    <!-- ── Desktop browser without prompt ── -->
+    @else {
+      <div class="im-section">
+        <p class="im-section-label">Install on your device</p>
+        <ol class="im-steps">
+          <li>
+            <span class="im-step-num">1</span>
+            <span class="im-step-text">
+              Click the <strong>menu</strong>
+              <span class="im-step-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                  <circle cx="12" cy="5" r="1.2" fill="currentColor"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/><circle cx="12" cy="19" r="1.2" fill="currentColor"/>
+                </svg>
+              </span>
+              in your browser
+            </span>
+          </li>
+          <li>
+            <span class="im-step-num">2</span>
+            <span class="im-step-text">Click <strong>"Install App"</strong> or <strong>"Add to Home Screen"</strong></span>
+          </li>
+          <li>
+            <span class="im-step-num">3</span>
+            <span class="im-step-text">Click <strong>Install</strong> to confirm</span>
+          </li>
+        </ol>
+        <p class="im-install-note">
+          On Chrome, look for the
+          <svg style="vertical-align:middle" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          install icon in the address bar.
+        </p>
+      </div>
+    }
+
   </div>
 }

@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.apnainsights.app",
+      "sha256_cert_fingerprints": [
+        "29:5E:B5:83:45:56:40:6D:79:60:C7:75:32:F9:A5:AE:44:A4:8D:57:EE:FA:F6:BF:82:AD:5A:A2:4D:01:78:7B"
+      ]
+    }
+  }
+]

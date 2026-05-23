@@ -1,7 +1,8 @@
 import {
-  Component, OnInit, inject, signal, computed, DestroyRef, PLATFORM_ID
+  ChangeDetectionStrategy, Component, DestroyRef, OnInit, PLATFORM_ID, computed, inject, signal
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { environment } from '../../../../../environments/environment';
 import { CommonModule, DatePipe, isPlatformBrowser } from '@angular/common';
 import { Meta, Title } from '@angular/platform-browser';
 import { DOCUMENT } from '@angular/common';
@@ -18,6 +19,7 @@ import { TimeAgoPipe } from '../../../../shared/pipes/time-ago-pipe';
 @Component({
   selector: 'app-author-page',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink, CommonModule, DatePipe, TimeAgoPipe],
   templateUrl: './author-page.html',
   styleUrl: './author-page.css',
@@ -152,9 +154,9 @@ export class AuthorPage implements OnInit {
   private setMeta(user: User): void {
     const name = (user as any).name ?? 'Author';
     const bio  = (user as any).bio  ?? `Read all blogs by ${name} on ApnaInsights.`;
-    const url  = `https://apnainsights.com/author/${(user as any)._id}`;
+    const url  = `${environment.siteUrl}/author/${(user as any)._id}`;
 
-    const avatar = (user as any).avatar || 'https://apnainsights.com/og-image.png';
+    const avatar = (user as any).avatar || environment.ogImage;
 
     this.titleSvc.setTitle(`${name} — Author | ApnaInsights`);
     this.meta.updateTag({ name: 'description',          content: bio });
@@ -180,7 +182,7 @@ export class AuthorPage implements OnInit {
       image: avatar,
       description: bio,
       sameAs: [url],
-      worksFor: { '@type': 'Organization', name: 'ApnaInsights', url: 'https://apnainsights.com' },
+      worksFor: { '@type': 'Organization', name: 'ApnaInsights', url: environment.siteUrl },
     };
     let sd = this.document.getElementById('author-schema') as HTMLScriptElement | null;
     if (!sd) {

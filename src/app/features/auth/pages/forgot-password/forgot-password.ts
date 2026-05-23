@@ -1,4 +1,6 @@
-import { Component, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy, Component, signal
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -7,6 +9,7 @@ import { Auth } from '../../../../core/services/auth';
 @Component({
   selector: 'app-forgot-password',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './forgot-password.html',
   styleUrls: ['./forgot-password.css']

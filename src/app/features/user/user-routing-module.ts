@@ -5,6 +5,7 @@ import { UserHome } from './pages/user-home/user-home';
 import { PostLists } from '../post/pages/post-lists/post-lists';
 import { Settings } from '../admin/pages/settings/settings';
 import { Home } from '../landing/pages/home/home';
+import { MyShorts } from './pages/my-shorts/my-shorts';
 
 const routes: Routes = [
   {
@@ -20,6 +21,11 @@ const routes: Routes = [
         path: 'manage-blogs',
         component: PostLists,
         title: 'ApnaInsights - Manage Blogs'
+      },
+      {
+        path: 'my-shorts',
+        component: MyShorts,
+        title: 'ApnaInsights - My Shorts'
       },
       {
         path: 'settings',

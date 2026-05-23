@@ -572,6 +572,27 @@ html, body { height: 100%; }
   text-align: center;
 }
 
+/* ── Dark mode stat card glassmorphism enhancement ───────────────────────────
+   Applied globally so all admin/user panel stat-cards get the premium feel
+   without duplicating per-component.                                          */
+[data-theme="dark"] .stat-card {
+  background: linear-gradient(135deg,
+    rgba(255,255,255,0.04) 0%,
+    rgba(255,255,255,0.02) 100%
+  );
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border-color: rgba(255,255,255,0.08);
+}
+
+[data-theme="dark"] .stat-card:hover {
+  background: linear-gradient(135deg,
+    rgba(67,206,162,0.06) 0%,
+    rgba(24,90,157,0.06) 100%
+  );
+  border-color: rgba(67,206,162,0.2);
+}
+
 /* ── Prevent iOS Safari input zoom ───────────────────────────────────────────
    iOS zooms in on any input/textarea/select whose font-size < 16px.
    Force 16px on mobile only — desktop keeps its designed size via the

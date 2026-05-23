@@ -1,9 +1,10 @@
 export type NotificationType =
-  | 'USER_LOGIN' | 'USER_REGISTERED' | 'USER_FOLLOWED'
+  | 'USER_LOGIN' | 'USER_REGISTERED' | 'USER_FOLLOWED' | 'SUBSCRIBER_ADDED'
   | 'PASSWORD_CHANGED' | 'PASSWORD_RESET_REQUESTED' | 'PASSWORD_RESET_COMPLETED'
   | 'POST_PUBLISHED' | 'POST_UPDATED' | 'POST_DELETED' | 'POST_MILESTONE' | 'POST_LIKED'
   | 'POST_PENDING_REVIEW' | 'POST_APPROVED' | 'POST_REJECTED'
   | 'COMMENT_ADDED' | 'COMMENT_DELETED' | 'COMMENT_REPLIED'
+  | 'SHORT_PUBLISHED' | 'SHORT_LIKED' | 'SHORT_COMMENTED' | 'SHORT_APPROVED' | 'SHORT_REJECTED'
   | 'USER_FROZEN' | 'USER_UNFROZEN' | 'USER_UPDATED' | 'USER_DELETED'
   | 'USER_DELETION_REQUESTED' | 'USER_DELETION_CANCELLED'
   | 'info' | 'warning' | 'success' | 'error';
@@ -60,6 +61,12 @@ export const NOTIFICATION_META: Record<NotificationType, { icon: string; color: 
   USER_DELETED:                { icon: '❌', color: '#ef4444', label: 'Account Deleted'    },
   USER_DELETION_REQUESTED:     { icon: '⚠️', color: '#f59e0b', label: 'Deletion Requested' },
   USER_DELETION_CANCELLED:     { icon: '✅', color: '#10b981', label: 'Deletion Cancelled' },
+  SUBSCRIBER_ADDED:            { icon: '🔔', color: '#8b5cf6', label: 'New Subscriber'     },
+  SHORT_PUBLISHED:             { icon: '🎬', color: '#6366f1', label: 'Short Published'    },
+  SHORT_LIKED:                 { icon: '❤️', color: '#ec4899', label: 'Short Liked'        },
+  SHORT_COMMENTED:             { icon: '💬', color: '#06b6d4', label: 'Short Comment'      },
+  SHORT_APPROVED:              { icon: '✅', color: '#10b981', label: 'Short Approved'     },
+  SHORT_REJECTED:              { icon: '✏️', color: '#ef4444', label: 'Short Rejected'     },
   info:                        { icon: 'ℹ️', color: '#3b82f6', label: 'Info'               },
   warning:                     { icon: '⚠️', color: '#f59e0b', label: 'Warning'            },
   success:                     { icon: '✅', color: '#10b981', label: 'Success'            },

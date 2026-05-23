@@ -1,4 +1,6 @@
-import { Component, inject, signal, computed, OnInit, DestroyRef, ViewChild, ElementRef, PLATFORM_ID } from '@angular/core';
+import {
+  ChangeDetectionStrategy, Component, DestroyRef, ElementRef, OnInit, PLATFORM_ID, ViewChild, computed, inject, signal
+} from '@angular/core';
 import { CommonModule, DatePipe, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -28,6 +30,7 @@ interface NotifState {
 @Component({
   selector: 'app-settings',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, FormsModule, DatePipe, MessageModal],
   templateUrl: './settings.html',
   styleUrl:    './settings.css',

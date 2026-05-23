@@ -1,8 +1,7 @@
 import { CommonModule, isPlatformBrowser, DOCUMENT } from '@angular/common';
 import { Meta } from '@angular/platform-browser';
 import {
-  Component, DestroyRef, inject, OnInit, OnDestroy,
-  AfterViewInit, ViewChild, ElementRef, signal, computed, PLATFORM_ID
+  AfterViewInit, ChangeDetectionStrategy, Component, DestroyRef, ElementRef, OnDestroy, OnInit, PLATFORM_ID, ViewChild, computed, inject, signal
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -17,6 +16,7 @@ Chart.register(...registerables);
 @Component({
   selector: 'app-user-home',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, RouterModule, CreatePost],
   templateUrl: './user-home.html',
   styleUrl: './user-home.css',
@@ -103,7 +103,7 @@ export class UserHome implements OnInit, AfterViewInit, OnDestroy {
           this.user.set(res.data);
           this.followersCount.set(res.followersCount ?? 0);
         },
-        error: (err) => console.error('Failed to load user:', err),
+        error: () => {},
       });
 
     // Posts: cache-first
@@ -154,7 +154,7 @@ export class UserHome implements OnInit, AfterViewInit, OnDestroy {
           setTimeout(() => this.buildAllCharts(), 100);
         },
         error: (err) => {
-          console.error('Failed to load posts:', err);
+          
           this.isLoading.set(false);
           this.isRefreshing.set(false);
         },

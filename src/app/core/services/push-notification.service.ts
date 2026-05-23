@@ -26,7 +26,6 @@ export class PushNotificationService {
       const existing = await this.sw.pushManager.getSubscription();
       this.subscribed.set(!!existing);
     } catch (err) {
-      console.warn('SW registration failed:', err);
     }
   }
 
@@ -60,7 +59,6 @@ export class PushNotificationService {
       await this.http.post(`${this.api}/subscribe`, sub.toJSON()).toPromise();
       this.subscribed.set(true);
     } catch (err) {
-      console.error('Push subscribe failed:', err);
     } finally {
       this.loading.set(false);
     }
@@ -77,7 +75,6 @@ export class PushNotificationService {
       }
       this.subscribed.set(false);
     } catch (err) {
-      console.error('Unsubscribe failed:', err);
     } finally {
       this.loading.set(false);
     }

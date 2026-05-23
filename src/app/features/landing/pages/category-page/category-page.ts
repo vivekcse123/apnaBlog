@@ -3,6 +3,7 @@ import {
   ChangeDetectionStrategy
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { environment } from '../../../../../environments/environment';
 import { CommonModule, DatePipe, isPlatformBrowser } from '@angular/common';
 import { Meta, Title } from '@angular/platform-browser';
 import { DOCUMENT } from '@angular/common';
@@ -196,7 +197,7 @@ export class CategoryPage implements OnInit {
   }
 
   private setMeta(name: string): void {
-    const url   = `https://apnainsights.com/category/${name.toLowerCase()}`;
+    const url   = `${environment.siteUrl}/category/${name.toLowerCase()}`;
     const info  = CATEGORY_DESCRIPTIONS[name];
     const desc  = info?.description ?? `Read the latest ${name} stories, blogs, and insights from real writers on ApnaInsights. Community-driven content on ${name}.`;
     const intro = info?.intro ?? '';
@@ -226,13 +227,13 @@ export class CategoryPage implements OnInit {
         'name': `${name} Stories & Blogs`,
         'description': `Read the latest ${name} stories and blogs on ApnaInsights.`,
         'url': url,
-        'isPartOf': { '@type': 'WebSite', 'url': 'https://apnainsights.com', 'name': 'ApnaInsights' },
+        'isPartOf': { '@type': 'WebSite', 'url': environment.siteUrl, 'name': 'ApnaInsights' },
       },
       {
         '@context': 'https://schema.org',
         '@type': 'BreadcrumbList',
         'itemListElement': [
-          { '@type': 'ListItem', 'position': 1, 'name': 'Home',  'item': 'https://apnainsights.com' },
+          { '@type': 'ListItem', 'position': 1, 'name': 'Home',  'item': environment.siteUrl },
           { '@type': 'ListItem', 'position': 2, 'name': name,    'item': url },
         ],
       },

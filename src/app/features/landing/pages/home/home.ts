@@ -113,12 +113,16 @@ export class Home implements OnInit, OnDestroy {
   selectedSort         = signal('newest');
   showScrollTop    = signal(false);
 
-  showWelcomeModal  = signal(false);
-  showInstallBanner = signal(false);
-  pwaInstalls       = signal(0);
-  installToast      = signal('');
-  isAppInstalled    = signal(false);
+  showWelcomeModal      = signal(false);
+  showInstallBanner     = signal(false);
+  showInstallModal      = signal(false);
+  showAndroidSteps      = signal(false);
+  pwaInstalls           = signal(0);
+  installToast          = signal('');
+  isAppInstalled        = signal(false);
   private installPrompt: any = null;
+
+  readonly APK_URL = environment.apkUrl;
   private welcomeTimerId: ReturnType<typeof setTimeout> | null = null;
 
   // Server-side pagination state
@@ -654,7 +658,7 @@ export class Home implements OnInit, OnDestroy {
       .pipe(
         takeUntilDestroyed(this.destroyRef),
         catchError(err => {
-          console.error('[Home] page 1 failed:', err);
+          
           this.isLoading.set(false);
           return of(null);
         })
@@ -691,7 +695,7 @@ export class Home implements OnInit, OnDestroy {
       .pipe(
         takeUntilDestroyed(this.destroyRef),
         catchError(err => {
-          console.error(`[Home] page ${nextPage} failed:`, err);
+          
           this.isFetchingMore.set(false);
           return of(null);
         })
@@ -765,6 +769,8 @@ export class Home implements OnInit, OnDestroy {
   }
 
   private setMetaTags(): void {
+    const site = environment.siteUrl;
+    const og   = environment.ogImage;
     this.titleService.setTitle('ApnaInsights — Community Stories from Every Corner of India');
     this.meta.updateTag({ name: 'description',    content: 'Discover real stories from real people across India. Read and write blogs on Technology, Lifestyle, Health, Business, Education, Village Life and more. Free community blogging platform — join thousands of Indian writers.' });
     this.meta.updateTag({ name: 'keywords',       content: 'Indian blog platform, community stories India, read blogs India, write blogs free, trending stories, technology blog India, village life stories, health stories India, ApnaInsights' });
@@ -773,9 +779,9 @@ export class Home implements OnInit, OnDestroy {
     this.meta.updateTag({ property: 'og:type',         content: 'website' });
     this.meta.updateTag({ property: 'og:title',        content: 'ApnaInsights — Community Stories from Every Corner of India' });
     this.meta.updateTag({ property: 'og:description',  content: 'Discover real stories from real people across India. Blogs on Technology, Lifestyle, Health, Business, Village Life and more. Free to read, free to write.' });
-    this.meta.updateTag({ property: 'og:url',          content: 'https://apnainsights.com/' });
+    this.meta.updateTag({ property: 'og:url',          content: `${site}/` });
     this.meta.updateTag({ property: 'og:site_name',    content: 'ApnaInsights' });
-    this.meta.updateTag({ property: 'og:image',        content: 'https://apnainsights.com/og-image.png' });
+    this.meta.updateTag({ property: 'og:image',        content: og });
     this.meta.updateTag({ property: 'og:image:width',  content: '1200' });
     this.meta.updateTag({ property: 'og:image:height', content: '630' });
     this.meta.updateTag({ property: 'og:image:alt',    content: 'ApnaInsights — Community Stories from Every Corner of India' });
@@ -783,7 +789,7 @@ export class Home implements OnInit, OnDestroy {
     this.meta.updateTag({ name: 'twitter:card',        content: 'summary_large_image' });
     this.meta.updateTag({ name: 'twitter:title',       content: 'ApnaInsights — Community Stories from India' });
     this.meta.updateTag({ name: 'twitter:description', content: 'Real stories from real people. Blogs on technology, lifestyle, health, village life and more. Free community platform.' });
-    this.meta.updateTag({ name: 'twitter:image',       content: 'https://apnainsights.com/og-image.png' });
+    this.meta.updateTag({ name: 'twitter:image',       content: og });
     this.meta.updateTag({ name: 'twitter:site',        content: '@apnainsights' });
 
     let canonical = this.document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
@@ -792,26 +798,27 @@ export class Home implements OnInit, OnDestroy {
       canonical.setAttribute('rel', 'canonical');
       this.document.head.appendChild(canonical);
     }
-    canonical.setAttribute('href', 'https://apnainsights.com/');
+    canonical.setAttribute('href', `${site}/`);
   }
 
   private injectJsonLd(): void {
     if (this.document.querySelector('script[data-apna-home-schema]')) return;
+    const site = environment.siteUrl;
 
     const schemas = [
       {
         '@context': 'https://schema.org',
         '@type': 'CollectionPage',
-        '@id': 'https://apnainsights.com',
-        url: 'https://apnainsights.com',
+        '@id': site,
+        url: site,
         name: 'ApnaInsights — Community Stories from Every Corner of India',
         description: 'Browse trending, most-viewed, and latest community blogs from writers across India.',
         inLanguage: 'en-IN',
-        isPartOf: { '@type': 'WebSite', url: 'https://apnainsights.com' },
+        isPartOf: { '@type': 'WebSite', url: site },
         about: { '@type': 'Thing', name: 'Community Blogging India' },
         breadcrumb: {
           '@type': 'BreadcrumbList',
-          itemListElement: [{ '@type': 'ListItem', position: 1, name: 'Home', item: 'https://apnainsights.com' }]
+          itemListElement: [{ '@type': 'ListItem', position: 1, name: 'Home', item: site }]
         }
       }
     ];
@@ -846,50 +853,98 @@ export class Home implements OnInit, OnDestroy {
     return isPlatformBrowser(this.platformId) && /iphone|ipad|ipod/i.test(navigator.userAgent);
   }
 
+  isAndroid(): boolean {
+    return isPlatformBrowser(this.platformId) && /android/i.test(navigator.userAgent);
+  }
+
+  isMobile(): boolean {
+    return this.isIos() || this.isAndroid();
+  }
+
   canInstallNatively(): boolean {
     return !!this.installPrompt || !!(isPlatformBrowser(this.platformId) && (window as any).__pwaPrompt);
   }
 
-  showManualInstallToast(): void {
-    this.installToast.set('📱 Tap the Share button ⬆ → "Add to Home Screen"');
-    setTimeout(() => this.installToast.set(''), 6000);
-    this.showInstallBanner.set(false);
-  }
-
-  handleAndroidInstall(): void {
-    if (this.canInstallNatively()) {
-      this.installApp();
-    } else {
-      // Prompt not available — guide user via browser menu
-      this.installToast.set('📱 Tap the browser menu ⋮ → "Add to Home Screen" or "Install App"');
-      setTimeout(() => this.installToast.set(''), 6000);
-      this.showInstallBanner.set(false);
-    }
-  }
-
+  // Entry point for ALL install triggers.
   triggerInstall(): void {
     if (!isPlatformBrowser(this.platformId)) return;
-    if (this.installPrompt) {
-      this.installApp();
-    } else if (this.isIos()) {
-      this.showManualInstallToast();
-    } else {
-      this.installToast.set('📱 Open Chrome menu ⋮ → "Install App" or "Add to Home Screen"');
-      setTimeout(() => this.installToast.set(''), 6000);
+
+    if (this.isAndroid()) {
+      if (this.canInstallNatively()) {
+        // Chrome/Edge/Samsung: fire native PWA prompt immediately — no popup
+        this.fireInstallPrompt();
+      } else {
+        // Other Android browsers: start APK download immediately, then show install guide
+        this.startApkDownload();
+      }
+      return;
     }
+
+    // iOS / desktop — open the modal
+    this.showInstallModal.set(true);
   }
 
-  async installApp(): Promise<void> {
-    if (!this.installPrompt) return;
+  startApkDownload(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    // Trigger download immediately — no popup before this
+    const a = this.document.createElement('a');
+    a.href = this.APK_URL;
+    a.download = 'ApnaInsights.apk';
+    this.document.body.appendChild(a);
+    a.click();
+    this.document.body.removeChild(a);
+    // Show post-download install guide after the download dialog appears
+    setTimeout(() => this.showAndroidSteps.set(true), 800);
+  }
+
+  private async fireInstallPrompt(): Promise<void> {
+    if (!isPlatformBrowser(this.platformId)) return;
+    const prompt = this.installPrompt || (window as any).__pwaPrompt;
+    if (!prompt) {
+      // Prompt expired — fall back to APK
+      if (this.isAndroid()) { this.startApkDownload(); } else { this.showInstallModal.set(true); }
+      return;
+    }
     this.showInstallBanner.set(false);
-    await this.installPrompt.prompt();
-    const { outcome } = await this.installPrompt.userChoice;
+    await prompt.prompt();
+    const { outcome } = await prompt.userChoice;
     this.installPrompt = null;
     if (outcome === 'accepted') {
       this.recordPwaInstall();
     } else if (isPlatformBrowser(this.platformId)) {
       localStorage.setItem('apna_install_dismissed', String(Date.now()));
     }
+  }
+
+  dismissAndroidSteps(): void {
+    this.showAndroidSteps.set(false);
+  }
+
+  closeInstallModal(): void {
+    this.showInstallModal.set(false);
+  }
+
+  // Called by the Install button inside the modal (iOS / desktop path).
+  async installFromModal(): Promise<void> {
+    if (!isPlatformBrowser(this.platformId)) return;
+
+    if (this.canInstallNatively()) {
+      this.showInstallModal.set(false);
+      this.showInstallBanner.set(false);
+      await this.fireInstallPrompt();
+    }
+    // Otherwise modal stays open showing manual steps
+  }
+
+  // Called by the Install button in the bottom auto-banner.
+  handleAndroidInstall(): void {
+    this.showInstallBanner.set(false);
+    this.triggerInstall();
+  }
+
+  // Kept for backward-compat with any other callers.
+  async installApp(): Promise<void> {
+    await this.installFromModal();
   }
 
   private recordPwaInstall(): void {
@@ -912,7 +967,6 @@ export class Home implements OnInit, OnDestroy {
 
   dismissInstallBanner(): void {
     this.showInstallBanner.set(false);
-    this.installPrompt = null;
     if (isPlatformBrowser(this.platformId)) {
       localStorage.setItem('apna_install_dismissed', String(Date.now()));
     }

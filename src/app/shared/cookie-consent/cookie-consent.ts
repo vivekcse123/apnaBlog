@@ -1,4 +1,6 @@
-import { Component, OnInit, inject, signal, PLATFORM_ID } from '@angular/core';
+import {
+  ChangeDetectionStrategy, Component, OnInit, PLATFORM_ID, inject, signal
+} from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
 
@@ -7,6 +9,7 @@ const STORAGE_KEY = 'apna_cookie_consent';
 @Component({
   selector: 'app-cookie-consent',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink],
   templateUrl: './cookie-consent.html',
   styleUrl: './cookie-consent.css'

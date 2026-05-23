@@ -162,7 +162,7 @@
                 <article class="ap-top-card" (click)="navigateToBlog(p)" role="button" tabindex="0" (keydown.enter)="navigateToBlog(p)">
                   <div class="ap-top-rank">{{ i + 1 }}</div>
                   @if (p.featuredImage) {
-                    <img [src]="p.featuredImage" [alt]="p.title" class="ap-top-img" loading="lazy" />
+                    <img [src]="p.featuredImage" [alt]="p.title" class="ap-top-img" loading="lazy" width="64" height="64" />
                   } @else {
                     <div class="ap-top-img ap-top-img--empty">{{ p.title.charAt(0) }}</div>
                   }
@@ -194,7 +194,7 @@
                 <div class="ap-card-img-wrap">
                   @if (post.featuredImage) {
                     <img [src]="post.featuredImage" [alt]="post.title"
-                         class="ap-card-img" loading="lazy" decoding="async" />
+                         class="ap-card-img" loading="lazy" decoding="async" width="400" height="220" />
                   } @else {
                     <div class="ap-card-no-img">
                       <span class="ap-card-letter">{{ post.title.charAt(0).toUpperCase() }}</span>
@@ -242,9 +242,9 @@
 
                 <!-- Thumbnail fills the tile -->
                 @if (s.thumbnailUrl) {
-                  <img [src]="s.thumbnailUrl" [alt]="s.title" loading="lazy" decoding="async" />
+                  <img [src]="s.thumbnailUrl" [alt]="s.title" loading="lazy" decoding="async" width="280" height="158" />
                 } @else if (s.videoType === 'youtube' && s.youtubeId) {
-                  <img [src]="'https://img.youtube.com/vi/' + s.youtubeId + '/hqdefault.jpg'" [alt]="s.title" loading="lazy" decoding="async" />
+                  <img [src]="'https://img.youtube.com/vi/' + s.youtubeId + '/hqdefault.jpg'" [alt]="s.title" loading="lazy" decoding="async" width="280" height="158" />
                 } @else {
                   <div class="ap-short-tile-blank">
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="rgba(255,255,255,.3)"><path d="M8 5v14l11-7z"/></svg>

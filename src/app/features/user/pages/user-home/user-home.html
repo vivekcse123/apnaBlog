@@ -414,9 +414,18 @@
                 <div class="lb-body">
                   <p class="lb-title">{{ blog.title }}</p>
                   <div class="lb-stats">
-                    <span>👁 {{ blog.views ?? 0 | number }}</span>
-                    <span>👍 {{ blog.likesCount ?? 0 }}</span>
-                    <span>💬 {{ blog.commentsCount ?? 0 }}</span>
+                    <span>
+                      <svg width="10" height="10" viewBox="0 0 22 22" fill="none" aria-hidden="true"><ellipse cx="11" cy="11" rx="8" ry="5" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="11" cy="11" r="2.5" fill="currentColor"/></svg>
+                      {{ blog.views ?? 0 | number }}
+                    </span>
+                    <span>
+                      <svg width="10" height="10" viewBox="0 0 22 22" fill="none" aria-hidden="true"><path d="M11 18s-7-4.5-7-9a4 4 0 018 0 4 4 0 018 0c0 4.5-7 9-7 9z" stroke="currentColor" stroke-width="2" fill="none" stroke-linejoin="round"/></svg>
+                      {{ blog.likesCount ?? 0 }}
+                    </span>
+                    <span>
+                      <svg width="10" height="10" viewBox="0 0 22 22" fill="none" aria-hidden="true"><path d="M4 4h14a2 2 0 012 2v8a2 2 0 01-2 2H8l-4 3V6a2 2 0 012-2z" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+                      {{ blog.commentsCount ?? 0 }}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -606,9 +615,15 @@
                     <p class="blog-modal-title">{{ blog.title }}</p>
                     <p class="blog-modal-desc">{{ blog.description }}</p>
                     <div class="blog-modal-stats">
-                      <span>📅 {{ blog.createdAt | date:'MMM d, y' }}</span>
-                      <span>👁 {{ blog.views ?? 0 }}</span>
-                      <span>💬 {{ blog.commentsCount ?? 0 }}</span>
+                      <span>{{ blog.createdAt | date:'MMM d, y' }}</span>
+                      <span>
+                        <svg width="10" height="10" viewBox="0 0 22 22" fill="none" aria-hidden="true"><ellipse cx="11" cy="11" rx="8" ry="5" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="11" cy="11" r="2.5" fill="currentColor"/></svg>
+                        {{ blog.views ?? 0 }}
+                      </span>
+                      <span>
+                        <svg width="10" height="10" viewBox="0 0 22 22" fill="none" aria-hidden="true"><path d="M4 4h14a2 2 0 012 2v8a2 2 0 01-2 2H8l-4 3V6a2 2 0 012-2z" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+                        {{ blog.commentsCount ?? 0 }}
+                      </span>
                     </div>
                   </div>
                   <button class="blog-modal-view-btn" (click)="openBlog(blog.slug || blog._id)"

@@ -1,6 +1,5 @@
 import {
-  Component, computed, ElementRef, HostListener, inject, input,
-  NgZone, OnDestroy, OnInit, output, signal, ViewChild
+  ChangeDetectionStrategy, Component, ElementRef, HostListener, NgZone, OnDestroy, OnInit, ViewChild, computed, inject, input, output, signal
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
@@ -22,6 +21,7 @@ interface ImageItem {
 @Component({
   selector: 'app-view-post',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './view-post.html',
   styleUrl: './view-post.css'

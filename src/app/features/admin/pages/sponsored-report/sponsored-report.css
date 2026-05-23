@@ -144,8 +144,8 @@
 .sp-export-btn:disabled { opacity:.4; cursor:not-allowed; }
 
 /* Stats */
-.stats-bar { display:flex; gap:12px; flex-wrap:wrap; }
-.stat-card { background:var(--bg-surface); border:1px solid var(--border); border-radius:14px; padding:16px 18px; display:flex; align-items:flex-start; gap:12px; box-shadow:var(--card-shadow); position:relative; overflow:hidden; min-width:0; flex:1; transition:transform .2s,box-shadow .2s; }
+.stats-bar { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:14px; }
+.stat-card { background:var(--bg-surface); border:1px solid var(--border); border-radius:14px; padding:16px 18px; display:flex; align-items:flex-start; gap:12px; box-shadow:var(--card-shadow); position:relative; overflow:hidden; min-width:0; transition:transform .2s,box-shadow .2s; }
 .stat-card::before { content:''; position:absolute; top:0;left:0;right:0; height:3px; background:linear-gradient(90deg,#43cea2,#185a9d); }
 .stat-card:hover { transform:translateY(-2px); box-shadow:var(--card-shadow-lg); }
 .stat-icon-wrap { width:40px;height:40px; border-radius:10px; display:flex;align-items:center;justify-content:center; flex-shrink:0; margin-top:2px; }

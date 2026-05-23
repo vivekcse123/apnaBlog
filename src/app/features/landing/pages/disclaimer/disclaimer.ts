@@ -1,11 +1,15 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject
+} from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { DOCUMENT } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { environment } from '../../../../../environments/environment';
 
 @Component({
   selector: 'app-disclaimer',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink],
   templateUrl: './disclaimer.html',
   styleUrl: './disclaimer.css'
@@ -27,7 +31,7 @@ export class Disclaimer implements OnInit, OnDestroy {
     this.meta.updateTag({ property: 'og:type',        content: 'website' });
     this.meta.updateTag({ property: 'og:title',       content: 'Disclaimer | ApnaInsights' });
     this.meta.updateTag({ property: 'og:description', content: 'ApnaInsights Disclaimer — content is informational only and does not constitute professional advice.' });
-    this.meta.updateTag({ property: 'og:url',         content: 'https://apnainsights.com/disclaimer' });
+    this.meta.updateTag({ property: 'og:url',         content: environment.siteUrl + '/disclaimer' });
 
     let canonical = this.document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
     if (!canonical) {
@@ -35,7 +39,7 @@ export class Disclaimer implements OnInit, OnDestroy {
       canonical.setAttribute('rel', 'canonical');
       this.document.head.appendChild(canonical);
     }
-    canonical.setAttribute('href', 'https://apnainsights.com/disclaimer');
+    canonical.setAttribute('href', environment.siteUrl + '/disclaimer');
   }
 
   ngOnDestroy(): void {

@@ -1,4 +1,6 @@
-import { Component, signal, inject, output, DestroyRef } from '@angular/core';
+import {
+  ChangeDetectionStrategy, Component, DestroyRef, inject, output, signal
+} from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Auth } from '../../../../core/services/auth';
@@ -13,6 +15,7 @@ const INDUSTRIES = [
 @Component({
   selector: 'app-create-sponsor',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './create-sponsor.html',
   styleUrl: './create-sponsor.css',

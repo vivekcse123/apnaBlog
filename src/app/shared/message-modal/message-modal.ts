@@ -1,9 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, input, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy, Component, input, output
+} from '@angular/core';
 
 @Component({
   selector: 'app-message-modal',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
   templateUrl: './message-modal.html',
   styleUrl: './message-modal.css',

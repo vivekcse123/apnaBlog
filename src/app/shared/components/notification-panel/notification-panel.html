@@ -1,7 +1,7 @@
 <div class="notification-wrapper">
 
   <!-- Bell trigger -->
-  <button class="bell-btn" (click)="togglePanel($event)" aria-label="Notifications">
+  <button class="bell-btn" [class.panel-open]="panelOpen()" (click)="togglePanel($event)" aria-label="Notifications">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
          stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
       <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/>
@@ -95,11 +95,10 @@
                  (click)="onNotificationClick(n)"
                  [attr.role]="isNavigable(n.type) ? 'button' : 'listitem'">
 
-              <!-- Type icon (emoji) -->
-              <div class="notif-icon" [style.background]="getMeta(n.type).color + '22'">
-                <span class="notif-emoji" [style.color]="getMeta(n.type).color" aria-hidden="true">
-                  {{ getMeta(n.type).icon }}
-                </span>
+              <!-- Type icon (SVG) -->
+              <div class="notif-icon" [style.background]="getMeta(n.type).color + '22'"
+                   [style.color]="getMeta(n.type).color"
+                   [innerHTML]="getIconSvg(n.type)">
               </div>
 
               <!-- Content -->
