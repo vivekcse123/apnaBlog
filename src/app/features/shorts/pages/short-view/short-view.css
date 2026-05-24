@@ -5,14 +5,14 @@
   align-items: center;
   justify-content: center;
   gap: 16px;
-  color: var(--text-muted, #999);
+  color: var(--text-muted);
   font-size: 15px;
 }
 
 .sv-spin {
   display: inline-block;
   width: 36px; height: 36px;
-  border: 3px solid var(--border, #e5e7eb);
+  border: 3px solid var(--border);
   border-top-color: #43cea2;
   border-radius: 50%;
   animation: svSpin .7s linear infinite;
@@ -43,7 +43,7 @@
   align-items: center;
   gap: 6px;
   font-size: 13px;
-  color: var(--text-muted, #999);
+  color: var(--text-muted);
   margin-bottom: 20px;
   flex-wrap: wrap;
 }
@@ -53,7 +53,7 @@
   font-weight: 500;
 }
 .sv-breadcrumb a:hover { text-decoration: underline; }
-.sv-breadcrumb span[aria-hidden] { color: var(--border, #ccc); }
+.sv-breadcrumb span[aria-hidden] { color: var(--border); }
 
 .sv-layout { display: flex; gap: 24px; }
 
@@ -149,21 +149,21 @@
 
 .sv-views {
   font-size: 12px;
-  color: var(--text-muted, #999);
+  color: var(--text-muted);
 }
 
 .sv-title {
   margin: 0 0 10px;
   font-size: 20px;
   font-weight: 800;
-  color: var(--text-primary, #111);
+  color: var(--text-primary);
   line-height: 1.35;
 }
 
 .sv-caption {
   margin: 0 0 14px;
   font-size: 14px;
-  color: var(--text-secondary, #555);
+  color: var(--text-secondary);
   line-height: 1.55;
 }
 
@@ -174,7 +174,7 @@
   flex-wrap: wrap;
   gap: 10px;
   padding-top: 12px;
-  border-top: 1px solid var(--border, #e5e7eb);
+  border-top: 1px solid var(--border);
 }
 
 .sv-author {
@@ -199,14 +199,14 @@
 .sv-author-name {
   font-size: 14px;
   font-weight: 700;
-  color: var(--text-primary, #111);
+  color: var(--text-primary);
 }
 
 .sv-stats {
   display: flex;
   gap: 14px;
   font-size: 13px;
-  color: var(--text-secondary, #555);
+  color: var(--text-secondary);
   font-weight: 600;
 }
 

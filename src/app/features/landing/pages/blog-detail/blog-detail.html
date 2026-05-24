@@ -557,13 +557,23 @@
        Author Profile Modal
   ════════════════════════════════════ -->
   @if (showAuthorModal()) {
-    <div class="modal-backdrop" (click)="closeAuthorModal()" role="dialog" aria-modal="true">
+    <div class="modal-backdrop" (click)="closeAuthorModal()" role="dialog" aria-modal="true"
+      [attr.aria-label]="'Author profile: ' + authorName">
       <div class="author-modal" (click)="$event.stopPropagation()">
-        <div class="apos-header">
-          <div class="apos-header-left">
-            <div class="apos-header-avatar">
+
+        <!-- Pinned close-button row — always visible at top -->
+        <div class="apm-modal-header">
+          <button class="modal-close-btn" (click)="closeAuthorModal()" aria-label="Close author profile">✕</button>
+        </div>
+
+        <!-- Scrollable body -->
+        <div class="apm-scroll-body">
+
+          <!-- Hero: large avatar + identity -->
+          <div class="apm-hero">
+            <div class="apm-avatar">
               @if (authorAvatar) {
-                <img [src]="authorAvatar" class="apos-avatar-img" [alt]="authorName" width="56" height="56" />
+                <img [src]="authorAvatar" class="apos-avatar-img" [alt]="authorName" width="72" height="72" />
               } @else {
                 {{ authorInitial }}
               }
@@ -573,76 +583,77 @@
               <span class="apm-role">Author · ApnaInsights</span>
             </div>
           </div>
-          <button class="modal-close-btn" (click)="closeAuthorModal()" aria-label="Close" id="custom-close">✕</button>
-        </div>
-        <div class="apm-stats">
-          <div class="apm-stat">
-            <span class="apm-stat-val">{{ authorTotalPosts() }}</span>
-            <span class="apm-stat-lbl">Blogs</span>
-          </div>
-          <div class="apm-stat-div"></div>
-          <div class="apm-stat">
-            <span class="apm-stat-val">{{ authorFollowersCount() }}</span>
-            <span class="apm-stat-lbl">Followers</span>
-          </div>
-          <div class="apm-stat-div"></div>
-          <div class="apm-stat">
-            <span class="apm-stat-val">{{ post()!.views }}</span>
-            <span class="apm-stat-lbl">Views</span>
-          </div>
-        </div>
 
-        <!-- Follow button (only shown to logged-in users who are not the author) -->
-        @if (isLoggedIn && currentUser?._id !== authorId()) {
-          <button class="follow-btn"
-            [class.following]="isFollowingAuthor()"
-            [disabled]="followLoading()"
-            (click)="toggleFollow()" type="button">
-            @if (followLoading()) {
-              <span class="btn-spinner"></span>
-            } @else if (isFollowingAuthor()) {
-              ✓ Following
-            } @else {
-              + Follow
+          <div class="apm-stats">
+            <div class="apm-stat">
+              <span class="apm-stat-val">{{ authorTotalPosts() }}</span>
+              <span class="apm-stat-lbl">Blogs</span>
+            </div>
+            <div class="apm-stat-div"></div>
+            <div class="apm-stat">
+              <span class="apm-stat-val">{{ authorFollowersCount() }}</span>
+              <span class="apm-stat-lbl">Followers</span>
+            </div>
+            <div class="apm-stat-div"></div>
+            <div class="apm-stat">
+              <span class="apm-stat-val">{{ post()!.views }}</span>
+              <span class="apm-stat-lbl">Views</span>
+            </div>
+          </div>
+
+          <!-- Follow button (only shown to logged-in users who are not the author) -->
+          @if (isLoggedIn && currentUser?._id !== authorId()) {
+            <button class="follow-btn"
+              [class.following]="isFollowingAuthor()"
+              [disabled]="followLoading()"
+              (click)="toggleFollow()" type="button">
+              @if (followLoading()) {
+                <span class="btn-spinner"></span>
+              } @else if (isFollowingAuthor()) {
+                ✓ Following
+              } @else {
+                + Follow
+              }
+            </button>
+          }
+
+          <div class="apm-info">
+            @if (authorBio) {
+              <div class="apm-row">
+                <span class="apm-row-icon">📝</span>
+                <div><span class="apm-row-lbl">Bio</span><p class="apm-row-val bio">{{ authorBio }}</p></div>
+              </div>
             }
-          </button>
-        }
-
-        <div class="apm-info">
-          @if (authorBio) {
+            @if (authorEmail) {
+              <div class="apm-row">
+                <span class="apm-row-icon">✉️</span>
+                <div><span class="apm-row-lbl">Email</span><span class="apm-row-val">{{ authorEmail }}</span></div>
+              </div>
+            }
+            @if (authorJoinedDate) {
+              <div class="apm-row">
+                <span class="apm-row-icon">🗓️</span>
+                <div><span class="apm-row-lbl">Member since</span><span class="apm-row-val">{{ authorJoinedDate | date:'MMMM yyyy' }}</span></div>
+              </div>
+            }
             <div class="apm-row">
-              <span class="apm-row-icon">📝</span>
-              <div><span class="apm-row-lbl">Bio</span><p class="apm-row-val bio">{{ authorBio }}</p></div>
+              <span class="apm-row-icon">📌</span>
+              <div><span class="apm-row-lbl">Latest post</span><span class="apm-row-val">{{ post()!.title }}</span></div>
             </div>
-          }
-          @if (authorEmail) {
-            <div class="apm-row">
-              <span class="apm-row-icon">✉️</span>
-              <div><span class="apm-row-lbl">Email</span><span class="apm-row-val">{{ authorEmail }}</span></div>
-            </div>
-          }
-          @if (authorJoinedDate) {
-            <div class="apm-row">
-              <span class="apm-row-icon">🗓️</span>
-              <div><span class="apm-row-lbl">Member since</span><span class="apm-row-val">{{ authorJoinedDate | date:'MMMM yyyy' }}</span></div>
-            </div>
-          }
-          <div class="apm-row">
-            <span class="apm-row-icon">📌</span>
-            <div><span class="apm-row-lbl">Latest post</span><span class="apm-row-val">{{ post()!.title }}</span></div>
           </div>
-        </div>
 
-        <div class="apm-actions">
-          <button class="apm-profile-btn" (click)="closeAuthorModal(); navigateToAuthor()" type="button">
-            View full profile →
-          </button>
-          <button class="apm-view-btn" (click)="openAuthorPostsModal()" type="button">
-            View all blogs by {{ authorName }} →
-          </button>
-          <button class="apm-cancel-btn" (click)="closeAuthorModal()" type="button">Close</button>
-        </div>
+          <div class="apm-actions">
+            <!-- Primary action first -->
+            <button class="apm-view-btn" (click)="openAuthorPostsModal()" type="button">
+              View all blogs by {{ authorName }} →
+            </button>
+            <button class="apm-profile-btn" (click)="closeAuthorModal(); navigateToAuthor()" type="button">
+              View full profile →
+            </button>
+            <button class="apm-cancel-btn" (click)="closeAuthorModal()" type="button">Dismiss</button>
+          </div>
 
+        </div><!-- /.apm-scroll-body -->
       </div>
     </div>
   }

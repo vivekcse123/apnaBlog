@@ -130,7 +130,7 @@
             }
           </div>
         }
-        @if (endedCards().has(i)) {
+        @if (endedCards().has(short._id)) {
           <div class="sf-replay" (click)="$event.stopPropagation(); doTogglePublic(i, $event)">
             <div class="sf-replay-btn">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="white">

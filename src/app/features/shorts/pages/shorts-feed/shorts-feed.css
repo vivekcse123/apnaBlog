@@ -381,7 +381,7 @@
   align-items: center;
   gap: 12px;
   padding: 10px 0;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--border);
 }
 .sf-liker-row:last-child { border-bottom: none; }
 .sf-liker-av {
@@ -398,7 +398,7 @@
   flex: 1;
   font-size: 14px;
   font-weight: 600;
-  color: #111;
+  color: var(--text-primary);
 }
 .sf-liker-heart { flex-shrink: 0; }
 .sf-duration-badge {
@@ -824,7 +824,7 @@
   bottom: 0; left: 0; right: 0;
   z-index: 201;
   max-height: 80dvh;
-  background: #fff;
+  background: var(--bg-surface);
   border-radius: 22px 22px 0 0;
   display: flex;
   flex-direction: column;
@@ -839,7 +839,7 @@
 .sf-drawer-handle {
   width: 36px; height: 4px;
   border-radius: 99px;
-  background: #e5e7eb;
+  background: var(--border);
   margin: 10px auto 0;
   flex-shrink: 0;
 }
@@ -848,7 +848,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 12px 16px 10px;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
 .sf-drawer-title {
@@ -857,19 +857,19 @@
   gap: 7px;
   font-size: 14px;
   font-weight: 700;
-  color: #111;
+  color: var(--text-primary);
 }
 .sf-drawer-close {
   width: 30px; height: 30px;
   border-radius: 50%;
   border: none;
-  background: #f3f4f6;
-  color: #666;
+  background: var(--bg-surface-alt);
+  color: var(--text-muted);
   display: flex; align-items: center; justify-content: center;
   cursor: pointer;
   transition: background .15s;
 }
-.sf-drawer-close:hover { background: #e5e7eb; }
+.sf-drawer-close:hover { background: var(--border); }
 
 .sf-drawer-body {
   flex: 1;
@@ -903,13 +903,13 @@
 /* Username + comment on the same line, Instagram-style */
 .sf-cmt-text {
   font-size: 13.5px;
-  color: #1f2937;
+  color: var(--text-secondary);
   margin: 0 0 4px;
   line-height: 1.5;
 }
 .sf-cmt-name {
   font-weight: 700;
-  color: #111;
+  color: var(--text-primary);
   margin-right: 4px;
 }
 .sf-cmt-meta {
@@ -919,19 +919,19 @@
 }
 .sf-cmt-time {
   font-size: 11.5px;
-  color: #9ca3af;
+  color: var(--text-muted);
 }
 .sf-cmt-btn {
   background: none; border: none;
   font-size: 12px;
   font-weight: 600;
-  color: #6b7280;
+  color: var(--text-muted);
   font-family: inherit;
   cursor: pointer;
   padding: 0;
   transition: color .15s;
 }
-.sf-cmt-btn:hover { color: #374151; }
+.sf-cmt-btn:hover { color: var(--text-secondary); }
 .sf-cmt-btn--del { color: #ef4444; }
 .sf-cmt-btn--del:hover { color: #dc2626; }
 .sf-replies { margin-top: 8px; display: flex; flex-direction: column; gap: 10px; }
@@ -945,13 +945,14 @@
 .sf-reply-input {
   flex: 1;
   height: 36px;
-  border: 1.5px solid #e5e7eb;
+  border: 1.5px solid var(--input-border);
   border-radius: 18px;
   padding: 0 14px;
   font-size: 13px;
   font-family: inherit;
   outline: none;
-  background: #f9fafb;
+  background: var(--input-bg);
+  color: var(--text-primary);
   transition: border-color .15s;
 }
 .sf-reply-input:focus { border-color: #43cea2; }
@@ -966,16 +967,16 @@
   padding: 40px 20px;
 }
 .sf-cmt-empty svg {
-  color: rgba(0,0,0,.22);
+  color: var(--text-muted);
   width: 56px; height: 56px;
-  background: #f3f4f6;
+  background: var(--bg-surface-alt);
   border-radius: 50%;
   padding: 14px;
 }
 .sf-cmt-empty p {
   font-size: 14px;
   font-weight: 600;
-  color: #6b7280;
+  color: var(--text-muted);
   margin: 0;
 }
 
@@ -985,25 +986,26 @@
   gap: 10px;
   align-items: center;
   padding: 10px 14px 12px;
-  border-top: 1px solid #f3f4f6;
+  border-top: 1px solid var(--border);
   flex-shrink: 0;
 }
 .sf-comment-input {
   flex: 1;
   height: 42px;
-  border: 1.5px solid #e5e7eb;
+  border: 1.5px solid var(--input-border);
   border-radius: 21px;
   padding: 0 16px;
   font-size: 14px;
   font-family: inherit;
   outline: none;
-  background: #f9fafb;
+  background: var(--input-bg);
+  color: var(--text-primary);
   transition: border-color .2s, box-shadow .2s, background .15s;
 }
-.sf-comment-input::placeholder { color: #9ca3af; font-style: italic; }
+.sf-comment-input::placeholder { color: var(--text-muted); font-style: italic; }
 .sf-comment-input:focus {
   border-color: #43cea2;
-  background: #fff;
+  background: var(--bg-surface);
   box-shadow: 0 0 0 3px rgba(67,206,162,.15);
 }
 .sf-send-btn {
@@ -1033,8 +1035,8 @@
   padding: 14px 16px;
   text-align: center;
   font-size: 13px;
-  color: #6b7280;
-  border-top: 1px solid #f3f4f6;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
   flex-shrink: 0;
 }
 .sf-drawer-guest a {

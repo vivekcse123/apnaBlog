@@ -1,41 +1,49 @@
 <div class="modal-overlay" (click)="closeModal()">
   <div class="user-modal" (click)="$event.stopPropagation()">
 
+    <!-- Pinned header: status badge (or edit label) + close button -->
     <div class="modal-header">
-      <div class="header-profile">
-        @if (isLoading()) {
-          <div class="avatar sk-pulse"></div>
-          <div>
-            <div class="sk-line" style="width:120px;height:14px;margin-bottom:6px;"></div>
-            <div class="sk-line" style="width:160px;height:11px;"></div>
-          </div>
-        } @else {
-          <div class="avatar">
-            @if (user()?.avatar) {
-              <img [src]="user()!.avatar" class="avatar-img" [alt]="user()?.name" />
-            } @else {
-              {{ user()?.name?.charAt(0)?.toUpperCase() || 'U' }}
-            }
-          </div>
-          <div>
-            <h4>{{ isEditing() ? 'Edit User' : user()?.name }}</h4>
-            <p>{{ user()?.email }}</p>
-          </div>
-        }
-      </div>
-      <div class="header-actions">
-        @if (!isEditing() && !isLoading()) {
+      <div class="header-left">
+        @if (isEditing()) {
+          <span class="edit-mode-label">Edit Profile</span>
+        } @else if (!isLoading()) {
           <span class="status-badge"
             [class.active]="user()?.status === 'active'"
             [class.inactive]="user()?.status !== 'active'">
             {{ user()?.status || 'active' | titlecase }}
           </span>
         }
-        <button class="close-btn" (click)="closeModal()">&times;</button>
       </div>
+      <button class="close-btn" (click)="closeModal()" aria-label="Close">&times;</button>
     </div>
 
     <div class="modal-body">
+
+      <!-- Hero section: large avatar + name + email (view & loading only) -->
+      @if (!isEditing()) {
+        <div class="user-hero">
+          @if (isLoading()) {
+            <div class="user-avatar-lg sk-pulse"></div>
+            <div class="hero-text">
+              <div class="sk-line" style="width:130px;height:15px;margin-bottom:7px;"></div>
+              <div class="sk-line" style="width:170px;height:12px;"></div>
+            </div>
+          } @else {
+            <div class="user-avatar-lg">
+              @if (user()?.avatar) {
+                <img [src]="user()!.avatar" class="avatar-img" [alt]="user()?.name" />
+              } @else {
+                {{ user()?.name?.charAt(0)?.toUpperCase() || 'U' }}
+              }
+            </div>
+            <div class="hero-text">
+              <h4>{{ user()?.name }}</h4>
+              <p>{{ user()?.email }}</p>
+            </div>
+          }
+        </div>
+      }
+
       @if (isLoading()) {
         <div class="modal-loading">
           <div class="loading-spinner"></div>
@@ -178,8 +186,10 @@
     @if (!isLoading()) {
       <div class="modal-footer">
         @if (!isEditing()) {
-          <button class="btn-cancel" (click)="closeModal()">Cancel</button>
-          <button class="btn-edit" (click)="startEdit()"><i class="bi bi-pencil-fill"></i></button>
+          <button class="btn-cancel" (click)="closeModal()">Close</button>
+          <button class="btn-edit" (click)="startEdit()" aria-label="Edit user">
+            <i class="bi bi-pencil-fill"></i> Edit
+          </button>
         } @else {
           <button class="btn-cancel" (click)="cancelEdit()">Discard</button>
           <button class="btn-save" (click)="saveUser()" [disabled]="editForm.invalid || isSaving()">

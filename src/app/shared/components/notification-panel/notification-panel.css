@@ -46,7 +46,7 @@
   height: 18px;
   padding: 0 4px;
   border-radius: 9px;
-  background: #f44336;
+  background: var(--error);
   color: #fff;
   font-size: 10px;
   font-weight: 700;
