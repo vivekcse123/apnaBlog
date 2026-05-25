@@ -1667,6 +1667,30 @@
 
 .mcq-explanation svg { flex-shrink: 0; margin-top: 2px; color: var(--accent); }
 
+/* Per-question Show Answer button */
+.mcq-show-answer-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 10px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1.5px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 12.5px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.mcq-show-answer-btn:hover {
+  color: var(--accent-text);
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
+}
+.mcq-show-answer-btn svg { flex-shrink: 0; }
+
 /* Submit row */
 .mcq-submit-row {
   display: flex;

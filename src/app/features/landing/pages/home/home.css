@@ -1689,7 +1689,8 @@
 /* ═══════════════════════════════════════════════════════════════
    AD WRAP
    ═══════════════════════════════════════════════════════════════ */
-.home-ad-wrap { max-width: 1440px; margin: 0 auto; padding: 8px 24px; }
+.home-ad-wrap { max-width: 1440px; margin: 0 auto; padding: 8px 24px; overflow: hidden; }
+.home-ad-wrap:has(ins.adsbygoogle[data-ad-status="unfilled"]) { padding: 0; }
 
 /* ═══════════════════════════════════════════════════════════════
    SCROLL-TO-TOP FAB
@@ -1911,7 +1912,7 @@
 .pwa-banner {
   position: fixed;
   bottom: 0; left: 0; right: 0;
-  z-index: var(--z-modal, 1000);
+  z-index: 1150;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1956,13 +1957,13 @@
 .android-steps-backdrop {
   position: fixed; inset: 0;
   background: rgba(0,0,0,0.5);
-  z-index: calc(var(--z-modal, 1000) + 1);
+  z-index: 1200;
 }
 
 .android-steps-card {
   position: fixed;
   bottom: 0; left: 0; right: 0;
-  z-index: calc(var(--z-modal, 1000) + 2);
+  z-index: 1210;
   background: var(--bg-surface);
   border-radius: 20px 20px 0 0;
   padding: 24px 20px 32px;
@@ -2030,14 +2031,14 @@
 .im-backdrop {
   position: fixed; inset: 0;
   background: rgba(0,0,0,0.5);
-  z-index: calc(var(--z-modal, 1000) + 1);
+  z-index: 1200;
   backdrop-filter: blur(2px);
 }
 
 .im-sheet {
   position: fixed;
   bottom: 0; left: 0; right: 0;
-  z-index: calc(var(--z-modal, 1000) + 2);
+  z-index: 1210;
   background: var(--bg-surface);
   border-radius: 24px 24px 0 0;
   padding: 28px 24px calc(28px + env(safe-area-inset-bottom, 0));
@@ -2481,6 +2482,21 @@
   .card-body h3 { font-size: 15px; }
   .card-body p  { font-size: 13px; }
   .card-footer  { padding: 8px 13px 10px; }
+  .card-tag-chip {
+    padding: 4px 10px;
+    font-size: 11.5px;
+    min-height: 26px;
+    display: inline-flex;
+    align-items: center;
+  }
+  .read-btn {
+    padding: 7px 14px;
+    font-size: 12.5px;
+    min-height: 34px;
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+  }
 
   /* ── Featured ── */
   .feat-section { padding: 14px; }

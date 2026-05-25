@@ -373,24 +373,31 @@
             <div class="mcq-options-list">
               @for (opt of q.options; track $index; let oi = $index) {
                 <button class="mcq-option-btn"
-                  [class.mcq-opt--selected]="mcqUserAnswers().get(qi) === oi && !mcqSubmitted()"
-                  [class.mcq-opt--correct]="mcqSubmitted() && oi === q.correctIndex"
-                  [class.mcq-opt--wrong]="mcqSubmitted() && mcqUserAnswers().get(qi) === oi && oi !== q.correctIndex"
-                  [class.mcq-opt--dimmed]="mcqSubmitted() && mcqUserAnswers().get(qi) !== oi && oi !== q.correctIndex"
-                  [disabled]="mcqSubmitted()"
+                  [class.mcq-opt--selected]="mcqUserAnswers().get(qi) === oi && !mcqSubmitted() && !mcqRevealedAnswers().has(qi)"
+                  [class.mcq-opt--correct]="(mcqSubmitted() || mcqRevealedAnswers().has(qi)) && oi === q.correctIndex"
+                  [class.mcq-opt--wrong]="(mcqSubmitted() || mcqRevealedAnswers().has(qi)) && mcqUserAnswers().get(qi) === oi && oi !== q.correctIndex"
+                  [class.mcq-opt--dimmed]="(mcqSubmitted() || mcqRevealedAnswers().has(qi)) && mcqUserAnswers().get(qi) !== oi && oi !== q.correctIndex"
+                  [disabled]="mcqSubmitted() || mcqRevealedAnswers().has(qi)"
                   (click)="selectMcqAnswer(qi, oi)">
                   <span class="mcq-opt-letter">{{ MCQ_OPTION_LABELS[oi] }}</span>
                   <span class="mcq-opt-text">{{ opt.text }}</span>
-                  @if (mcqSubmitted() && oi === q.correctIndex) {
+                  @if ((mcqSubmitted() || mcqRevealedAnswers().has(qi)) && oi === q.correctIndex) {
                     <svg class="mcq-opt-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-                  } @else if (mcqSubmitted() && mcqUserAnswers().get(qi) === oi && oi !== q.correctIndex) {
+                  } @else if ((mcqSubmitted() || mcqRevealedAnswers().has(qi)) && mcqUserAnswers().get(qi) === oi && oi !== q.correctIndex) {
                     <svg class="mcq-opt-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                   }
                 </button>
               }
             </div>
 
-            @if (mcqSubmitted() && q.explanation) {
+            @if (!mcqSubmitted() && !mcqRevealedAnswers().has(qi)) {
+              <button class="mcq-show-answer-btn" (click)="revealMcqAnswer(qi)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                Show Answer
+              </button>
+            }
+
+            @if ((mcqSubmitted() || mcqRevealedAnswers().has(qi)) && q.explanation) {
               <div class="mcq-explanation">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                 <span>{{ q.explanation }}</span>

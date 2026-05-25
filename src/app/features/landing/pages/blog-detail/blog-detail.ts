@@ -217,18 +217,23 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   bookmarkedPostIds = signal<Set<string>>(new Set());
 
   // ── MCQ quiz state ────────────────────────────────────────────────────────
-  mcqUserAnswers = signal<Map<number, number>>(new Map());
-  mcqSubmitted   = signal(false);
+  mcqUserAnswers    = signal<Map<number, number>>(new Map());
+  mcqSubmitted      = signal(false);
+  mcqRevealedAnswers = signal<Set<number>>(new Set());
 
   readonly MCQ_OPTION_LABELS = ['A', 'B', 'C', 'D'];
 
   selectMcqAnswer(questionIndex: number, optionIndex: number): void {
-    if (this.mcqSubmitted()) return;
+    if (this.mcqSubmitted() || this.mcqRevealedAnswers().has(questionIndex)) return;
     this.mcqUserAnswers.update(map => {
       const next = new Map(map);
       next.set(questionIndex, optionIndex);
       return next;
     });
+  }
+
+  revealMcqAnswer(qi: number): void {
+    this.mcqRevealedAnswers.update(s => new Set([...s, qi]));
   }
 
   submitMcqAnswers(): void {
@@ -238,6 +243,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   resetMcqAnswers(): void {
     this.mcqUserAnswers.set(new Map());
     this.mcqSubmitted.set(false);
+    this.mcqRevealedAnswers.set(new Set());
   }
 
   mcqScore = computed(() => {
