@@ -802,7 +802,7 @@
                 (click)="nextPage(trendingPage, trendingPageCount())" aria-label="Next">›</button>
       </nav>
     </div>
-    @if (isLoading()) {
+    @if (isLoading() || allPosts().length === 0) {
       <ng-container [ngTemplateOutlet]="skeletonGrid"></ng-container>
     } @else {
       <div class="blog-grid">
@@ -836,7 +836,7 @@
                 (click)="nextPage(hotPage, hotPageCount())" aria-label="Next">›</button>
       </nav>
     </div>
-    @if (isLoading()) {
+    @if (isLoading() || allPosts().length === 0) {
       <ng-container [ngTemplateOutlet]="skeletonGrid"></ng-container>
     } @else {
       <div class="blog-grid">
@@ -874,7 +874,7 @@
                 (click)="nextPage(latestPage, latestPageCount())" aria-label="Next">›</button>
       </nav>
     </div>
-    @if (isLoading()) {
+    @if (isLoading() || allPosts().length === 0) {
       <ng-container [ngTemplateOutlet]="skeletonGrid"></ng-container>
     } @else {
       <div class="blog-grid">

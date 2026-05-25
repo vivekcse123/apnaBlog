@@ -1126,7 +1126,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   openCommentDrawer(): void {
     if (this.commentDrawerOpen()) {
       // Already loaded — just scroll
-      this.document.getElementById('discussion')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      this.document.getElementById('discussion')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       return;
     }
     this.commentText.set('');
@@ -1138,7 +1138,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     const postId = this.post()?._id;
     if (postId) this.loadComments(postId, 0);
     setTimeout(() => {
-      this.document.getElementById('discussion')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      this.document.getElementById('discussion')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }, 80);
   }
 

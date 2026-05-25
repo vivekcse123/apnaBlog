@@ -40,7 +40,7 @@
 }
 
 .app-logo-text {
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Playfair Display', serif;
   font-weight: 700;
   font-size: 17px;
   letter-spacing: -0.3px;
@@ -331,7 +331,7 @@
 .drawer-brand-name {
   font-size: 16px;
   font-weight: 700;
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Playfair Display', serif;
   background: var(--brand-gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -515,8 +515,8 @@
 .hero-wrap {
   position: relative;
   background: var(--bg-surface);
-  overflow: hidden;
-  padding: 64px 24px 52px;
+  overflow: clip;
+  padding: 48px 24px 40px;
   border-bottom: 1px solid var(--border);
 }
 
@@ -1071,7 +1071,7 @@
    SECTIONS
    ═══════════════════════════════════════════════════════════════ */
 .section {
-  padding: 32px 24px;
+  padding: 24px 24px;
   max-width: 1440px;
   margin: 0 auto;
   width: 100%;
@@ -1457,7 +1457,7 @@
 /* ═══════════════════════════════════════════════════════════════
    FEATURED / SPONSORED SECTION
    ═══════════════════════════════════════════════════════════════ */
-.feat-section { max-width: 1440px; margin: 0 auto; padding: 24px; }
+.feat-section { max-width: 1440px; margin: 0 auto; padding: 16px 24px; }
 
 .feat-row {
   display: grid;
@@ -1774,7 +1774,7 @@
   background: var(--bg-surface-alt);
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
-  padding: 48px 24px;
+  padding: 36px 24px;
 }
 
 .newsletter-inner {
@@ -2122,6 +2122,17 @@
   background: var(--bg-hover);
   vertical-align: middle;
   margin: 0 2px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   TABLET — ≤ 1024px (hide illustration to prevent hero overflow)
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 1024px) {
+  .hero-layout {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .hero-illustration { display: none; }
 }
 
 /* ═══════════════════════════════════════════════════════════════

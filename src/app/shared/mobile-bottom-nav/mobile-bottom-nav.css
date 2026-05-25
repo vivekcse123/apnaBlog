@@ -1,4 +1,9 @@
 /* Hidden on desktop — shown only on mobile */
+:host {
+  display: block;
+  height: 0;
+}
+
 .mob-nav {
   display: none;
 }

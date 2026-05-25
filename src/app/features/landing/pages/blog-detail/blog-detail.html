@@ -704,18 +704,18 @@
             @if (authorEmail) {
               <div class="apm-row">
                 <span class="apm-row-icon">✉️</span>
-                <div><span class="apm-row-lbl">Email</span><span class="apm-row-val">{{ authorEmail }}</span></div>
+                <div><span class="apm-row-lbl">Email: </span><span class="apm-row-val">{{ authorEmail }}</span></div>
               </div>
             }
             @if (authorJoinedDate) {
               <div class="apm-row">
                 <span class="apm-row-icon">🗓️</span>
-                <div><span class="apm-row-lbl">Member since</span><span class="apm-row-val">{{ authorJoinedDate | date:'MMMM yyyy' }}</span></div>
+                <div><span class="apm-row-lbl">Member since: </span><span class="apm-row-val">{{ authorJoinedDate | date:'MMMM yyyy' }}</span></div>
               </div>
             }
             <div class="apm-row">
               <span class="apm-row-icon">📌</span>
-              <div><span class="apm-row-lbl">Latest post</span><span class="apm-row-val">{{ post()!.title }}</span></div>
+              <div><span class="apm-row-lbl">Latest post: </span><span class="apm-row-val">{{ post()!.title }}</span></div>
             </div>
           </div>
 

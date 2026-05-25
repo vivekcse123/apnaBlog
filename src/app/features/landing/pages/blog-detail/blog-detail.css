@@ -1005,7 +1005,7 @@
 .disc-loading,
 .disc-empty {
   display: flex; flex-direction: column; align-items: center;
-  gap: 10px; padding: 32px; color: var(--text-muted);
+  gap: 10px; padding: 16px; color: var(--text-muted);
   font-size: 14px; text-align: center;
 }
 .disc-replies { margin-top: 10px; margin-left: 16px; border-left: 2px solid var(--border); padding-left: 14px; display: flex; flex-direction: column; }
