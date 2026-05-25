@@ -13,7 +13,7 @@
       { label: 'Settings',     routerLink: '/user/' + userId() + '/settings',           icon: 'settings', exact: false }
     ]"
     [shortcuts]="[
-      { label: 'Write a Story', routerLink: '/user/' + userId() + '/manage-blogs', icon: 'write' },
+      { label: 'Write a Story', routerLink: '/user/' + userId() + '/create-blog', icon: 'write' },
       { label: 'View Site',     routerLink: '/',                                     icon: 'globe' }
     ]"
     [userName]="user()?.name ?? ''"
@@ -57,3 +57,5 @@
   </div>
 
 </div>
+
+<app-mobile-bottom-nav mode="dashboard"></app-mobile-bottom-nav>

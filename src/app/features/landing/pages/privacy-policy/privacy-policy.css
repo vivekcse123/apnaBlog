@@ -396,4 +396,5 @@
   .back-btn { width: 38px; height: 38px; border-radius: 50%; padding: 0; justify-content: center; flex-shrink: 0; }
   .back-label { display: none; }
   .policy-footer-inner { flex-direction: column; align-items: flex-start; }
+  .policy-page { padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
 }

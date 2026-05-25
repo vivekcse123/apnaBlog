@@ -547,3 +547,7 @@
   .ap-main { padding: 16px 4% 40px; }
   .ap-about { padding: 16px 4% 40px; }
 }
+
+@media (max-width: 768px) {
+  .author-page { padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
+}

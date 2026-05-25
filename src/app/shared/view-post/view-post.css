@@ -8,7 +8,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
+  z-index: 1200;
   animation: fadeIn 0.2s ease;
 }
 
@@ -997,7 +997,7 @@
 
 /* ── Delete Confirm Dialog ── */
 .confirm-layer {
-  z-index: 1100;
+  z-index: 1250;
   background: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);

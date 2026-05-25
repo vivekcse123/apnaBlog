@@ -9,12 +9,13 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { UserProfile } from '../../../../shared/user-profile/user-profile';
 import { Auth } from '../../../../core/services/auth';
 import { Sidebar } from '../../../../shared/sidebar/sidebar';
+import { MobileBottomNav } from '../../../../shared/mobile-bottom-nav/mobile-bottom-nav';
 
 @Component({
   selector: 'app-user-dashboard',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, CommonHeader, UserProfile, RouterOutlet, Sidebar],
+  imports: [CommonModule, CommonHeader, UserProfile, RouterOutlet, Sidebar, MobileBottomNav],
   templateUrl: './user-dashboard.html',
   styleUrl: './user-dashboard.css',
 })

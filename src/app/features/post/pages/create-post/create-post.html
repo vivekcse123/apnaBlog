@@ -4,7 +4,7 @@
     <button class="close-btn" (click)="closeModal()">&#x2715;</button>
 
     <div class="heading">
-      <h2>Create New Blog Post ✍️</h2>
+      <h2>{{ postType() === 'mcq' ? 'Create MCQ Quiz' : 'Create New Blog Post' }} ✍️</h2>
       <p>
         @if (isAdmin()) {
           Fill in the details to publish a new post
@@ -27,6 +27,36 @@
     }
 
     <form [formGroup]="createBlogForm" (ngSubmit)="createBlog()" class="form-grid">
+
+      <!-- ── Post Type Selector ── -->
+      <div class="form-field post-type-selector">
+        <div class="form-section-label">
+          <span class="form-section-icon">📝</span> Post Type
+        </div>
+        <div class="type-toggle-row">
+          <button type="button" class="type-toggle-btn"
+            [class.active]="postType() === 'blog'"
+            (click)="setPostType('blog')">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 6h16M4 12h16M4 18h12"/>
+            </svg>
+            Blog Post
+          </button>
+          <button type="button" class="type-toggle-btn"
+            [class.active]="postType() === 'mcq'"
+            (click)="setPostType('mcq')">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            MCQ Quiz
+          </button>
+        </div>
+        @if (postType() === 'mcq') {
+          <p class="type-hint">MCQ posts display as an interactive quiz with multiple-choice questions.</p>
+        }
+      </div>
 
       <!-- ── Title ── -->
       <div class="form-field">
@@ -63,7 +93,8 @@
         }
       </div>
 
-      <!-- ── Content ── -->
+      <!-- ── Content (blog) / MCQ builder ── -->
+      @if (postType() === 'blog') {
       <div class="form-field">
       <div class="form-section-label">
         <span class="form-section-icon">✍️</span> Content <span class="required-star">*</span>
@@ -370,6 +401,72 @@
         }
       }
       </div>
+      } @else {
+
+      <!-- ── MCQ Builder ── -->
+      <div class="form-field mcq-builder">
+        <div class="form-section-label">
+          <span class="form-section-icon">❓</span> Questions <span class="required-star">*</span>
+          <span class="field-hint-text">Add your quiz questions</span>
+        </div>
+
+        @if (mcqQuestions().length === 0) {
+          <div class="mcq-empty-state">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            <p>No questions yet. Click "Add Question" to get started.</p>
+          </div>
+        }
+
+        @for (q of mcqQuestions(); track $index; let qi = $index) {
+          <div class="mcq-question-card">
+            <div class="mcq-q-header">
+              <span class="mcq-q-num">Q{{ qi + 1 }}</span>
+              <button type="button" class="mcq-remove-btn" (click)="removeMcqQuestion(qi)" title="Remove question">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+
+            <textarea class="mcq-question-input"
+              placeholder="Enter your question…"
+              rows="2"
+              [value]="q.question"
+              (input)="updateMcqQuestionText(qi, $any($event.target).value)"></textarea>
+
+            <div class="mcq-options-grid">
+              @for (opt of q.options; track $index; let oi = $index) {
+                <div class="mcq-option-row" [class.mcq-option--correct]="q.correctIndex === oi">
+                  <button type="button" class="mcq-correct-radio"
+                    [class.selected]="q.correctIndex === oi"
+                    (click)="setMcqCorrect(qi, oi)"
+                    [title]="q.correctIndex === oi ? 'Correct answer' : 'Mark as correct'">
+                    <span class="mcq-opt-label">{{ OPTION_LABELS[oi] }}</span>
+                  </button>
+                  <input type="text" class="mcq-option-input"
+                    [placeholder]="'Option ' + OPTION_LABELS[oi]"
+                    [value]="opt"
+                    (input)="updateMcqOption(qi, oi, $any($event.target).value)" />
+                </div>
+              }
+            </div>
+
+            <div class="mcq-explanation-row">
+              <input type="text" class="mcq-explanation-input"
+                placeholder="Explanation (optional) — shown after user answers"
+                [value]="q.explanation"
+                (input)="updateMcqExplanation(qi, $any($event.target).value)" />
+            </div>
+          </div>
+        }
+
+        <button type="button" class="mcq-add-question-btn" (click)="addMcqQuestion()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Question
+        </button>
+      </div>
+
+      }
 
       <!-- ── Categories ── -->
       <div class="form-field">

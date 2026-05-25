@@ -23,6 +23,7 @@ import { ToastService }   from '../../../../core/services/toast.service';
 import { TaxonomyService } from '../../../../core/services/taxonomy.service';
 import { ShortsService }  from '../../../shorts/services/shorts.service';
 import { VideoShort }     from '../../../shorts/models/video-short.model';
+import { MobileBottomNav } from '../../../../shared/mobile-bottom-nav/mobile-bottom-nav';
 
 // ── Transfer-state key: SSR writes the post here; browser reads it instantly ──
 const POST_STATE_KEY = makeStateKey<Post | null>('blogDetailPost');
@@ -63,7 +64,7 @@ const VISIBLE_STATUSES = new Set(['published', 'draft', 'pending']);
   selector:    'app-blog-detail',
   standalone:  true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports:     [RouterLink, CommonModule, FormsModule, TimeAgoPipe],
+  imports:     [RouterLink, CommonModule, FormsModule, TimeAgoPipe, MobileBottomNav],
   templateUrl: './blog-detail.html',
   styleUrl:    './blog-detail.css',
   // ngSkipHydration prevents DOM reconciliation mismatches caused by the
@@ -214,6 +215,38 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   // ── Likes / Bookmarks ─────────────────────────────────────────────────────
   likedPostIds      = signal<Set<string>>(new Set());
   bookmarkedPostIds = signal<Set<string>>(new Set());
+
+  // ── MCQ quiz state ────────────────────────────────────────────────────────
+  mcqUserAnswers = signal<Map<number, number>>(new Map());
+  mcqSubmitted   = signal(false);
+
+  readonly MCQ_OPTION_LABELS = ['A', 'B', 'C', 'D'];
+
+  selectMcqAnswer(questionIndex: number, optionIndex: number): void {
+    if (this.mcqSubmitted()) return;
+    this.mcqUserAnswers.update(map => {
+      const next = new Map(map);
+      next.set(questionIndex, optionIndex);
+      return next;
+    });
+  }
+
+  submitMcqAnswers(): void {
+    this.mcqSubmitted.set(true);
+  }
+
+  resetMcqAnswers(): void {
+    this.mcqUserAnswers.set(new Map());
+    this.mcqSubmitted.set(false);
+  }
+
+  mcqScore = computed(() => {
+    const p = this.post();
+    if (!p?.mcqQuestions?.length) return { correct: 0, total: 0 };
+    const answers = this.mcqUserAnswers();
+    const correct = p.mcqQuestions.filter((q, i) => answers.get(i) === q.correctIndex).length;
+    return { correct, total: p.mcqQuestions.length };
+  });
 
   // ── Comments ──────────────────────────────────────────────────────────────
   commentText           = signal('');
@@ -513,7 +546,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     this.closeAuthorPostsModal();
     this.router.navigate(['/blog', postId]);
     if (isPlatformBrowser(this.platformId)) {
-      window.scrollTo({ top: 0, behavior: 'instant' });
+      this.elementRef.nativeElement.scrollTo({ top: 0, behavior: 'instant' });
     }
   }
 
@@ -594,13 +627,17 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
 
     // Browser-only scroll + keyboard listeners
     if (isPlatformBrowser(this.platformId)) {
-      fromEvent(window, 'scroll')
+      this.document.body.classList.add('blog-detail-active');
+
+      const host = this.elementRef.nativeElement as HTMLElement;
+      fromEvent(host, 'scroll')
         .pipe(throttleTime(100), takeUntilDestroyed(this.destroyRef))
         .subscribe(() => {
           this.updateReadingProgress();
           this.updateActiveHeading();
           this.updateHeaderVisibility();
-          this.showScrollTop.set(window.scrollY > 400);
+          const nearBottom = (host.scrollTop + host.clientHeight) >= (host.scrollHeight - 160);
+          this.showScrollTop.set(host.scrollTop > 400 && !nearBottom);
         });
 
       fromEvent<MouseEvent>(this.document, 'click')
@@ -643,6 +680,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     this.lockScroll(false);
     this.saveReadingProgress();
     if (isPlatformBrowser(this.platformId)) {
+      this.document.body.classList.remove('blog-detail-active');
       this.document.querySelector('link[data-blog-preload]')?.remove();
     }
   }
@@ -856,12 +894,26 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     if (!isPlatformBrowser(this.platformId)) return;
     this.contentEl = this.elementRef.nativeElement.querySelector('.blog-content');
     if (!this.contentEl) return;
+    this._stripEdgeNodes();
     this.generateTableOfContents();
     this.addHeadingIds();
     this.addCodeCopyButtons();
     this.addContentImageLightbox();
     this.pushAdSense();
     this.updateReactionStrips();
+  }
+
+  private _stripEdgeNodes(): void {
+    if (!this.contentEl) return;
+    const isEmpty = (el: Element): boolean => {
+      if (el.tagName === 'BR') return true;
+      if (el.querySelector('img, iframe, video, canvas')) return false;
+      return (el.textContent ?? '').replace(/[ \s]/g, '') === '';
+    };
+    let first = this.contentEl.firstElementChild;
+    while (first && isEmpty(first)) { const n = first.nextElementSibling; first.remove(); first = n; }
+    let last = this.contentEl.lastElementChild;
+    while (last && isEmpty(last)) { const p = last.previousElementSibling; last.remove(); last = p; }
   }
 
   private addContentImageLightbox(): void {
@@ -1298,10 +1350,15 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
 
   private updateMetaTags(post: Post): void {
     const canonicalUrl = `${environment.siteUrl}/blog/${post.slug || post._id}`;
-    const desc         = post.description || post.title;
+    const isMcq        = post.postType === 'mcq';
+    const rawDesc      = post.description || post.title;
+    const desc         = isMcq
+      ? `${rawDesc} — Test your knowledge with this ${post.mcqQuestions?.length ?? 0}-question MCQ quiz.`
+      : rawDesc;
     const image        = post.featuredImage || environment.ogImage;
+    const titleSuffix  = isMcq ? ' [MCQ Quiz]' : '';
 
-    this.titleService.setTitle(`${post.title} | ApnaInsights`);
+    this.titleService.setTitle(`${post.title}${titleSuffix} | ApnaInsights`);
 
     // Pending and draft posts must not be indexed
     const robotsValue = (post.status === 'published')
@@ -1311,8 +1368,13 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     this.setMeta('name',     'description',              desc);
     this.setMeta('name',     'author',                   (post.user as any)?.name ?? 'ApnaInsights');
     this.setMeta('name',     'robots',                   robotsValue);
+    if (isMcq) {
+      this.setMeta('name', 'keywords', [
+        post.title, 'MCQ', 'quiz', 'multiple choice', ...(post.categories ?? []), ...(post.tags ?? []),
+      ].join(', '));
+    }
     this.setMeta('property', 'og:site_name',             'ApnaInsights');
-    this.setMeta('property', 'og:title',                 post.title);
+    this.setMeta('property', 'og:title',                 `${post.title}${titleSuffix}`);
     this.setMeta('property', 'og:description',           desc);
     this.setMeta('property', 'og:type',                  'article');
     this.setMeta('property', 'og:url',                   canonicalUrl);
@@ -1323,7 +1385,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     this.setMeta('property', 'og:image:height',          '630');
     this.setMeta('name',     'twitter:card',             'summary_large_image');
     this.setMeta('name',     'twitter:site',             '@apnainsights');
-    this.setMeta('name',     'twitter:title',            post.title);
+    this.setMeta('name',     'twitter:title',            `${post.title}${titleSuffix}`);
     this.setMeta('name',     'twitter:description',      desc);
     this.setMeta('name',     'twitter:image',            image);
     this.setMeta('name',     'twitter:image:alt',        post.title);
@@ -1390,7 +1452,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
       const postUrl    = `${environment.siteUrl}/blog/${post.slug || post._id}`;
       const authorName = (post.user as any)?.name ?? 'Anonymous Author';
       const authorId   = (post.user as any)?._id ?? (post.user as any);
-      const wordCount  = (post.content ?? '').replace(/<[^>]*>/g, '').trim().split(/\s+/).length;
+      const isMcq      = post.postType === 'mcq';
 
       const breadcrumbItems: any[] = [
         { '@type': 'ListItem', position: 1, name: 'Home', item: environment.siteUrl },
@@ -1406,35 +1468,65 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
         breadcrumbItems.push({ '@type': 'ListItem', position: 2, name: post.title, item: postUrl });
       }
 
-      const schemas: any[] = [
-        {
-          '@context':      'https://schema.org',
-          '@type':         'BlogPosting',
-          headline:        post.title,
-          description:     post.description || post.title,
-          inLanguage:      'en-IN',
-          wordCount,
-          commentCount:    post.commentsCount ?? 0,
-          timeRequired:    `PT${Math.ceil(wordCount / 200)}M`,
-          image: post.featuredImage
-            ? { '@type': 'ImageObject', url: post.featuredImage, caption: post.title, width: 1200, height: 630 }
-            : { '@type': 'ImageObject', url: environment.ogImage, width: 1200, height: 630 },
-          datePublished:   new Date(post.createdAt).toISOString(),
-          dateModified:    new Date(post.updatedAt ?? post.createdAt).toISOString(),
-          author: {
-            '@type': 'Person',
-            name:    authorName,
-            ...(authorId ? { url: `${environment.siteUrl}/author/${authorId}` } : {}),
-          },
-          keywords:        post.categories?.join(', ') || undefined,
-          articleSection:  post.categories?.[0] || undefined,
-          publisher: {
-            '@type': 'Organization',
-            name:    'ApnaInsights',
-            logo:    { '@type': 'ImageObject', url: 'https://apnainsights.com/logo.png', width: 1024, height: 1024 },
-          },
-          mainEntityOfPage: { '@type': 'WebPage', '@id': postUrl },
+      const commonFields = {
+        headline:        post.title,
+        description:     post.description || post.title,
+        inLanguage:      'en-IN',
+        image: post.featuredImage
+          ? { '@type': 'ImageObject', url: post.featuredImage, caption: post.title, width: 1200, height: 630 }
+          : { '@type': 'ImageObject', url: environment.ogImage, width: 1200, height: 630 },
+        datePublished:   new Date(post.createdAt).toISOString(),
+        dateModified:    new Date(post.updatedAt ?? post.createdAt).toISOString(),
+        author: {
+          '@type': 'Person',
+          name:    authorName,
+          ...(authorId ? { url: `${environment.siteUrl}/author/${authorId}` } : {}),
         },
+        keywords:  [...(post.categories ?? []), ...(post.tags ?? []), ...(isMcq ? ['MCQ', 'quiz', 'multiple choice'] : [])].join(', ') || undefined,
+        publisher: {
+          '@type': 'Organization',
+          name:    'ApnaInsights',
+          logo:    { '@type': 'ImageObject', url: 'https://apnainsights.com/logo.png', width: 1024, height: 1024 },
+        },
+        mainEntityOfPage: { '@type': 'WebPage', '@id': postUrl },
+      };
+
+      let mainSchema: any;
+      if (isMcq && post.mcqQuestions?.length) {
+        // Schema.org Quiz with Question/Answer items
+        mainSchema = {
+          '@context': 'https://schema.org',
+          '@type':    'Quiz',
+          ...commonFields,
+          hasPart: post.mcqQuestions.map((q, i) => ({
+            '@type':          'Question',
+            position:         i + 1,
+            text:             q.question,
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text:    q.options[q.correctIndex]?.text ?? '',
+              ...(q.explanation ? { comment: { '@type': 'Comment', text: q.explanation } } : {}),
+            },
+            suggestedAnswer: q.options
+              .filter((_, oi) => oi !== q.correctIndex)
+              .map(o => ({ '@type': 'Answer', text: o.text })),
+          })),
+        };
+      } else {
+        const wordCount = (post.content ?? '').replace(/<[^>]*>/g, '').trim().split(/\s+/).length;
+        mainSchema = {
+          '@context':    'https://schema.org',
+          '@type':       'BlogPosting',
+          ...commonFields,
+          wordCount,
+          commentCount:  post.commentsCount ?? 0,
+          timeRequired:  `PT${Math.ceil(wordCount / 200)}M`,
+          articleSection: post.categories?.[0] || undefined,
+        };
+      }
+
+      const schemas: any[] = [
+        mainSchema,
         {
           '@context':      'https://schema.org',
           '@type':         'BreadcrumbList',
@@ -1500,7 +1592,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   }
 
   scrollToTop(): void {
-    if (isPlatformBrowser(this.platformId)) window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (isPlatformBrowser(this.platformId)) this.elementRef.nativeElement.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   scrollToHeading(id: string): void {
@@ -1515,20 +1607,12 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   toggleToc(): void { this.showToc.set(!this.showToc()); }
 
   private updateReadingProgress(): void {
-    if (!this.contentEl || !isPlatformBrowser(this.platformId)) return;
-    const el        = this.contentEl;
-    const scrollTop = window.scrollY;
-    const winH      = window.innerHeight;
-    const top       = el.offsetTop;
-    const bottom    = top + el.offsetHeight;
-
-    if (scrollTop < top)             { this.readingProgress.set(0);   return; }
-    if (scrollTop + winH >= bottom)  { this.readingProgress.set(100); return; }
-
-    const denominator = el.offsetHeight - winH;
-    if (denominator <= 0) { this.readingProgress.set(100); return; }
-
-    const pct = ((scrollTop - top) / denominator) * 100;
+    if (!isPlatformBrowser(this.platformId) || !this.post()) return;
+    const host = this.elementRef.nativeElement as HTMLElement;
+    const scrollTop = host.scrollTop;
+    const scrollable = host.scrollHeight - host.clientHeight;
+    if (scrollable <= 0) { this.readingProgress.set(0); return; }
+    const pct = (scrollTop / scrollable) * 100;
     this.readingProgress.set(Math.min(Math.max(pct, 0), 100));
   }
 
@@ -1544,7 +1628,8 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
 
   private updateHeaderVisibility(): void {
     if (!isPlatformBrowser(this.platformId)) return;
-    const y = window.scrollY;
+    const host = this.elementRef.nativeElement as HTMLElement;
+    const y = host.scrollTop;
     if (window.innerWidth >= 768) {
       this.headerHidden.set(false);
       this.lastScrollY = y;
@@ -1655,8 +1740,8 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
         const rect = range.getBoundingClientRect();
         this.quotePopover.set({
           text,
-          x: rect.left + rect.width / 2 + window.scrollX,
-          y: rect.top + window.scrollY - 52,
+          x: rect.left + rect.width / 2 + (this.elementRef.nativeElement as HTMLElement).scrollLeft,
+          y: rect.top + (this.elementRef.nativeElement as HTMLElement).scrollTop - 52,
         });
       });
 
@@ -1856,14 +1941,14 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   navigateToBlog(postId: string): void {
     this.router.navigate(['/blog', postId]);
     if (isPlatformBrowser(this.platformId)) {
-      window.scrollTo({ top: 0, behavior: 'instant' });
+      this.elementRef.nativeElement.scrollTo({ top: 0, behavior: 'instant' });
     }
   }
 
   filterByTag(tag: string): void {
     this.router.navigate(['/category', tag.toLowerCase()]);
     if (isPlatformBrowser(this.platformId)) {
-      window.scrollTo({ top: 0, behavior: 'instant' });
+      this.elementRef.nativeElement.scrollTo({ top: 0, behavior: 'instant' });
     }
   }
 
@@ -1872,14 +1957,14 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     if (!id) return;
     this.router.navigate(['/author', id]);
     if (isPlatformBrowser(this.platformId)) {
-      window.scrollTo({ top: 0, behavior: 'instant' });
+      this.elementRef.nativeElement.scrollTo({ top: 0, behavior: 'instant' });
     }
   }
 
   navigateToTag(tag: string): void {
     this.router.navigate(['/tag', tag.toLowerCase()]);
     if (isPlatformBrowser(this.platformId)) {
-      window.scrollTo({ top: 0, behavior: 'instant' });
+      this.elementRef.nativeElement.scrollTo({ top: 0, behavior: 'instant' });
     }
   }
 

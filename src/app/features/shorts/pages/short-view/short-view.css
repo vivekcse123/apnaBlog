@@ -223,7 +223,11 @@
   text-align: center;
 }
 
+@media (max-width: 768px) {
+  .sv-page { padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
+}
+
 @media (max-width: 480px) {
-  .sv-page { padding: 16px 12px 48px; }
+  .sv-page { padding: 16px 12px calc(72px + env(safe-area-inset-bottom, 0px)); }
   .sv-title { font-size: 18px; }
 }

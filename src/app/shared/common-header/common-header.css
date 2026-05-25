@@ -579,3 +579,52 @@
   .ch-icon-btn,
   .ch-avatar-btn { width: 30px; height: 30px; }
 }
+
+/* ── Mobile logo — hidden on desktop, shown on mobile ── */
+.ch-mob-logo {
+  display: none;
+}
+
+/* ── Mobile bottom-nav mode: hide header's own drawer, show logo ── */
+@media (max-width: 768px) {
+  .ch-drawer    { display: none !important; }
+  .ch-backdrop  { display: none !important; }
+
+  .ch-mob-logo {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    text-decoration: none;
+    flex-shrink: 0;
+  }
+
+  .ch-mob-logo-img {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    object-fit: contain;
+  }
+
+  .ch-mob-logo-text {
+    font-size: 15px;
+    font-weight: 700;
+    font-family: 'DM Sans', sans-serif;
+    background: linear-gradient(135deg, #43cea2, #185a9d);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.3px;
+    white-space: nowrap;
+  }
+
+  /* Subtle gradient accent line at bottom of header on mobile */
+  .ch-topbar {
+    border-bottom-color: transparent;
+    background-image: linear-gradient(var(--bg-surface), var(--bg-surface)),
+                      linear-gradient(90deg, #43cea2, #185a9d);
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+    border-bottom-width: 2px;
+    border-bottom-style: solid;
+  }
+}

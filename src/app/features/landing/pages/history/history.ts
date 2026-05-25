@@ -6,10 +6,11 @@ import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Meta, Title } from '@angular/platform-browser';
 import { ReadingHistory, HistoryEntry } from '../../../../core/services/reading-history';
+import { MobileBottomNav } from '../../../../shared/mobile-bottom-nav/mobile-bottom-nav';
 @Component({
   selector: 'app-history',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, MobileBottomNav],
   templateUrl: './history.html',
   styleUrl: './history.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

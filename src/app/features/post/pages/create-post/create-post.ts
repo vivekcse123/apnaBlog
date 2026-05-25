@@ -17,7 +17,7 @@ function minWordCountValidator(min: number): ValidatorFn {
     return words.length >= min ? null : { minWords: { required: min, actual: words.length } };
   };
 }
-import { Post }              from '../../../../core/models/post.model';
+import { Post, McqQuestion } from '../../../../core/models/post.model';
 import { Auth }              from '../../../../core/services/auth';
 import { PostService }       from '../../services/post-service';
 import { UploadService }     from '../../services/upload-service';
@@ -87,6 +87,64 @@ export class CreatePost implements OnInit, OnDestroy {
   private autosaveTimer: ReturnType<typeof setTimeout> | null = null;
   autosaveStatus = signal<'' | 'saving' | 'saved'>('');
   hasDraft       = signal(false);
+
+  // ── MCQ ──────────────────────────────────────────────────────────────────────
+  postType = signal<'blog' | 'mcq'>('blog');
+
+  mcqQuestions = signal<{ question: string; options: string[]; correctIndex: number; explanation: string }[]>([]);
+
+  readonly OPTION_LABELS = ['A', 'B', 'C', 'D'];
+
+  setPostType(type: 'blog' | 'mcq'): void {
+    this.postType.set(type);
+    const contentCtrl = this.createBlogForm.get('content');
+    if (type === 'mcq') {
+      contentCtrl?.clearValidators();
+    } else {
+      contentCtrl?.setValidators([Validators.required, minWordCountValidator(MIN_WORDS)]);
+    }
+    contentCtrl?.updateValueAndValidity();
+  }
+
+  addMcqQuestion(): void {
+    this.mcqQuestions.update(qs => [
+      ...qs,
+      { question: '', options: ['', '', '', ''], correctIndex: 0, explanation: '' },
+    ]);
+  }
+
+  removeMcqQuestion(index: number): void {
+    this.mcqQuestions.update(qs => qs.filter((_, i) => i !== index));
+  }
+
+  updateMcqQuestionText(index: number, value: string): void {
+    this.mcqQuestions.update(qs =>
+      qs.map((q, i) => i === index ? { ...q, question: value } : q)
+    );
+  }
+
+  updateMcqOption(qIdx: number, oIdx: number, value: string): void {
+    this.mcqQuestions.update(qs =>
+      qs.map((q, i) => {
+        if (i !== qIdx) return q;
+        const options = [...q.options];
+        options[oIdx] = value;
+        return { ...q, options };
+      })
+    );
+  }
+
+  setMcqCorrect(qIdx: number, oIdx: number): void {
+    this.mcqQuestions.update(qs =>
+      qs.map((q, i) => i === qIdx ? { ...q, correctIndex: oIdx } : q)
+    );
+  }
+
+  updateMcqExplanation(index: number, value: string): void {
+    this.mcqQuestions.update(qs =>
+      qs.map((q, i) => i === index ? { ...q, explanation: value } : q)
+    );
+  }
 
   // ── Unified blog images (up to 5 total) ─────────────────────────────────────
   // First entry = featuredImage, rest = images[]
@@ -1043,6 +1101,23 @@ export class CreatePost implements OnInit, OnDestroy {
       return;
     }
 
+    const isMcq = this.postType() === 'mcq';
+
+    if (isMcq) {
+      const questions = this.mcqQuestions();
+      if (questions.length === 0) {
+        this.errorMessage.set('Please add at least one question for your MCQ post.');
+        return;
+      }
+      const invalid = questions.some(q =>
+        !q.question.trim() || q.options.some(o => !o.trim())
+      );
+      if (invalid) {
+        this.errorMessage.set('Please fill in all question texts and option fields.');
+        return;
+      }
+    }
+
     const userId = this.authService.userId();
     if (!userId) {
       this.errorMessage.set('You must be logged in to create a post.');
@@ -1069,10 +1144,19 @@ export class CreatePost implements OnInit, OnDestroy {
     const featuredImage = allImages[0]?.url ?? '';
     const extraImages   = allImages.slice(1).map(img => img.url);
 
+    const mcqPayload: McqQuestion[] = isMcq
+      ? this.mcqQuestions().map(q => ({
+          question:     q.question,
+          options:      q.options.map(text => ({ text })),
+          correctIndex: q.correctIndex,
+          explanation:  q.explanation,
+        }))
+      : [];
+
     const payload: Omit<Post, '_id' | 'user' | 'userId' | 'likesCount' | 'commentsCount' | 'views' | 'createdAt' | 'updatedAt'> & { user: string } = {
       title:         this.createBlogForm.value.title,
       description:   this.createBlogForm.value.description,
-      content:       this.createBlogForm.value.content,
+      content:       isMcq ? '' : (this.createBlogForm.value.content ?? ''),
       categories:    selectedCategories,
       tags:          selectedTags,
       featuredImage,
@@ -1080,6 +1164,8 @@ export class CreatePost implements OnInit, OnDestroy {
       status:        this.createBlogForm.value.status,
       comments:      this.createBlogForm.value.comments,
       user:          userId,
+      postType:      isMcq ? 'mcq' : 'blog',
+      mcqQuestions:  mcqPayload,
       ...(this.isScheduled && this.createBlogForm.value.scheduledAt
         ? { scheduledAt: new Date(this.createBlogForm.value.scheduledAt).toISOString() }
         : {}),
@@ -1109,9 +1195,13 @@ export class CreatePost implements OnInit, OnDestroy {
           this.blogImages.set([]);
           this.imageError.set('');
           this.imageUrlInput.set('');
+          this.postType.set('blog');
+          this.mcqQuestions.set([]);
           this.createBlogForm.reset();
           this.createBlogForm.get('status')?.setValidators(Validators.required);
           this.createBlogForm.get('status')?.updateValueAndValidity();
+          this.createBlogForm.get('content')?.setValidators([Validators.required, minWordCountValidator(MIN_WORDS)]);
+          this.createBlogForm.get('content')?.updateValueAndValidity();
           this.createBlogForm.get('category')?.setValue('');
           if (this.editorRef?.nativeElement) this.editorRef.nativeElement.innerHTML = '';
           this.closeModal();

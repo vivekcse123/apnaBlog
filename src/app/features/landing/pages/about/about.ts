@@ -8,6 +8,7 @@ import { RouterLink } from '@angular/router';
 import { FormsModule, NgForm } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ContactService } from '../../../../core/services/contact-service';
+import { MobileBottomNav } from '../../../../shared/mobile-bottom-nav/mobile-bottom-nav';
 import { PostService } from '../../../post/services/post-service';
 import { Auth } from '../../../../core/services/auth';
 
@@ -27,7 +28,7 @@ interface FAQ {
   selector: 'app-about',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, FormsModule, CommonModule],
+  imports: [RouterLink, FormsModule, CommonModule, MobileBottomNav],
   templateUrl: './about.html',
   styleUrl: './about.css'
 })

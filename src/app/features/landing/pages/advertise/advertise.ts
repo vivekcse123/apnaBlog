@@ -9,6 +9,7 @@ import { HttpClient } from '@angular/common/http';
 import { Meta, Title } from '@angular/platform-browser';
 import { DOCUMENT } from '@angular/common';
 import { environment } from '../../../../../environments/environment';
+import { MobileBottomNav } from '../../../../shared/mobile-bottom-nav/mobile-bottom-nav';
 
 interface InquiryForm {
   company:  string;
@@ -24,7 +25,7 @@ interface InquiryForm {
   selector: 'app-advertise',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, FormsModule, CommonModule],
+  imports: [RouterLink, FormsModule, CommonModule, MobileBottomNav],
   templateUrl: './advertise.html',
   styleUrl:    './advertise.css',
 })

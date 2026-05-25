@@ -925,7 +925,7 @@
   inset: 0;
   background: rgba(0, 0, 0, 0.55);
   backdrop-filter: blur(4px);
-  z-index: 1000;
+  z-index: 1200;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1326,6 +1326,9 @@
   .dash-header   { flex-direction: column; align-items: flex-start; gap: 12px; }
   .dash-title    { font-size: 22px; }
   .dash-header-right { width: 100%; justify-content: flex-start; flex-wrap: wrap; gap: 10px; }
+  .btn-read-stories { display: inline-flex; }
+  .btn-write        { flex: 1; justify-content: center; }
+  .date-pill        { display: none; }
   .stats-grid    { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
   .stat-card     { padding: 14px 12px; }
   .stat-value    { font-size: 20px; }
@@ -1431,4 +1434,9 @@
   .sidebar-section { padding: 14px; }
   .qa-card     { padding: 12px 10px; }
   .metric-icon-wrap { width: 24px; height: 24px; }
+}
+
+/* Bottom nav clearance — prevents content hiding behind fixed mobile nav */
+@media (max-width: 768px) {
+  .dash { padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
 }

@@ -13,7 +13,6 @@ import { Auth } from '../../../../core/services/auth';
 import { ToastService } from '../../../../core/services/toast.service';
 import { DashboardCache } from '../../../../core/services/dashboard-cache';
 import { NotificationNavigationService, POST_NOTIFICATION_TYPES } from '../../../../core/services/open-notification/notification-navigation';
-
 @Component({
   selector: 'app-post-lists',
   standalone: true,

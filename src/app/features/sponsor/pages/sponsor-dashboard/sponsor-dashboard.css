@@ -422,6 +422,8 @@
 
 /* ── Mobile card-flip ── */
 @media (max-width: 768px) {
+  .sp-page { padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
+
   .sp-stats-bar {
     grid-template-columns: repeat(2, 1fr);
   }

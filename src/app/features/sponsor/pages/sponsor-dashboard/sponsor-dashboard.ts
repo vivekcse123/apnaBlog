@@ -11,6 +11,7 @@ import { Auth } from '../../../../core/services/auth';
 import { ThemeService } from '../../../../core/services/theme-service';
 import { CreatePost } from '../../../post/pages/create-post/create-post';
 import { ShortsUpload } from '../../../shorts/pages/shorts-upload/shorts-upload';
+import { MobileBottomNav } from '../../../../shared/mobile-bottom-nav/mobile-bottom-nav';
 
 interface SponsoredItem {
   _id: string;
@@ -43,7 +44,7 @@ interface ReportStats {
   selector: 'app-sponsor-dashboard',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterLink, CreatePost, ShortsUpload],
+  imports: [CommonModule, RouterLink, CreatePost, ShortsUpload, MobileBottomNav],
   templateUrl: './sponsor-dashboard.html',
   styleUrl:    './sponsor-dashboard.css',
 })

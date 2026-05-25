@@ -15,6 +15,7 @@ import { AllPostsCache }  from '../../../../core/services/all-posts-cache';
 import { TaxonomyService } from '../../../../core/services/taxonomy.service';
 import { Post }           from '../../../../core/models/post.model';
 import { TimeAgoPipe }    from '../../../../shared/pipes/time-ago-pipe';
+import { MobileBottomNav } from '../../../../shared/mobile-bottom-nav/mobile-bottom-nav';
 
 const FALLBACK_CATEGORIES: string[] = [
   'Update', 'News', 'Sports', 'Entertainment', 'Health', 'Technology', 'Business',
@@ -83,7 +84,7 @@ const CATEGORY_DESCRIPTIONS: Record<string, { description: string; intro: string
 @Component({
   selector: 'app-category-page',
   standalone: true,
-  imports: [RouterLink, CommonModule, DatePipe, TimeAgoPipe],
+  imports: [RouterLink, CommonModule, DatePipe, TimeAgoPipe, MobileBottomNav],
   templateUrl: './category-page.html',
   styleUrl: './category-page.css',
 })

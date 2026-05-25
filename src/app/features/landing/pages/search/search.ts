@@ -16,11 +16,12 @@ import { catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { TimeAgoPipe } from '../../../../shared/pipes/time-ago-pipe';
 import { environment } from '../../../../../environments/environment';
+import { MobileBottomNav } from '../../../../shared/mobile-bottom-nav/mobile-bottom-nav';
 
 @Component({
   selector: 'app-search',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, TimeAgoPipe],
+  imports: [CommonModule, RouterLink, FormsModule, TimeAgoPipe, MobileBottomNav],
   templateUrl: './search.html',
   styleUrl: './search.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -331,8 +331,12 @@
 }
 
 /* ── Mobile ── */
+@media (max-width: 768px) {
+  .history-page { padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
+}
+
 @media (max-width: 600px) {
-  .history-page { padding: 24px 16px 60px; }
+  .history-page { padding-top: 24px; padding-left: 16px; padding-right: 16px; }
   .history-title { font-size: 18px; }
   .history-read-btn { display: none; }
   .history-item-title { font-size: 14px; }

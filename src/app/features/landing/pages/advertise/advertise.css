@@ -470,3 +470,7 @@
   .adv-nav .back-btn span { display: none !important; }
   .why-grid { grid-template-columns: 1fr; }
 }
+
+@media (max-width: 768px) {
+  .adv-page { padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
+}

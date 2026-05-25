@@ -10,12 +10,13 @@ import { CommonHeader } from "../../../../shared/common-header/common-header";
 import { UserProfile } from "../../../../shared/user-profile/user-profile";
 import { User } from '../../../user/models/user.mode';
 import { Sidebar } from '../../../../shared/sidebar/sidebar';
+import { MobileBottomNav } from '../../../../shared/mobile-bottom-nav/mobile-bottom-nav';
 
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterOutlet, CommonHeader, UserProfile, Sidebar],
+  imports: [CommonModule, RouterOutlet, CommonHeader, UserProfile, Sidebar, MobileBottomNav],
   templateUrl: './admin-dashboard.html',
   styleUrl: './admin-dashboard.css',
 })

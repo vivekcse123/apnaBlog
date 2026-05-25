@@ -7,12 +7,13 @@ import { DomSanitizer, Meta, Title, SafeResourceUrl } from '@angular/platform-br
 import { DOCUMENT } from '@angular/common';
 import { ShortsService } from '../../services/shorts.service';
 import { VideoShort } from '../../models/video-short.model';
+import { MobileBottomNav } from '../../../../shared/mobile-bottom-nav/mobile-bottom-nav';
 
 @Component({
   selector: 'app-short-view',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, MobileBottomNav],
   templateUrl: './short-view.html',
   styleUrl: './short-view.css',
 })

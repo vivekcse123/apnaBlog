@@ -82,7 +82,7 @@ export class UserHome implements OnInit, AfterViewInit, OnDestroy {
   followersList      = signal<any[]>([]);
   followersLoading   = signal(false);
 
-  createBlogLink  = computed(() => `/user/${this.userId()}/manage-blogs`);
+  createBlogLink  = computed(() => `/user/${this.userId()}/create-blog`);
   manageBlogsLink = computed(() => `/user/${this.userId()}/manage-blogs`);
   settingsLink    = computed(() => `/user/${this.userId()}/settings`);
   exploreLink     = computed(() => `/user/${this.userId()}/explore-blogs`);

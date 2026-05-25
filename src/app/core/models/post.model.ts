@@ -1,5 +1,17 @@
 import { User } from "../../features/user/models/user.mode";
 
+export interface McqOption {
+  text: string;
+}
+
+export interface McqQuestion {
+  _id?:         string;
+  question:     string;
+  options:      McqOption[];
+  correctIndex: number;
+  explanation?: string;
+}
+
 export interface Comment {
   _id: string;
   comment: string;
@@ -46,6 +58,10 @@ export interface Post {
   deleteRequested?:      boolean;
   deleteRequestReason?:  string | null;
   deleteRequestedAt?:    Date | null;
+
+  // MCQ
+  postType?:      'blog' | 'mcq';
+  mcqQuestions?:  McqQuestion[];
 
   // Sponsorship
   isSponsored?:           boolean;

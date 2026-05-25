@@ -224,7 +224,7 @@
 
 /* Delete confirmation modal */
 .tax-modal-backdrop {
-  position: fixed; inset: 0; z-index: 1000;
+  position: fixed; inset: 0; z-index: 1200;
   background: rgba(0,0,0,0.45);
   backdrop-filter: blur(3px);
   display: flex; align-items: center; justify-content: center;
@@ -429,4 +429,8 @@
 [data-theme="dark"] .shimmer {
   background: linear-gradient(90deg, #222 25%, #2a2a2a 50%, #222 75%);
   background-size: 800px 100%;
+}
+
+@media (max-width: 768px) {
+  .tax-page { padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
 }

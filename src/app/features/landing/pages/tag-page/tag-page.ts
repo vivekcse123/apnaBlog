@@ -13,12 +13,13 @@ import { PostService } from '../../../post/services/post-service';
 import { AllPostsCache } from '../../../../core/services/all-posts-cache';
 import { Post } from '../../../../core/models/post.model';
 import { TimeAgoPipe } from '../../../../shared/pipes/time-ago-pipe';
+import { MobileBottomNav } from '../../../../shared/mobile-bottom-nav/mobile-bottom-nav';
 
 @Component({
   selector: 'app-tag-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, CommonModule, DatePipe, TimeAgoPipe],
+  imports: [RouterLink, CommonModule, DatePipe, TimeAgoPipe, MobileBottomNav],
   templateUrl: './tag-page.html',
   styleUrl: './tag-page.css',
 })

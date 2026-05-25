@@ -24,6 +24,7 @@ import { User } from '../../../user/models/user.mode';
 import { WelcomeModal } from '../welcome.modal';
 import { FormatCountPipe } from '../../../../shared/pipes/format-count-pipe';
 import { TimeAgoPipe }     from '../../../../shared/pipes/time-ago-pipe';
+import { MobileBottomNav } from '../../../../shared/mobile-bottom-nav/mobile-bottom-nav';
 import { PostCache, PostWithTs } from '../../../post/services/post-cache';
 import { ReadingHistory }        from '../../../../core/services/reading-history';
 import { AllPostsCache }         from '../../../../core/services/all-posts-cache';
@@ -71,7 +72,7 @@ function persistStats(total: number, totalViews: number, categoryCounts: Record<
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [RouterLink, CommonModule, FormsModule, NgTemplateOutlet, WelcomeModal, FormatCountPipe, TimeAgoPipe],
+  imports: [RouterLink, CommonModule, FormsModule, NgTemplateOutlet, WelcomeModal, FormatCountPipe, TimeAgoPipe, MobileBottomNav],
   templateUrl: './home.html',
   styleUrl: './home.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -112,6 +113,8 @@ export class Home implements OnInit, OnDestroy {
   selectedReadingTime  = signal<'' | 'quick' | 'medium' | 'long'>('');
   selectedSort         = signal('newest');
   showScrollTop    = signal(false);
+
+  mobileTab = signal<'for-you' | 'trending' | 'latest'>('for-you');
 
   showWelcomeModal      = signal(false);
   showInstallBanner     = signal(false);
@@ -328,6 +331,24 @@ export class Home implements OnInit, OnDestroy {
   // True once stats-fetch has returned accurate data
   storiesReady   = computed(() => this.serverTotal() > 0);
   totalReadsReady = computed(() => this._maxSeenViews() > 0);
+
+  /** Unique author count — used as a proxy for community members */
+  communityMembersCount = computed(() => {
+    const ids = new Set(this.allPosts().filter(p => p.user?._id).map(p => p.user._id));
+    return ids.size;
+  });
+  communityMembersReady = computed(() => this.communityMembersCount() > 0);
+
+  /** Authors who have published 2+ posts — "top contributors" */
+  topContributorsCount = computed(() => {
+    const counts = new Map<string, number>();
+    for (const post of this.allPosts()) {
+      const id = post.user?._id;
+      if (id) counts.set(id, (counts.get(id) ?? 0) + 1);
+    }
+    return [...counts.values()].filter(c => c >= 2).length;
+  });
+  topContributorsReady = computed(() => this.topContributorsCount() > 0);
 
   // ── Personalization computeds ────────────────────────────────────────────────
 

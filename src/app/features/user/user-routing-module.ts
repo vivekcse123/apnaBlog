@@ -3,6 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { UserDashboard } from './pages/user-dashboard/user-dashboard';
 import { UserHome } from './pages/user-home/user-home';
 import { PostLists } from '../post/pages/post-lists/post-lists';
+import { CreatePost } from '../post/pages/create-post/create-post';
 import { Settings } from '../admin/pages/settings/settings';
 import { Home } from '../landing/pages/home/home';
 import { MyShorts } from './pages/my-shorts/my-shorts';
@@ -21,6 +22,11 @@ const routes: Routes = [
         path: 'manage-blogs',
         component: PostLists,
         title: 'ApnaInsights - Manage Blogs'
+      },
+      {
+        path: 'create-blog',
+        component: CreatePost,
+        title: 'ApnaInsights - Create Blog'
       },
       {
         path: 'my-shorts',

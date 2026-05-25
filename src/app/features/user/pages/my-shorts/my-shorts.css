@@ -331,7 +331,7 @@
   position: fixed; inset: 0;
   background: rgba(0,0,0,.45);
   display: flex; align-items: center; justify-content: center;
-  z-index: 1000;
+  z-index: 1200;
   backdrop-filter: blur(4px);
 }
 .ms-modal {
@@ -393,8 +393,12 @@
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* Responsive */
+@media (max-width: 768px) {
+  .ms-page { padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
+}
+
 @media (max-width: 600px) {
-  .ms-page { padding: 16px; }
+  .ms-page { padding: 16px calc(16px) calc(72px + env(safe-area-inset-bottom, 0px)); }
   .ms-item-stats { display: none; }
   .ms-item { gap: 10px; }
 }

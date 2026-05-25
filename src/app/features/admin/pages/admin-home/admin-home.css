@@ -1161,7 +1161,14 @@
 @media (max-width: 768px) {
   .admin-dash { padding: 20px 16px; }
 
-  .admin-header { flex-direction: column; align-items: flex-start; }
+  .admin-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .admin-header-right { width: 100%; flex-wrap: wrap; gap: 8px; }
+  .admin-header-right .btn-primary { flex: 1; justify-content: center; min-width: 0; }
+  .date-pill { font-size: 11px; }
 
   .stats-row,
   .stats-row--7 {
@@ -1191,4 +1198,73 @@
   .qa-grid { grid-template-columns: 1fr 1fr; }
 
   .pending-alert { flex-direction: column; align-items: flex-start; }
+}
+
+/* ── Mobile Quick-Access Module Strip ── */
+.mob-modules {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  /* Module strip — horizontal scroll row */
+  .mob-modules {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 4px 0 8px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .mob-modules::-webkit-scrollbar { display: none; }
+
+  .mob-mod-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px 7px 10px;
+    border-radius: 20px;
+    background: var(--bg-surface);
+    border: 1.5px solid var(--border);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-decoration: none;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.15s;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .mob-mod-chip:active { transform: scale(0.96); }
+
+  .mob-mod-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 7px;
+    flex-shrink: 0;
+  }
+
+  .mob-mod-icon--teal   { background: rgba(67,206,162,0.12); color: #43cea2; }
+  .mob-mod-icon--blue   { background: rgba(24, 90,157,0.12);  color: #185a9d; }
+  .mob-mod-icon--purple { background: rgba(124,58,237,0.12);  color: #7c3aed; }
+  .mob-mod-icon--amber  { background: rgba(245,158,11,0.12);  color: #d97706; }
+  .mob-mod-icon--green  { background: rgba(16,185,129,0.12);  color: #059669; }
+  .mob-mod-icon--gray   { background: rgba(107,114,128,0.12); color: #6b7280; }
+
+  /* stat cards: tighter on mobile */
+  .stat-card {
+    padding: 12px 14px;
+    gap: 10px;
+  }
+
+  .stat-value { font-size: 20px; }
+  .stat-chip  { font-size: 10px; }
+}
+
+/* Bottom nav clearance */
+@media (max-width: 768px) {
+  .admin-dash { padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px)); }
 }

@@ -318,8 +318,12 @@
 .bm-page-info { font-size: 0.85rem; color: var(--text-muted, #888); }
 
 /* ── Mobile ── */
+@media (max-width: 768px) {
+  .bm-page { padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
+}
+
 @media (max-width: 640px) {
-  .bm-page { padding: 0 14px 60px; }
+  .bm-page { padding-left: 14px; padding-right: 14px; }
   .bm-header-title h1 { font-size: 17px; }
   .bm-item-thumb { width: 76px; height: 56px; }
   .bm-item-title { font-size: 14px; }

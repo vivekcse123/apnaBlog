@@ -22,6 +22,12 @@
   text-decoration: underline;
 }
 
-.dash-shell { display: flex; min-height: 100vh; background: var(--bg-base); }
-.dash-main { flex: 1; min-width: 0; display: flex; flex-direction: column; background: var(--bg-base); }
-.dash-content { flex: 1; overflow-x: hidden; }
+.dash-shell   { display: flex; min-height: 100vh; background: var(--bg-base); }
+.dash-main    { flex: 1; min-width: 0; display: flex; flex-direction: column; background: var(--bg-base); overflow-x: hidden; }
+.dash-content { flex: 1; overflow-x: hidden; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+
+@media (max-width: 768px) {
+  .dash-shell   { flex-direction: column; }
+  .dash-main    { width: 100%; min-height: 100vh; }
+  .dash-content { padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
+}

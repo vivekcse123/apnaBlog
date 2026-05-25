@@ -10,6 +10,16 @@ import { sponsorGuard } from './core/guards/sponsor-guard';
 
 export const routes: Routes = [
     {
+        path: 'splash',
+        loadComponent: () => import('./features/landing/pages/splash/splash').then(m => m.SplashScreen),
+        title: 'ApnaInsights'
+    },
+    {
+        path: 'onboarding',
+        loadComponent: () => import('./features/landing/pages/onboarding/onboarding').then(m => m.Onboarding),
+        title: 'Get Started | ApnaInsights'
+    },
+    {
         path: '',
         loadChildren: () => import('./features/landing/landing-module').then(m => m.LandingModule),
         title: 'ApnaInsights'

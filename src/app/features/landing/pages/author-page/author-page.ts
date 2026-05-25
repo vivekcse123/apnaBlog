@@ -15,12 +15,13 @@ import { Post } from '../../../../core/models/post.model';
 import { User } from '../../../user/models/user.mode';
 import { VideoShort } from '../../../shorts/models/video-short.model';
 import { TimeAgoPipe } from '../../../../shared/pipes/time-ago-pipe';
+import { MobileBottomNav } from '../../../../shared/mobile-bottom-nav/mobile-bottom-nav';
 
 @Component({
   selector: 'app-author-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, CommonModule, DatePipe, TimeAgoPipe],
+  imports: [RouterLink, CommonModule, DatePipe, TimeAgoPipe, MobileBottomNav],
   templateUrl: './author-page.html',
   styleUrl: './author-page.css',
 })

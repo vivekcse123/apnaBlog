@@ -5,12 +5,13 @@ import { Meta, Title } from '@angular/platform-browser';
 import { DOCUMENT } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { environment } from '../../../../../environments/environment';
+import { MobileBottomNav } from '../../../../shared/mobile-bottom-nav/mobile-bottom-nav';
 
 @Component({
   selector: 'app-privacy-policy',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink],
+  imports: [RouterLink, MobileBottomNav],
   templateUrl: './privacy-policy.html',
   styleUrl: './privacy-policy.css'
 })

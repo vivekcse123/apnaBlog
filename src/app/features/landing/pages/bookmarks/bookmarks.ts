@@ -10,6 +10,7 @@ import { catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { Post } from '../../../../core/models/post.model';
 import { TimeAgoPipe } from '../../../../shared/pipes/time-ago-pipe';
+import { MobileBottomNav } from '../../../../shared/mobile-bottom-nav/mobile-bottom-nav';
 import { BookmarkService } from '../../../../core/services/bookmark.service';
 import { Auth } from '../../../../core/services/auth';
 import { UserService } from '../../../user/services/user-service';
@@ -17,7 +18,7 @@ import { UserService } from '../../../user/services/user-service';
 @Component({
   selector: 'app-bookmarks',
   standalone: true,
-  imports: [CommonModule, RouterLink, TimeAgoPipe],
+  imports: [CommonModule, RouterLink, TimeAgoPipe, MobileBottomNav],
   templateUrl: './bookmarks.html',
   styleUrl: './bookmarks.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

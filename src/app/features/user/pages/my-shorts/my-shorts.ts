@@ -8,7 +8,6 @@ import { ShortsService } from '../../../shorts/services/shorts.service';
 import { ShortsUpload } from '../../../shorts/pages/shorts-upload/shorts-upload';
 import { VideoShort } from '../../../shorts/models/video-short.model';
 import { ToastService } from '../../../../core/services/toast.service';
-
 @Component({
   selector: 'app-my-shorts',
   standalone: true,

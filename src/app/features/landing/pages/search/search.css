@@ -343,6 +343,10 @@
 .search-empty-link { color: #43cea2; text-decoration: none; font-weight: 600; }
 
 /* ── Mobile ── */
+@media (max-width: 768px) {
+  .search-page { padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
+}
+
 @media (max-width: 640px) {
   .search-hero {
     padding: 52px 16px 32px;

@@ -226,7 +226,9 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     if (this.unmuteHintTimer)   clearTimeout(this.unmuteHintTimer);
     if (this.swipeHintTimer)    clearTimeout(this.swipeHintTimer);
     if (this.likedPopTimer)     clearTimeout(this.likedPopTimer);
-    document.removeEventListener('visibilitychange', this.visibilityHandler);
+    if (isPlatformBrowser(this.platformId)) {
+      document.removeEventListener('visibilitychange', this.visibilityHandler);
+    }
     this.progressControllers.forEach(c => c.abort());
     this.progressControllers.clear();
     // Pause the active video so it doesn't keep decoding after route change.

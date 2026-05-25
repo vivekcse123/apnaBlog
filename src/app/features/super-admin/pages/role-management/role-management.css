@@ -433,3 +433,7 @@
   .rm-pagination { justify-content: center; }
   .pg-info { width: 100%; text-align: center; }
 }
+
+@media (max-width: 768px) {
+  .rm-page { padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
+}

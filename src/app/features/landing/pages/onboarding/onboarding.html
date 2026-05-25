@@ -1,0 +1,98 @@
+<div class="ob-shell"
+     [style.background]="slides[current()].bg"
+     (touchstart)="onTouchStart($event)"
+     (touchend)="onTouchEnd($event)">
+
+  <!-- Skip -->
+  @if (!isLast()) {
+    <button class="ob-skip" (click)="finish()" type="button">Skip</button>
+  }
+
+  <!-- Slides track -->
+  <div class="ob-track" [style.transform]="'translateX(-' + (current() * 100) + '%)'">
+    @for (slide of slides; track slide.id) {
+      <div class="ob-slide">
+
+        <!-- Illustration -->
+        <div class="ob-illus" [style.background]="'radial-gradient(circle, ' + slide.accent + '22 0%, transparent 70%)'">
+          <div class="ob-illus-blob" [style.background]="slide.accent + '33'" aria-hidden="true"></div>
+          <div class="ob-illus-ring" [style.border-color]="slide.accent + '44'" aria-hidden="true"></div>
+
+          <div class="ob-illus-emoji" [style.box-shadow]="'0 12px 40px ' + slide.accent + '55'">
+            {{ slide.emoji }}
+          </div>
+
+          <!-- Floating badges -->
+          <div class="ob-badge ob-badge--tl" [style.border-color]="slide.accent + '44'">
+            <span>{{ slide.features[0] }}</span>
+          </div>
+          <div class="ob-badge ob-badge--br" [style.border-color]="slide.accent + '44'">
+            <span>{{ slide.features[1] }}</span>
+          </div>
+        </div>
+
+        <!-- Text -->
+        <div class="ob-text">
+          <h2 class="ob-title">{{ slide.title }}</h2>
+          <p class="ob-subtitle">{{ slide.subtitle }}</p>
+
+          <ul class="ob-features">
+            @for (f of slide.features; track f) {
+              <li class="ob-feature" [style.color]="slide.accent">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                <span>{{ f }}</span>
+              </li>
+            }
+          </ul>
+        </div>
+
+      </div>
+    }
+  </div>
+
+  <!-- Dots + CTA -->
+  <div class="ob-footer">
+
+    <!-- Dot indicators -->
+    <div class="ob-dots" role="tablist" aria-label="Onboarding steps">
+      @for (s of slides; track s.id; let i = $index) {
+        <button class="ob-dot"
+                [class.ob-dot--active]="i === current()"
+                [style.background]="i === current() ? slides[current()].accent : 'rgba(255,255,255,0.25)'"
+                (click)="goTo(i)"
+                role="tab"
+                [attr.aria-selected]="i === current()"
+                [attr.aria-label]="'Step ' + (i + 1)">
+        </button>
+      }
+    </div>
+
+    <!-- Next / Get Started -->
+    <button class="ob-next"
+            [style.background]="'linear-gradient(135deg,' + slides[current()].accent + ', #185a9d)'"
+            (click)="next()"
+            type="button">
+      @if (isLast()) {
+        <span>Get Started</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+          <path d="M9 18l6-6-6-6"/>
+        </svg>
+      } @else {
+        <span>Next</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+          <path d="M9 18l6-6-6-6"/>
+        </svg>
+      }
+    </button>
+
+  </div>
+
+  <!-- Already have account -->
+  <p class="ob-login">
+    Already have an account?
+    <a routerLink="/auth/login" class="ob-login-link" (click)="finish()">Sign In</a>
+  </p>
+
+</div>
