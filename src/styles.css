@@ -147,7 +147,7 @@
   --toggle-off:     #374151;
   --toggle-on:      #43cea2;
   --sk-base:        #1e2235;
-  --sk-shine:       #252a3d;
+  --sk-shine:       #2e3558;
   --code-bg:        #0d1117;
   --code-text:      #c9d1d9;
   --code-header-bg: #161b22;
@@ -681,8 +681,13 @@ html { scroll-behavior: smooth; }
 /* Collapse AdSense global <ins> injected outside app-root — prevents body-level blank scroll space */
 body > ins.adsbygoogle { display: none !important; width: 0 !important; height: 0 !important; }
 
-/* Collapse unfilled AdSense slots — removes blank space when no ad is served (dev/prod) */
+/* Collapse unfilled AdSense slots — removes blank space when no ad is served (dev/PWA/iOS) */
 ins.adsbygoogle[data-ad-status="unfilled"] {
+  display: none !important;
+  height: 0 !important;
+}
+/* Also collapse slots where AdSense JS never ran (e.g., iOS PWA standalone mode) */
+ins.adsbygoogle:not([data-ad-status="filled"]):not([data-ad-status="unfilled"]) {
   display: none !important;
   height: 0 !important;
 }

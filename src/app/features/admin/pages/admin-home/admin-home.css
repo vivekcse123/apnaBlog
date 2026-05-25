@@ -197,20 +197,28 @@
    Skeleton shimmer
 ════════════════════════════ */
 @keyframes skeleton-shimmer {
-  0%   { background-position: -200% center; }
-  100% { background-position:  200% center; }
+  0%   { transform: translateX(-200%); }
+  100% { transform: translateX(200%); }
 }
 
 .shimmer {
+  background: var(--sk-base);
+  border-radius: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
   background: linear-gradient(
     90deg,
-    var(--sk-base) 25%,
+    transparent 0%,
     var(--sk-shine) 50%,
-    var(--sk-base) 75%
+    transparent 100%
   );
-  background-size: 200% 100%;
   animation: skeleton-shimmer 1.6s ease-in-out infinite;
-  border-radius: 12px;
 }
 
 .sk-section { display: flex; flex-direction: column; gap: 16px; }

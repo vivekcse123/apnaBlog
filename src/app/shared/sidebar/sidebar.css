@@ -29,7 +29,7 @@
 
 /* Logo */
 .sb-logo {
-  padding: 20px 16px 16px;
+  padding: calc(20px + env(safe-area-inset-top, 0px)) 16px 16px;
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
@@ -263,7 +263,7 @@
   .sidebar {
     position: fixed;
     top: 0; left: 0;
-    height: 100vh;
+    height: 100dvh;
     transform: translateX(-100%);
   }
   .sidebar--open { transform: translateX(0); }

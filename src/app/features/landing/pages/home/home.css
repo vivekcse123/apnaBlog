@@ -15,8 +15,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 62px;
-  padding: 0 24px;
+  height: calc(62px + env(safe-area-inset-top, 0px));
+  padding: env(safe-area-inset-top, 0px) 24px 0;
   background: var(--bg-surface);
   border-bottom: 1px solid var(--border);
   gap: 16px;
@@ -222,6 +222,7 @@
   overflow-y: auto;
   transform: translateX(100%);
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding-top: calc(20px + env(safe-area-inset-top, 0px));
   padding-bottom: env(safe-area-inset-bottom, 24px);
 }
 .mobile-drawer.open { transform: translateX(0); }
@@ -903,7 +904,7 @@
   border-bottom: 1px solid var(--border);
   padding: 14px 24px;
   position: sticky;
-  top: 62px;
+  top: calc(62px + env(safe-area-inset-top, 0px));
   z-index: 90;
 }
 
@@ -1690,7 +1691,12 @@
    AD WRAP
    ═══════════════════════════════════════════════════════════════ */
 .home-ad-wrap { max-width: 1440px; margin: 0 auto; padding: 8px 24px; overflow: hidden; }
-.home-ad-wrap:has(ins.adsbygoogle[data-ad-status="unfilled"]) { padding: 0; }
+/* Collapse wrapper when ad is unfilled or when AdSense JS never ran (iOS PWA) */
+.home-ad-wrap:not(:has(ins.adsbygoogle[data-ad-status="filled"])) {
+  padding: 0 !important;
+  height: 0 !important;
+  overflow: hidden !important;
+}
 
 /* ═══════════════════════════════════════════════════════════════
    SCROLL-TO-TOP FAB
@@ -2144,7 +2150,7 @@
   .desktop-only { display: none !important; }
 
   /* ── Header ── */
-  .header { padding: 0 14px; height: 56px; gap: 10px; }
+  .header { padding: env(safe-area-inset-top, 0px) 14px 0; height: calc(56px + env(safe-area-inset-top, 0px)); gap: 10px; }
   .header-nav { display: none; }
 
   .shorts-mobile-pill {
@@ -2336,7 +2342,7 @@
   /* ── Filter ── */
   .filter-wrap {
     padding: 10px 12px 8px;
-    top: calc(56px + 47px);
+    top: calc(56px + 47px + env(safe-area-inset-top, 0px));
     z-index: 87;
   }
   .filter-inner { gap: 8px; }

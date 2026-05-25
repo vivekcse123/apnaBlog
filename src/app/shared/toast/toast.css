@@ -1,6 +1,6 @@
 .toast-container {
   position: fixed;
-  top: 20px;
+  top: calc(20px + env(safe-area-inset-top, 0px));
   right: 20px;
   z-index: 10000;
   display: flex;
@@ -116,7 +116,7 @@
 
 @media (max-width: 480px) {
   .toast-container {
-    top: 12px;
+    top: calc(12px + env(safe-area-inset-top, 0px));
     right: 12px;
     left: 12px;
     width: auto;

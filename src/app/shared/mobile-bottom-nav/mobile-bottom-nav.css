@@ -18,12 +18,12 @@
     left: 0;
     right: 0;
     z-index: 1100;
-    height: 64px;
+    height: calc(64px + env(safe-area-inset-bottom, 0px));
     background: var(--bg-surface, #fff);
     border-top: 1px solid var(--border, #e5e7eb);
     box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.08);
     padding: 0 4px;
-    padding-bottom: env(safe-area-inset-bottom, 0);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
     gap: 0;
   }
 

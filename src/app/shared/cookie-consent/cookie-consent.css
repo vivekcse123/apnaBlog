@@ -8,6 +8,7 @@
   border-top: 1px solid var(--border);
   box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.12);
   animation: slideUp 0.35s cubic-bezier(0.4, 0, 0.2, 1) both;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 @keyframes slideUp {
