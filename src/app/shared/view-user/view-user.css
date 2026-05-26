@@ -571,9 +571,24 @@
     animation: slideUpSheet 0.25s cubic-bezier(0.32, 0.72, 0, 1) both;
   }
 
-  /* Ensure scrollable content clears the floating bottom nav */
   .modal-body {
-    padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: 0;
+  }
+
+  /* Footer with safe-area so Edit/Cancel/Save clear the home indicator */
+  .modal-footer {
+    padding-bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .modal-footer .btn-cancel,
+  .modal-footer .btn-edit,
+  .modal-footer .btn-save {
+    flex: 1;
+    min-width: 0;
+    justify-content: center;
+    min-height: 0 !important;
+    min-width: 0 !important;
   }
 
   @keyframes slideUpSheet {

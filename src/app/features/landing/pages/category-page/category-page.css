@@ -4,7 +4,7 @@
   font-family: 'DM Sans', sans-serif;
   background: var(--bg-base);
   color: var(--text-primary);
-  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 /* NAV */

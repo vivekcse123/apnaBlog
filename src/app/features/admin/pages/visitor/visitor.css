@@ -14,7 +14,7 @@
 
 .visitor-page {
   background: var(--bg-base);
-  min-height: 100vh;
+  min-height: 100dvh;
   padding: 2rem;
   color: var(--text-primary);
 }

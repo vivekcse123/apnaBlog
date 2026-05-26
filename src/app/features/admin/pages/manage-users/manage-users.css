@@ -7,7 +7,7 @@
   gap: 20px;
   background: var(--bg-base);
   color: var(--text-primary);
-  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 /* ── Page Header ── */
@@ -554,7 +554,7 @@ tbody > tr:hover td { background: var(--bg-hover); }
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1100;
+  z-index: 1200;
   animation: fadeIn 0.2s ease;
 }
 
@@ -747,5 +747,10 @@ tbody > tr:hover td { background: var(--bg-hover); }
   .sk-row { border-radius: 12px; overflow: hidden; }
   .sk-row td { display: block; padding: 10px 14px; }
 
-  .confirm-box { margin: 0 12px; width: calc(100% - 24px); max-width: unset; }
+  .confirm-box {
+    margin: 0 12px;
+    width: calc(100% - 24px);
+    max-width: unset;
+    padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  }
 }

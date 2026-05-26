@@ -5,7 +5,7 @@
   flex-direction: column;
   gap: 24px;
   background: var(--bg-base);
-  min-height: 100vh;
+  min-height: 100dvh;
   color: var(--text-primary);
 }
 

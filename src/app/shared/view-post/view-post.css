@@ -1095,17 +1095,26 @@
   .post-modal {
     margin: 0;
     border-radius: 20px 20px 0 0;
-    max-height: calc(100dvh - 3rem - env(safe-area-inset-bottom, 0px));
+    max-height: calc(92dvh - env(safe-area-inset-bottom, 0px));
     width: 100%;
-    /* Extra scroll clearance so last items aren't behind the bottom nav */
-    padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
   }
 
   /* Layout adjustments */
   .edit-grid      { grid-template-columns: 1fr; }
   .detail-row     { grid-template-columns: 1fr; }
   .post-stats     { grid-template-columns: repeat(3, 1fr); }
-  .modal-footer   { flex-wrap: wrap; gap: 8px; }
+  .modal-footer   {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+  }
+  .modal-footer .btn-cancel,
+  .modal-footer .btn-edit,
+  .modal-footer .btn-save {
+    flex: 1;
+    min-width: calc(50% - 4px);
+    justify-content: center;
+  }
   .confirm-actions { flex-direction: column; }
 
   .stat-item {

@@ -7,7 +7,7 @@
   gap: 20px;
   background: var(--bg-base);
   color: var(--text-primary);
-  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 /* ── Page Header ── */
@@ -604,6 +604,9 @@ tbody > tr:hover td { background: var(--bg-hover); }
 
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
+/* ── Confirm modals must sit above bottom nav (z-index 1100) ── */
+.modal-overlay { z-index: 1200 !important; }
+
 /* ── Confirm Box ── */
 .confirm-box {
   width: 100%;
@@ -871,7 +874,7 @@ tbody > tr:hover td { background: var(--bg-hover); }
 @media (max-width: 1024px) { .blogs-page { padding: 24px 32px; } }
 
 @media (max-width: 768px) {
-  .blogs-page { padding: 16px 20px calc(72px + env(safe-area-inset-bottom, 0px)); }
+  .blogs-page { padding: 16px 14px calc(72px + env(safe-area-inset-bottom, 0px)); }
   .page-header { flex-direction: column; align-items: stretch; }
   .search-input { width: 100%; }
   .search-wrap  { width: 100%; }
@@ -897,9 +900,8 @@ tbody > tr:hover td { background: var(--bg-hover); }
   .stat-icon-wrap { width: 32px; height: 32px; }
   .stat-value { font-size: 18px; }
   .stat-chip { display: none; }
-}
 
-@media (max-width: 600px) {
+  /* Card layout — show at 768px same as manage-users */
   .pagination { justify-content: center; }
   .pg-info    { width: 100%; text-align: center; }
 
@@ -964,5 +966,12 @@ tbody > tr:hover td { background: var(--bg-hover); }
   td.cell-actions::before { display: none; }
 
   .action-btn { width: 36px; height: 36px; border-radius: 8px; }
-  .confirm-box { margin: 0 16px; }
+
+  /* Confirm box: full width, safe-area bottom clearance */
+  .confirm-box {
+    margin: 0 12px;
+    width: calc(100% - 24px);
+    max-width: unset;
+    padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  }
 }

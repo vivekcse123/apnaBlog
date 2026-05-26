@@ -760,7 +760,7 @@
 .mb-page {
   font-family: 'DM Sans', sans-serif;
   background: var(--bg-base, #f4f5f7);
-  min-height: 100vh;
+  min-height: 100dvh;
   color: var(--text-primary, #111);
   padding-bottom: calc(var(--mob-nav-h) + var(--mob-safe-bottom));
 }
