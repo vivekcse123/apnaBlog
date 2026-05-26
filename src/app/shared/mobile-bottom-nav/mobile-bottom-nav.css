@@ -35,18 +35,15 @@
     backface-visibility: hidden;
   }
 
-  /* ── iOS PWA: push nav past the screen edge so background always fills flush ──
-     The ::after approach does NOT fix this gap — content below position:fixed
-     bottom:0 is clipped by the viewport and cannot render into the safe-area zone.
-     Instead, bottom:-100px extends the nav 100px beyond the viewport edge (the
-     overflow is hardware-clipped and invisible), while the compensating
-     padding-bottom keeps the tappable buttons in exactly the right position.
-     This guarantees no gap on any iPhone, regardless of env() timing.       */
+  /* ── iOS PWA standalone: use JS-resolved --safe-area-bottom (set by index.html
+     polling script) so the correct height is applied from the very first paint,
+     without the old bottom:-100px hack that misaligned dashboard content padding. */
   @media (display-mode: standalone) {
     .mob-nav {
-      bottom: -100px;
-      height: calc(64px + env(safe-area-inset-bottom, 0px) + 100px);
-      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 100px);
+      bottom: 0;
+      height: calc(64px + var(--safe-area-bottom, env(safe-area-inset-bottom, 0px)));
+      padding-bottom: var(--safe-area-bottom, env(safe-area-inset-bottom, 0px));
+      transition: height 0.15s ease, padding-bottom 0.15s ease;
     }
   }
 

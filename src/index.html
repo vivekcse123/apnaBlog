@@ -24,6 +24,47 @@
         navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function() {});
       });
     }
+
+    // iOS PWA: env(safe-area-inset-bottom) returns 0 on first paint due to a WebKit
+    // timing bug. Poll via rAF until it resolves, then write --safe-area-bottom so
+    // CSS can use it immediately without waiting for a layout-intensive page visit.
+    (function () {
+      if (!window.navigator.standalone) return;
+      var root = document.documentElement;
+      var tries = 0;
+
+      function measure() {
+        var el = document.createElement('div');
+        el.style.cssText = 'position:fixed;bottom:0;left:0;width:1px;height:env(safe-area-inset-bottom,0px);pointer-events:none;visibility:hidden;';
+        document.body.appendChild(el);
+        var h = el.offsetHeight;
+        document.body.removeChild(el);
+        return h;
+      }
+
+      function apply(px) {
+        root.style.setProperty('--safe-area-bottom', px + 'px');
+        root.setAttribute('data-safe-ready', '1');
+      }
+
+      function poll() {
+        var val = measure();
+        if (val > 0) { apply(val); return; }
+        if (++tries < 30) { requestAnimationFrame(poll); }
+        else { apply(34); } // fallback: standard Face ID home-indicator height
+      }
+
+      document.addEventListener('DOMContentLoaded', poll);
+
+      window.addEventListener('orientationchange', function () {
+        tries = 0;
+        // iOS takes ~300ms to update env() after orientation change
+        setTimeout(function () {
+          var val = measure();
+          if (val > 0) apply(val);
+        }, 350);
+      });
+    })();
   </script>
   <meta name="google-adsense-account" content="ca-pub-6477809641944524">
   <meta charset="utf-8">

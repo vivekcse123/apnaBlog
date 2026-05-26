@@ -32,3 +32,10 @@
   /* Extra padding so content never hides behind the fixed bottom nav */
   .dash-content { padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
 }
+
+@media (max-width: 768px) and (display-mode: standalone) {
+  .dash-content {
+    padding-bottom: calc(80px + var(--safe-area-bottom, env(safe-area-inset-bottom, 0px)));
+    transition: padding-bottom 0.15s ease;
+  }
+}
