@@ -702,8 +702,7 @@ ins.adsbygoogle[data-ad-status="unfilled"] {
 
 /* iOS PWA standalone mode — ensure safe-area is always applied and prevent rubber-band artifacts */
 @media (display-mode: standalone) {
-  /* Force GPU layer on fixed elements for iOS compositing stability */
-  app-mobile-bottom-nav .mob-nav,
+  /* Force GPU layer on header for iOS compositing stability */
   .ch-topbar,
   app-common-header .ch-topbar {
     -webkit-transform: translateZ(0);
