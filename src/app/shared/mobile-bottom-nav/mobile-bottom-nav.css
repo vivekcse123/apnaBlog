@@ -25,6 +25,8 @@
     padding: 0 4px;
     padding-bottom: env(safe-area-inset-bottom, 0px);
     gap: 0;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
   }
 
   /* ── Nav item base ── */

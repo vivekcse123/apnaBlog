@@ -11,6 +11,7 @@
   background: var(--bg-surface);
   border-bottom: 1px solid var(--border);
   box-shadow: var(--card-shadow);
+  padding-top: env(safe-area-inset-top, 0px);
 }
 .policy-nav::after {
   content: ''; position: absolute; bottom: 0; left: 0;

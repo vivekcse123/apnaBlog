@@ -57,6 +57,7 @@
   background: var(--bg-surface);
   border-bottom: 1px solid var(--border);
   backdrop-filter: blur(10px);
+  padding-top: env(safe-area-inset-top, 0px);
 }
 .adv-nav-inner {
   width: 92%;

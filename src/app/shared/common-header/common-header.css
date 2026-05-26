@@ -562,7 +562,7 @@
 
 /* ── Large phone (≤480px) ── */
 @media (max-width: 480px) {
-  .ch-topbar  { padding: 0 12px; gap: 6px; }
+  .ch-topbar  { padding: env(safe-area-inset-top, 0px) 12px 0; gap: 6px; }
   .ch-actions { gap: 4px; }
   .ch-icon-btn,
   .ch-avatar-btn { width: 34px; height: 34px; }
@@ -570,7 +570,7 @@
 
 /* ── Small phone (≤360px) ── */
 @media (max-width: 360px) {
-  .ch-topbar    { padding: 0 10px; gap: 4px; }
+  .ch-topbar    { padding: env(safe-area-inset-top, 0px) 10px 0; gap: 4px; }
   .ch-hamburger { width: 32px; height: 32px; }
 }
 

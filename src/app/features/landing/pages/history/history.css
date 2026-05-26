@@ -1,7 +1,7 @@
 .history-page {
   max-width: 720px;
   margin: 0 auto;
-  padding: 40px 24px 80px;
+  padding: calc(40px + env(safe-area-inset-top, 0px)) 24px 80px;
   font-family: 'DM Sans', sans-serif;
   min-height: 60vh;
 }

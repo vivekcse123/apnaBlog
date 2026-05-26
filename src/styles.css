@@ -696,6 +696,23 @@ ins.adsbygoogle:not([data-ad-status="filled"]):not([data-ad-status="unfilled"]) 
   height: 0 !important;
 }
 
+/* iOS PWA standalone mode — ensure safe-area is always applied and prevent rubber-band artifacts */
+@media (display-mode: standalone) {
+  /* Force GPU layer on fixed elements for iOS compositing stability */
+  app-mobile-bottom-nav .mob-nav,
+  .ch-topbar,
+  app-common-header .ch-topbar {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+  }
+
+  /* Prevent horizontal scrollbar flash on orientation change */
+  html, body { overflow-x: hidden; }
+
+  /* Eliminate the tap delay on iOS standalone */
+  * { touch-action: manipulation; }
+}
+
 /* Blog-detail: lock html+body so only the component host scrolls, eliminating the outer scrollbar */
 html:has(body.blog-detail-active),
 body.blog-detail-active { overflow: hidden !important; }

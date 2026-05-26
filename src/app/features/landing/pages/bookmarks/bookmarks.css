@@ -3,7 +3,7 @@
   background: var(--bg);
   max-width: 800px;
   margin: 0 auto;
-  padding: 0 20px 60px;
+  padding: env(safe-area-inset-top, 0px) 20px 60px;
 }
 
 /* ── Header ── */
