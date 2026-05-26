@@ -685,15 +685,19 @@ html { scroll-behavior: smooth; }
 /* Collapse AdSense global <ins> injected outside app-root — prevents body-level blank scroll space */
 body > ins.adsbygoogle { display: none !important; width: 0 !important; height: 0 !important; }
 
-/* Collapse unfilled AdSense slots — removes blank space when no ad is served (dev/PWA/iOS) */
+/* Collapse unfilled AdSense slots — removes blank space when no ad is served */
 ins.adsbygoogle[data-ad-status="unfilled"] {
   display: none !important;
   height: 0 !important;
 }
-/* Also collapse slots where AdSense JS never ran (e.g., iOS PWA standalone mode) */
-ins.adsbygoogle:not([data-ad-status="filled"]):not([data-ad-status="unfilled"]) {
-  display: none !important;
-  height: 0 !important;
+
+/* In PWA standalone mode AdSense JS never runs, so uninitialized slots stay permanently blank.
+   Only collapse them there — never on the regular browser where AdSense is actively filling them. */
+@media (display-mode: standalone) {
+  ins.adsbygoogle:not([data-ad-status="filled"]):not([data-ad-status="unfilled"]) {
+    display: none !important;
+    height: 0 !important;
+  }
 }
 
 /* iOS PWA standalone mode — ensure safe-area is always applied and prevent rubber-band artifacts */
