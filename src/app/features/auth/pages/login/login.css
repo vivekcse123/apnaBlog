@@ -4,7 +4,7 @@
    ═══════════════════════════════════════════ */
 
 .login-page {
-  min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -638,7 +638,7 @@
     background: transparent !important;
     width: 100%;
     flex: none;
-    padding: 36px 24px 16px;
+    padding: calc(36px + env(safe-area-inset-top, 0px)) 24px 16px;
     overflow: visible;
     align-items: center;
     animation: m-brand-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
@@ -708,7 +708,7 @@
     flex: 1;
     min-height: 0;
     border-radius: 28px 28px 0 0;
-    padding: 0 22px 28px;
+    padding: 0 22px calc(28px + env(safe-area-inset-bottom, 0px));
     overflow-y: auto;
     justify-content: flex-start;
     box-shadow:

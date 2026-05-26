@@ -5,7 +5,7 @@
 
 /* Inherits all base styles from login.css pattern */
 .login-page {
-  min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -642,7 +642,7 @@ form input::placeholder { color: var(--text-muted); }
     background: transparent !important;
     width: 100%;
     flex: none;
-    padding: 28px 24px 14px;
+    padding: calc(28px + env(safe-area-inset-top, 0px)) 24px 14px;
     overflow: visible;
     align-items: center;
     animation: m-brand-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
@@ -699,7 +699,7 @@ form input::placeholder { color: var(--text-muted); }
     flex: 1;
     min-height: 0;
     border-radius: 28px 28px 0 0;
-    padding: 0 22px 22px;
+    padding: 0 22px calc(22px + env(safe-area-inset-bottom, 0px));
     overflow-y: auto;
     justify-content: flex-start;
     box-shadow:

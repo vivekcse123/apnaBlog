@@ -239,8 +239,15 @@ form input:focus {
 
 /* ── Responsive ── */
 @media (max-width: 500px) {
+  .modal-backdrop {
+    align-items: flex-end;
+  }
   .modal-box {
-    padding: 40px 20px 30px;
+    width: 100%;
+    max-width: 100%;
+    border-radius: 20px 20px 0 0;
+    max-height: calc(92dvh - env(safe-area-inset-bottom, 0px));
+    padding: 40px 20px calc(30px + env(safe-area-inset-bottom, 0px));
   }
 
   .actions {

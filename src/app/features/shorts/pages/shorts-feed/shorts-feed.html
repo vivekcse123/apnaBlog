@@ -250,7 +250,7 @@
         <!-- ══ Bottom info (Instagram Reels style) ══ -->
         <footer class="sf-info" (touchend)="$event.stopPropagation()" (click)="$event.stopPropagation()">
 
-          <!-- Sponsored badge (only when relevant) -->
+          <!-- Sponsored badge -->
           @if (short.isSponsored) {
             <span class="sf-sponsored-badge">
               <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor">
@@ -260,17 +260,18 @@
             </span>
           }
 
-          <!-- @username -->
-          <a class="sf-username-link" [routerLink]="['/author', short.user._id]" (click)="$event.stopPropagation()">
-            &#64;{{ short.user.name }}
-          </a>
+          <!-- @username row with post time -->
+          <div class="sf-author-row">
+            <a class="sf-username-link" [routerLink]="['/author', short.user._id]" (click)="$event.stopPropagation()">&#64;{{ short.user.name }}</a>
+            <span class="sf-post-time">{{ timeAgoFull(short.createdAt) }}</span>
+          </div>
 
-          <!-- Title + caption as one text block -->
+          <!-- Title + caption — own row, no username prefix -->
           <p class="sf-body-text" [class.sf-body-text--open]="isExpanded(short._id)">
             <strong>{{ short.title }}</strong>
             @if (short.caption) { &nbsp;{{ short.caption }} }
           </p>
-          @if ((short.title + (short.caption ?? '')).length > 80) {
+          @if ((short.title + (short.caption ?? '')).length > 60) {
             <button class="sf-more" (click)="toggleCaption(short._id, $event)">
               {{ isExpanded(short._id) ? 'less' : '…more' }}
             </button>
@@ -290,10 +291,10 @@
             </a>
           }
 
-          <!-- Liked by -->
-          @if (short.recentLikers?.length) {
+          <!-- Liked by — LAST = lowest on screen, Instagram style -->
+          @if (short.likesCount > 0) {
             <button class="sf-liked-by-row" (click)="openLikes(short, $event)">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="#fe2c55">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="#fe2c55" aria-hidden="true">
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
               </svg>
               {{ likedByText(short) }}

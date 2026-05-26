@@ -566,9 +566,14 @@
   .user-modal {
     margin: 0;
     border-radius: 20px 20px 0 0;
-    max-height: 88vh;
+    max-height: calc(92dvh - env(safe-area-inset-bottom, 0px));
     width: 100%;
     animation: slideUpSheet 0.25s cubic-bezier(0.32, 0.72, 0, 1) both;
+  }
+
+  /* Ensure scrollable content clears the floating bottom nav */
+  .modal-body {
+    padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
   }
 
   @keyframes slideUpSheet {

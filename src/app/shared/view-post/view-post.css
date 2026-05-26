@@ -1095,8 +1095,10 @@
   .post-modal {
     margin: 0;
     border-radius: 20px 20px 0 0;
-    max-height: calc(100dvh - 3rem);
+    max-height: calc(100dvh - 3rem - env(safe-area-inset-bottom, 0px));
     width: 100%;
+    /* Extra scroll clearance so last items aren't behind the bottom nav */
+    padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
   }
 
   /* Layout adjustments */

@@ -24,7 +24,7 @@
   padding: 1.5rem 0;
   position: sticky;
   top: 0;
-  height: 100vh;
+  height: 100dvh;
   overflow-y: auto;
 }
 

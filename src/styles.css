@@ -170,6 +170,9 @@ html {
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   -webkit-text-size-adjust: 100%;
+  /* Match body bg so iOS elastic-scroll bounce never reveals bare white */
+  background-color: var(--bg-base);
+  overscroll-behavior-y: none;
 }
 
 body {
@@ -178,6 +181,7 @@ body {
   color: var(--text-primary);
   transition: background-color 0.25s ease, color 0.25s ease;
   min-height: 100dvh;
+  overscroll-behavior-y: none;
   line-height: 1.6;
 }
 

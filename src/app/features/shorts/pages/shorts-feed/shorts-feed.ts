@@ -850,11 +850,15 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
 
   likedByText(short: VideoShort): string {
     const likers = short.recentLikers ?? [];
-    if (!likers.length) return '';
-    const first = likers[likers.length - 1].name.split(' ')[0];
-    const others = short.likesCount - 1;
-    if (others <= 0) return `Liked by ${first}`;
-    return `Liked by ${first} and ${others.toLocaleString()} other${others > 1 ? 's' : ''}`;
+    const count  = short.likesCount ?? 0;
+    if (!count) return '';
+    if (likers.length) {
+      const first  = likers[likers.length - 1].name.split(' ')[0];
+      const others = count - 1;
+      if (others <= 0) return `Liked by ${first}`;
+      return `Liked by ${first} and ${others.toLocaleString()} other${others > 1 ? 's' : ''}`;
+    }
+    return count === 1 ? 'Liked by 1 person' : `Liked by ${count.toLocaleString()} people`;
   }
 
   toggleLike(short: VideoShort, event: Event): void {
@@ -1100,6 +1104,17 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     if (s < 3600)  return `${Math.floor(s / 60)}m`;
     if (s < 86400) return `${Math.floor(s / 3600)}h`;
     return `${Math.floor(s / 86400)}d`;
+  }
+
+  timeAgoFull(date: Date | string): string {
+    const s = Math.floor((Date.now() - new Date(date).getTime()) / 1000);
+    if (s < 60)      return 'just now';
+    if (s < 3600)    { const m = Math.floor(s / 60);         return `${m} min ago`; }
+    if (s < 86400)   { const h = Math.floor(s / 3600);       return `${h} ${h === 1 ? 'hour' : 'hours'} ago`; }
+    if (s < 2592000) { const d = Math.floor(s / 86400);      return `${d} ${d === 1 ? 'day' : 'days'} ago`; }
+    if (s < 31536000){ const mo = Math.floor(s / 2592000);   return `${mo} ${mo === 1 ? 'month' : 'months'} ago`; }
+    const y = Math.floor(s / 31536000);
+    return `${y} ${y === 1 ? 'year' : 'years'} ago`;
   }
 
   formatDuration(s: number | null | undefined): string {

@@ -387,11 +387,11 @@
 @media (max-width: 768px) {
   .panel {
     position: fixed;
-    top: 68px;
+    top: calc(68px + env(safe-area-inset-top, 0px));
     right: 10px;
     left: 10px;
     width: auto;
-    max-height: calc(100vh - 84px);
+    max-height: calc(100dvh - 84px - env(safe-area-inset-top, 0px));
     border-radius: 14px;
     animation: slideUp 0.22s ease;
   }
@@ -416,10 +416,10 @@
 
 @media (max-width: 480px) {
   .panel {
-    top: 60px;
+    top: calc(60px + env(safe-area-inset-top, 0px));
     left: 8px;
     right: 8px;
-    max-height: calc(100vh - 72px);
+    max-height: calc(100dvh - 72px - env(safe-area-inset-top, 0px));
     border-radius: 12px;
   }
 
