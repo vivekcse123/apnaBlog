@@ -652,6 +652,12 @@ html { scroll-behavior: smooth; }
     min-width: 44px;
   }
 
+  /* Toggle/pill controls have fixed dimensions — exempt from the 44px rule */
+  .toggle-switch, .theme-pill, .nav-item {
+    min-height: unset !important;
+    min-width: unset !important;
+  }
+
   /* Remove default tap highlight on Android */
   * { -webkit-tap-highlight-color: transparent; }
 
@@ -661,12 +667,6 @@ html { scroll-behavior: smooth; }
   /* Consistent card radius across all pages */
   .card, .stat-card, .feed-card, .blog-card, .sidebar-section {
     border-radius: 14px;
-  }
-
-  /* Smooth momentum scrolling for any overflow container */
-  [style*="overflow"], .dash-content, .comment-drawer,
-  .filter-inner-scroll, .category-bar {
-    -webkit-overflow-scrolling: touch;
   }
 
   /* Prevent text from being too wide to read comfortably */

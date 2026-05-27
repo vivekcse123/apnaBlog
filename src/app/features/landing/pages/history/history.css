@@ -336,7 +336,7 @@
 }
 
 @media (max-width: 600px) {
-  .history-page { padding-top: 24px; padding-left: 16px; padding-right: 16px; }
+  .history-page { padding-top: calc(24px + env(safe-area-inset-top, 0px)); padding-left: 16px; padding-right: 16px; }
   .history-title { font-size: 18px; }
   .history-read-btn { display: none; }
   .history-item-title { font-size: 14px; }

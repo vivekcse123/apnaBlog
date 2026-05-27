@@ -975,3 +975,100 @@ tbody > tr:hover td { background: var(--bg-hover); }
     padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
   }
 }
+
+/* ══════════════════════════════════════════════════════
+   MODERN REDESIGN — Blogs page
+══════════════════════════════════════════════════════ */
+
+/* Gradient page title */
+.page-header-left h2 {
+  background: linear-gradient(135deg, var(--text-primary) 40%, #43cea2);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  font-size: 24px;
+}
+
+/* Stat cards: hover lift + relative/overflow for ::before stripe */
+.stats-bar .stat-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 14px;
+  transition: transform 0.18s, box-shadow 0.18s;
+}
+.stats-bar .stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+.stats-bar .stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+}
+
+/* Per-card top stripe + tinted bg */
+.stats-bar .stat-card:has(.blogs-icon)::before     { background: linear-gradient(90deg, #43cea2, #185a9d); }
+.stats-bar .stat-card:has(.published-icon)::before { background: linear-gradient(90deg, #0f7a5a, #43cea2); }
+.stats-bar .stat-card:has(.pending-icon)::before   { background: linear-gradient(90deg, #dc2626, #ef4444); }
+.stats-bar .stat-card:has(.drafts-icon)::before    { background: linear-gradient(90deg, #BA7517, #f59e0b); }
+.stats-bar .stat-card:has(.sponsored-icon)::before { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+.stats-bar .stat-card:has(.deletion-icon)::before  { background: linear-gradient(90deg, #dc2626, #f87171); }
+
+.stats-bar .stat-card:has(.blogs-icon)     { background: color-mix(in srgb, #43cea2 5%, var(--bg-surface)); }
+.stats-bar .stat-card:has(.published-icon) { background: color-mix(in srgb, #22c55e 5%, var(--bg-surface)); }
+.stats-bar .stat-card:has(.pending-icon)   { background: color-mix(in srgb, #ef4444 5%, var(--bg-surface)); }
+.stats-bar .stat-card:has(.drafts-icon)    { background: color-mix(in srgb, #f59e0b 5%, var(--bg-surface)); }
+.stats-bar .stat-card:has(.sponsored-icon) { background: color-mix(in srgb, #f59e0b 5%, var(--bg-surface)); }
+.stats-bar .stat-card--alert               { background: color-mix(in srgb, #ef4444 8%, var(--bg-surface)); }
+.stats-bar .stat-card--alert::before       { background: linear-gradient(90deg, #dc2626, #f87171); }
+
+/* Add Blog button — gradient */
+.add-btn {
+  background: linear-gradient(135deg, #43cea2, #185a9d);
+  color: #fff;
+  border: none;
+}
+.add-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+
+/* Filter select focus */
+.filter-select:focus {
+  border-color: #43cea2;
+  box-shadow: 0 0 0 3px rgba(67,206,162,0.15);
+  outline: none;
+}
+
+/* Active filter buttons */
+.filter-btn--active {
+  background: linear-gradient(135deg, #43cea2, #185a9d);
+  color: #fff;
+  border-color: transparent;
+}
+
+/* Table header subtle tint */
+thead tr {
+  background: color-mix(in srgb, #43cea2 4%, var(--bg-surface));
+}
+thead th {
+  font-weight: 700;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+}
+
+/* Table row hover */
+tbody tr { transition: background 0.12s; }
+tbody tr:hover { background: color-mix(in srgb, #43cea2 4%, var(--bg-surface)); }
+
+/* Status badge pill */
+.status-badge { border-radius: 20px; font-weight: 600; letter-spacing: 0.02em; }
+
+/* Pagination active */
+.pg-btn.pg-active {
+  background: linear-gradient(135deg, #43cea2, #185a9d);
+  color: #fff;
+  border-color: transparent;
+}

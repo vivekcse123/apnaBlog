@@ -8,6 +8,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Chart, registerables } from 'chart.js';
 import { PostService } from '../../../post/services/post-service';
 import { UserService } from '../../../user/services/user-service';
+import { ShortsService } from '../../../shorts/services/shorts.service';
 import { DashboardCache } from '../../../../core/services/dashboard-cache';
 import { CreatePost } from '../../../post/pages/create-post/create-post';
 
@@ -23,21 +24,16 @@ Chart.register(...registerables);
 })
 export class UserHome implements OnInit, AfterViewInit, OnDestroy {
 
-  @ViewChild('blogGrowthRef')    blogGrowthRef!:    ElementRef<HTMLCanvasElement>;
-  @ViewChild('contentDonutRef')  contentDonutRef!:  ElementRef<HTMLCanvasElement>;
-  @ViewChild('engagementRef')    engagementRef!:    ElementRef<HTMLCanvasElement>;
-  @ViewChild('topPostsRef')      topPostsRef!:      ElementRef<HTMLCanvasElement>;
+  @ViewChild('blogGrowthRef') blogGrowthRef!: ElementRef<HTMLCanvasElement>;
 
-  private blogGrowthChart!:   Chart;
-  private contentDonutChart!: Chart;
-  private engagementChart!:   Chart;
-  private topPostsChart!:     Chart;
+  private blogGrowthChart!: Chart;
 
   private postService    = inject(PostService);
   private userService    = inject(UserService);
+  private shortsService  = inject(ShortsService);
   private destroyRef     = inject(DestroyRef);
   private route          = inject(ActivatedRoute);
-  private router         = inject(Router);
+  readonly router        = inject(Router);
   private platformId     = inject(PLATFORM_ID);
   private document       = inject(DOCUMENT);
   private dashboardCache = inject(DashboardCache);
@@ -52,6 +48,8 @@ export class UserHome implements OnInit, AfterViewInit, OnDestroy {
   isLoading       = signal<boolean>(true);
   isRefreshing    = signal<boolean>(false);
 
+  shortsCount    = signal<number>(0);
+
   totalBlogs     = signal<number>(0);
   totalPublished = signal<number>(0);
   totalDrafts    = signal<number>(0);
@@ -60,6 +58,7 @@ export class UserHome implements OnInit, AfterViewInit, OnDestroy {
   totalComments  = signal<number>(0);
   topPostViews   = signal<number>(0);
   newBlogs       = signal<number>(0);
+  writingStreak  = signal<number>(0);
 
   avgViews = computed(() =>
     this.totalBlogs() > 0
@@ -71,6 +70,35 @@ export class UserHome implements OnInit, AfterViewInit, OnDestroy {
     this.totalBlogs() > 0
       ? Math.round((this.totalPublished() / this.totalBlogs()) * 100)
       : 0
+  );
+
+  // ── Social profile extras ──────────────────────────────────────
+
+  readonly greeting: string = (() => {
+    const h = new Date().getHours();
+    if (h < 12) return 'Good morning';
+    if (h < 17) return 'Good afternoon';
+    return 'Good evening';
+  })();
+
+  userInitials = computed(() => {
+    const name = this.user()?.name || '';
+    return name.split(' ').filter(Boolean).map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || 'U';
+  });
+
+  achievementBadges = computed(() => [
+    { id: 'first',       icon: '✍️', label: 'First Story',          desc: 'Published your first blog',     earned: this.totalPublished() >= 1  },
+    { id: 'storyteller', icon: '📚', label: 'Storyteller',          desc: 'Published 5+ stories',          earned: this.totalPublished() >= 5  },
+    { id: 'prolific',    icon: '🏆', label: 'Prolific Writer',      desc: '10+ stories published',         earned: this.totalPublished() >= 10 },
+    { id: 'views100',    icon: '👁️', label: '100 Views',            desc: 'Reached 100 total views',       earned: this.totalViews() >= 100    },
+    { id: 'views1k',     icon: '🚀', label: '1K Views',             desc: 'Reached 1,000 total views',     earned: this.totalViews() >= 1000   },
+    { id: 'liked',       icon: '❤️', label: 'Crowd Pleaser',        desc: 'Received 10+ likes',            earned: this.totalLikes() >= 10     },
+    { id: 'community',   icon: '🤝', label: 'Community Builder',    desc: 'Gained 5+ followers',           earned: this.followersCount() >= 5  },
+    { id: 'engaged',     icon: '💬', label: 'Conversation Starter', desc: 'Received 5+ comments',          earned: this.totalComments() >= 5   },
+  ]);
+
+  earnedBadgeCount = computed(() =>
+    this.achievementBadges().filter(b => b.earned).length
   );
 
   recentBlogs   = signal<any[]>([]);
@@ -86,6 +114,7 @@ export class UserHome implements OnInit, AfterViewInit, OnDestroy {
   manageBlogsLink = computed(() => `/user/${this.userId()}/manage-blogs`);
   settingsLink    = computed(() => `/user/${this.userId()}/settings`);
   exploreLink     = computed(() => `/user/${this.userId()}/explore-blogs`);
+  myShortsLink    = computed(() => `/user/${this.userId()}/my-shorts`);
 
   private allPosts: any[] = [];
 
@@ -95,7 +124,10 @@ export class UserHome implements OnInit, AfterViewInit, OnDestroy {
     this.userId.set(uid);
     if (!uid) return;
 
-    // User profile is lightweight — always fetch fresh
+    this.shortsService.getMyShorts(1, 1)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({ next: (res) => this.shortsCount.set(res.total ?? 0), error: () => {} });
+
     this.userService.getUserById(uid)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
@@ -106,14 +138,11 @@ export class UserHome implements OnInit, AfterViewInit, OnDestroy {
         error: () => {},
       });
 
-    // Posts: cache-first
     const cachedPosts = this.dashboardCache.getUserPosts(uid);
     if (cachedPosts) {
       this.allPosts = cachedPosts;
       this.computeStats();
       this.isLoading.set(false);
-
-      // Silently refresh if stale
       if (this.dashboardCache.isUserDataStale(uid)) {
         this.fetchUserPosts(uid, false);
       }
@@ -129,9 +158,6 @@ export class UserHome implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.blogGrowthChart?.destroy();
-    this.contentDonutChart?.destroy();
-    this.engagementChart?.destroy();
-    this.topPostsChart?.destroy();
     if (isPlatformBrowser(this.platformId)) this.document.body.style.overflow = '';
   }
 
@@ -153,8 +179,7 @@ export class UserHome implements OnInit, AfterViewInit, OnDestroy {
           this.isRefreshing.set(false);
           setTimeout(() => this.buildAllCharts(), 100);
         },
-        error: (err) => {
-          
+        error: () => {
           this.isLoading.set(false);
           this.isRefreshing.set(false);
         },
@@ -194,6 +219,27 @@ export class UserHome implements OnInit, AfterViewInit, OnDestroy {
     this.blogsModalList.set(
       [...posts].sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     );
+
+    // Writing streak — count consecutive days with at least one post
+    const allDayTs = posts
+      .map((p: any) => {
+        const d = new Date(p.createdAt);
+        return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+      })
+      .filter((v: number, i: number, a: number[]) => a.indexOf(v) === i)
+      .sort((a: number, b: number) => b - a);
+
+    let streak = 0;
+    const todayMidnight = new Date(); todayMidnight.setHours(0, 0, 0, 0);
+    let checkDay = todayMidnight.getTime();
+    const oneDay = 86_400_000;
+    for (const dayTs of allDayTs) {
+      if (dayTs === checkDay || dayTs === checkDay - oneDay) {
+        streak++;
+        checkDay = dayTs - oneDay;
+      } else { break; }
+    }
+    this.writingStreak.set(streak);
   }
 
   onRangeChange(range: '7d' | '14d' | '30d'): void {
@@ -203,9 +249,6 @@ export class UserHome implements OnInit, AfterViewInit, OnDestroy {
 
   private buildAllCharts(): void {
     this.buildOrUpdateBlogGrowthChart();
-    this.buildOrUpdateContentDonut();
-    this.buildOrUpdateEngagementChart();
-    this.buildOrUpdateTopPostsChart();
   }
 
   private buildOrUpdateBlogGrowthChart(): void {
@@ -271,158 +314,6 @@ export class UserHome implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  private buildOrUpdateContentDonut(): void {
-    if (!this.contentDonutRef) return;
-
-    const data   = [this.totalPublished(), this.totalDrafts()];
-    const labels = ['Published', 'Drafts'];
-    const colors = ['#43cea2', '#BA7517'];
-
-    if (this.contentDonutChart) {
-      this.contentDonutChart.data.datasets[0].data = data;
-      this.contentDonutChart.update('active');
-      return;
-    }
-
-    this.contentDonutChart = new Chart(this.contentDonutRef.nativeElement, {
-      type: 'doughnut',
-      data: {
-        labels,
-        datasets: [{
-          data,
-          backgroundColor: colors,
-          borderWidth: 3,
-          borderColor: 'transparent',
-          hoverOffset: 6,
-        }],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        cutout: '68%',
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            callbacks: { label: (ctx) => ` ${ctx.label}: ${ctx.parsed}` },
-          },
-        },
-      },
-    });
-  }
-
-  private buildOrUpdateEngagementChart(): void {
-    if (!this.engagementRef) return;
-
-    const { labels, viewsData, commentsData, likesData } = this.getEngagementData(7);
-
-    if (this.engagementChart) {
-      this.engagementChart.data.labels            = labels;
-      this.engagementChart.data.datasets[0].data  = viewsData;
-      this.engagementChart.data.datasets[1].data  = commentsData;
-      this.engagementChart.data.datasets[2].data  = likesData;
-      this.engagementChart.update('active');
-      return;
-    }
-
-    this.engagementChart = new Chart(this.engagementRef.nativeElement, {
-      type: 'bar',
-      data: {
-        labels,
-        datasets: [
-          {
-            label: 'Views',
-            data: viewsData,
-            backgroundColor: 'rgba(127,119,221,0.75)',
-            borderColor: '#7F77DD',
-            borderWidth: 1,
-            borderRadius: 4,
-          },
-          {
-            label: 'Comments',
-            data: commentsData,
-            backgroundColor: 'rgba(55,138,221,0.75)',
-            borderColor: '#378ADD',
-            borderWidth: 1,
-            borderRadius: 4,
-          },
-          {
-            label: 'Likes',
-            data: likesData,
-            backgroundColor: 'rgba(217,83,79,0.75)',
-            borderColor: '#d9534f',
-            borderWidth: 1,
-            borderRadius: 4,
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        interaction: { mode: 'index', intersect: false },
-        plugins: {
-          legend: {
-            display: true,
-            position: 'top',
-            align: 'end',
-            labels: { boxWidth: 10, font: { size: 10 }, padding: 10 },
-          },
-        },
-        scales: {
-          x: { grid: { display: false }, ticks: { font: { size: 10 } } },
-          y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.04)' }, ticks: { font: { size: 10 }, precision: 0 } },
-        },
-      },
-    });
-  }
-
-  private buildOrUpdateTopPostsChart(): void {
-    if (!this.topPostsRef) return;
-
-    const top5    = this.topBlogs().slice(0, 5);
-    const labels  = top5.map((p: any) =>
-      p.title.length > 22 ? p.title.slice(0, 22) + '…' : p.title
-    );
-    const views   = top5.map((p: any) => p.views ?? 0);
-    const colors  = ['#43cea2cc', '#185a9dcc', '#7F77DDcc', '#BA7517cc', '#d9534fcc'];
-    const borders = ['#43cea2',   '#185a9d',   '#7F77DD',   '#BA7517',   '#d9534f'];
-
-    if (this.topPostsChart) {
-      this.topPostsChart.data.labels            = labels;
-      this.topPostsChart.data.datasets[0].data  = views;
-      this.topPostsChart.update('active');
-      return;
-    }
-
-    this.topPostsChart = new Chart(this.topPostsRef.nativeElement, {
-      type: 'bar',
-      data: {
-        labels,
-        datasets: [{
-          label: 'Views',
-          data: views,
-          backgroundColor: colors,
-          borderColor: borders,
-          borderWidth: 1.5,
-          borderRadius: 6,
-        }],
-      },
-      options: {
-        indexAxis: 'y',
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            callbacks: { label: (ctx) => ` ${ctx.parsed.x} views` },
-          },
-        },
-        scales: {
-          x: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.04)' }, ticks: { font: { size: 10 }, precision: 0 } },
-          y: { grid: { display: false }, ticks: { font: { size: 10 } } },
-        },
-      },
-    });
-  }
 
   private getTimeSeriesData(days: number): {
     labels: string[]; published: number[]; drafts: number[];
@@ -463,32 +354,6 @@ export class UserHome implements OnInit, AfterViewInit, OnDestroy {
     return { labels, published, drafts };
   }
 
-  private getEngagementData(days: number): {
-    labels: string[]; viewsData: number[]; commentsData: number[]; likesData: number[];
-  } {
-    const now          = new Date();
-    const labels:       string[]  = [];
-    const viewsData:    number[]  = [];
-    const commentsData: number[]  = [];
-    const likesData:    number[]  = [];
-
-    for (let i = days - 1; i >= 0; i--) {
-      const start = new Date(now); start.setDate(now.getDate() - i); start.setHours(0,0,0,0);
-      const end   = new Date(start); end.setHours(23,59,59,999);
-
-      const dayPosts = this.allPosts.filter((p: any) => {
-        const d = new Date(p.updatedAt ?? p.createdAt);
-        return d >= start && d <= end;
-      });
-
-      labels.push(start.toLocaleDateString('en-IN', { month: 'short', day: 'numeric' }));
-      viewsData.push(dayPosts.reduce((s: number, p: any) => s + (p.views         ?? 0), 0));
-      commentsData.push(dayPosts.reduce((s: number, p: any) => s + (p.commentsCount ?? 0), 0));
-      likesData.push(dayPosts.reduce((s: number, p: any) => s + (p.likesCount    ?? 0), 0));
-    }
-
-    return { labels, viewsData, commentsData, likesData };
-  }
 
   onPostCreated(): void {
     this.showCreateModal.set(false);
@@ -535,6 +400,10 @@ export class UserHome implements OnInit, AfterViewInit, OnDestroy {
     this.router.navigate(['/blog', post.slug || post.postId]);
   }
 
+  viewBlog(blog: any): void {
+    this.router.navigate(['/blog', blog.slug || blog._id]);
+  }
+
   openBlog(postId: string): void {
     this.closeBlogsModal();
     this.router.navigate(['/blog', postId]);
@@ -545,8 +414,4 @@ export class UserHome implements OnInit, AfterViewInit, OnDestroy {
     return name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
   }
 
-  getPercent(value: number, total: number): number {
-    if (!total) return 0;
-    return Math.min(Math.round((value / total) * 100), 100);
-  }
 }

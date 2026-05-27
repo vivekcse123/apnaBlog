@@ -378,7 +378,8 @@ export class Home implements OnInit, OnDestroy {
   sponsoredPosts = computed(() => this.sponsoredFromApi().slice(0, 4));
   showSponsored = computed(() => this.sponsoredPosts().length > 0);
 
-  navCatOpen = signal(false);
+  navCatOpen   = signal(false);
+  filterOpen   = signal(false);
 
   // Use synchronous auth signals (localStorage) so the button routes correctly
   // even before the API call resolves — avoids the timing gap where

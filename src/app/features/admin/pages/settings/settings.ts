@@ -50,6 +50,13 @@ export class Settings implements OnInit {
 
   activeSection = signal<string>('profile');
 
+  switchSection(id: string): void {
+    this.activeSection.set(id);
+    if (isPlatformBrowser(this.platformId)) {
+      window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+    }
+  }
+
   sections = [
     { id: 'profile',       label: 'Profile',       icon: '◈' },
     { id: 'appearance',    label: 'Appearance',    icon: '◐' },

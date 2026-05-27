@@ -1440,3 +1440,845 @@
 @media (max-width: 768px) {
   .dash { padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
 }
+
+/* ══════════════════════════════════════════════════════
+   SOCIAL PROFILE CARD
+══════════════════════════════════════════════════════ */
+.social-profile-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: var(--card-shadow-lg);
+}
+
+/* Cover strip */
+.social-cover-strip {
+  height: 72px;
+  background: linear-gradient(135deg, #43cea2 0%, #185a9d 60%, #7F77DD 100%);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: 10px 16px;
+  gap: 10px;
+}
+
+.cover-pattern {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 20% 50%, rgba(255,255,255,0.08) 1px, transparent 1px),
+    radial-gradient(circle at 70% 30%, rgba(255,255,255,0.06) 1px, transparent 1px);
+  background-size: 28px 28px, 40px 40px;
+}
+
+.syncing-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.9);
+  background: rgba(0,0,0,0.2);
+  backdrop-filter: blur(6px);
+  border-radius: 20px;
+  padding: 3px 10px;
+  z-index: 1;
+}
+
+.cover-date {
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.85);
+  background: rgba(0,0,0,0.18);
+  backdrop-filter: blur(6px);
+  border-radius: 20px;
+  padding: 3px 10px;
+  z-index: 1;
+  white-space: nowrap;
+}
+
+/* Profile body — 2-row stacked layout (Twitter/LinkedIn style) */
+.social-profile-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 20px 20px;
+  margin-top: -20px;
+}
+
+/* Row 1: avatar left, action buttons right */
+.spb-row1 {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.spb-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 4px;
+}
+
+/* Row 2: identity full-width below avatar */
+.spb-identity {
+  padding: 0;
+  min-width: 0;
+}
+
+/* Avatar — overlaps the cover strip */
+.spb-avatar-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.spb-avatar {
+  width: 68px; height: 68px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #43cea2, #185a9d);
+  color: #fff;
+  font-size: 24px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  border: 3px solid var(--bg-surface);
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(67,206,162,0.3);
+}
+
+.spb-avatar img {
+  width: 100%; height: 100%;
+  object-fit: cover; border-radius: 50%;
+}
+
+.spb-online-dot {
+  position: absolute;
+  bottom: 3px; right: 3px;
+  width: 14px; height: 14px;
+  background: #22c55e;
+  border: 2.5px solid var(--bg-surface);
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px rgba(34,197,94,0.2);
+  animation: online-pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes online-pulse {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(34,197,94,0.2); }
+  50%       { box-shadow: 0 0 0 5px rgba(34,197,94,0.0); }
+}
+
+.spb-identity {
+  padding-bottom: 4px;
+  min-width: 0;
+}
+
+.spb-greeting {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 0 0 2px;
+  font-weight: 500;
+}
+
+.spb-name {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.5px;
+  margin: 0 0 8px;
+  line-height: 1.15;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.spb-badges-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.spb-role-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent-text);
+  background: var(--accent-subtle);
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+  border-radius: 20px;
+  padding: 3px 10px;
+}
+
+.spb-streak-badge {
+  font-size: 11px;
+  font-weight: 600;
+  color: #b45309;
+  background: rgba(245,158,11,0.1);
+  border: 1px solid rgba(245,158,11,0.25);
+  border-radius: 20px;
+  padding: 3px 10px;
+}
+
+.spb-earned-badge {
+  font-size: 11px;
+  font-weight: 600;
+  color: #7c3aed;
+  background: rgba(124,58,237,0.08);
+  border: 1px solid rgba(124,58,237,0.2);
+  border-radius: 20px;
+  padding: 3px 10px;
+}
+
+[data-theme="dark"] .spb-streak-badge  { color: #fbbf24; background: rgba(245,158,11,0.12); }
+[data-theme="dark"] .spb-earned-badge  { color: #a78bfa; background: rgba(167,139,250,0.1); }
+
+/* CTA buttons row */
+.spb-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding-top: 28px;
+}
+
+/* Explore button (sibling of .btn-write) */
+.btn-explore {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  border-radius: 10px;
+  background: transparent;
+  border: 1.5px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+
+.btn-explore:hover {
+  border-color: #43cea2;
+  color: #43cea2;
+  background: color-mix(in srgb, #43cea2 8%, transparent);
+}
+
+/* Social stats bar */
+.social-stats-bar {
+  display: flex;
+  align-items: center;
+  border-top: 1px solid var(--border);
+  background: var(--bg-base);
+}
+
+.sstat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 14px 8px;
+  background: transparent;
+  border: none;
+  font-family: inherit;
+  cursor: default;
+  transition: background 0.15s;
+  min-width: 0;
+}
+
+button.sstat { cursor: pointer; }
+button.sstat:hover { background: var(--accent-subtle); }
+
+.sstat-val {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.sstat-lbl {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.sstat-sep {
+  width: 1px;
+  height: 32px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+/* ══════════════════════════════════════════════════════
+   QUICK COMPOSE CARD
+══════════════════════════════════════════════════════ */
+.compose-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+  box-shadow: var(--card-shadow);
+}
+
+.compose-card:hover {
+  border-color: color-mix(in srgb, #43cea2 40%, transparent);
+  box-shadow: 0 4px 18px rgba(67,206,162,0.1);
+  transform: translateY(-1px);
+}
+
+.compose-card:active { transform: scale(0.99); }
+
+.compose-avatar {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #43cea2, #185a9d);
+  color: #fff;
+  font-size: 15px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.compose-avatar img {
+  width: 100%; height: 100%;
+  object-fit: cover; border-radius: 50%;
+}
+
+.compose-prompt {
+  flex: 1;
+  font-size: 14px;
+  color: var(--text-muted);
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.compose-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #43cea2, #185a9d);
+  color: #fff;
+  border: none;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  flex-shrink: 0;
+  white-space: nowrap;
+  transition: opacity 0.2s;
+}
+
+.compose-action:hover { opacity: 0.88; }
+
+/* ══════════════════════════════════════════════════════
+   SECTION HEADER FLUSH VARIANT
+══════════════════════════════════════════════════════ */
+.section-hd--flush { margin-bottom: 14px; }
+
+/* ══════════════════════════════════════════════════════
+   STAT CARD — per-stat top-border accent
+══════════════════════════════════════════════════════ */
+.stat-card--blogs::before     { background: linear-gradient(90deg, #43cea2, #185a9d); }
+.stat-card--published::before { background: linear-gradient(90deg, #0f7a5a, #43cea2); }
+.stat-card--drafts::before    { background: linear-gradient(90deg, #BA7517, #f59e0b); }
+.stat-card--views::before     { background: linear-gradient(90deg, #7F77DD, #a78bfa); }
+.stat-card--likes::before     { background: linear-gradient(90deg, #ef4444, #f87171); }
+.stat-card--comments::before  { background: linear-gradient(90deg, #378ADD, #60a5fa); }
+.stat-card--top::before       { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+.stat-card--avg::before       { background: linear-gradient(90deg, #22c55e, #4ade80); }
+.stat-card--followers::before { background: linear-gradient(90deg, #185a9d, #7F77DD); }
+
+/* ══════════════════════════════════════════════════════
+   FEED CARD — social post style
+══════════════════════════════════════════════════════ */
+.feed-card { cursor: pointer; }
+
+/* Published chip live dot */
+.chip-live-dot {
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #22c55e;
+  margin-right: 2px;
+  animation: pulse-dot 1.5s ease-in-out infinite;
+  vertical-align: middle;
+}
+
+/* "View →" hint on hover */
+.feed-view-link {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent-text);
+  opacity: 0;
+  transition: opacity 0.2s;
+  white-space: nowrap;
+}
+
+.feed-card:hover .feed-view-link { opacity: 1; }
+
+/* ══════════════════════════════════════════════════════
+   ACHIEVEMENTS SECTION
+══════════════════════════════════════════════════════ */
+.achievements-progress-badge {
+  background: linear-gradient(135deg, rgba(67,206,162,0.15), rgba(24,90,157,0.1));
+  color: var(--accent-text);
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+.achievements-track {
+  height: 4px;
+  background: var(--bg-base);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+
+.achievements-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #43cea2, #185a9d);
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  min-width: 4px;
+}
+
+.badges-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.badge-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 4px;
+  border-radius: 10px;
+  border: 1.5px solid var(--border);
+  background: var(--bg-base);
+  transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+  cursor: default;
+  min-width: 0;
+}
+
+.badge-item--earned {
+  border-color: color-mix(in srgb, #43cea2 35%, transparent);
+  background: color-mix(in srgb, #43cea2 5%, var(--bg-surface));
+}
+
+.badge-item--earned:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(67,206,162,0.15);
+  border-color: #43cea2;
+}
+
+.badge-icon-wrap {
+  position: relative;
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.badge-icon {
+  font-size: 20px;
+  line-height: 1;
+  filter: grayscale(0);
+  transition: transform 0.2s;
+}
+
+.badge-item:not(.badge-item--earned) .badge-icon {
+  filter: grayscale(1);
+  opacity: 0.35;
+}
+
+.badge-item--earned:hover .badge-icon { transform: scale(1.15); }
+
+.badge-lock-overlay {
+  position: absolute;
+  bottom: -2px; right: -4px;
+  width: 16px; height: 16px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-muted);
+}
+
+.badge-label {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-align: center;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.badge-item--earned .badge-label { color: var(--text-secondary); }
+
+/* ══════════════════════════════════════════════════════
+   RESPONSIVE — social profile card
+══════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .social-cover-strip { height: 60px; }
+
+  .social-profile-body {
+    margin-top: -20px;
+    padding: 0 16px 16px;
+    gap: 10px;
+  }
+
+  .spb-avatar { width: 62px; height: 62px; font-size: 21px; }
+  .spb-online-dot { width: 12px; height: 12px; }
+
+  .spb-name { font-size: 22px; }
+  .spb-greeting { font-size: 11px; }
+
+  .spb-actions { gap: 8px; }
+  .btn-write   { padding: 8px 14px; font-size: 12px; }
+  .btn-edit-profile { padding: 7px 12px; font-size: 12px; }
+
+  /* Scrollable stats bar — polished */
+  .social-stats-bar {
+    overflow-x: auto;
+    scrollbar-width: none;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    padding: 4px 0;
+    /* fade edges to hint scroll */
+    -webkit-mask-image: linear-gradient(to right, transparent 0px, #000 20px, #000 calc(100% - 20px), transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0px, #000 20px, #000 calc(100% - 20px), transparent 100%);
+  }
+  .social-stats-bar::-webkit-scrollbar { display: none; }
+
+  .sstat {
+    min-width: 70px;
+    padding: 12px 10px;
+    scroll-snap-align: start;
+    flex-shrink: 0;
+    flex: 0 0 auto;
+  }
+  .sstat-sep { height: 24px; flex-shrink: 0; }
+  .sstat-val { font-size: 16px; }
+  .sstat-lbl { font-size: 9.5px; }
+
+  .compose-card { padding: 12px 14px; }
+  .compose-avatar { width: 36px; height: 36px; font-size: 13px; }
+  .compose-prompt { font-size: 13px; }
+  .compose-action { padding: 6px 12px; font-size: 12px; }
+
+  .badges-grid { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .badge-icon  { font-size: 18px; }
+  .badge-item  { padding: 6px 3px; }
+}
+
+@media (max-width: 560px) {
+  .spb-left     { gap: 12px; }
+  .spb-name     { font-size: 16px; }
+  .spb-badges-row { gap: 4px; }
+  .spb-role-badge, .spb-streak-badge, .spb-earned-badge { font-size: 10px; padding: 2px 7px; }
+  .sstat        { min-width: 62px; padding: 10px 8px; }
+  .sstat-val    { font-size: 14px; }
+  .sstat-lbl    { font-size: 9px; }
+  .compose-prompt { display: none; }
+  .badges-grid  { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* ══════════════════════════════════════════════════════
+   MODERN REDESIGN v2
+══════════════════════════════════════════════════════ */
+
+/* ── Cover strip: taller, richer gradient + decorative blobs ── */
+.social-cover-strip {
+  height: 110px;
+  background: linear-gradient(135deg, #062e22 0%, #0e6645 20%, #43cea2 45%, #185a9d 70%, #7c3aed 100%);
+}
+
+.cover-pattern {
+  background-image:
+    radial-gradient(ellipse at 12% 70%, rgba(67,206,162,0.55) 0%, transparent 48%),
+    radial-gradient(ellipse at 88% 25%, rgba(124,58,237,0.45) 0%, transparent 45%),
+    radial-gradient(ellipse at 55% 110%, rgba(24,90,157,0.35) 0%, transparent 55%),
+    repeating-linear-gradient(
+      -48deg,
+      transparent 0px, transparent 22px,
+      rgba(255,255,255,0.03) 22px, rgba(255,255,255,0.03) 23px
+    );
+  background-size: auto;
+}
+
+/* Shine streak across cover */
+.social-cover-strip::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 35%,
+    rgba(255,255,255,0.06) 50%,
+    transparent 65%
+  );
+  pointer-events: none;
+}
+
+/* ── Pull profile body down to overlap cover just enough for avatar ── */
+.social-profile-body {
+  margin-top: -20px;
+}
+
+/* ── Avatar: gradient ring via wrapper padding trick ── */
+.spb-avatar-wrap {
+  padding: 3px;
+  background: linear-gradient(135deg, #43cea2, #7c3aed, #185a9d);
+  border-radius: 50%;
+}
+
+.spb-avatar {
+  width: 76px; height: 76px;
+  border: 3px solid var(--bg-surface);
+  font-size: 26px;
+  box-shadow: 0 6px 24px rgba(67,206,162,0.3);
+}
+
+/* Online dot repositioned for ring+border gap */
+.spb-online-dot {
+  bottom: 4px; right: 4px;
+}
+
+/* ── Name: slightly larger on desktop ── */
+.spb-name {
+  font-size: 24px;
+}
+
+/* ── Social stats bar: gradient stat values ── */
+.social-stats-bar {
+  background: var(--bg-surface);
+  border-top: 1px solid var(--border);
+}
+
+.sstat-val {
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  background: linear-gradient(135deg, var(--text-primary) 40%, color-mix(in srgb, #43cea2 60%, var(--text-primary)));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+.sstat-lbl {
+  font-size: 10px;
+  letter-spacing: 0.06em;
+}
+
+/* ── Compose card: premium frosted look ── */
+.compose-card {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, #43cea2 4%, var(--bg-surface)) 0%,
+    var(--bg-surface) 100%
+  );
+  border: 1px solid color-mix(in srgb, #43cea2 18%, var(--border));
+  border-radius: 16px;
+}
+
+.compose-card:hover {
+  border-color: color-mix(in srgb, #43cea2 55%, transparent);
+  box-shadow: 0 6px 24px rgba(67,206,162,0.12);
+}
+
+/* ── Stat cards: glowing tinted background ── */
+.stat-card {
+  background: var(--bg-surface);
+  border-radius: 14px;
+  transition: transform 0.18s, box-shadow 0.18s;
+}
+
+.stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--card-shadow-lg);
+}
+
+.stat-card--blogs     { background: color-mix(in srgb, #43cea2 5%, var(--bg-surface)); }
+.stat-card--published { background: color-mix(in srgb, #0f7a5a 5%, var(--bg-surface)); }
+.stat-card--drafts    { background: color-mix(in srgb, #f59e0b 5%, var(--bg-surface)); }
+.stat-card--views     { background: color-mix(in srgb, #7F77DD 5%, var(--bg-surface)); }
+.stat-card--likes     { background: color-mix(in srgb, #ef4444 5%, var(--bg-surface)); }
+.stat-card--comments  { background: color-mix(in srgb, #378ADD 5%, var(--bg-surface)); }
+.stat-card--top       { background: color-mix(in srgb, #f59e0b 5%, var(--bg-surface)); }
+.stat-card--avg       { background: color-mix(in srgb, #22c55e 5%, var(--bg-surface)); }
+.stat-card--followers { background: color-mix(in srgb, #7c3aed 5%, var(--bg-surface)); }
+
+/* ── Edit profile button ── */
+.btn-edit-profile {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 8px;
+  background: transparent;
+  border: 1.5px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+
+.btn-edit-profile:hover {
+  border-color: var(--accent);
+  color: var(--accent-text);
+  background: var(--accent-subtle);
+}
+
+@media (max-width: 768px) {
+  .btn-edit-profile { flex: 1; justify-content: center; }
+}
+
+/* ── Solo chart card: full width, no side-by-side layout ── */
+.chart-card--solo {
+  width: 100%;
+}
+
+/* ── Section headers: accent gradient text for title ── */
+.section-hd-title {
+  background: linear-gradient(135deg, var(--text-primary) 55%, color-mix(in srgb, #43cea2 65%, var(--text-primary)));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* ── Feed card: polish hover state ── */
+.feed-card {
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.feed-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--card-shadow-lg);
+}
+
+/* ── Social profile card: stronger outer glow in dark mode ── */
+[data-theme="dark"] .social-profile-card {
+  box-shadow: 0 0 0 1px rgba(67,206,162,0.08), 0 8px 32px rgba(0,0,0,0.5);
+}
+
+[data-theme="dark"] .sstat-val {
+  background: linear-gradient(135deg, #fff 40%, #43cea2);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ── Mobile overrides ── */
+@media (max-width: 768px) {
+  .social-cover-strip { height: 96px; }
+
+  .social-profile-body {
+    margin-top: -20px;
+    padding: 0 16px 18px;
+  }
+
+  .spb-avatar { width: 70px; height: 70px; font-size: 23px; }
+  .spb-online-dot { width: 13px; height: 13px; }
+  .spb-name { font-size: 22px; }
+  .spb-greeting { font-size: 11px; }
+
+  .sstat { min-width: 72px; padding: 13px 10px; flex: 0 0 auto; }
+  .sstat-val { font-size: 17px; }
+  .sstat-lbl { font-size: 9.5px; }
+}
+
+@media (max-width: 560px) {
+  .social-cover-strip { height: 88px; }
+  .spb-avatar { width: 64px; height: 64px; font-size: 21px; }
+  .spb-name { font-size: 20px; }
+  .sstat { min-width: 64px; padding: 11px 8px; }
+  .sstat-val { font-size: 15px; }
+  .spb-badges-row { gap: 4px; }
+  .spb-role-badge, .spb-streak-badge, .spb-earned-badge { font-size: 10px; padding: 2px 7px; }
+}
+
+/* ── Clickable stat items ── */
+.sstat--clickable {
+  cursor: pointer;
+  position: relative;
+  text-decoration: none;
+}
+
+.sstat--clickable .sstat-lbl {
+  color: var(--accent, #43cea2);
+}
+
+.sstat-arrow {
+  display: block;
+  margin: 2px auto 0;
+  opacity: 0;
+  transform: translateX(-3px);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+  color: var(--accent, #43cea2);
+}
+
+.sstat--clickable:hover .sstat-arrow,
+.sstat--clickable:focus-visible .sstat-arrow {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.sstat--clickable:hover {
+  background: color-mix(in srgb, #43cea2 8%, transparent);
+}
+
+.sstat--clickable:hover .sstat-val {
+  background: linear-gradient(135deg, #43cea2, #185a9d);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Shorts stat: teal-purple accent */
+.sstat--shorts .sstat-lbl {
+  background: linear-gradient(90deg, #43cea2, #7c3aed);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 700;
+}
+
+.sstat--shorts:hover {
+  background: color-mix(in srgb, #7c3aed 8%, transparent);
+}
+
+.sstat--shorts .sstat-arrow {
+  color: #7c3aed;
+}

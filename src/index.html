@@ -26,12 +26,17 @@
     }
 
     // iOS PWA: env(safe-area-inset-bottom) returns 0 on first paint due to a WebKit
-    // timing bug. Poll via rAF until it resolves, then write --safe-area-bottom so
-    // CSS can use it immediately without waiting for a layout-intensive page visit.
+    // timing bug. We pre-set --safe-area-bottom to 34px synchronously (before the
+    // browser renders a single pixel) so the bottom nav is always correctly sized on
+    // the very first frame — including after login redirects that trigger a full reload.
+    // The polling block below then measures the exact value and overrides if needed.
     (function () {
       if (!window.navigator.standalone) return;
       var root = document.documentElement;
       var tries = 0;
+
+      // Synchronous pre-set: runs before first layout/paint, so no transition fires.
+      root.style.setProperty('--safe-area-bottom', '34px');
 
       function measure() {
         var el = document.createElement('div');

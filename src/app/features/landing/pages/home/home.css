@@ -511,6 +511,95 @@
 .mob-tabs { display: none; }
 
 /* ═══════════════════════════════════════════════════════════════
+   MOBILE INSTALL STRIP — hidden on desktop, shown on mobile
+   ═══════════════════════════════════════════════════════════════ */
+.mob-install-strip {
+  display: none; /* shown only inside @media (max-width: 768px) below */
+}
+
+@media (max-width: 768px) {
+  .mob-install-strip {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 16px;
+    margin: 0 12px 4px;
+    border-radius: 14px;
+    background: linear-gradient(120deg, #0e6645 0%, #43cea2 45%, #185a9d 100%);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mob-install-strip::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent 55%);
+    pointer-events: none;
+  }
+
+  .mob-install-strip-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .mob-install-strip-icon {
+    width: 34px; height: 34px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: #fff;
+  }
+
+  .mob-install-strip-text {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+  }
+
+  .mob-install-strip-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.2;
+  }
+
+  .mob-install-strip-sub {
+    font-size: 11px;
+    color: rgba(255,255,255,0.8);
+    line-height: 1.2;
+  }
+
+  .mob-install-strip-btn {
+    flex-shrink: 0;
+    padding: 7px 16px;
+    border-radius: 50px;
+    background: rgba(0,0,0,0.45);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    backdrop-filter: blur(4px);
+    white-space: nowrap;
+    transition: background 0.15s;
+  }
+
+  .mob-install-strip-btn:hover { background: rgba(0,0,0,0.6); }
+}
+
+/* ═══════════════════════════════════════════════════════════════
    HERO SECTION
    ═══════════════════════════════════════════════════════════════ */
 .hero-wrap {
@@ -2585,4 +2674,550 @@
   .mob-tab-section--most-viewed .skeleton-card,
   .mob-tab-section--latest .blog-card,
   .mob-tab-section--latest .skeleton-card { flex: 0 0 92vw; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   INSTAGRAM-STYLE MOBILE REDESIGN
+   All rules here are scoped to ≤768px and override base styles
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Mobile stories row (always hidden on desktop) ── */
+.mob-stories-row { display: none; }
+
+/* ── Card header (desktop: hidden, mobile: shown above image) ── */
+.card-header { display: none; }
+
+@media (max-width: 768px) {
+
+  /* ── Hide hero section — feed starts immediately ── */
+  .hero-wrap { display: none; }
+
+  /* ── Hide category bar inside filter (stories row handles it) ── */
+  .category-bar { display: none; }
+
+  /* ── Tighter filter-wrap since cat-bar is gone ── */
+  .filter-wrap { padding-bottom: 10px; }
+
+  /* ── Mobile stories row ── */
+  .mob-stories-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+    padding: 12px 8px 10px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    background: var(--bg-surface);
+    border-bottom: 1px solid var(--border);
+  }
+  .mob-stories-row::-webkit-scrollbar { display: none; }
+
+  .mob-story {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    padding: 0 8px;
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mob-story-circle {
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    /* Gradient ring — Instagram style */
+    background: linear-gradient(var(--bg-surface), var(--bg-surface)) padding-box,
+                linear-gradient(135deg, #ccc 0%, #aaa 100%) border-box;
+    border: 2.5px solid transparent;
+    transition: transform 0.15s, border-color 0.2s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .mob-story-circle:active { transform: scale(0.92); }
+
+  .mob-story-circle--all {
+    background: linear-gradient(var(--bg-surface), var(--bg-surface)) padding-box,
+                var(--brand-gradient) border-box;
+    border-color: transparent;
+  }
+
+  .mob-story-circle--active {
+    background: linear-gradient(135deg, rgba(67,206,162,0.12), rgba(24,90,157,0.08)) padding-box,
+                var(--brand-gradient) border-box;
+    border-color: transparent;
+  }
+
+  /* Inactive circles — desaturated ring */
+  .mob-story:not(.mob-story--active) .mob-story-circle:not(.mob-story-circle--all) {
+    background: linear-gradient(var(--bg-surface), var(--bg-surface)) padding-box,
+                linear-gradient(135deg, rgba(67,206,162,0.5) 0%, rgba(24,90,157,0.5) 100%) border-box;
+  }
+
+  .mob-story--active .mob-story-circle {
+    background: linear-gradient(135deg, rgba(67,206,162,0.15), rgba(24,90,157,0.1)) padding-box,
+                var(--brand-gradient) border-box;
+  }
+
+  .mob-story-emoji { font-size: 22px; line-height: 1; display: block; }
+
+  .mob-story-live {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #22c55e;
+    border: 2px solid var(--bg-surface);
+    animation: livePulse 1.5s ease-in-out infinite;
+  }
+
+  .mob-story-name {
+    font-size: 10.5px;
+    font-weight: 500;
+    color: var(--text-muted);
+    text-align: center;
+    white-space: nowrap;
+    max-width: 62px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.2;
+  }
+  .mob-story--active .mob-story-name {
+    color: var(--accent-text);
+    font-weight: 700;
+  }
+
+  /* ── Instagram-style blog card ── */
+
+  /* Card header: author info above image */
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .card-hdr-left {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    min-width: 0;
+  }
+
+  .card-hdr-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--brand-gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    flex-shrink: 0;
+    border: 2px solid var(--border);
+  }
+
+  .card-hdr-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+  }
+
+  .card-hdr-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .card-hdr-time {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .card-hdr-cat {
+    font-size: 10.5px;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 20px;
+    background: var(--accent-subtle);
+    color: var(--accent-text);
+    white-space: nowrap;
+    flex-shrink: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  /* Hide the old author row inside card-body on mobile */
+  .card-author-row { display: none; }
+
+  /* Remove category badge overlay from image (header shows it now) */
+  .card-cat { display: none; }
+
+  /* Taller image for swipe cards */
+  .mob-tab-section--trending .card-img-wrap,
+  .mob-tab-section--most-viewed .card-img-wrap,
+  .mob-tab-section--latest .card-img-wrap { height: 220px; }
+
+  /* Action bar: Instagram-style stats row — move footer above body text */
+  /* Use CSS order to place footer between image and text */
+  .blog-card { flex-direction: column; }
+  .card-header  { order: 1; }
+  .card-img-wrap { order: 2; }
+  .card-footer  { order: 3; }
+  .card-body    { order: 4; }
+
+  /* Style the footer as an action bar (Instagram-like) */
+  .card-footer {
+    padding: 10px 12px 6px;
+    border-top: none;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* Make the stat icons slightly bigger */
+  .stat-icon { font-size: 17px; }
+  .stat-count { font-size: 13px; font-weight: 600; color: var(--text-secondary); }
+  .like-btn.liked .stat-count { color: #ef4444; font-weight: 700; }
+
+  /* Card body text adjustments */
+  .card-body {
+    padding: 10px 12px 12px;
+    border-top: none;
+  }
+  .card-body h3 {
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.35;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+  }
+  .card-body p {
+    font-size: 13px;
+    color: var(--text-secondary);
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+  }
+  .card-meta-row { margin-top: 4px; }
+  .card-reading-time { font-size: 12px; }
+
+  /* Read button: full-width on mobile for easy tap */
+  .card-actions { flex: 1; justify-content: flex-end; }
+  .read-btn {
+    padding: 7px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    border-radius: 20px;
+  }
+
+  /* Bookmark button size */
+  .card-bookmark-btn { width: 36px; height: 36px; font-size: 18px; }
+
+  /* ── Cleaner header on mobile ── */
+  .header { background: var(--bg-surface); }
+
+  /* ── Compact mob-tabs ── */
+  .mob-tabs {
+    padding: 8px 16px 6px;
+    gap: 6px;
+  }
+  .mob-tab {
+    padding: 7px 12px;
+    gap: 4px;
+  }
+  .mob-tab-icon { font-size: 14px; }
+  .mob-tab-text { font-size: 12.5px; }
+
+  /* ── Featured sponsored section ── */
+  .feat-item { flex-direction: column; gap: 0; padding: 0; overflow: hidden; }
+  .feat-item-img { width: 100%; height: 140px; border-radius: 0; }
+  .feat-item-img img { border-radius: 0; }
+  .feat-item-body { padding: 12px; }
+  .feat-item-desc { display: block; -webkit-line-clamp: 2; line-clamp: 2; font-size: 12.5px; }
+
+  /* ── Dark mode: card header ── */
+  [data-theme="dark"] .card-hdr-cat {
+    background: rgba(67,206,162,0.15);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   IMPROVEMENT 1 — SKELETON LOADERS (match Instagram card layout)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Desktop skeleton: hide the header/action-bar additions */
+.skeleton-card-header { display: none; }
+.skeleton-action-bar  { display: none; }
+
+.skeleton-hdr-avatar {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(90deg, var(--sk-base) 25%, var(--sk-shine) 50%, var(--sk-base) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  flex-shrink: 0;
+}
+.skeleton-hdr-lines { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+
+@media (max-width: 768px) {
+  .skeleton-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .skeleton-action-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px 6px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* Match card order: header → image → action-bar → body → footer */
+  .skeleton-card { display: flex; flex-direction: column; }
+  .skeleton-card-header { order: 1; }
+  .skeleton-img-block   { order: 2; }
+  .skeleton-action-bar  { order: 3; }
+  .skeleton-body        { order: 4; }
+  .skeleton-footer      { order: 5; display: none; } /* footer hidden, action-bar replaces it */
+
+  /* Carousel skeleton cards: taller image */
+  .mob-tab-section--trending .skeleton-img-block,
+  .mob-tab-section--most-viewed .skeleton-img-block,
+  .mob-tab-section--latest .skeleton-img-block { height: 220px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   IMPROVEMENT 2 — FOR YOU TAB: MEDIUM-STYLE LIST CARDS
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+
+  /* "For You" non-carousel sections: grouped list */
+  .section--pers .blog-grid,
+  #filtered-results .blog-grid {
+    grid-template-columns: 1fr;
+    gap: 0;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+
+  .section--pers .blog-card,
+  #filtered-results .blog-card {
+    display: grid;
+    grid-template-columns: 1fr 88px;
+    grid-template-rows: auto auto;
+    grid-template-areas:
+      "body img"
+      "foot foot";
+    border-radius: 0;
+    border: none;
+    border-bottom: 1px solid var(--border);
+    transform: none !important;
+    box-shadow: none !important;
+    flex-direction: unset;
+  }
+  .section--pers .blog-card:last-child,
+  #filtered-results .blog-card:last-child { border-bottom: none; }
+
+  /* Hide Instagram-style card-header for list cards */
+  .section--pers .card-header,
+  #filtered-results .card-header { display: none; }
+
+  /* Re-show author row inside card-body (card-header is hidden) */
+  .section--pers .card-author-row,
+  #filtered-results .card-author-row { display: flex; }
+
+  /* Image: small square on the right */
+  .section--pers .card-img-wrap,
+  #filtered-results .card-img-wrap {
+    grid-area: img;
+    width: 88px;
+    height: 88px;
+    border-radius: 0;
+    align-self: stretch;
+    flex-shrink: 0;
+  }
+  .section--pers .card-img-wrap img,
+  #filtered-results .card-img-wrap img { border-radius: 0; height: 100%; }
+
+  /* Badges hidden in compact list mode */
+  .section--pers .sponsored-badge,
+  .section--pers .trending-badge,
+  .section--pers .new-badge,
+  .section--pers .continue-badge,
+  #filtered-results .sponsored-badge,
+  #filtered-results .trending-badge,
+  #filtered-results .new-badge,
+  #filtered-results .continue-badge { display: none; }
+
+  /* Body: left column */
+  .section--pers .card-body,
+  #filtered-results .card-body {
+    grid-area: body;
+    padding: 10px 0 8px 12px;
+    order: unset;
+  }
+  .section--pers .card-body h3,
+  #filtered-results .card-body h3 {
+    font-size: 14px;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+  }
+  .section--pers .card-body p,
+  #filtered-results .card-body p { display: none; }
+  .section--pers .card-meta-row,
+  #filtered-results .card-meta-row { margin-top: 6px; }
+  .section--pers .card-tags,
+  #filtered-results .card-tags { display: none; }
+
+  /* Footer: full-width bottom strip */
+  .section--pers .card-footer,
+  #filtered-results .card-footer {
+    grid-area: foot;
+    order: unset;
+    border-top: 1px solid var(--border);
+    border-bottom: none;
+    padding: 7px 12px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   IMPROVEMENT 3 — SWIPE PROGRESS INDICATOR
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+
+  /* Remove old text-dot indicator */
+  .mob-tab-section--trending::after,
+  .mob-tab-section--most-viewed::after,
+  .mob-tab-section--latest::after { display: none; }
+
+  /* Visible thin scrollbar = natural progress bar on the carousel */
+  .mob-tab-section--trending .blog-grid,
+  .mob-tab-section--most-viewed .blog-grid,
+  .mob-tab-section--latest .blog-grid {
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent) rgba(67,206,162,0.12);
+    padding-bottom: 14px;
+  }
+  .mob-tab-section--trending .blog-grid::-webkit-scrollbar,
+  .mob-tab-section--most-viewed .blog-grid::-webkit-scrollbar,
+  .mob-tab-section--latest .blog-grid::-webkit-scrollbar { height: 3px; display: block; }
+
+  .mob-tab-section--trending .blog-grid::-webkit-scrollbar-track,
+  .mob-tab-section--most-viewed .blog-grid::-webkit-scrollbar-track,
+  .mob-tab-section--latest .blog-grid::-webkit-scrollbar-track {
+    background: rgba(67,206,162,0.12);
+    border-radius: 4px;
+  }
+  .mob-tab-section--trending .blog-grid::-webkit-scrollbar-thumb,
+  .mob-tab-section--latest .blog-grid::-webkit-scrollbar-thumb {
+    background: var(--accent);
+    border-radius: 4px;
+  }
+  .mob-tab-section--most-viewed .blog-grid::-webkit-scrollbar-thumb {
+    background: #6366f1;
+    border-radius: 4px;
+  }
+
+  /* Swipe-hint label in section header */
+  .mob-tab-section--trending .section-title::after,
+  .mob-tab-section--most-viewed .section-title::after,
+  .mob-tab-section--latest .section-title::after {
+    content: ' ›';
+    font-size: 14px;
+    opacity: 0.4;
+    font-weight: 400;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   IMPROVEMENT 4 — COMPACT SECTION HEADERS
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .section { padding-top: 14px; padding-bottom: 14px; }
+  .section-header { margin-bottom: 12px; gap: 8px; }
+
+  /* Hide pill labels on mobile — emoji + title is enough */
+  .section-pill { display: none; }
+
+  /* Tighter section title */
+  .section-title {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+  }
+
+  /* Result count stays visible */
+  .result-count { font-size: 12px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   IMPROVEMENT 5 — COLLAPSIBLE FILTER STRIP
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Mobile filter toggle button — desktop: hidden */
+.mob-filter-btn { display: none; }
+
+/* Pills row: visible on desktop always */
+.filter-pills-row { display: flex; }
+
+@media (max-width: 768px) {
+  /* Show the filter toggle button */
+  .mob-filter-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    border-radius: 10px;
+    border: 1.5px solid var(--border);
+    background: var(--bg-surface);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: border-color 0.18s, color 0.18s, background 0.18s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .mob-filter-btn--active {
+    border-color: var(--accent);
+    color: var(--accent-text);
+    background: var(--accent-subtle);
+  }
+
+  /* Pills row: hidden by default on mobile */
+  .filter-pills-row {
+    display: none;
+    gap: 6px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    animation: filterSlideDown 0.18s ease;
+  }
+  .filter-pills-row::-webkit-scrollbar { display: none; }
+
+  /* Show when open or when a filter is active */
+  .filter-pills-row--open {
+    display: flex;
+  }
+
+  @keyframes filterSlideDown {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
 }

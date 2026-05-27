@@ -1422,7 +1422,7 @@
 
   .blog-detail-footer {
     margin-top: 20px;
-    padding: 20px 14px 78px;
+    padding: 20px 14px calc(78px + env(safe-area-inset-bottom, 0px));
     background: var(--bg-surface);
   }
   .blog-detail-footer::before { display: none; }
@@ -1439,6 +1439,9 @@
     animation: sheetUp 0.28s cubic-bezier(0.32,0.72,0,1);
   }
   @keyframes sheetUp { from { transform: translateY(60px); opacity: 0; } to { transform: none; opacity: 1; } }
+  /* Scroll bodies need bottom padding so last content clears the home indicator */
+  .apm-scroll-body { padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .apos-body { padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px)); }
 
   /* Header simplification */
   .cat-btn-full  { display: none; }
@@ -1722,4 +1725,85 @@
   .mcq-question-block { padding: 16px 14px; }
   .mcq-option-btn { padding: 11px 12px; font-size: 13.5px; }
   .mcq-submit-btn { width: 100%; }
+}
+
+/* ══════════════════════════════════════════
+   MOBILE BLOG DETAIL IMPROVEMENTS
+   Extra polish layered on top of existing ≤768px breakpoint
+══════════════════════════════════════════ */
+
+/* Mobile bottom action bar — hidden on desktop */
+.mob-article-bar { display: none; }
+
+@media (max-width: 768px) {
+  /* ── 1. Bottom action bar (like / comment / share / save) ── */
+  .mob-article-bar {
+    display: flex;
+    position: fixed;
+    bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+    left: 0; right: 0;
+    z-index: 900;
+    height: 52px;
+    align-items: stretch;
+    background: color-mix(in srgb, var(--bg-surface) 96%, transparent);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-top: 1px solid var(--border);
+  }
+  .mob-art-btn {
+    flex: 1;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 2px; border: none; background: transparent;
+    color: var(--text-muted); font-family: inherit;
+    cursor: pointer; padding: 4px 0;
+    border-radius: 0;
+    transition: color 0.15s, background 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .mob-art-btn:active { background: var(--accent-subtle); }
+  .mob-art-btn-icon { font-size: 18px; line-height: 1; }
+  .mob-art-btn-label { font-size: 10px; font-weight: 600; line-height: 1; }
+  .mob-art-btn--liked { color: #ef4444; }
+  .mob-art-btn--bookmarked { color: var(--accent-text); }
+
+  /* ── 2. Hide font-size buttons (clutter on small screens) ── */
+  .font-size-btns { display: none; }
+
+  /* ── 3. Language bar — horizontal scroll instead of wrapping ── */
+  .lang-bar {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .lang-bar::-webkit-scrollbar { display: none; }
+  .lang-btn { flex-shrink: 0; }
+
+  /* ── 4. Meta stats — tighter gap, hide rarely-useful updated date ── */
+  .meta-stats { gap: 10px; }
+  .meta-updated { display: none; }
+
+  /* ── 5. Article container — extra bottom padding to clear mob-article-bar ── */
+  .blog-detail-container { padding-bottom: 60px; }
+
+  /* ── 6. Scroll-to-top FAB — lift above mob-article-bar ── */
+  .bd-scroll-top-fab {
+    bottom: calc(64px + 52px + 8px + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* ── 7. Footer — account for mob-article-bar height ── */
+  .blog-detail-footer {
+    padding-bottom: calc(52px + 78px + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* ── 8. Discussion compose — more compact on mobile ── */
+  .disc-compose { padding: 10px 12px; gap: 10px; }
+  .disc-compose-avatar { width: 30px; height: 30px; font-size: 12px; flex-shrink: 0; }
+
+  /* ── 9. Trending items — tighter ── */
+  .trending-item { padding: 10px 8px; gap: 12px; }
+
+  /* ── 10. Category pills — smaller on mobile ── */
+  .category-pill { font-size: 10px; padding: 3px 8px; }
 }

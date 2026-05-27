@@ -34,7 +34,7 @@
           class="nav-item"
           [class.active]="activeSection() === s.id"
           [class.danger-item]="s.id === 'danger'"
-          (click)="activeSection.set(s.id)">
+          (click)="switchSection(s.id)">
           <span class="nav-icon">{{ s.icon }}</span>
           <span class="nav-label">{{ s.label }}</span>
           @if (activeSection() === s.id) {
