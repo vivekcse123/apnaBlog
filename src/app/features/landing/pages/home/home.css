@@ -2302,6 +2302,15 @@
     z-index: 88;
   }
 
+  /* Embedded in dashboard — no home header above, so remove the 56px header offset */
+  :host(.mode-embedded) .mob-tabs {
+    top: 0;
+  }
+
+  :host(.mode-embedded) .filter-wrap {
+    top: 47px; /* mob-tabs height only, no header offset */
+  }
+
   .mob-tab {
     flex: 1;
     display: flex;

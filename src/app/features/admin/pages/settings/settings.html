@@ -28,6 +28,10 @@
         <span class="bc-current">Settings</span>
       </nav>
     </div>
+    <div class="mobile-section-header">
+      <span class="mobile-section-name" [class.danger-section]="activeSection() === 'danger'">{{ activeSectionHeading() }}</span>
+    </div>
+
     <nav class="sidebar-nav">
       @for (s of sections; track s.id) {
         <button

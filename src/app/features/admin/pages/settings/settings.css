@@ -11,6 +11,9 @@
   color: var(--text-primary);
 }
 
+/* Mobile section title above nav pills — hidden on desktop */
+.mobile-section-header { display: none; }
+
 /* ═══════════════════════════════════════════════════
    SIDEBAR
    ═══════════════════════════════════════════════════ */
@@ -1036,13 +1039,13 @@
     padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
   }
 
-  /* ── Sidebar → sticky frosted pill tab strip ── */
+  /* ── Sidebar → sticky frosted column: title + pill tab strip ── */
   .sidebar {
     width: 100%;
     min-width: unset;
     height: auto;
     position: sticky;
-    top: calc(58px + env(safe-area-inset-top, 0px));
+    top: 0;
     z-index: 50;
     padding: 0;
     border-right: none;
@@ -1050,14 +1053,35 @@
     background: color-mix(in srgb, var(--bg-surface) 96%, transparent);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    flex-direction: row;
-    align-items: center;
+    flex-direction: column;
+    align-items: stretch;
     overflow: hidden;
     box-shadow: 0 1px 0 var(--border), 0 4px 16px rgba(0,0,0,0.07);
   }
 
   .sidebar-brand       { display: none; }
   .sidebar-theme-toggle{ display: none; }
+
+  /* Mobile section title row */
+  .mobile-section-header {
+    display: flex;
+    align-items: center;
+    padding: 10px 16px 4px;
+    width: 100%;
+  }
+
+  .mobile-section-name {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    letter-spacing: -0.3px;
+    line-height: 1.2;
+  }
+
+  /* Hide section heading from content area — now shown above the slider */
+  .section-heading {
+    display: none;
+  }
 
   /* Pill tab row */
   .sidebar-nav {
@@ -1123,56 +1147,21 @@
   /* ── Main content area ── */
   .settings-main {
     flex: 1;
-    padding: 1.5rem 1rem 2rem;
+    padding: 1rem 1rem 2rem;
     background: var(--bg-base);
     overflow-y: visible;
   }
 
   .section-wrap {
     max-width: 100%;
-    /* account for fixed header (58px) + sticky tab bar (~50px) when scrolled */
-    scroll-margin-top: calc(58px + 50px + 8px);
+    scroll-margin-top: calc(90px + 8px);
   }
 
-  /* ── Section heading — sticky just below tab bar ── */
-  .section-heading {
-    position: sticky;
-    top: calc(58px + 50px);
-    z-index: 30;
-    background: var(--bg-base);
-    padding: 0.75rem 0 0.625rem;
-    margin-bottom: 1rem;
-    border-bottom: 2px solid var(--border);
-  }
+  /* section-heading is hidden on mobile — shown above slider via .mobile-section-header */
 
-  /* CSS vars resolve correctly per theme now that gradient rule is desktop-only */
-  .section-heading h1 {
-    display: block !important;
-    font-size: 1.3rem !important;
-    font-weight: 800 !important;
-    letter-spacing: -0.3px !important;
-    line-height: 1.25 !important;
-    margin: 0 0 0.2rem !important;
-    padding: 0 !important;
-    background: none !important;
-    -webkit-background-clip: unset !important;
-    background-clip: unset !important;
-    color: var(--text-primary) !important;
-    -webkit-text-fill-color: var(--text-primary) !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-  }
-
-  .section-heading p {
-    font-size: 0.8rem !important;
-    margin: 0 !important;
-    color: var(--text-secondary) !important;
-    -webkit-text-fill-color: var(--text-secondary) !important;
-  }
-
-  .section-heading.danger-heading h1 {
+  /* .section-heading is hidden on mobile — title shown above slider via .mobile-section-header */
+  .mobile-section-name.danger-section {
     color: var(--danger) !important;
-    -webkit-text-fill-color: var(--danger) !important;
   }
 
   /* ── Profile card ── */

@@ -66,6 +66,19 @@ export class Settings implements OnInit {
     { id: 'danger',        label: 'Danger Zone',   icon: '◬' },
   ];
 
+  private sectionHeadings: Record<string, string> = {
+    profile:       'Profile Information',
+    appearance:    'Appearance',
+    language:      'Language & Region',
+    notifications: 'Notifications',
+    security:      'Security',
+    danger:        'Danger Zone',
+  };
+
+  activeSectionHeading = computed(() =>
+    this.sectionHeadings[this.activeSection()] ?? ''
+  );
+
   isLoading      = signal(true);
   isEditing      = signal(false);
   isSaving       = signal(false);

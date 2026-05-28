@@ -1,6 +1,6 @@
 import {
   Component, inject, signal, computed, OnInit, OnDestroy, DestroyRef,
-  Input, ChangeDetectionStrategy, WritableSignal, PLATFORM_ID,
+  Input, HostBinding, ChangeDetectionStrategy, WritableSignal, PLATFORM_ID,
   HostListener, ElementRef, ViewChild
 } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
@@ -99,6 +99,7 @@ export class Home implements OnInit, OnDestroy {
   private document       = inject(DOCUMENT);
 
   @Input() standalone = true;
+  @HostBinding('class.mode-embedded') get isEmbedded() { return !this.standalone; }
   @ViewChild('searchInput') searchInputEl?: ElementRef<HTMLInputElement>;
 
   allPosts           = signal<PostWithTs[]>([]);
