@@ -262,7 +262,6 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     const unlock = () => {
       if (this.gestureUnlocked) return;
       this.gestureUnlocked = true;
-      // Any first interaction satisfies browser autoplay policy — unmute unless user chose mute.
       if (!this.userExplicitlyMuted) {
         this.ngZone.run(() => {
           this.clearUnmuteHint();
@@ -287,7 +286,6 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     container.addEventListener('touchend', (e: TouchEvent) => {
       const dy = Math.abs((e.changedTouches[0]?.clientY ?? startY) - startY);
       if (dy < 30) return;
-      // Scroll is a user gesture — unlock audio immediately on current card.
       if (!this.gestureUnlocked) {
         this.gestureUnlocked = true;
         if (!this.userExplicitlyMuted) {
@@ -300,7 +298,6 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
         const vid = this.getVideoAt(this.activeIndex());
         if (vid && !this.isMuted()) vid.muted = false;
       }
-      // Pause all; setupScrollEndPlay will play the correct card unmuted.
       container.querySelectorAll<HTMLVideoElement>('.sf-video').forEach(v => v.pause());
     }, { passive: true });
   }
@@ -310,10 +307,8 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     const container = this.feedRef.nativeElement;
     const onSettle = () => {
       const idx = Math.round(container.scrollTop / container.clientHeight);
-      // Settling after a scroll = confirmed user gesture → unlock audio.
       this.gestureUnlocked = true;
       this.ngZone.run(() => {
-        // Clear browser-forced mute so next video plays with audio (user's default preference).
         if (!this.userExplicitlyMuted) {
           this.clearUnmuteHint();
           this.showSwipeHint.set(false);
@@ -335,6 +330,17 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
 
   // ── Data ───────────────────────────────────────────────────────────────────
 
+  /**
+   * Determines whether a short should be shown in the public feed.
+   * Only 'published' and 'live' statuses are shown.
+   * Shorts with no status field at all are treated as published (backward compat).
+   */
+  private isPublished(short: VideoShort): boolean {
+    const status = (short as any).status as string | undefined;
+    if (!status) return true; // no status field → legacy short, show it
+    return status === 'published' || status === 'live';
+  }
+
   loadShorts(reset = false): void {
     if (this.isLoading()) return;
     if (reset) { this.page = 1; this.hasMore.set(true); }
@@ -342,21 +348,23 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     const cat    = this.selectedCat() === 'All' ? undefined : this.selectedCat();
     const catKey = this.selectedCat();
     const search = this.searchQuery().trim() || undefined;
-    this.service.getShorts(this.page, 8, cat, search).subscribe({
+    this.service.getShorts(this.page, 12, cat, search).subscribe({
       next: res => {
-        const items = res.data ?? [];
+        // ── Filter: only show published / live shorts ───────────────────────
+        const items = (res.data ?? []).filter((s: VideoShort) => this.isPublished(s));
+
         // Seed liked IDs from server so previously-liked videos show red heart immediately.
         if (this.isLoggedIn()) {
-          const serverLiked = items.filter(s => s.isLikedByMe).map(s => s._id);
+          const serverLiked = items.filter((s: VideoShort) => s.isLikedByMe).map((s: VideoShort) => s._id);
           if (serverLiked.length) {
-            this.likedIds.update(cur => { const n = new Set(cur); serverLiked.forEach(id => n.add(id)); return n; });
+            this.likedIds.update(cur => { const n = new Set(cur); serverLiked.forEach((id: string) => n.add(id)); return n; });
             this.saveLikedToStorage();
           }
         }
         this.shorts.update(cur => {
           if (reset) return items;
-          const seen = new Set(cur.map(s => s._id));
-          return [...cur, ...items.filter(s => !seen.has(s._id))];
+          const seen = new Set(cur.map((s: VideoShort) => s._id));
+          return [...cur, ...items.filter((s: VideoShort) => !seen.has(s._id))];
         });
         // Cache first page results per category for instant switching
         if (reset && !search) this.categoryCache.set(catKey, this.shorts());
@@ -420,11 +428,9 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     this.viewTimers.forEach(t => clearTimeout(t));
     this.viewTimers.clear();
     this.manuallyPausedSet.clear();
-    // Abort all progress listeners so they don't accumulate across resets.
     this.progressControllers.forEach(c => c.abort());
     this.progressControllers.clear();
     this.progressBound.clear();
-    // Clear replay state — indices/IDs will be invalid after fresh load.
     this.endedCards.set(new Set());
     this.loadShorts(true);
     if (!this.categoryCache.has(this.selectedCat())) {
@@ -435,7 +441,6 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
   onCategorySelect(cat: string): void {
     if (cat === this.selectedCat() && !this.isLoading()) return;
     this.selectedCat.set(cat);
-    // Scroll the selected pill to center of the nav bar.
     requestAnimationFrame(() => {
       const nav = this.catNavRef?.nativeElement;
       if (!nav) return;
@@ -443,7 +448,6 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
       const pill = nav.children[idx] as HTMLElement;
       if (pill) nav.scrollTo({ left: pill.offsetLeft - nav.clientWidth / 2 + pill.offsetWidth / 2, behavior: 'smooth' });
     });
-    // Show cached instantly if available
     const cached = this.categoryCache.get(cat);
     if (cached?.length) {
       this.shorts.set(cached);
@@ -471,18 +475,6 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
 
   private setupObserver(): void {
     this.observer = new IntersectionObserver(entries => {
-      // ── Pause-only pass ───────────────────────────────────────────────────
-      // IO is NEVER the trigger for play. Play is exclusively handled by:
-      //   1. resolveDeepLink (initial load / category switch)
-      //   2. setupScrollEndPlay (after scroll snap settles)
-      //   3. keyboard navigation (navigateCard)
-      //
-      // This removes the IO/scrollend race condition where the previous card
-      // (still at 80%+ during a fast swipe) would briefly restart before
-      // the scrollend handler switched to the new card.
-      //
-      // IO's only job: pause cards leaving the viewport + update metadata
-      // signals (activeIndex, scheduleView, preload) for the entering card.
       let bestVisibleIdx = -1;
 
       for (const e of entries) {
@@ -490,8 +482,6 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
         if (isNaN(idx)) continue;
 
         if (!e.isIntersecting || e.intersectionRatio < 0.8) {
-          // Card left viewport — pause it immediately. Clear the manual-pause
-          // flag so it auto-plays cleanly if the user scrolls back (Reels UX).
           const vid = this.getVideoAt(idx);
           if (vid && !vid.paused) {
             vid.pause();
@@ -501,8 +491,6 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
           continue;
         }
 
-        // Card >= 80% visible: pick the one closest to current scroll position
-        // when multiple cards are intersecting in the same batch.
         if (bestVisibleIdx === -1) {
           bestVisibleIdx = idx;
         } else {
@@ -516,7 +504,6 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
         }
       }
 
-      // Update signals and kick off view-count + preload — but do NOT play.
       if (bestVisibleIdx >= 0) {
         this.ngZone.run(() => {
           this.activeIndex.set(bestVisibleIdx);
@@ -561,8 +548,6 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private preloadAdjacent(currentIdx: number): void {
-    // Only preload 1 card ahead. Preloading 2+ causes iOS Safari to suspend
-    // the active video to free resources for concurrent downloads.
     const next = this.shorts()[currentIdx + 1];
     if (next?.videoType === 'upload') {
       const vid = this.getVideoAt(currentIdx + 1);
@@ -587,8 +572,6 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     if (this.progressBound.has(cardIdx)) return;
     this.progressBound.add(cardIdx);
 
-    // Abort any previous controller for this slot (defensive; shouldn't happen
-    // once progressBound guards entry, but handles resetFeed edge cases).
     this.progressControllers.get(cardIdx)?.abort();
     const ctrl = new AbortController();
     this.progressControllers.set(cardIdx, ctrl);
@@ -606,7 +589,6 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
 
     vid.addEventListener('ended', () => {
       card.style.setProperty('--vp', '100%');
-      // Use shortId (not index) so replay state survives resetFeed / load-more.
       this.ngZone.run(() => this.endedCards.update(s => new Set([...s, shortId])));
     }, { passive: true, signal: ctrl.signal });
   }
@@ -617,7 +599,6 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
 
     this.pauseAllExcept(cardIdx);
 
-    // Use the short's _id (not index) so endedCards survives list mutations.
     if (this.endedCards().has(short._id)) {
       this.endedCards.update(s => { const n = new Set(s); n.delete(short._id); return n; });
     }
@@ -626,9 +607,6 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     const vid = this.getVideoAt(cardIdx);
     if (!vid) return;
 
-    // Videos pre-loaded by preloadAdjacent may have readyState >= 2 already,
-    // meaning loadeddata already fired before the card's Angular (loadeddata)
-    // binding was active. Add the ready class immediately so it's not invisible.
     if (vid.readyState >= 2 && !vid.classList.contains('sf-video--ready')) {
       vid.classList.add('sf-video--ready');
     }
@@ -636,20 +614,17 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     this.attachProgress(cardIdx, vid, short._id);
 
     if (!vid.paused) {
-      // Already playing — sync mute state only.
       const shouldMute = !this.gestureUnlocked || this.isMuted();
       if (vid.muted !== shouldMute) vid.muted = shouldMute;
       return;
     }
 
-    // Capture a generation token. If the user scrolls away before the async
-    // play() promise resolves, the stale .then() won't update isMuted state.
     const gen = ++this.playGeneration;
 
     vid.muted = !this.gestureUnlocked || this.isMuted();
     vid.play()
       .then(() => {
-        if (gen !== this.playGeneration) return; // stale — user already scrolled
+        if (gen !== this.playGeneration) return;
         if (!this.gestureUnlocked) {
           this.ngZone.run(() => {
             this.isMuted.set(true);
@@ -664,7 +639,6 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
       })
       .catch(() => {
         if (gen !== this.playGeneration) return;
-        // Retry muted — browser autoplay policy blocked unmuted play.
         vid.muted = true;
         vid.play()
           .then(() => {
@@ -721,7 +695,6 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
-    // First-ever tap: let setupGestureUnlock handle the unmute — don't pause the video.
     if (!this.gestureUnlocked) return;
 
     this.lastTouchToggleTime = Date.now();
@@ -730,7 +703,6 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
 
   onCardClick(cardIdx: number, event: Event): void {
     if (Date.now() - this.lastTouchToggleTime < 600) return;
-    // First-ever click: let setupGestureUnlock handle the unmute — don't pause the video.
     if (!this.gestureUnlocked) return;
     const target = event.target as HTMLElement;
     if (target.closest('button, a, input, .reel-actions, .reel-info, .reel-progress-track')) return;
@@ -744,7 +716,6 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
 
   private doToggle(cardIdx: number, cardEl: HTMLElement): void {
     const shortId = this.shorts()[cardIdx]?._id ?? '';
-    // Replay if ended
     if (this.endedCards().has(shortId)) {
       this.endedCards.update(s => { const n = new Set(s); n.delete(shortId); return n; });
       const vid = cardEl.querySelector<HTMLVideoElement>('video');
@@ -759,7 +730,6 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
-    // Normal toggle
     const vid = cardEl.querySelector<HTMLVideoElement>('video');
     if (!vid) return;
     if (!vid.paused) {
@@ -928,8 +898,6 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     this.commentShort.set(short);
     this.commentText.set('');
     this.showComments.set(true);
-    // Mute (don't pause) the active video while drawer is open — keeps
-    // progress advancing so position is correct when drawer closes.
     const vid = this.getVideoAt(this.activeIndex());
     if (vid) vid.muted = true;
     this.service.getComments(short._id).subscribe({
@@ -945,7 +913,6 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     this.commentShort.set(null);
     this.replyingToId.set(null);
     this.replyText.set('');
-    // Restore mute state now that drawer is closed.
     const vid = this.getVideoAt(this.activeIndex());
     if (vid) vid.muted = this.isMuted();
   }

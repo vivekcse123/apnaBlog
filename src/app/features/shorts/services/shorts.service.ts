@@ -54,8 +54,9 @@ export class ShortsService {
     );
   }
 
+  // ── FIXED: always pass status=published so backend only returns published shorts ──
   getShorts(page = 1, limit = 8, category?: string, search?: string): Observable<ShortsPage> {
-    let url = `${this.endpoint}?page=${page}&limit=${limit}`;
+    let url = `${this.endpoint}?page=${page}&limit=${limit}&status=published`;
     if (category && category !== 'All') url += `&category=${encodeURIComponent(category)}`;
     if (search?.trim()) url += `&search=${encodeURIComponent(search.trim())}`;
     return this.http.get<ShortsPage>(url).pipe(
@@ -66,8 +67,6 @@ export class ShortsService {
   createShort(data: CreateShortPayload): Observable<{ status: number; data: VideoShort }> {
     return this.http.post<{ status: number; data: VideoShort }>(this.endpoint, data).pipe(
       catchError(() => {
-        // Backend endpoint not yet implemented — return a local mock so the UI flow
-        // can be fully tested before the API is ready.
         const mock: VideoShort = {
           _id:          `local_${Date.now()}`,
           title:        data.title,
