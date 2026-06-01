@@ -6,7 +6,6 @@ import { ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
 import { ViewUser } from '../../../../shared/view-user/view-user';
-import { DisabledDirective } from '../../../../shared/directives/highlight';
 import { CreateUser } from '../create-user/create-user';
 import { CreateSponsor } from '../create-sponsor/create-sponsor';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -18,7 +17,7 @@ import { DashboardCache } from '../../../../core/services/dashboard-cache';
 @Component({
   selector: 'app-manage-users',
   standalone: true,
-  imports: [CommonModule, FormsModule, ViewUser, DisabledDirective, CreateUser, CreateSponsor],
+  imports: [CommonModule, FormsModule, ViewUser, CreateUser, CreateSponsor],
   templateUrl: './manage-users.html',
   styleUrls: ['./manage-users.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,

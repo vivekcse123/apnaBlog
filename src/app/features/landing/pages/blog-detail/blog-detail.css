@@ -63,6 +63,7 @@
 .app-logo:hover { opacity: 0.8; }
 .app-logo-img { border-radius: 8px; }
 .app-logo-text {
+  font-family: 'Playfair Display', serif;
   font-size: 18px; font-weight: 700; letter-spacing: -0.3px;
   background: linear-gradient(135deg, #43cea2, #185a9d);
   -webkit-background-clip: text;
@@ -615,16 +616,51 @@
 .blog-content ::ng-deep strong { font-weight: 700; }
 .blog-content ::ng-deep em     { font-style: italic; }
 .blog-content ::ng-deep hr { border: none; border-top: 1px solid var(--border); margin: 2em 0; }
+/* Table scroll wrapper — injected by wrapTables() so mobile can scroll */
+.blog-content ::ng-deep .bd-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 1.4em 0;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.blog-content ::ng-deep .bd-table-wrap::-webkit-scrollbar { height: 5px; }
+.blog-content ::ng-deep .bd-table-wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+
 .blog-content ::ng-deep table {
-  width: 100%; border-collapse: collapse; margin: 1.4em 0;
-  font-size: 0.9em; overflow-x: auto; display: block;
+  width: 100%;
+  min-width: 480px;   /* prevents columns from collapsing/wrapping on mobile */
+  border-collapse: collapse;
+  font-size: 0.9em;
+  margin: 0;          /* margin lives on .bd-table-wrap now */
 }
 .blog-content ::ng-deep th,
 .blog-content ::ng-deep td {
-  padding: 8px 12px; border: 1px solid var(--border);
+  padding: 10px 14px;
+  border: 1px solid var(--border);
   text-align: left;
+  white-space: nowrap;     /* keep each cell on one line */
+  vertical-align: middle;
 }
-.blog-content ::ng-deep th { background: var(--bg-surface); font-weight: 700; }
+.blog-content ::ng-deep th {
+  background: var(--bg-surface-alt);
+  font-weight: 700;
+  font-size: 0.82em;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--text-muted);
+}
+.blog-content ::ng-deep tbody tr:hover td {
+  background: color-mix(in srgb, var(--accent,#43cea2) 5%, var(--bg-surface));
+}
+/* First column (rank / index) — slightly muted */
+.blog-content ::ng-deep td:first-child {
+  color: var(--text-muted);
+  font-weight: 600;
+}
 
 /* Inline code */
 .blog-content ::ng-deep code {

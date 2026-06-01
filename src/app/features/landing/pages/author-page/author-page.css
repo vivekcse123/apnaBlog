@@ -504,7 +504,13 @@
 /* ── FOOTER ── */
 .ap-footer { border-top: 1px solid var(--border); padding: 24px 5%; }
 .ap-footer-inner { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-.ap-footer-logo { display: flex; align-items: center; gap: 7px; text-decoration: none; color: var(--text-secondary); font-size: 14px; font-weight: 600; }
+.ap-footer-logo { display: flex; align-items: center; gap: 7px; text-decoration: none; }
+.ap-footer-logo span {
+  font-family: 'Playfair Display', serif;
+  font-size: 15px; font-weight: 700;
+  background: linear-gradient(135deg, #43cea2, #185a9d);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
 .ap-footer-copy { font-size: 12px; color: var(--text-muted); }
 
 /* ── RESPONSIVE ── */

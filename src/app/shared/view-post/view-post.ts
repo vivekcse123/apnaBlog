@@ -8,7 +8,7 @@ import { Subject, takeUntil, finalize } from 'rxjs';
 import { PostService }    from '../../features/post/services/post-service';
 import { UploadService }  from '../../features/post/services/upload-service';
 import { Auth }           from '../../core/services/auth';
-import { Post }           from '../../core/models/post.model';
+import { Post, McqQuestion } from '../../core/models/post.model';
 import { ToastService }   from '../../core/services/toast.service';
 import { TaxonomyService } from '../../core/services/taxonomy.service';
 
@@ -77,7 +77,8 @@ export class ViewPost implements OnInit, OnDestroy {
   isCodeActive   = signal(false);
   showLinkInput  = signal(false);
   linkUrlValue   = signal('');
-  private savedLinkRange: Range | null = null;
+  private savedLinkRange:  Range | null = null;
+  private savedTableRange: Range | null = null;
 
   // ── Inline image picker ────────────────────────────────────────────────────
   showInlineImgPicker = signal(false);
@@ -94,6 +95,15 @@ export class ViewPost implements OnInit, OnDestroy {
   isRejecting     = signal(false);
 
   isResubmitting = signal(false);
+
+  // MCQ questions state (used when editing an MCQ-type post)
+  mcqQuestions = signal<McqQuestion[]>([]);
+
+  // Table insertion / deletion
+  showTablePicker = signal(false);
+  tableRows       = signal(3);
+  tableCols       = signal(4);
+  isInTable       = signal(false);
 
   // Image gallery management
   imageGallery  = signal<ImageItem[]>([]);
@@ -265,10 +275,27 @@ export class ViewPost implements OnInit, OnDestroy {
     this.successMessage.set('');
     this.errorMessage.set('');
 
+    const isMcq = p?.postType === 'mcq';
+
+    // Deep-clone questions so edits don't mutate the original signal
+    if (isMcq) {
+      this.mcqQuestions.set(
+        (p?.mcqQuestions ?? []).map(q => ({
+          ...q,
+          options: q.options.map(o => ({ ...o })),
+        }))
+      );
+    }
+
     this.editForm = this.fb.group({
       title:         [p?.title         || '', [Validators.required, Validators.minLength(5), Validators.maxLength(100)]],
       description:   [p?.description   || '', [Validators.required, Validators.minLength(10)]],
-      content:       [p?.content       || '', [Validators.required, Validators.minLength(20)]],
+      // MCQ posts store questions separately — content is not required for them.
+      // We only require non-empty content; minLength is intentionally removed from
+      // the edit form because the validator counts raw HTML chars, not visible text,
+      // which causes false positives (e.g. <p></p> passes minLength but backend
+      // strips tags and sees an empty string). Backend validates actual text length.
+      content:       [p?.content       || '', isMcq ? [] : [Validators.required]],
       categories:    [p?.categories    || []],
       tags:          [p?.tags          || []],
       featuredImage: [p?.featuredImage || ''],
@@ -581,8 +608,138 @@ export class ViewPost implements OnInit, OnDestroy {
     this.editForm.get('slug')?.setValue(formatted, { emitEvent: false });
   }
 
+  // ── Table insertion ────────────────────────────────────────────────────────
+
+  toggleTablePicker(e: Event): void {
+    e.preventDefault();
+    e.stopPropagation();
+    // Save cursor position BEFORE button click steals focus from the editor
+    if (!this.showTablePicker()) {
+      const sel = window.getSelection();
+      this.savedTableRange = (sel && sel.rangeCount > 0)
+        ? sel.getRangeAt(0).cloneRange()
+        : null;
+    }
+    this.showTablePicker.update(v => !v);
+  }
+
+  deleteTable(): void {
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return;
+    let node: Node | null = sel.getRangeAt(0).commonAncestorContainer;
+    while (node && node !== this.contentEditorRef?.nativeElement) {
+      if ((node as Element).tagName === 'TABLE') {
+        node.parentNode?.removeChild(node);
+        const content = this.contentEditorRef!.nativeElement.innerHTML;
+        this.editForm.patchValue({ content }, { emitEvent: false });
+        this.isInTable.set(false);
+        return;
+      }
+      node = node.parentNode;
+    }
+  }
+
+  insertTable(): void {
+    const rows = Math.max(1, this.tableRows());
+    const cols = Math.max(1, this.tableCols());
+    this.showTablePicker.set(false);
+
+    const editor = this.contentEditorRef?.nativeElement;
+    if (!editor) return;
+    editor.focus();
+    // Restore cursor to the position it was at when the picker opened
+    if (this.savedTableRange) {
+      const sel = window.getSelection();
+      if (sel) { sel.removeAllRanges(); sel.addRange(this.savedTableRange); }
+      this.savedTableRange = null;
+    }
+
+    let html = '<table><thead><tr>';
+    for (let c = 0; c < cols; c++) html += `<th>Header ${c + 1}</th>`;
+    html += '</tr></thead><tbody>';
+    for (let r = 0; r < rows; r++) {
+      html += '<tr>';
+      for (let c = 0; c < cols; c++) html += `<td>&nbsp;</td>`;
+      html += '</tr>';
+    }
+    html += '</tbody></table><p><br></p>';
+
+    document.execCommand('insertHTML', false, html);
+    const content = editor.innerHTML;
+    this.editForm.patchValue({ content }, { emitEvent: false });
+    this.updateWordCount(content);
+  }
+
+  // ── MCQ editing helpers ────────────────────────────────────────────────────
+
+  addMcqQuestion(): void {
+    this.mcqQuestions.update(qs => [
+      ...qs,
+      { question: '', options: [{ text: '' }, { text: '' }, { text: '' }, { text: '' }], correctIndex: 0, explanation: '' },
+    ]);
+  }
+
+  removeMcqQuestion(qi: number): void {
+    this.mcqQuestions.update(qs => qs.filter((_, i) => i !== qi));
+  }
+
+  updateMcqQuestion(qi: number, value: string): void {
+    this.mcqQuestions.update(qs => qs.map((q, i) => i === qi ? { ...q, question: value } : q));
+  }
+
+  updateMcqOption(qi: number, oi: number, value: string): void {
+    this.mcqQuestions.update(qs => qs.map((q, i) =>
+      i === qi ? { ...q, options: q.options.map((o, j) => j === oi ? { text: value } : o) } : q
+    ));
+  }
+
+  addMcqOption(qi: number): void {
+    this.mcqQuestions.update(qs => qs.map((q, i) =>
+      i === qi ? { ...q, options: [...q.options, { text: '' }] } : q
+    ));
+  }
+
+  removeMcqOption(qi: number, oi: number): void {
+    this.mcqQuestions.update(qs => qs.map((q, i) => {
+      if (i !== qi) return q;
+      const options = q.options.filter((_, j) => j !== oi);
+      const correctIndex = q.correctIndex >= options.length
+        ? Math.max(0, options.length - 1)
+        : q.correctIndex > oi ? q.correctIndex - 1 : q.correctIndex;
+      return { ...q, options, correctIndex };
+    }));
+  }
+
+  setMcqCorrect(qi: number, oi: number): void {
+    this.mcqQuestions.update(qs => qs.map((q, i) => i === qi ? { ...q, correctIndex: oi } : q));
+  }
+
+  updateMcqExplanation(qi: number, value: string): void {
+    this.mcqQuestions.update(qs => qs.map((q, i) => i === qi ? { ...q, explanation: value } : q));
+  }
+
+  trackByIdx(index: number): number { return index; }
+
   savePost(): void {
-    if (this.editForm.invalid) return;
+    // For non-MCQ posts, sync the DOM editor content into the form first.
+    // The form value is only updated by onContentInput (user typing), so if
+    // the user opens edit mode and saves without touching the editor, the
+    // form still holds p?.content but the setTimeout that sets innerHTML may
+    // not have fired yet. Reading innerHTML here closes that timing gap.
+    if (this.post()?.postType !== 'mcq' && this.contentEditorRef?.nativeElement) {
+      const html     = this.contentEditorRef.nativeElement.innerHTML;
+      const textOnly = html.replace(/<[^>]+>/g, '').trim();
+      const isEmpty  = !textOnly;
+      this.editForm.patchValue({ content: isEmpty ? '' : html }, { emitEvent: false });
+    }
+
+    // Touch all fields so validation messages appear if invalid
+    this.editForm.markAllAsTouched();
+
+    if (this.editForm.invalid) {
+      this.errorMessage.set('Please fix the highlighted fields before saving.');
+      return;
+    }
     if (this.hasUploadingImages()) {
       this.errorMessage.set('Please wait for all images to finish uploading.');
       return;
@@ -602,6 +759,12 @@ export class ViewPost implements OnInit, OnDestroy {
     if (this.isPendingForUser()) delete payload.status;
     // Slug editing is admin-only — strip from payload for regular users
     if (!this.isAdmin()) delete payload.slug;
+    // For MCQ posts: include questions and strip the content field so the
+    // backend doesn't run its "content is required" validation on an empty string.
+    if (this.post()?.postType === 'mcq') {
+      payload.mcqQuestions = this.mcqQuestions();
+      delete payload.content;   // MCQ posts have no rich-text content
+    }
 
     this.postService.updatePost(this.post()?._id ?? '', payload)
       .pipe(takeUntil(this.destroy$), finalize(() => this.isSaving.set(false)))
@@ -818,10 +981,20 @@ export class ViewPost implements OnInit, OnDestroy {
       }
       this.isCodeActive.set(inCode);
       if (!foundBlock) this.activeBlock.set('');
+
+      // Detect table context
+      let tableNode: Node | null = selection.getRangeAt(0).commonAncestorContainer;
+      let inTable = false;
+      while (tableNode && tableNode !== this.contentEditorRef?.nativeElement) {
+        if ((tableNode as Element).tagName === 'TABLE') { inTable = true; break; }
+        tableNode = tableNode.parentNode;
+      }
+      this.isInTable.set(inTable);
       return;
     }
     this.isCodeActive.set(false);
     this.activeBlock.set('');
+    this.isInTable.set(false);
   }
 
   isInCode(): boolean {

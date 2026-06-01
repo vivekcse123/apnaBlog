@@ -247,7 +247,13 @@
 /* FOOTER */
 .cat-footer { background: var(--bg-surface); border-top: 1px solid var(--border); padding: 24px 5%; }
 .cat-footer-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
-.cat-footer-logo { display: flex; align-items: center; gap: 6px; text-decoration: none; font-size: 14px; font-weight: 700; color: var(--text-primary); }
+.cat-footer-logo { display: flex; align-items: center; gap: 6px; text-decoration: none; }
+.cat-footer-logo span {
+  font-family: 'Playfair Display', serif;
+  font-size: 15px; font-weight: 700;
+  background: linear-gradient(135deg, #43cea2, #185a9d);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
 .cat-footer-links { display: flex; align-items: center; gap: 8px; }
 .cat-footer-links a { font-size: 13px; color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
 .cat-footer-links a:hover { color: var(--accent-text); }

@@ -904,6 +904,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     this.generateTableOfContents();
     this.addHeadingIds();
     this.addCodeCopyButtons();
+    this.wrapTables();
     this.addContentImageLightbox();
     this.pushAdSense();
     this.updateReactionStrips();
@@ -920,6 +921,17 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     while (first && isEmpty(first)) { const n = first.nextElementSibling; first.remove(); first = n; }
     let last = this.contentEl.lastElementChild;
     while (last && isEmpty(last)) { const p = last.previousElementSibling; last.remove(); last = p; }
+  }
+
+  private wrapTables(): void {
+    if (!this.contentEl) return;
+    this.contentEl.querySelectorAll<HTMLTableElement>('table').forEach(table => {
+      if (table.closest('.bd-table-wrap')) return;
+      const wrap = this.document.createElement('div');
+      wrap.className = 'bd-table-wrap';
+      table.parentNode?.insertBefore(wrap, table);
+      wrap.appendChild(table);
+    });
   }
 
   private addContentImageLightbox(): void {

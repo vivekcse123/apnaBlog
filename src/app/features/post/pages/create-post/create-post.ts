@@ -59,7 +59,14 @@ export class CreatePost implements OnInit, OnDestroy {
   isCodeActive   = signal(false);
   showLinkInput  = signal(false);
   linkUrlValue   = signal('');
-  private savedLinkRange: Range | null = null;
+  private savedLinkRange:  Range | null = null;
+  private savedTableRange: Range | null = null;
+
+  // ── Table insertion / deletion ─────────────────────────────────────────────
+  showTablePicker = signal(false);
+  tableRows       = signal(3);
+  tableCols       = signal(4);
+  isInTable       = signal(false);
 
   // ── Inline image picker ────────────────────────────────────────────────────
   showInlineImgPicker  = signal(false);
@@ -456,10 +463,20 @@ export class CreatePost implements OnInit, OnDestroy {
       }
       this.isCodeActive.set(inCode);
       if (!foundBlock) this.activeBlock.set('');
+
+      // Detect table context so the Delete Table button can appear
+      let tableNode: Node | null = selection.getRangeAt(0).commonAncestorContainer;
+      let inTable = false;
+      while (tableNode && tableNode !== this.editorRef.nativeElement) {
+        if ((tableNode as Element).tagName === 'TABLE') { inTable = true; break; }
+        tableNode = tableNode.parentNode;
+      }
+      this.isInTable.set(inTable);
       return;
     }
     this.isCodeActive.set(false);
     this.activeBlock.set('');
+    this.isInTable.set(false);
   }
 
   onEditorKeyUp():   void { this.updateActiveFormats(); }
@@ -746,6 +763,70 @@ export class CreatePost implements OnInit, OnDestroy {
     document.execCommand('insertHTML', false, '<hr><p><br></p>');
     this.onEditorInput();
   }
+
+  // ── Table insertion ────────────────────────────────────────────────────────
+
+  toggleTablePicker(e: Event): void {
+    e.preventDefault();
+    e.stopPropagation();
+    // Save cursor position BEFORE the button click steals focus from the editor
+    if (!this.showTablePicker()) {
+      const sel = window.getSelection();
+      this.savedTableRange = (sel && sel.rangeCount > 0)
+        ? sel.getRangeAt(0).cloneRange()
+        : null;
+    }
+    this.showTablePicker.update(v => !v);
+  }
+
+  insertTable(): void {
+    const rows = Math.max(1, this.tableRows());
+    const cols = Math.max(1, this.tableCols());
+    this.showTablePicker.set(false);
+    const editor = this.editorRef?.nativeElement;
+    if (!editor) return;
+    editor.focus();
+    // Restore cursor to where it was when picker opened
+    if (this.savedTableRange) {
+      const sel = window.getSelection();
+      if (sel) { sel.removeAllRanges(); sel.addRange(this.savedTableRange); }
+      this.savedTableRange = null;
+    }
+
+    let html = '<table><thead><tr>';
+    for (let c = 0; c < cols; c++) html += `<th>Header ${c + 1}</th>`;
+    html += '</tr></thead><tbody>';
+    for (let r = 0; r < rows; r++) {
+      html += '<tr>';
+      for (let c = 0; c < cols; c++) html += `<td>&nbsp;</td>`;
+      html += '</tr>';
+    }
+    html += '</tbody></table><p><br></p>';
+
+    document.execCommand('insertHTML', false, html);
+    // sync form value
+    const content = editor.innerHTML;
+    this.createBlogForm.get('content')?.setValue(content, { emitEvent: false });
+  }
+
+  deleteTable(): void {
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return;
+    let node: Node | null = sel.getRangeAt(0).commonAncestorContainer;
+    while (node && node !== this.editorRef?.nativeElement) {
+      if ((node as Element).tagName === 'TABLE') {
+        node.parentNode?.removeChild(node);
+        this.createBlogForm.get('content')?.setValue(
+          this.editorRef.nativeElement.innerHTML, { emitEvent: false }
+        );
+        this.isInTable.set(false);
+        return;
+      }
+      node = node.parentNode;
+    }
+  }
+
+  // ── Link input ────────────────────────────────────────────────────────────
 
   openLinkInput(): void {
     const sel = window.getSelection();

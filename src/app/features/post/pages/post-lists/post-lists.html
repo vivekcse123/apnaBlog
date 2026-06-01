@@ -1,410 +1,311 @@
-<div class="blogs-page">
+<div class="ap-page">
 
-  <!-- ── Page Header ── -->
-  <div class="page-header">
-    <div class="page-header-left">
-      <h2>Manage Blogs</h2>
-      <p>Review, edit, and manage all posts</p>
-    </div>
-    <div class="page-header-right">
-      <div class="search-wrap">
-        <svg class="search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none"
-             stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+  <!-- ══ PAGE HEADER ══ -->
+  <header class="ap-header">
+    <div class="ap-header-left">
+      <div class="ap-header-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
         </svg>
-        <input
-          type="text"
-          class="search-input"
-          placeholder="Search blogs..."
-          [(ngModel)]="searchTitle"
-          (ngModelChange)="debounceSearch($event)"
-        />
+      </div>
+      <div>
+        <h1 class="ap-title">Manage Blogs</h1>
+        <p class="ap-subtitle">Review, edit, and manage all posts · <strong>{{ allBlogs().length }}</strong> total</p>
       </div>
     </div>
-  </div>
-
-  <!-- ── Stats Bar ── -->
-  <div class="stats-bar">
-
-    <div class="stat-card">
-      <div class="stat-icon-wrap blogs-icon">
-        <svg width="20" height="20" viewBox="0 0 22 22" fill="none"><rect x="3" y="3" width="16" height="3" rx="1.5" fill="#43cea2"/><rect x="3" y="9" width="11" height="3" rx="1.5" fill="#43cea2"/><rect x="3" y="15" width="13" height="3" rx="1.5" fill="#43cea2"/></svg>
+    <div class="ap-header-right">
+      <div class="ap-search">
+        <svg class="ap-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" class="ap-search-input" placeholder="Search blogs…"
+               [(ngModel)]="searchTitle" (ngModelChange)="debounceSearch($event)" autocomplete="off"/>
       </div>
-      <div class="stat-body">
-        <span class="stat-label">Total Blogs</span>
-        <span class="stat-value">{{ allBlogs().length }}</span>
-        <span class="stat-chip blogs-chip">All content</span>
+      <button class="ap-btn ap-btn--primary" (click)="showCreateBlog.set(true)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        New Blog
+      </button>
+    </div>
+  </header>
+
+  <!-- ══ STATS ══ -->
+  <div class="ap-stats">
+    <div class="ap-stat ap-stat--total">
+      <div class="ap-stat-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      </div>
+      <div class="ap-stat-body">
+        <span class="ap-stat-num">{{ allBlogs().length }}</span>
+        <span class="ap-stat-label">Total Blogs</span>
       </div>
     </div>
-
-    <div class="stat-card">
-      <div class="stat-icon-wrap published-icon">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-5"/></svg>
+    <div class="ap-stat ap-stat--published">
+      <div class="ap-stat-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-5"/></svg>
       </div>
-      <div class="stat-body">
-        <span class="stat-label">Published</span>
-        <span class="stat-value stat-value--published">{{ publishedCount() }}</span>
-        <span class="stat-chip published-chip">Live on site</span>
+      <div class="ap-stat-body">
+        <span class="ap-stat-num">{{ publishedCount() }}</span>
+        <span class="ap-stat-label">Published</span>
       </div>
     </div>
-
-    <div class="stat-card">
-      <div class="stat-icon-wrap pending-icon">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v4M12 15h.01"/></svg>
+    <div class="ap-stat ap-stat--pending">
+      <div class="ap-stat-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v4M12 15h.01"/></svg>
       </div>
-      <div class="stat-body">
-        <span class="stat-label">Pending Review</span>
-        <span class="stat-value stat-value--pending">{{ pendingCount() }}</span>
-        <span class="stat-chip pending-chip">Awaiting approval</span>
+      <div class="ap-stat-body">
+        <span class="ap-stat-num">{{ pendingCount() }}</span>
+        <span class="ap-stat-label">Pending Review</span>
       </div>
     </div>
-
-    <div class="stat-card">
-      <div class="stat-icon-wrap drafts-icon">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#b45309" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M7 12h10M7 8h6M7 16h7"/></svg>
+    <div class="ap-stat ap-stat--draft">
+      <div class="ap-stat-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M7 12h10M7 8h6M7 16h7"/></svg>
       </div>
-      <div class="stat-body">
-        <span class="stat-label">Drafts</span>
-        <span class="stat-value stat-value--draft">{{ draftCount() }}</span>
-        <span class="stat-chip drafts-chip">Unpublished</span>
+      <div class="ap-stat-body">
+        <span class="ap-stat-num">{{ draftCount() }}</span>
+        <span class="ap-stat-label">Drafts</span>
       </div>
     </div>
-
     @if (role() === 'admin' || role() === 'super_admin') {
-      <div class="stat-card">
-        <div class="stat-icon-wrap sponsored-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-          </svg>
+      <div class="ap-stat ap-stat--sponsored">
+        <div class="ap-stat-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
         </div>
-        <div class="stat-body">
-          <span class="stat-label">Sponsored</span>
-          <span class="stat-value stat-value--sponsored">{{ sponsorCount() }}</span>
-          <span class="stat-chip sponsored-chip">Featured</span>
+        <div class="ap-stat-body">
+          <span class="ap-stat-num">{{ sponsorCount() }}</span>
+          <span class="ap-stat-label">Sponsored</span>
         </div>
       </div>
     }
-
     @if (deletionRequestCount() > 0 && (role() === 'admin' || role() === 'super_admin')) {
-      <div class="stat-card stat-card--alert">
-        <div class="stat-icon-wrap deletion-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+      <div class="ap-stat ap-stat--deletion">
+        <div class="ap-stat-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
         </div>
-        <div class="stat-body">
-          <span class="stat-label">Deletion Req.</span>
-          <span class="stat-value stat-value--deletion">{{ deletionRequestCount() }}</span>
-          <span class="stat-chip deletion-chip">Needs review</span>
+        <div class="ap-stat-body">
+          <span class="ap-stat-num">{{ deletionRequestCount() }}</span>
+          <span class="ap-stat-label">Deletion Req.</span>
         </div>
       </div>
     }
-
   </div>
 
-  <!-- ── Filters ── -->
-  <div class="filters-row">
-    <select
-      class="filter-select"
-      [ngModel]="selectedCategory()"
-      (ngModelChange)="onCategoryChange($event)">
-      <option value="">Filter by Category</option>
-      <option value="Update">Update</option>
-      <option value="News">News</option>
-      <option value="Sports">Sports</option>
-      <option value="Technology">Technology</option>
-      <option value="Lifestyle">Lifestyle</option>
-      <option value="Education">Education</option>
-      <option value="Health">Health</option>
-      <option value="Business">Business</option>
-      <option value="Entertainment">Entertainment</option>
-      <option value="Social">Social</option>
-      <option value="Village">Village</option>
-      <option value="Cooking">Cooking</option>
-      <option value="Quotes">Quotes</option>
-      <option value="Exercise">Exercise</option>
-    </select>
-
-    <select
-      class="filter-select"
-      [ngModel]="selectedStatus()"
-      (ngModelChange)="onStatusChange($event)">
-      <option value="">Filter by Status</option>
-      <option value="published">Published</option>
-      <option value="draft">Draft</option>
-      <option value="pending">Pending Review</option>
-      <option value="rejected">Rejected</option>
-    </select>
-
-    <div class="filter-btns-row">
-      <button
-        class="filter-btn"
-        [class.filter-btn--active]="showTodayOnly()"
-        (click)="toggleTodayFilter()"
-      >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-          <line x1="16" y1="2" x2="16" y2="6"/>
-          <line x1="8" y1="2" x2="8" y2="6"/>
-          <line x1="3" y1="10" x2="21" y2="10"/>
-        </svg>
+  <!-- ══ TOOLBAR ══ -->
+  <div class="ap-toolbar">
+    <!-- Dropdowns row -->
+    <div class="ap-filter-selects">
+      <select class="ap-select" [ngModel]="selectedCategory()" (ngModelChange)="onCategoryChange($event)">
+        <option value="">All Categories</option>
+        <option value="Update">Update</option>
+        <option value="News">News</option>
+        <option value="Sports">Sports</option>
+        <option value="Technology">Technology</option>
+        <option value="Lifestyle">Lifestyle</option>
+        <option value="Education">Education</option>
+        <option value="Health">Health</option>
+        <option value="Business">Business</option>
+        <option value="Entertainment">Entertainment</option>
+        <option value="Social">Social</option>
+        <option value="Village">Village</option>
+        <option value="Cooking">Cooking</option>
+        <option value="Quotes">Quotes</option>
+        <option value="Exercise">Exercise</option>
+      </select>
+      <select class="ap-select" [ngModel]="selectedStatus()" (ngModelChange)="onStatusChange($event)">
+        <option value="">All Statuses</option>
+        <option value="published">Published</option>
+        <option value="draft">Draft</option>
+        <option value="pending">Pending Review</option>
+        <option value="rejected">Rejected</option>
+      </select>
+      <span class="ap-result-count">
+        @if (filteredBlogs().length !== allBlogs().length) {
+          {{ filteredBlogs().length }} of {{ allBlogs().length }}
+        }
+      </span>
+    </div>
+    <!-- Chip filters row — scrollable on mobile -->
+    <div class="ap-filter-chips">
+      <button class="ap-chip" [class.ap-chip--on]="showTodayOnly()" (click)="toggleTodayFilter()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
         Today
       </button>
-
       @if (role() === 'admin' || role() === 'super_admin') {
-        <button
-          class="filter-btn filter-btn--del"
-          [class.filter-btn--active]="showDeletionRequestOnly()"
-          (click)="toggleDeletionFilter()"
-          [title]="deletionRequestCount() + ' pending deletion requests'"
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="3 6 5 6 21 6"/>
-            <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
-            <path d="M10 11v6M14 11v6"/>
-            <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
-          </svg>
+        <button class="ap-chip ap-chip--del" [class.ap-chip--on]="showDeletionRequestOnly()" (click)="toggleDeletionFilter()" [title]="deletionRequestCount() + ' deletion requests'">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
           Deletion Req.
           @if (deletionRequestCount() > 0) {
-            <span class="del-badge">{{ deletionRequestCount() }}</span>
+            <span class="ap-badge ap-badge--red">{{ deletionRequestCount() }}</span>
           }
         </button>
-      }
-
-      @if (role() === 'admin' || role() === 'super_admin') {
-        <button
-          class="filter-btn filter-btn--sponsor"
-          [class.filter-btn--active]="showSponsoredOnly()"
-          (click)="toggleSponsoredFilter()"
-          title="Show sponsored blogs only">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-          </svg>
+        <button class="ap-chip ap-chip--gold" [class.ap-chip--on]="showSponsoredOnly()" (click)="toggleSponsoredFilter()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
           Sponsored
           @if (sponsorCount() > 0) {
-            <span class="sponsor-badge-count">{{ sponsorCount() }}</span>
+            <span class="ap-badge ap-badge--gold">{{ sponsorCount() }}</span>
           }
         </button>
       }
     </div>
-
-    <div class="filters-spacer"></div>
-
-    <button class="add-btn" (click)="showCreateBlog.set(true)">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-           stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
-        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-      </svg>
-      Add Blog
-    </button>
   </div>
 
-  <!-- ── Create Blog Modal ── -->
+  <!-- Create modal -->
   @if (showCreateBlog()) {
-    <app-create-blog
-      (close)="showCreateBlog.set(false)"
-      (postCreated)="onPostCreated()"
-    />
+    <app-create-blog (close)="showCreateBlog.set(false)" (postCreated)="onPostCreated()"/>
   }
 
-  <!-- ── Table ── -->
-  <div class="table-card">
-    <div class="table-scroll">
-      <table>
+  <!-- ══ TABLE ══ -->
+  <div class="ap-card">
+    <div class="ap-table-wrap">
+      <table class="ap-table">
         <thead>
           <tr>
-            <th>Blog</th>
-            <th>Category</th>
-            <th>Status</th>
-            <th>Views</th>
-            <th>Likes</th>
-            <th>Created</th>
-            <th>Last Updated</th>
-            <th>Actions</th>
+            <th class="col-title">Blog</th>
+            <th class="col-cat">Category</th>
+            <th class="col-status">Status</th>
+            <th class="col-num">Views</th>
+            <th class="col-num">Likes</th>
+            <th class="col-date">Created</th>
+            <th class="col-date">Updated</th>
+            <th class="col-actions">Actions</th>
           </tr>
         </thead>
         <tbody>
 
+          <!-- Skeleton -->
           @if (isLoading()) {
             @for (_ of skeletonRows; track $index) {
-              <tr class="sk-row">
-                <td>
-                  <div class="sk-cell" style="width:150px;height:15px;"></div>
-                  <div class="sk-cell" style="width:100px;height:11px;margin-top:6px;"></div>
-                </td>
-                <td><div class="sk-cell" style="width:76px;height:22px;border-radius:20px;"></div></td>
-                <td><div class="sk-cell" style="width:72px;height:22px;border-radius:20px;"></div></td>
-                <td><div class="sk-cell" style="width:38px;"></div></td>
-                <td><div class="sk-cell" style="width:38px;"></div></td>
-                <td><div class="sk-cell" style="width:80px;"></div></td>
-                <td><div class="sk-cell" style="width:100px;"></div></td>
-                <td>
-                  <div style="display:flex;gap:6px;">
-                    <div class="sk-cell" style="width:32px;height:30px;border-radius:6px;"></div>
-                    <div class="sk-cell" style="width:32px;height:30px;border-radius:6px;"></div>
-                  </div>
-                </td>
+              <tr class="ap-sk-row">
+                <td><div class="ap-sk" style="width:55%;height:14px"></div><div class="ap-sk" style="width:35%;height:11px;margin-top:7px"></div></td>
+                <td><div class="ap-sk" style="width:72px;height:22px;border-radius:99px"></div></td>
+                <td><div class="ap-sk" style="width:80px;height:22px;border-radius:99px"></div></td>
+                <td><div class="ap-sk" style="width:36px"></div></td>
+                <td><div class="ap-sk" style="width:36px"></div></td>
+                <td><div class="ap-sk" style="width:72px"></div></td>
+                <td><div class="ap-sk" style="width:72px"></div><div class="ap-sk" style="width:48px;height:11px;margin-top:6px"></div></td>
+                <td><div style="display:flex;gap:6px"><div class="ap-sk" style="width:32px;height:32px;border-radius:8px"></div><div class="ap-sk" style="width:32px;height:32px;border-radius:8px"></div></div></td>
               </tr>
             }
           }
 
+          <!-- Data rows -->
           @if (!isLoading()) {
             @for (blog of paginatedBlogs(); track blog._id) {
-              <tr>
-                <td class="cell-blog-title">
-                  <div class="blog-title-text">{{ blog.title }}</div>
-                  @if (blog.description) {
-                    <div class="blog-sub">{{ blog.description }}</div>
-                  }
-                  @if ((role() === 'admin' || role() === 'super_admin') && blog.isSponsored) {
-                    <span class="sponsored-tag">★ Sponsored</span>
-                  }
-                  @if ((role() === 'admin' || role() === 'super_admin') && blog.user.role === 'sponsor' && !blog.isSponsored) {
-                    <span class="sponsor-request-tag">📋 Sponsor Request</span>
-                  }
-                  @if (blog.deleteRequested) {
-                    <span class="del-req-tag">Deletion Requested</span>
-                  }
-                </td>
+              <tr class="ap-row">
 
-                <td data-label="Category">
-                  <div class="category-list">
-                    @for (category of blog.categories.slice(0, 2); track category) {
-                      <span class="category-badge">{{ category }}</span>
+                <td class="col-title ap-td-title">
+                  <div class="ap-post-title">{{ blog.title || '—' }}</div>
+                  @if (blog.description) {
+                    <div class="ap-post-sub">{{ blog.description }}</div>
+                  }
+                  <div class="ap-post-tags">
+                    @if ((role() === 'admin' || role() === 'super_admin') && blog.isSponsored) {
+                      <span class="ap-tag ap-tag--gold">★ Sponsored</span>
+                    }
+                    @if ((role() === 'admin' || role() === 'super_admin') && blog.user.role === 'sponsor' && !blog.isSponsored) {
+                      <span class="ap-tag ap-tag--purple">📋 Sponsor Request</span>
+                    }
+                    @if (blog.deleteRequested) {
+                      <span class="ap-tag ap-tag--red">Deletion Requested</span>
                     }
                   </div>
                 </td>
 
-                <td data-label="Status">
-                  <span class="status-badge"
-                    [class.status-published]="blog.status === 'published'"
-                    [class.status-draft]="blog.status === 'draft'"
-                    [class.status-pending]="blog.status === 'pending'"
-                    [class.status-rejected]="blog.status === 'rejected'"
-                    [class.status-scheduled]="blog.status === 'scheduled'"
-                  >
-                    <span class="status-dot"></span>
-                    @if (blog.status === 'pending') { Pending Review }
-                    @else if (blog.status === 'rejected') { Rejected }
-                    @else if (blog.status === 'scheduled') {
-                      ⏰ Scheduled
+                <td data-label="Category" class="ap-td-cat">
+                  @if (blog.categories.length) {
+                    @for (cat of blog.categories.slice(0, 2); track cat) {
+                      <span class="ap-cat-pill">{{ cat }}</span>
                     }
-                    @else { {{ blog.status | titlecase }} }
-                  </span>
-                  @if (blog.status === 'scheduled' && blog.scheduledAt) {
-                    <span class="scheduled-time">{{ blog.scheduledAt | date:'d MMM, h:mm a' }}</span>
+                  } @else {
+                    <span class="ap-dash">—</span>
                   }
                 </td>
 
-                <td data-label="Views">
-                  <div class="stat-cell">
-                    <svg width="13" height="13" viewBox="0 0 22 22" fill="none">
-                      <ellipse cx="11" cy="11" rx="8" ry="5" stroke="#7F77DD" stroke-width="2" fill="none"/>
-                      <circle cx="11" cy="11" r="2.5" fill="#7F77DD"/>
-                    </svg>
+                <td data-label="Status">
+                  @if (blog.status) {
+                    <span class="ap-status"
+                      [class.ap--published]="blog.status === 'published'"
+                      [class.ap--draft]="blog.status === 'draft'"
+                      [class.ap--pending]="blog.status === 'pending'"
+                      [class.ap--rejected]="blog.status === 'rejected'"
+                      [class.ap--scheduled]="blog.status === 'scheduled'">
+                      <span class="ap-dot"></span>
+                      @if (blog.status === 'pending') { Pending }
+                      @else if (blog.status === 'scheduled') { Scheduled }
+                      @else { {{ blog.status | titlecase }} }
+                    </span>
+                    @if (blog.status === 'scheduled' && blog.scheduledAt) {
+                      <span class="ap-sched-time">{{ blog.scheduledAt | date:'d MMM, h:mm a' }}</span>
+                    }
+                  } @else {
+                    <span class="ap-dash">—</span>
+                  }
+                </td>
+
+                <td data-label="Views" class="ap-td-num">
+                  <div class="ap-num-cell">
+                    <svg width="12" height="12" viewBox="0 0 22 22" fill="none"><ellipse cx="11" cy="11" rx="8" ry="5" stroke="#7F77DD" stroke-width="2"/><circle cx="11" cy="11" r="2.5" fill="#7F77DD"/></svg>
                     {{ blog.views | number }}
                   </div>
                 </td>
 
-                <td data-label="Likes">
-                  <div class="stat-cell">
-                    <svg width="13" height="13" viewBox="0 0 22 22" fill="none">
-                      <path d="M11 18s-7-4.5-7-9a4 4 0 018 0 4 4 0 018 0c0 4.5-7 9-7 9z"
-                        stroke="#ef4444" stroke-width="2" fill="none" stroke-linejoin="round"/>
-                    </svg>
+                <td data-label="Likes" class="ap-td-num">
+                  <div class="ap-num-cell">
+                    <svg width="12" height="12" viewBox="0 0 22 22" fill="none"><path d="M11 18s-7-4.5-7-9a4 4 0 018 0 4 4 0 018 0c0 4.5-7 9-7 9z" stroke="#ef4444" stroke-width="2" fill="none"/></svg>
                     {{ blog.likesCount | number }}
                   </div>
                 </td>
 
-                <td data-label="Created" class="date-cell">{{ blog.createdAt | date: 'MMM d, y' }}</td>
-
-                <td data-label="Last Updated" class="last-active-cell">
-                  <span class="date-text">{{ blog.updatedAt | date: 'MMM d, y' }}</span>
-                  <span class="time-ago">{{ timeAgo(blog.updatedAt) }}</span>
+                <td data-label="Created" class="ap-td-date">
+                  {{ blog.createdAt ? (blog.createdAt | date:'MMM d, y') : '—' }}
                 </td>
 
-                <td class="cell-actions">
-                  <div class="action-buttons">
-                    <button class="action-btn action-btn--view"
-                            (click)="viewPost(blog._id)"
-                            title="View / Edit post">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                           stroke="currentColor" stroke-width="2" stroke-linecap="round">
-                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                        <circle cx="12" cy="12" r="3"/>
-                      </svg>
+                <td data-label="Updated" class="ap-td-date">
+                  @if (blog.updatedAt) {
+                    <span>{{ blog.updatedAt | date:'MMM d, y' }}</span>
+                    <span class="ap-ago">{{ timeAgo(blog.updatedAt) }}</span>
+                  } @else {
+                    <span class="ap-dash">—</span>
+                  }
+                </td>
+
+                <td class="ap-td-actions col-actions">
+                  <div class="ap-actions">
+                    <button class="ap-action ap-action--view" (click)="viewPost(blog._id)" title="View / Edit">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                     </button>
 
                     @if (role() === 'admin' || role() === 'super_admin') {
                       @if (blog.status === 'published') {
                         @if (blog.isSponsored) {
-                          <button class="action-btn action-btn--sponsor is-sponsored"
-                                  (click)="unsponsorBlog(blog)"
-                                  title="Remove sponsorship">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1">
-                              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                            </svg>
+                          <button class="ap-action ap-action--sponsored" (click)="unsponsorBlog(blog)" title="Remove sponsorship">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
                           </button>
                         } @else {
-                          <button class="action-btn action-btn--sponsor"
-                                  (click)="openSponsorModal(blog)"
-                                  title="Mark as sponsored">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                            </svg>
+                          <button class="ap-action ap-action--sponsor" (click)="openSponsorModal(blog)" title="Mark as sponsored">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
                           </button>
                         }
                       }
                       @if (blog.deleteRequested) {
-                        <button class="action-btn action-btn--approve"
-                          (click)="openApproveDelete(blog._id, blog.title, blog.deleteRequestReason || '')"
-                          [title]="'Approve deletion — Reason: ' + (blog.deleteRequestReason || 'none')">
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                               stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="20 6 9 17 4 12"/>
-                          </svg>
+                        <button class="ap-action ap-action--approve" (click)="openApproveDelete(blog._id, blog.title, blog.deleteRequestReason || '')" [title]="'Approve — ' + (blog.deleteRequestReason || 'no reason')">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
                         </button>
-                        <button class="action-btn action-btn--reject"
-                          (click)="openRejectDelete(blog._id, blog.title)"
-                          title="Reject deletion request">
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                               stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-                            <line x1="18" y1="6" x2="6" y2="18"/>
-                            <line x1="6" y1="6" x2="18" y2="18"/>
-                          </svg>
+                        <button class="ap-action ap-action--reject" (click)="openRejectDelete(blog._id, blog.title)" title="Reject deletion">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                         </button>
                       } @else {
-                        <button class="action-btn action-btn--delete"
-                                (click)="confirmDelete(blog._id, blog.title)"
-                                title="Delete post">
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="3 6 5 6 21 6"/>
-                            <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
-                            <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
-                          </svg>
+                        <button class="ap-action ap-action--delete" (click)="confirmDelete(blog._id, blog.title)" title="Delete post">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
                         </button>
                       }
                     } @else {
                       @if (blog.deleteRequested) {
-                        <button class="action-btn action-btn--pending" title="Deletion pending admin approval" disabled>
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="9"/>
-                            <polyline points="12 7 12 12 15 15"/>
-                          </svg>
+                        <button class="ap-action ap-action--muted" title="Deletion pending approval" disabled>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
                         </button>
                       } @else {
-                        <button class="action-btn action-btn--delete"
-                                (click)="openDeleteRequest(blog._id, blog.title)"
-                                title="Request deletion">
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="3 6 5 6 21 6"/>
-                            <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
-                            <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
-                          </svg>
+                        <button class="ap-action ap-action--delete" (click)="openDeleteRequest(blog._id, blog.title)" title="Request deletion">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
                         </button>
                       }
                     }
@@ -416,55 +317,39 @@
 
             @if (filteredBlogs().length === 0) {
               <tr>
-                <td colspan="8" class="empty-row">
-                  <div class="empty-state">
-                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none"
-                         stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                      <line x1="16" y1="2" x2="16" y2="6"/>
-                      <line x1="8" y1="2" x2="8" y2="6"/>
-                      <line x1="3" y1="10" x2="21" y2="10"/>
-                    </svg>
+                <td colspan="8">
+                  <div class="ap-empty">
+                    <div class="ap-empty-icon">
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    </div>
                     @if (showTodayOnly()) {
-                      <p>No blogs posted today</p>
-                      <span>There are no posts published on today's date.</span>
+                      <p>No blogs posted today</p><span>Nothing published on today's date.</span>
                     } @else if (showSponsoredOnly()) {
-                      <p>No sponsored blogs</p>
-                      <span>Mark a published blog as sponsored from the actions column.</span>
+                      <p>No sponsored blogs</p><span>Mark a published blog as sponsored from the actions column.</span>
                     } @else {
-                      <p>No blogs found</p>
-                      <span>Try adjusting your search or filters.</span>
+                      <p>No blogs found</p><span>Try adjusting your search or filters.</span>
                     }
                   </div>
                 </td>
               </tr>
             }
           }
-
         </tbody>
       </table>
     </div>
 
     <!-- ── Pagination ── -->
     @if (filteredBlogs().length > 0) {
-      <div class="pagination">
-        <span class="pg-info">
-          Showing {{ pageStart() }}–{{ pageEnd() }} of {{ filteredBlogs().length }} blogs
-        </span>
-        <div class="pg-controls">
-          <button class="pg-btn" (click)="goToPage(1)"
-                  [disabled]="currentPage() === 1" title="First page">«</button>
-          <button class="pg-btn" (click)="previousPage()"
-                  [disabled]="currentPage() === 1" title="Previous page">‹</button>
-          @for (page of visiblePages(); track page) {
-            <button class="pg-btn pg-num"
-                    [class.pg-active]="currentPage() === page"
-                    (click)="goToPage(page)">{{ page }}</button>
+      <div class="ap-pagination">
+        <span class="ap-pg-info">Showing {{ pageStart() }}–{{ pageEnd() }} of {{ filteredBlogs().length }}</span>
+        <div class="ap-pg-nav">
+          <button class="ap-pg-btn" (click)="goToPage(1)"         [disabled]="currentPage() === 1"            title="First">«</button>
+          <button class="ap-pg-btn" (click)="previousPage()"      [disabled]="currentPage() === 1"            title="Prev">‹</button>
+          @for (p of visiblePages(); track p) {
+            <button class="ap-pg-btn ap-pg-num" [class.ap-pg-active]="currentPage() === p" (click)="goToPage(p)">{{ p }}</button>
           }
-          <button class="pg-btn" (click)="nextPage()"
-                  [disabled]="currentPage() === totalPages()" title="Next page">›</button>
-          <button class="pg-btn" (click)="goToPage(totalPages())"
-                  [disabled]="currentPage() === totalPages()" title="Last page">»</button>
+          <button class="ap-pg-btn" (click)="nextPage()"         [disabled]="currentPage() === totalPages()"  title="Next">›</button>
+          <button class="ap-pg-btn" (click)="goToPage(totalPages())" [disabled]="currentPage() === totalPages()" title="Last">»</button>
         </div>
       </div>
     }
@@ -472,197 +357,142 @@
 
 </div>
 
-<!-- ── View Post Modal ── -->
+<!-- ══ VIEW POST MODAL ══ -->
 @if (isPostViewed()) {
-  <app-view-post
-    [postId]="selectedPostId()"
-    [preloadedPost]="selectedPost()"
-    (close)="closeModal()"
-    (postUpdated)="onPostUpdated($event)"
-  />
+  <app-view-post [postId]="selectedPostId()" [preloadedPost]="selectedPost()" (close)="closeModal()" (postUpdated)="onPostUpdated($event)"/>
 }
 
-<!-- ── Delete Confirm Modal (admin direct delete) ── -->
+<!-- ══ CONFIRM: Admin direct delete ══ -->
 @if (showConfirm()) {
-  <div class="modal-overlay" (click)="cancelDelete()">
-    <div class="confirm-box" (click)="$event.stopPropagation()">
-      <div class="confirm-icon danger-icon">
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none"
-             stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-          <line x1="12" y1="9" x2="12" y2="13"/>
-          <line x1="12" y1="17" x2="12.01" y2="17"/>
-        </svg>
+  <div class="ap-overlay" (click)="cancelDelete()">
+    <div class="ap-dialog" (click)="$event.stopPropagation()">
+      <div class="ap-dialog-icon ap-dialog-icon--danger">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
       </div>
-      <h3>Delete Post?</h3>
-      <p>Are you sure you want to delete <strong>{{ pendingDeleteTitle() }}</strong>? This action cannot be undone.</p>
-      <div class="confirm-actions">
-        <button class="btn-cancel" (click)="cancelDelete()">Cancel</button>
-        <button class="btn-confirm btn-danger" (click)="proceedDelete()">Yes, Delete</button>
+      <h3 class="ap-dialog-title">Delete Post?</h3>
+      <p class="ap-dialog-body">Permanently delete <strong>{{ pendingDeleteTitle() }}</strong>? This cannot be undone.</p>
+      <div class="ap-dialog-actions">
+        <button class="ap-btn ap-btn--ghost" (click)="cancelDelete()">Cancel</button>
+        <button class="ap-btn ap-btn--danger" (click)="proceedDelete()">Delete</button>
       </div>
     </div>
   </div>
 }
 
-<!-- ── Approve Deletion Modal ── -->
+<!-- ══ CONFIRM: Approve deletion ══ -->
 @if (showApproveConfirm()) {
-  <div class="modal-overlay" (click)="cancelApproveDelete()">
-    <div class="confirm-box" (click)="$event.stopPropagation()">
-      <div class="confirm-icon danger-icon">
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none"
-             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="3 6 5 6 21 6"/>
-          <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
-          <path d="M10 11v6M14 11v6"/>
-          <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
-        </svg>
+  <div class="ap-overlay" (click)="cancelApproveDelete()">
+    <div class="ap-dialog" (click)="$event.stopPropagation()">
+      <div class="ap-dialog-icon ap-dialog-icon--danger">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
       </div>
-      <h3>Approve Deletion?</h3>
-      <p>You are about to permanently delete <strong>{{ pendingApproveTitle() }}</strong>.</p>
+      <h3 class="ap-dialog-title">Approve Deletion?</h3>
+      <p class="ap-dialog-body">Permanently delete <strong>{{ pendingApproveTitle() }}</strong>?</p>
       @if (pendingApproveReason()) {
-        <p class="approve-reason"><strong>User's reason:</strong> {{ pendingApproveReason() }}</p>
+        <div class="ap-dialog-reason"><strong>User's reason:</strong> {{ pendingApproveReason() }}</div>
       }
-      <div class="confirm-actions">
-        <button class="btn-cancel" (click)="cancelApproveDelete()">Cancel</button>
-        <button class="btn-confirm btn-danger" (click)="proceedApproveDelete()">Yes, Delete</button>
+      <div class="ap-dialog-actions">
+        <button class="ap-btn ap-btn--ghost" (click)="cancelApproveDelete()">Cancel</button>
+        <button class="ap-btn ap-btn--danger" (click)="proceedApproveDelete()">Yes, Delete</button>
       </div>
     </div>
   </div>
 }
 
-<!-- ── Reject Deletion Modal ── -->
+<!-- ══ CONFIRM: Reject deletion ══ -->
 @if (showRejectConfirm()) {
-  <div class="modal-overlay" (click)="cancelRejectDelete()">
-    <div class="confirm-box" (click)="$event.stopPropagation()">
-      <div class="confirm-icon">
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none"
-             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="9"/>
-          <line x1="15" y1="9" x2="9" y2="15"/>
-          <line x1="9" y1="9" x2="15" y2="15"/>
-        </svg>
+  <div class="ap-overlay" (click)="cancelRejectDelete()">
+    <div class="ap-dialog" (click)="$event.stopPropagation()">
+      <div class="ap-dialog-icon ap-dialog-icon--warn">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
       </div>
-      <h3>Reject Deletion Request?</h3>
-      <p>
-        The deletion request for <strong>{{ pendingRejectTitle() }}</strong> will be dismissed.
-        The post will remain published.
-      </p>
-      <div class="confirm-actions">
-        <button class="btn-cancel" (click)="cancelRejectDelete()">Cancel</button>
-        <button class="btn-confirm btn-warn" (click)="proceedRejectDelete()">Yes, Reject</button>
+      <h3 class="ap-dialog-title">Reject Deletion Request?</h3>
+      <p class="ap-dialog-body">The deletion request for <strong>{{ pendingRejectTitle() }}</strong> will be dismissed and the post will remain published.</p>
+      <div class="ap-dialog-actions">
+        <button class="ap-btn ap-btn--ghost" (click)="cancelRejectDelete()">Cancel</button>
+        <button class="ap-btn ap-btn--warn" (click)="proceedRejectDelete()">Reject Request</button>
       </div>
     </div>
   </div>
 }
 
-<!-- ── User Delete Request Modal ── -->
+<!-- ══ USER: Delete request modal ══ -->
 @if (showDeleteRequestModal()) {
-  <div class="modal-overlay" (click)="cancelDeleteRequest()">
-    <div class="confirm-box" (click)="$event.stopPropagation()">
-      <div class="confirm-icon danger-icon">
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none"
-             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="3 6 5 6 21 6"/>
-          <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
-          <path d="M10 11v6M14 11v6"/>
-          <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
-        </svg>
+  <div class="ap-overlay" (click)="cancelDeleteRequest()">
+    <div class="ap-dialog" (click)="$event.stopPropagation()">
+      <div class="ap-dialog-icon ap-dialog-icon--danger">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
       </div>
-      <h3>Request Deletion</h3>
-      <p>
-        Your blog <strong>{{ deleteRequestTitle() }}</strong> will be sent to an admin for review.
-        Please tell us why you want it deleted.
-      </p>
-      <textarea
-        class="delete-req-textarea"
-        placeholder="Reason for deletion (required)…"
-        maxlength="300"
-        rows="3"
-        [value]="deleteRequestReason()"
-        (input)="deleteRequestReason.set($any($event.target).value)">
-      </textarea>
-      <p class="delete-req-char">{{ deleteRequestReason().length }}/300</p>
-      <div class="confirm-actions">
-        <button class="btn-cancel" (click)="cancelDeleteRequest()" [disabled]="deleteRequestSubmitting()">Cancel</button>
-        <button class="btn-confirm btn-danger"
-          [disabled]="!deleteRequestReason().trim() || deleteRequestSubmitting()"
-          (click)="submitDeleteRequest()">
-          @if (deleteRequestSubmitting()) {
-            <span class="btn-spinner"></span> Submitting…
-          } @else {
-            Send Request
-          }
+      <h3 class="ap-dialog-title">Request Deletion</h3>
+      <p class="ap-dialog-body"><strong>{{ deleteRequestTitle() }}</strong> will be sent to an admin for review. Please provide a reason.</p>
+      <textarea class="ap-textarea" placeholder="Reason for deletion (required)…" maxlength="300" rows="3"
+                [value]="deleteRequestReason()" (input)="deleteRequestReason.set($any($event.target).value)"></textarea>
+      <p class="ap-char-count">{{ deleteRequestReason().length }}/300</p>
+      <div class="ap-dialog-actions">
+        <button class="ap-btn ap-btn--ghost" (click)="cancelDeleteRequest()" [disabled]="deleteRequestSubmitting()">Cancel</button>
+        <button class="ap-btn ap-btn--danger" [disabled]="!deleteRequestReason().trim() || deleteRequestSubmitting()" (click)="submitDeleteRequest()">
+          @if (deleteRequestSubmitting()) { <span class="ap-spinner"></span> Submitting… }
+          @else { Send Request }
         </button>
       </div>
     </div>
   </div>
 }
 
-<!-- ── Sponsor Modal ── -->
+<!-- ══ SPONSOR MODAL ══ -->
 @if (showSponsorModal()) {
-  <div class="modal-overlay" (click)="closeSponsorModal()">
-    <div class="sp-modal" (click)="$event.stopPropagation()">
+  <div class="ap-overlay" (click)="closeSponsorModal()">
+    <div class="ap-dialog ap-dialog--sponsor" (click)="$event.stopPropagation()">
 
-      <div class="sp-modal-header">
-        <div class="sp-modal-icon">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-          </svg>
+      <div class="ap-sp-header">
+        <div class="ap-dialog-icon ap-dialog-icon--gold" style="margin:0">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
         </div>
-        <h3>Sponsor Blog</h3>
-        <p class="sp-modal-subtitle">{{ sponsorTargetTitle() }}</p>
-      </div>
-
-      <!-- Priority picker -->
-      <div class="sp-field">
-        <label class="sp-field-label">Priority</label>
-        <div class="sp-priority-group">
-          <button type="button" class="sp-priority-btn" [class.active]="sponsorPriority() === 1" (click)="sponsorPriority.set(1)">
-            <span class="sp-priority-dot sp-priority-dot--1"></span> 1 · High
-          </button>
-          <button type="button" class="sp-priority-btn" [class.active]="sponsorPriority() === 2" (click)="sponsorPriority.set(2)">
-            <span class="sp-priority-dot sp-priority-dot--2"></span> 2 · Medium
-          </button>
-          <button type="button" class="sp-priority-btn" [class.active]="sponsorPriority() === 3" (click)="sponsorPriority.set(3)">
-            <span class="sp-priority-dot sp-priority-dot--3"></span> 3 · Standard
-          </button>
+        <div>
+          <h3 class="ap-dialog-title" style="margin:0 0 2px">Sponsor Blog</h3>
+          <p class="ap-sp-sub">{{ sponsorTargetTitle() }}</p>
         </div>
       </div>
 
-      <label class="sp-toggle">
-        <input type="checkbox"
-               [checked]="sponsorHasExpiry()"
-               (change)="sponsorHasExpiry.set($any($event.target).checked)" />
+      <div class="ap-sp-section">
+        <label class="ap-sp-label">Priority</label>
+        <div class="ap-sp-priority">
+          <button type="button" class="ap-sp-prio-btn" [class.on]="sponsorPriority() === 1" (click)="sponsorPriority.set(1)">
+            <span class="ap-prio-dot" style="background:#ef4444"></span> 1 · High
+          </button>
+          <button type="button" class="ap-sp-prio-btn" [class.on]="sponsorPriority() === 2" (click)="sponsorPriority.set(2)">
+            <span class="ap-prio-dot" style="background:#f59e0b"></span> 2 · Medium
+          </button>
+          <button type="button" class="ap-sp-prio-btn" [class.on]="sponsorPriority() === 3" (click)="sponsorPriority.set(3)">
+            <span class="ap-prio-dot" style="background:#22c55e"></span> 3 · Standard
+          </button>
+        </div>
+      </div>
+
+      <label class="ap-sp-toggle">
+        <input type="checkbox" [checked]="sponsorHasExpiry()" (change)="sponsorHasExpiry.set($any($event.target).checked)"/>
         Set expiry duration
       </label>
 
       @if (sponsorHasExpiry()) {
-        <div class="sp-field">
-          <label class="sp-field-label">Duration (days)</label>
-          <input type="number" class="sp-days-input"
-                 min="1" max="365"
-                 [value]="sponsorDays()"
-                 (input)="sponsorDays.set(+$any($event.target).value)" />
+        <div class="ap-sp-section">
+          <label class="ap-sp-label">Duration (days)</label>
+          <input type="number" class="ap-sp-input" min="1" max="365" [value]="sponsorDays()" (input)="sponsorDays.set(+$any($event.target).value)"/>
         </div>
-        <div class="sp-field">
-          <label class="sp-field-label">On expiry</label>
-          <div class="sp-radios">
-            <label class="sp-radio" [class.active]="sponsorExpiryAction() === 'keep'"
-                   (click)="sponsorExpiryAction.set('keep')">Keep blog</label>
-            <label class="sp-radio" [class.active]="sponsorExpiryAction() === 'delete'"
-                   (click)="sponsorExpiryAction.set('delete')">Delete blog</label>
+        <div class="ap-sp-section">
+          <label class="ap-sp-label">On expiry</label>
+          <div class="ap-sp-radios">
+            <label class="ap-sp-radio" [class.on]="sponsorExpiryAction() === 'keep'"   (click)="sponsorExpiryAction.set('keep')">Keep blog</label>
+            <label class="ap-sp-radio" [class.on]="sponsorExpiryAction() === 'delete'" (click)="sponsorExpiryAction.set('delete')">Delete blog</label>
           </div>
         </div>
       } @else {
-        <p class="sp-note">This blog will be sponsored indefinitely with no expiry date.</p>
+        <p class="ap-sp-note">This blog will be sponsored indefinitely.</p>
       }
 
-      <!-- CTA -->
-      <div class="sp-field">
-        <label class="sp-field-label">CTA Button Text <span class="sp-opt">optional</span></label>
-        <select class="sp-select"
-                [value]="sponsorCtaText()"
-                (change)="sponsorCtaText.set($any($event.target).value)">
+      <div class="ap-sp-section">
+        <label class="ap-sp-label">CTA Button <span class="ap-sp-opt">optional</span></label>
+        <select class="ap-sp-select" [value]="sponsorCtaText()" (change)="sponsorCtaText.set($any($event.target).value)">
           <option value="">No button</option>
           <option value="Visit Website">Visit Website</option>
           <option value="Learn More">Learn More</option>
@@ -674,19 +504,17 @@
         </select>
       </div>
       @if (sponsorCtaText()) {
-        <div class="sp-field">
-          <label class="sp-field-label">CTA URL <span class="sp-req">*</span></label>
-          <input type="url" class="sp-days-input" style="width:100%;box-sizing:border-box"
-                 placeholder="https://example.com"
-                 [value]="sponsorCtaUrl()"
-                 (input)="sponsorCtaUrl.set($any($event.target).value)" />
+        <div class="ap-sp-section">
+          <label class="ap-sp-label">CTA URL <span style="color:#ef4444">*</span></label>
+          <input type="url" class="ap-sp-input" style="width:100%;box-sizing:border-box" placeholder="https://example.com"
+                 [value]="sponsorCtaUrl()" (input)="sponsorCtaUrl.set($any($event.target).value)"/>
         </div>
       }
 
-      <div class="sp-actions">
-        <button class="sp-btn-cancel" [disabled]="isSponsorSaving()" (click)="closeSponsorModal()">Cancel</button>
-        <button class="sp-btn-submit" [disabled]="isSponsorSaving()" (click)="submitSponsor()">
-          @if (isSponsorSaving()) { <span class="sp-spinner"></span> Saving… }
+      <div class="ap-dialog-actions">
+        <button class="ap-btn ap-btn--ghost" [disabled]="isSponsorSaving()" (click)="closeSponsorModal()">Cancel</button>
+        <button class="ap-btn ap-btn--gold"  [disabled]="isSponsorSaving()" (click)="submitSponsor()">
+          @if (isSponsorSaving()) { <span class="ap-spinner"></span> Saving… }
           @else { Mark as Sponsored }
         </button>
       </div>

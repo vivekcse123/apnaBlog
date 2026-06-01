@@ -10,7 +10,7 @@ export const environment = {
   apiAuthEndpoint:        'http://localhost:3000/api/auth/',
   apiUserEndpoint:        'http://localhost:3000/api/user/',
   apiPostEndpoint:        'http://localhost:3000/api/post/',
-  apiUploadEndpoint:      'http://localhost:3000/api/upload/avatar',
+  apiUploadEndpoint:      'http://localhost:3000/api/upload',
   apiVideoUploadEndpoint: 'http://localhost:3000/api/upload/video',
   apiShortsEndpoint:      'http://localhost:3000/api/shorts/',
 };

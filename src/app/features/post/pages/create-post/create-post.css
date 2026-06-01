@@ -602,10 +602,9 @@ form input[type="file"]::file-selector-button:hover {
   color: #43cea2;
 }
 
-.tool-btn svg {
-  display: block;
-  pointer-events: none;
-}
+.tool-btn svg { display: block; pointer-events: none; }
+.tool-btn--danger { color: var(--error, #dc2626); }
+.tool-btn--danger:hover { background: rgba(220,38,38,.1); color: var(--error, #dc2626); }
 
 .italic-btn { font-style: italic; }
 .underline-btn { text-decoration: underline; }
@@ -1738,3 +1737,61 @@ form input[type="file"]::file-selector-button:hover {
   transition: background 0.15s;
 }
 .mcq-add-question-btn:hover { background: color-mix(in srgb, var(--accent) 14%, transparent); }
+
+/* ── Table insert picker ─────────────────────────── */
+.tbl-picker-wrap { position: relative; }
+.tbl-picker-popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 60;
+  width: 200px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  box-shadow: 0 8px 28px rgba(0,0,0,.14);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.tbl-picker-title {
+  font-size: 12px; font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: .05em;
+  margin: 0;
+}
+.tbl-picker-fields {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+}
+.tbl-picker-label {
+  display: flex; flex-direction: column; gap: 4px;
+  font-size: 11.5px; font-weight: 600; color: var(--text-secondary);
+}
+.tbl-picker-input {
+  height: 32px; padding: 0 8px;
+  border: 1px solid var(--border); border-radius: 7px;
+  background: var(--bg-surface-alt); color: var(--text-primary);
+  font-size: 13px; font-family: inherit; outline: none;
+  width: 100%; box-sizing: border-box;
+}
+.tbl-picker-input:focus { border-color: #43cea2; box-shadow: 0 0 0 2px rgba(67,206,162,.15); }
+.tbl-insert-btn {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  height: 34px; border: none; border-radius: 8px;
+  background: linear-gradient(135deg, #43cea2, #185a9d);
+  color: #fff; font-size: 12.5px; font-weight: 600;
+  font-family: inherit; cursor: pointer; transition: opacity .15s;
+}
+.tbl-insert-btn:hover { opacity: .88; }
+
+/* ── Editor table styles ─────────────────────────── */
+.editor-content table { border-collapse: collapse; width: 100%; margin: 1em 0; font-size: 0.9em; }
+.editor-content th,
+.editor-content td { border: 1px solid var(--border, #e2e4e9); padding: 8px 12px; text-align: left; min-width: 80px; }
+.editor-content th {
+  background: var(--bg-surface-alt, #f8f9fb); font-weight: 700;
+  font-size: 0.82em; text-transform: uppercase; letter-spacing: .04em;
+  color: var(--text-muted, #9ca3af);
+}
+.editor-content td:focus, .editor-content th:focus { outline: 2px solid #43cea2; outline-offset: -2px; }

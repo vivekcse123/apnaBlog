@@ -298,7 +298,9 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
         const vid = this.getVideoAt(this.activeIndex());
         if (vid && !this.isMuted()) vid.muted = false;
       }
-      container.querySelectorAll<HTMLVideoElement>('.sf-video').forEach(v => v.pause());
+      // Do NOT pause here — the IntersectionObserver pauses cards that leave
+      // the viewport, and autoPlayVideo handles resuming the new card.
+      // Pausing all videos here causes a visible audio/video stutter on every swipe.
     }, { passive: true });
   }
 
@@ -323,7 +325,7 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     } else {
       container.addEventListener('scroll', () => {
         if (this.scrollSettleTimer) clearTimeout(this.scrollSettleTimer);
-        this.scrollSettleTimer = setTimeout(onSettle, 120);
+        this.scrollSettleTimer = setTimeout(onSettle, 200);
       }, { passive: true });
     }
   }
@@ -401,7 +403,12 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
   private scrollToCard(idx: number): void {
     if (!this.feedRef?.nativeElement) return;
     const container = this.feedRef.nativeElement;
-    container.scrollTo({ top: idx * container.clientHeight, behavior: 'instant' });
+    // Use the card's actual offsetTop instead of idx * clientHeight.
+    // Multiple CSS height units (dvh/svh/vh) can make clientHeight ≠ card height
+    // on certain iOS Safari versions, causing the snap to correct back to the wrong card.
+    const cardEl = this.cardRefs?.toArray()[idx]?.nativeElement as HTMLElement | undefined;
+    const top = cardEl ? cardEl.offsetTop : idx * container.clientHeight;
+    container.scrollTo({ top, behavior: 'instant' });
     this.activeIndex.set(idx);
   }
 
@@ -509,6 +516,11 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
           this.activeIndex.set(bestVisibleIdx);
           this.scheduleView(bestVisibleIdx);
           this.preloadAdjacent(bestVisibleIdx);
+          // Start playing as soon as the card is ≥80% visible — don't wait
+          // for the scroll-settle timer, which creates a noticeable delay.
+          if (!this.manuallyPausedSet.has(bestVisibleIdx)) {
+            this.autoPlayVideo(bestVisibleIdx);
+          }
         });
       }
     }, { threshold: [0, 0.8] });
