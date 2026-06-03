@@ -73,6 +73,15 @@ export class AuthorPage implements OnInit {
   currentYear = new Date().getFullYear();
   protected readonly Math = Math;
 
+  private pushAds(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    try {
+      const ads: any[] = (window as any).adsbygoogle ?? [];
+      (window as any).adsbygoogle = ads;
+      this.document.querySelectorAll('.page-ad-wrap ins.adsbygoogle').forEach(() => ads.push({}));
+    } catch (_) {}
+  }
+
   ngOnInit(): void {
     this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
       const id = params.get('id');
@@ -106,6 +115,7 @@ export class AuthorPage implements OnInit {
             this.setMeta(user);
             this.loadPosts(id);
             this.loadShorts(id);
+            setTimeout(() => this.pushAds(), 400);
           },
           error: () => { this.notFound.set(true); this.isLoading.set(false); },
         });
@@ -127,10 +137,42 @@ export class AuthorPage implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (res) => {
-          this.posts.set((res.data ?? []).filter((p: Post) => p.status === 'published' || p.status === 'draft'));
+          const published = (res.data ?? []).filter((p: Post) => p.status === 'published' || p.status === 'draft');
+          this.posts.set(published);
+          this.injectAuthorItemList(published);
         },
         error: () => {},
       });
+  }
+
+  private injectAuthorItemList(posts: Post[]): void {
+    if (!posts.length) return;
+    const user = this.author();
+    if (!user) return;
+    const authorUrl = `${environment.siteUrl}/author/${(user as any)._id}`;
+    const site      = environment.siteUrl;
+    const itemList  = {
+      '@context': 'https://schema.org',
+      '@type':    'ItemList',
+      '@id':      `${authorUrl}#itemlist`,
+      name:       `Articles by ${(user as any).name} on ApnaInsights`,
+      url:        authorUrl,
+      numberOfItems: posts.length,
+      itemListElement: posts.slice(0, 20).map((p, i) => ({
+        '@type':   'ListItem',
+        position:  i + 1,
+        url:       `${site}/blog/${(p as any).slug || p._id}`,
+        name:      p.title,
+      })),
+    };
+    let el = this.document.getElementById('author-itemlist') as HTMLScriptElement | null;
+    if (!el) {
+      el      = this.document.createElement('script') as HTMLScriptElement;
+      el.id   = 'author-itemlist';
+      el.type = 'application/ld+json';
+      this.document.head.appendChild(el);
+    }
+    el.textContent = JSON.stringify(itemList);
   }
 
   toggleFollow(): void {
@@ -174,25 +216,52 @@ export class AuthorPage implements OnInit {
     this.meta.updateTag({ name: 'twitter:description',  content: bio });
     this.meta.updateTag({ name: 'twitter:image',        content: avatar });
 
-    // Person structured data
-    const schema = {
+    // Person + BreadcrumbList structured data — @graph format
+    const graph = {
       '@context': 'https://schema.org',
-      '@type': 'Person',
-      name,
-      url,
-      image: avatar,
-      description: bio,
-      sameAs: [url],
-      worksFor: { '@type': 'Organization', name: 'ApnaInsights', url: environment.siteUrl },
+      '@graph': [
+        {
+          '@type':      'Person',
+          '@id':        url,
+          name,
+          url,
+          image: {
+            '@type':   'ImageObject',
+            url:       avatar,
+            contentUrl: avatar,
+          },
+          description:  bio,
+          sameAs:       [url],
+          worksFor:     { '@id': `${environment.siteUrl}/#organization` },
+        },
+        {
+          '@type': 'ProfilePage',
+          '@id':   `${url}#webpage`,
+          url,
+          name:    `${name} — Author | ApnaInsights`,
+          isPartOf: { '@id': `${environment.siteUrl}/#website` },
+          about:   { '@id': url },
+          dateModified: new Date().toISOString(),
+          inLanguage: 'en-IN',
+        },
+        {
+          '@type':         'BreadcrumbList',
+          '@id':           `${url}#breadcrumb`,
+          itemListElement: [
+            { '@type': 'ListItem', position: 1, name: 'Home', item: environment.siteUrl },
+            { '@type': 'ListItem', position: 2, name,          item: url },
+          ],
+        },
+      ],
     };
     let sd = this.document.getElementById('author-schema') as HTMLScriptElement | null;
     if (!sd) {
-      sd = this.document.createElement('script');
+      sd      = this.document.createElement('script');
       sd.id   = 'author-schema';
       sd.type = 'application/ld+json';
       this.document.head.appendChild(sd);
     }
-    sd.textContent = JSON.stringify(schema);
+    sd.textContent = JSON.stringify(graph);
 
     let canonical = this.document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
     if (!canonical) {

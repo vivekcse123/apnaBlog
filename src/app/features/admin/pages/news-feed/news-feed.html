@@ -1,0 +1,302 @@
+<div class="nf-page">
+
+  <!-- ══ HEADER ══ -->
+  <header class="nf-header">
+    <div class="nf-header-left">
+      <div class="nf-header-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 0-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/>
+          <path d="M18 14h-8M15 18h-5M10 6h8v4h-8z"/>
+        </svg>
+      </div>
+      <div>
+        <h1 class="nf-title">News Feed</h1>
+        <p class="nf-subtitle">
+          Live news from top sources
+          @if (lastUpdated()) {
+            · updated {{ timeAgo(lastUpdated()!.toISOString()) }}
+          }
+        </p>
+      </div>
+    </div>
+    <button class="nf-refresh-btn" (click)="load()" [disabled]="isLoading()" aria-label="Refresh">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+           [class.nf-spin]="isLoading()">
+        <path d="M1 4v6h6M23 20v-6h-6"/>
+        <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/>
+      </svg>
+      {{ isLoading() ? 'Fetching…' : 'Refresh' }}
+    </button>
+  </header>
+
+  <!-- ══ CATEGORY TABS ══ -->
+  <nav class="nf-cats" aria-label="News categories">
+    @for (cat of categories; track cat) {
+      <button class="nf-cat" [class.nf-cat--on]="selectedCat() === cat" (click)="selectCategory(cat)">
+        {{ cat }}
+      </button>
+    }
+  </nav>
+
+  <!-- ══ FIRST-LOAD NOTICE ══ -->
+  @if (isFirstLoad() && isLoading()) {
+    <div class="nf-first-load">
+      <div class="nf-first-load-spinner"></div>
+      <div>
+        <p class="nf-first-load-title">Fetching latest news…</p>
+        <p class="nf-first-load-sub">First load pulls from 14 live RSS feeds — this takes ~20 seconds. Subsequent visits are instant.</p>
+      </div>
+    </div>
+  }
+
+  <!-- ══ ERROR ══ -->
+  @if (error()) {
+    <div class="nf-error">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      {{ error() }}
+      <button class="nf-error-retry" (click)="load()">Try again</button>
+    </div>
+  }
+
+  <!-- ══ NEWS GRID ══ -->
+  <div class="nf-grid">
+
+    <!-- Skeleton -->
+    @if (isLoading()) {
+      @for (_ of skeletonRows; track $index) {
+        <div class="nf-card nf-card--sk">
+          <div class="nf-sk nf-sk--img"></div>
+          <div class="nf-card-body">
+            <div class="nf-sk" style="width:55%;height:11px;border-radius:5px;margin-bottom:8px"></div>
+            <div class="nf-sk" style="width:90%;height:14px;border-radius:5px;margin-bottom:5px"></div>
+            <div class="nf-sk" style="width:75%;height:14px;border-radius:5px;margin-bottom:14px"></div>
+            <div class="nf-sk" style="width:100%;height:11px;border-radius:5px;margin-bottom:5px"></div>
+            <div class="nf-sk" style="width:85%;height:11px;border-radius:5px"></div>
+          </div>
+        </div>
+      }
+    }
+
+    <!-- Articles -->
+    @if (!isLoading()) {
+      @for (item of items(); track item.guid) {
+        <article class="nf-card" [class.nf-card--published]="isPublished(item.guid)">
+
+          <!-- Thumbnail -->
+          <div class="nf-card-img-wrap">
+            @if (item.thumbnail) {
+              <img class="nf-card-img" [src]="item.thumbnail" [alt]="item.title"
+                   loading="lazy" decoding="async"
+                   (error)="$any($event.target).style.display='none'"/>
+            } @else {
+              <div class="nf-card-img-placeholder">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9l4-4 4 4 4-6 4 6"/><circle cx="8.5" cy="8.5" r="1.5"/></svg>
+              </div>
+            }
+            <span class="nf-cat-badge">{{ item.category }}</span>
+            @if (isPublished(item.guid)) {
+              <span class="nf-published-badge">✓ Published</span>
+            }
+          </div>
+
+          <!-- Body -->
+          <div class="nf-card-body">
+            <div class="nf-card-meta">
+              <span class="nf-source">{{ item.sourceName }}</span>
+              <span class="nf-dot" aria-hidden="true">·</span>
+              <span class="nf-time">{{ timeAgo(item.pubDate) }}</span>
+            </div>
+
+            <h2 class="nf-card-title">{{ item.title }}</h2>
+
+            @if (item.description) {
+              <p class="nf-card-desc">{{ item.description }}</p>
+            }
+
+            <!-- Actions -->
+            <div class="nf-card-actions">
+              <button class="nf-btn nf-btn--read" (click)="openOriginal(item.link)" aria-label="Read original article">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                Read
+              </button>
+              <button class="nf-btn nf-btn--publish" (click)="openPublish(item)" [disabled]="isPublished(item.guid)">
+                @if (isPublished(item.guid)) {
+                  ✓ Done
+                } @else {
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                  Summarise & Post
+                }
+              </button>
+            </div>
+          </div>
+
+        </article>
+      }
+
+      @if (!items().length && !error()) {
+        <div class="nf-empty">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.3" stroke-linecap="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 0-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/></svg>
+          <p>No articles found for <strong>{{ selectedCat() }}</strong></p>
+          <button class="nf-retry-btn" (click)="load()">Try again</button>
+        </div>
+      }
+    }
+
+  </div><!-- /nf-grid -->
+
+</div><!-- /nf-page -->
+
+<!-- ══ PUBLISH MODAL ══ -->
+@if (activeItem()) {
+  <div class="nf-overlay" (click)="closePublish()">
+    <div class="nf-modal" (click)="$event.stopPropagation()">
+
+      <!-- Handle (mobile) -->
+      <div class="nf-modal-grip"></div>
+
+      <!-- Header -->
+      <div class="nf-modal-head">
+        <div>
+          <p class="nf-modal-source">{{ activeItem()!.sourceName }} · {{ timeAgo(activeItem()!.pubDate) }}</p>
+          <h3 class="nf-modal-orig-title">{{ activeItem()!.title }}</h3>
+        </div>
+        <button class="nf-modal-close" (click)="closePublish()" aria-label="Close">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <!-- Original snippet -->
+      @if (activeItem()!.description) {
+        <div class="nf-modal-orig-desc">{{ activeItem()!.description }}</div>
+      }
+
+      <a class="nf-modal-read-link" [href]="activeItem()!.link" target="_blank" rel="noopener">
+        Read full article ↗
+      </a>
+
+      <div class="nf-modal-divider"></div>
+
+      <!-- Total word counter badge -->
+      <div class="nf-total-words">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        <span [class.nf-words--good]="totalWordCount() >= 300" [class.nf-words--warn]="totalWordCount() < 300">
+          {{ totalWordCount() }} / 300+ words
+        </span>
+        @if (totalWordCount() >= 300) {
+          <span class="nf-words-ok">✓ SEO-ready</span>
+        } @else {
+          <span class="nf-words-need">{{ 300 - totalWordCount() }} more words needed</span>
+        }
+      </div>
+
+      <!-- ── PART 1: Post Title ── -->
+      <div class="nf-part-block">
+        <div class="nf-part-head">
+          <span class="nf-part-badge">1</span>
+          <label class="nf-field-label">Post Title</label>
+        </div>
+        <input type="text" class="nf-field-input"
+               [ngModel]="editTitle()" (ngModelChange)="editTitle.set($event)"
+               placeholder="Enter a compelling post title…" maxlength="100"/>
+      </div>
+
+      <!-- ── PART 2: In Brief (60 words) ── -->
+      <div class="nf-part-block">
+        <div class="nf-part-head">
+          <span class="nf-part-badge">2</span>
+          <label class="nf-field-label">In Brief</label>
+          <span class="nf-word-count" [class.nf-word-count--over]="briefWordCount() > 60">
+            {{ briefWordCount() }}/60 words
+          </span>
+        </div>
+        <p class="nf-part-hint">Quick snapshot — what happened in plain language.</p>
+        <textarea class="nf-summary-input" rows="3"
+                  placeholder="Write a clear, factual summary in 60 words or less…"
+                  [ngModel]="editSummary()" (ngModelChange)="editSummary.set($event)"></textarea>
+        @if (briefWordCount() > 60) {
+          <p class="nf-summary-warn">⚠️ Keep under 60 words for the best reader experience.</p>
+        }
+      </div>
+
+      <!-- ── PART 3: Key Points (bullets) ── -->
+      <div class="nf-part-block">
+        <div class="nf-part-head">
+          <span class="nf-part-badge">3</span>
+          <label class="nf-field-label">Key Points</label>
+          <span class="nf-field-hint">{{ filledPointCount() }}/5 points</span>
+        </div>
+        <p class="nf-part-hint">Add 3–5 specific facts, numbers, or outcomes from the article.</p>
+        <div class="nf-kp-list">
+          @for (pt of keyPoints(); track $index; let i = $index) {
+            <div class="nf-kp-row">
+              <span class="nf-kp-bullet">•</span>
+              <input type="text" class="nf-kp-input"
+                     [value]="pt"
+                     (input)="updateKeyPoint(i, $any($event.target).value)"
+                     [placeholder]="'Key fact or stat ' + (i + 1) + '…'"
+                     maxlength="200"/>
+              @if (keyPoints().length > 2) {
+                <button class="nf-kp-del" type="button" (click)="removeKeyPoint(i)" title="Remove">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              }
+            </div>
+          }
+        </div>
+        @if (keyPoints().length < 5) {
+          <button type="button" class="nf-kp-add" (click)="addKeyPoint()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add point
+          </button>
+        }
+      </div>
+
+      <!-- ── PART 4: Background / Context ── -->
+      <div class="nf-part-block">
+        <div class="nf-part-head">
+          <span class="nf-part-badge">4</span>
+          <label class="nf-field-label">Background & Context</label>
+          <span class="nf-word-count" [class.nf-word-count--over]="bgWordCount() > 200">
+            {{ bgWordCount() }} words
+          </span>
+        </div>
+        <p class="nf-part-hint">Why does this matter? Add 100–150 words of context, history, or analysis.</p>
+        <textarea class="nf-summary-input nf-bg-input" rows="5"
+                  placeholder="Explain the broader context — why it matters, what led to this, what happens next…"
+                  [ngModel]="editBg()" (ngModelChange)="editBg.set($event)"></textarea>
+      </div>
+
+      <!-- Category -->
+      <div class="nf-part-block">
+        <div class="nf-part-head">
+          <span class="nf-part-badge">5</span>
+          <label class="nf-field-label">Category</label>
+        </div>
+        <select class="nf-field-select"
+                [ngModel]="editCategory()" (ngModelChange)="editCategory.set($event)">
+          @for (cat of POST_CATEGORIES; track cat) {
+            <option [value]="cat">{{ cat }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- Actions -->
+      <div class="nf-modal-actions">
+        <button class="nf-btn nf-btn--draft"
+                [disabled]="isPublishing() || !canPublish()"
+                (click)="publish('draft')">
+          @if (isPublishing()) { <span class="nf-spinner"></span> } Save as Draft
+        </button>
+        <button class="nf-btn nf-btn--go"
+                [disabled]="isPublishing() || !canPublish()"
+                (click)="publish('published')">
+          @if (isPublishing()) { <span class="nf-spinner"></span> } Publish Now
+        </button>
+      </div>
+      @if (!canPublish() && editTitle().trim()) {
+        <p class="nf-publish-hint">Fill In Brief + at least 2 Key Points + Background to publish.</p>
+      }
+
+    </div>
+  </div>
+}

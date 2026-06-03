@@ -2,6 +2,7 @@ import {
   Component, inject, signal, computed, OnInit,
   DestroyRef, PLATFORM_ID, ChangeDetectionStrategy,
 } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule, isPlatformBrowser, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -35,6 +36,7 @@ export class SearchPage implements OnInit {
   private allPostsCache = inject(AllPostsCache);
   private destroyRef    = inject(DestroyRef);
   private platformId    = inject(PLATFORM_ID);
+  private document      = inject(DOCUMENT);
   private meta          = inject(Meta);
   private titleSvc      = inject(Title);
 
@@ -62,8 +64,18 @@ export class SearchPage implements OnInit {
 
   hasQuery = computed(() => this.query().trim().length > 0);
 
+  private pushAds(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    try {
+      const ads: any[] = (window as any).adsbygoogle ?? [];
+      (window as any).adsbygoogle = ads;
+      this.document.querySelectorAll('.page-ad-wrap ins.adsbygoogle').forEach(() => ads.push({}));
+    } catch (_) {}
+  }
+
   ngOnInit(): void {
     this.titleSvc.setTitle('Search Stories — ApnaInsights');
+    setTimeout(() => this.pushAds(), 500);
     this.meta.updateTag({ name: 'description', content: 'Search thousands of articles on ApnaInsights.' });
     this.meta.updateTag({ name: 'robots', content: 'noindex, follow' });
 

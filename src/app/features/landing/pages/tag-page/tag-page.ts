@@ -51,6 +51,15 @@ export class TagPage implements OnInit {
 
   currentYear = new Date().getFullYear();
 
+  private pushAds(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    try {
+      const ads: any[] = (window as any).adsbygoogle ?? [];
+      (window as any).adsbygoogle = ads;
+      this.document.querySelectorAll('.page-ad-wrap ins.adsbygoogle').forEach(() => ads.push({}));
+    } catch (_) {}
+  }
+
   ngOnInit(): void {
     this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
       const tag = params.get('tag') ?? '';
@@ -59,6 +68,7 @@ export class TagPage implements OnInit {
       this.tagSlug.set(tag.toLowerCase());
       this.setMeta(tag);
       this.loadPosts();
+      setTimeout(() => this.pushAds(), 300);
     });
   }
 
@@ -67,6 +77,7 @@ export class TagPage implements OnInit {
     if (cached.length) {
       this.allPosts.set(cached);
       this.isLoading.set(false);
+      this.injectItemList(this.posts());
       return;
     }
 
@@ -80,6 +91,7 @@ export class TagPage implements OnInit {
         this.allPostsCache.set(posts);
         this.allPosts.set(posts);
         this.isLoading.set(false);
+        this.injectItemList(this.posts());
       });
   }
 
@@ -103,32 +115,67 @@ export class TagPage implements OnInit {
     }
     canonical.setAttribute('href', url);
 
-    const schema = [
-      {
-        '@context': 'https://schema.org',
-        '@type': 'CollectionPage',
-        name: `#${display} Stories`,
-        description: `Read the latest #${display} stories on ApnaInsights.`,
-        url,
-        isPartOf: { '@type': 'WebSite', url: environment.siteUrl, name: 'ApnaInsights' },
-      },
-      {
-        '@context': 'https://schema.org',
-        '@type': 'BreadcrumbList',
-        itemListElement: [
-          { '@type': 'ListItem', position: 1, name: 'Home', item: environment.siteUrl },
-          { '@type': 'ListItem', position: 2, name: `#${display}`, item: url },
-        ],
-      },
-    ];
+    const graph = {
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type':    'CollectionPage',
+          '@id':      `${url}#webpage`,
+          url,
+          name:       `#${display} Stories`,
+          description: `Read the latest stories tagged #${display} on ApnaInsights — community blogs from real writers.`,
+          inLanguage: 'en-IN',
+          isPartOf:   { '@id': `${environment.siteUrl}/#website` },
+          publisher:  { '@id': `${environment.siteUrl}/#organization` },
+        },
+        {
+          '@type':         'BreadcrumbList',
+          '@id':           `${url}#breadcrumb`,
+          itemListElement: [
+            { '@type': 'ListItem', position: 1, name: 'Home',         item: environment.siteUrl },
+            { '@type': 'ListItem', position: 2, name: `#${display}`,  item: url },
+          ],
+        },
+      ],
+    };
     let el = this.document.getElementById('tag-schema');
     if (!el) {
-      el = this.document.createElement('script');
+      el    = this.document.createElement('script');
       el.id = 'tag-schema';
       (el as HTMLScriptElement).type = 'application/ld+json';
       this.document.head.appendChild(el);
     }
-    el.textContent = JSON.stringify(schema);
+    el.textContent = JSON.stringify(graph);
+  }
+
+  private injectItemList(posts: any[]): void {
+    if (!posts.length) return;
+    const url  = `${environment.siteUrl}/tag/${this.tagSlug()}`;
+    const site = environment.siteUrl;
+    const tag  = this.tagSlug();
+    const display = tag.charAt(0).toUpperCase() + tag.slice(1);
+    const itemList = {
+      '@context': 'https://schema.org',
+      '@type':    'ItemList',
+      '@id':      `${url}#itemlist`,
+      name:       `#${display} Stories on ApnaInsights`,
+      url,
+      numberOfItems: posts.length,
+      itemListElement: posts.slice(0, 20).map((p: any, i: number) => ({
+        '@type':    'ListItem',
+        position:   i + 1,
+        url:        `${site}/blog/${p.slug || p._id}`,
+        name:       p.title,
+      })),
+    };
+    let el = this.document.getElementById('tag-itemlist');
+    if (!el) {
+      el    = this.document.createElement('script');
+      el.id = 'tag-itemlist';
+      (el as HTMLScriptElement).type = 'application/ld+json';
+      this.document.head.appendChild(el);
+    }
+    el.textContent = JSON.stringify(itemList);
   }
 
   navigateToBlog(post: Post): void {

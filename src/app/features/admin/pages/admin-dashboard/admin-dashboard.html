@@ -6,8 +6,9 @@
     [navLinks]="[
       { label: 'Home',      routerLink: '/admin/' + userId(),                   icon: 'home',     exact: true  },
       { label: 'Users',     routerLink: '/admin/' + userId() + '/manage-users', icon: 'users',    exact: false },
-      { label: 'Blogs',   routerLink: '/admin/' + userId() + '/manage-blogs',  icon: 'docs',  exact: false },
-      { label: 'Shorts',      routerLink: '/admin/' + userId() + '/manage-shorts', icon: 'video',  exact: false },
+      { label: 'Blogs',     routerLink: '/admin/' + userId() + '/manage-blogs',  icon: 'docs',  exact: false },
+      { label: 'News Feed', routerLink: '/admin/' + userId() + '/news-feed',     icon: 'trend', exact: false },
+      { label: 'Shorts',    routerLink: '/admin/' + userId() + '/manage-shorts', icon: 'video', exact: false },
       { label: 'Subscribers',  routerLink: '/admin/' + userId() + '/subscribers',     icon: 'mail',   exact: false },
       { label: 'Sponsored',   routerLink: '/admin/' + userId() + '/sponsored-report', icon: 'trend',  exact: false },
       { label: 'Traffic',     routerLink: '/admin/' + userId() + '/visitor',        icon: 'chart',  exact: false },

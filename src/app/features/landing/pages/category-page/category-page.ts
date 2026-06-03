@@ -145,6 +145,15 @@ export class CategoryPage implements OnInit {
 
   currentYear = new Date().getFullYear();
 
+  private pushAds(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    try {
+      const ads: any[] = (window as any).adsbygoogle ?? [];
+      (window as any).adsbygoogle = ads;
+      this.document.querySelectorAll('.page-ad-wrap ins.adsbygoogle').forEach(() => ads.push({}));
+    } catch (_) {}
+  }
+
   ngOnInit(): void {
     // Load taxonomy so ALL_CATEGORIES() is populated from API
     this.taxonomyService.load().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
@@ -160,6 +169,7 @@ export class CategoryPage implements OnInit {
       this.categoryName.set(matched);
       this.setMeta(matched);
       this.loadPosts();
+      setTimeout(() => this.pushAds(), 300);
     });
   }
 
@@ -170,6 +180,7 @@ export class CategoryPage implements OnInit {
       this.allPosts.set(cached);
       this.isLoading.set(false);
       this.applyRobotsForCount();
+      this.injectItemList(this.posts());
       return;
     }
 
@@ -185,6 +196,7 @@ export class CategoryPage implements OnInit {
         this.allPosts.set(posts);
         this.isLoading.set(false);
         this.applyRobotsForCount();
+        this.injectItemList(this.posts());
       });
   }
 
@@ -220,33 +232,68 @@ export class CategoryPage implements OnInit {
     }
     canonical.setAttribute('href', url);
 
-    // Breadcrumb + CollectionPage structured data
-    const schema = [
-      {
-        '@context': 'https://schema.org',
-        '@type': 'CollectionPage',
-        'name': `${name} Stories & Blogs`,
-        'description': `Read the latest ${name} stories and blogs on ApnaInsights.`,
-        'url': url,
-        'isPartOf': { '@type': 'WebSite', 'url': environment.siteUrl, 'name': 'ApnaInsights' },
-      },
-      {
-        '@context': 'https://schema.org',
-        '@type': 'BreadcrumbList',
-        'itemListElement': [
-          { '@type': 'ListItem', 'position': 1, 'name': 'Home',  'item': environment.siteUrl },
-          { '@type': 'ListItem', 'position': 2, 'name': name,    'item': url },
-        ],
-      },
-    ];
+    // Structured data — @graph format (valid for multiple types in one tag)
+    const graph = {
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type':       'CollectionPage',
+          '@id':         `${url}#webpage`,
+          url,
+          name:          `${name} Stories & Blogs`,
+          description:   desc,
+          inLanguage:    'en-IN',
+          isPartOf:      { '@id': `${environment.siteUrl}/#website` },
+          about:         { '@type': 'Thing', name },
+          publisher:     { '@id': `${environment.siteUrl}/#organization` },
+        },
+        {
+          '@type':         'BreadcrumbList',
+          '@id':           `${url}#breadcrumb`,
+          itemListElement: [
+            { '@type': 'ListItem', position: 1, name: 'Home', item: environment.siteUrl },
+            { '@type': 'ListItem', position: 2, name,          item: url },
+          ],
+        },
+      ],
+    };
     let el = this.document.getElementById('category-schema');
     if (!el) {
-      el = this.document.createElement('script');
+      el    = this.document.createElement('script');
       el.id = 'category-schema';
       (el as HTMLScriptElement).type = 'application/ld+json';
       this.document.head.appendChild(el);
     }
-    el.textContent = JSON.stringify(schema);
+    el.textContent = JSON.stringify(graph);
+  }
+
+  // Called after posts load — injects ItemList for the visible posts
+  private injectItemList(posts: Post[]): void {
+    if (!posts.length) return;
+    const url     = `${environment.siteUrl}/category/${this.categorySlug()}`;
+    const site    = environment.siteUrl;
+    const itemList = {
+      '@context': 'https://schema.org',
+      '@type':    'ItemList',
+      '@id':      `${url}#itemlist`,
+      name:       `${this.categoryName()} Stories on ApnaInsights`,
+      url,
+      numberOfItems: posts.length,
+      itemListElement: posts.slice(0, 20).map((p, i) => ({
+        '@type':    'ListItem',
+        position:   i + 1,
+        url:        `${site}/blog/${(p as any).slug || p._id}`,
+        name:       p.title,
+      })),
+    };
+    let el = this.document.getElementById('category-itemlist');
+    if (!el) {
+      el    = this.document.createElement('script');
+      el.id = 'category-itemlist';
+      (el as HTMLScriptElement).type = 'application/ld+json';
+      this.document.head.appendChild(el);
+    }
+    el.textContent = JSON.stringify(itemList);
   }
 
   navigateToBlog(post: Post): void {

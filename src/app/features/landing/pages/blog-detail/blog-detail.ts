@@ -1069,11 +1069,26 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
+    // No cache (direct URL visit) — the /related endpoint now returns both
+    // same-category posts AND trending posts (up to 22 total) so both the
+    // "Related Stories" and "Must Read / Trending" sections can be populated.
     this.postService.getRelatedPosts(currentPost._id)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (res) => this._processRelatedAndAuthor(currentPost, res.data ?? []),
-        error: () => this.relatedPosts.set([]),
+        next: (res) => {
+          const posts = res.data ?? [];
+          if (posts.length) {
+            this._processRelatedAndAuthor(currentPost, posts);
+          } else {
+            // Absolute fallback — both sections stay empty, no error thrown
+            this.relatedPosts.set([]);
+            this.trendingPosts.set([]);
+          }
+        },
+        error: () => {
+          this.relatedPosts.set([]);
+          this.trendingPosts.set([]);
+        },
       });
   }
 
@@ -1366,31 +1381,45 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  /** Truncate to ≤155 chars at a word boundary so Google never cuts mid-word. */
+  private truncateDesc(text: string, max = 155): string {
+    if (!text) return '';
+    const clean = text.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+    if (clean.length <= max) return clean;
+    return clean.substring(0, max).replace(/\s+\S*$/, '') + '…';
+  }
+
   private updateMetaTags(post: Post): void {
     const canonicalUrl = `${environment.siteUrl}/blog/${post.slug || post._id}`;
     const isMcq        = post.postType === 'mcq';
     const rawDesc      = post.description || post.title;
-    const desc         = isMcq
+    const fullDesc     = isMcq
       ? `${rawDesc} — Test your knowledge with this ${post.mcqQuestions?.length ?? 0}-question MCQ quiz.`
       : rawDesc;
+    // Always truncate to 155 chars for the meta tag
+    const desc         = this.truncateDesc(fullDesc, 155);
     const image        = post.featuredImage || environment.ogImage;
     const titleSuffix  = isMcq ? ' [MCQ Quiz]' : '';
 
     this.titleService.setTitle(`${post.title}${titleSuffix} | ApnaInsights`);
 
     // Pending and draft posts must not be indexed
+    // News articles get max-snippet for Top Stories eligibility
+    const NEWS_CATS_META = new Set(['News','Sports','Business','Entertainment','Health','Science','Technology']);
+    const isNewsMeta = post.categories?.some(c => NEWS_CATS_META.has(c));
     const robotsValue = (post.status === 'published')
-      ? 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'
+      ? `index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1${isNewsMeta ? ', max-image-preview:large' : ''}`
       : 'noindex, nofollow';
 
+    // Keywords — MCQ gets quiz terms; regular posts get categories + tags
+    const keywords = isMcq
+      ? [post.title, 'MCQ', 'quiz', 'multiple choice', ...(post.categories ?? []), ...(post.tags ?? [])].join(', ')
+      : [...(post.categories ?? []), ...(post.tags ?? []), post.title].filter(Boolean).join(', ');
+
     this.setMeta('name',     'description',              desc);
+    this.setMeta('name',     'keywords',                 keywords);
     this.setMeta('name',     'author',                   (post.user as any)?.name ?? 'ApnaInsights');
     this.setMeta('name',     'robots',                   robotsValue);
-    if (isMcq) {
-      this.setMeta('name', 'keywords', [
-        post.title, 'MCQ', 'quiz', 'multiple choice', ...(post.categories ?? []), ...(post.tags ?? []),
-      ].join(', '));
-    }
     this.setMeta('property', 'og:site_name',             'ApnaInsights');
     this.setMeta('property', 'og:title',                 `${post.title}${titleSuffix}`);
     this.setMeta('property', 'og:description',           desc);
@@ -1401,6 +1430,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     this.setMeta('property', 'og:image:alt',             post.title);
     this.setMeta('property', 'og:image:width',           '1200');
     this.setMeta('property', 'og:image:height',          '630');
+    this.setMeta('property', 'og:image:type',            image.endsWith('.png') ? 'image/png' : 'image/jpeg');
     this.setMeta('name',     'twitter:card',             'summary_large_image');
     this.setMeta('name',     'twitter:site',             '@apnainsights');
     this.setMeta('name',     'twitter:title',            `${post.title}${titleSuffix}`);
@@ -1467,59 +1497,96 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
 
   private injectArticleSchema(post: Post): void {
     try {
-      const postUrl    = `${environment.siteUrl}/blog/${post.slug || post._id}`;
+      const site       = environment.siteUrl;
+      const postUrl    = `${site}/blog/${post.slug || post._id}`;
       const authorName = (post.user as any)?.name ?? 'Anonymous Author';
-      const authorId   = (post.user as any)?._id ?? (post.user as any);
+      const authorId   = (post.user as any)?._id;
       const isMcq      = post.postType === 'mcq';
+      const image      = post.featuredImage || environment.ogImage;
 
+      // ── Breadcrumb ───────────────────────────────────────────────────────
       const breadcrumbItems: any[] = [
-        { '@type': 'ListItem', position: 1, name: 'Home', item: environment.siteUrl },
+        { '@type': 'ListItem', position: 1, name: 'Home', item: site },
       ];
       if (post.categories?.length) {
         breadcrumbItems.push({
           '@type': 'ListItem', position: 2,
-          name: post.categories[0],
-          item: `${environment.siteUrl}/category/${post.categories[0].toLowerCase()}`,
+          name:  post.categories[0],
+          item: `${site}/category/${post.categories[0].toLowerCase()}`,
         });
         breadcrumbItems.push({ '@type': 'ListItem', position: 3, name: post.title, item: postUrl });
       } else {
         breadcrumbItems.push({ '@type': 'ListItem', position: 2, name: post.title, item: postUrl });
       }
 
-      const commonFields = {
-        headline:        post.title,
-        description:     post.description || post.title,
-        inLanguage:      'en-IN',
-        image: post.featuredImage
-          ? { '@type': 'ImageObject', url: post.featuredImage, caption: post.title, width: 1200, height: 630 }
-          : { '@type': 'ImageObject', url: environment.ogImage, width: 1200, height: 630 },
-        datePublished:   new Date(post.createdAt).toISOString(),
-        dateModified:    new Date(post.updatedAt ?? post.createdAt).toISOString(),
+      // ── Common article fields ─────────────────────────────────────────────
+      const plainText    = (post.content ?? '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+      const wordCount    = plainText.split(/\s+/).filter(Boolean).length;
+      // articleBody: first ~500 chars of visible text — used for featured snippets
+      const articleBody  = plainText.substring(0, 500) + (plainText.length > 500 ? '…' : '');
+      const readTimeMins = Math.max(1, Math.ceil(wordCount / 200));
+      const keywords     = [
+        ...(post.categories ?? []), ...(post.tags ?? []),
+        ...(isMcq ? ['MCQ', 'quiz', 'multiple choice'] : []),
+      ].filter(Boolean).join(', ');
+
+      const commonFields: any = {
+        '@id':            postUrl,
+        url:              postUrl,
+        headline:         post.title.substring(0, 110),   // Google max: 110 chars
+        description:      this.truncateDesc(post.description || post.title, 155),
+        inLanguage:       'en-IN',
+        isAccessibleForFree: true,
+        image: {
+          '@type':   'ImageObject',
+          '@id':     `${postUrl}#primaryimage`,
+          url:       image,
+          contentUrl: image,
+          width:     1200,
+          height:    630,
+          caption:   post.title,
+        },
+        datePublished:  new Date(post.createdAt).toISOString(),
+        dateModified:   new Date(post.updatedAt ?? post.createdAt).toISOString(),
         author: {
           '@type': 'Person',
           name:    authorName,
-          ...(authorId ? { url: `${environment.siteUrl}/author/${authorId}` } : {}),
+          ...(authorId ? { url: `${site}/author/${authorId}`, '@id': `${site}/author/${authorId}` } : {}),
         },
-        keywords:  [...(post.categories ?? []), ...(post.tags ?? []), ...(isMcq ? ['MCQ', 'quiz', 'multiple choice'] : [])].join(', ') || undefined,
-        publisher: {
-          '@type': 'Organization',
-          name:    'ApnaInsights',
-          logo:    { '@type': 'ImageObject', url: 'https://apnainsights.com/logo.png', width: 1024, height: 1024 },
-        },
+        publisher:        { '@id': `${site}/#organization` },
         mainEntityOfPage: { '@type': 'WebPage', '@id': postUrl },
+        isPartOf:         { '@id': `${site}/#website` },
+        ...(keywords ? { keywords } : {}),
+        // InteractionStatistic — helps Google show view/like counts in search
+        interactionStatistic: [
+          {
+            '@type':               'InteractionCounter',
+            interactionType:       { '@type': 'ReadAction' },
+            userInteractionCount:  post.views ?? 0,
+          },
+          {
+            '@type':               'InteractionCounter',
+            interactionType:       { '@type': 'LikeAction' },
+            userInteractionCount:  post.likesCount ?? 0,
+          },
+        ],
       };
 
+      // ── Determine the right schema type ──────────────────────────────────
+      // NewsArticle → eligible for Google Top Stories & Google News
+      const NEWS_CATS = new Set(['News','Sports','Business','Entertainment','Health','Science','Technology']);
+      const isNews = !isMcq && post.categories?.some(c => NEWS_CATS.has(c));
+
+      // ── Main schema — Quiz / NewsArticle / BlogPosting ────────────────────
       let mainSchema: any;
       if (isMcq && post.mcqQuestions?.length) {
-        // Schema.org Quiz with Question/Answer items
         mainSchema = {
-          '@context': 'https://schema.org',
-          '@type':    'Quiz',
+          '@type': 'Quiz',
           ...commonFields,
           hasPart: post.mcqQuestions.map((q, i) => ({
-            '@type':          'Question',
-            position:         i + 1,
-            text:             q.question,
+            '@type':    'Question',
+            position:   i + 1,
+            text:       q.question,
             acceptedAnswer: {
               '@type': 'Answer',
               text:    q.options[q.correctIndex]?.text ?? '',
@@ -1530,27 +1597,59 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
               .map(o => ({ '@type': 'Answer', text: o.text })),
           })),
         };
-      } else {
-        const wordCount = (post.content ?? '').replace(/<[^>]*>/g, '').trim().split(/\s+/).length;
+      } else if (isNews) {
+        // NewsArticle — required for Top Stories carousel eligibility
         mainSchema = {
-          '@context':    'https://schema.org',
-          '@type':       'BlogPosting',
+          '@type':        ['NewsArticle', 'Article'],  // dual type for max coverage
           ...commonFields,
+          articleBody,
           wordCount,
-          commentCount:  post.commentsCount ?? 0,
-          timeRequired:  `PT${Math.ceil(wordCount / 200)}M`,
+          commentCount:   post.commentsCount ?? 0,
+          timeRequired:   `PT${readTimeMins}M`,
+          articleSection: post.categories?.[0] || undefined,
+          genre:          'News',
+          // speakable — tells Google Assistant which parts to read aloud
+          speakable: {
+            '@type':   'SpeakableSpecification',
+            cssSelector: ['h1', '.article-description', '.news-brief'],
+          },
+        };
+      } else {
+        mainSchema = {
+          '@type':        'BlogPosting',
+          ...commonFields,
+          articleBody,
+          wordCount,
+          commentCount:   post.commentsCount ?? 0,
+          timeRequired:   `PT${readTimeMins}M`,
           articleSection: post.categories?.[0] || undefined,
         };
       }
 
-      const schemas: any[] = [
-        mainSchema,
-        {
-          '@context':      'https://schema.org',
-          '@type':         'BreadcrumbList',
-          itemListElement: breadcrumbItems,
-        },
-      ];
+      // ── Use @graph (required for multiple schemas in one <script> tag) ────
+      const graph = {
+        '@context': 'https://schema.org',
+        '@graph': [
+          mainSchema,
+          {
+            '@type':         'BreadcrumbList',
+            '@id':           `${postUrl}#breadcrumb`,
+            itemListElement: breadcrumbItems,
+          },
+          {
+            '@type': 'WebPage',
+            '@id':   postUrl,
+            url:     postUrl,
+            name:    post.title,
+            isPartOf:         { '@id': `${site}/#website` },
+            primaryImageOfPage: { '@id': `${postUrl}#primaryimage` },
+            breadcrumb:       { '@id': `${postUrl}#breadcrumb` },
+            datePublished:    new Date(post.createdAt).toISOString(),
+            dateModified:     new Date(post.updatedAt ?? post.createdAt).toISOString(),
+            inLanguage:       'en-IN',
+          },
+        ],
+      };
 
       let el = this.document.getElementById('article-schema');
       if (!el) {
@@ -1559,7 +1658,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
         (el as HTMLScriptElement).type = 'application/ld+json';
         this.document.head?.appendChild(el);
       }
-      el.textContent = JSON.stringify(schemas);
+      el.textContent = JSON.stringify(graph);
     } catch (_) {}
   }
 

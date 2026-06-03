@@ -11,6 +11,7 @@ import { Visitor } from './pages/visitor/visitor';
 import { ManageShorts } from './pages/manage-shorts/manage-shorts';
 import { ManageSubscribers } from './pages/manage-subscribers/manage-subscribers';
 import { SponsoredReport } from './pages/sponsored-report/sponsored-report';
+import { NewsFeed } from './pages/news-feed/news-feed';
 
 const routes: Routes = [
   {
@@ -66,6 +67,11 @@ const routes: Routes = [
         path: 'sponsored-report',
         component: SponsoredReport,
         title: 'ApnaInsights - Sponsored Report'
+      },
+      {
+        path: 'news-feed',
+        component: NewsFeed,
+        title: 'ApnaInsights - News Feed'
       }
     ]
   }

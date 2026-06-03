@@ -795,7 +795,7 @@ export class Home implements OnInit, OnDestroy {
     const site = environment.siteUrl;
     const og   = environment.ogImage;
     this.titleService.setTitle('ApnaInsights — Community Stories from Every Corner of India');
-    this.meta.updateTag({ name: 'description',    content: 'Discover real stories from real people across India. Read and write blogs on Technology, Lifestyle, Health, Business, Education, Village Life and more. Free community blogging platform — join thousands of Indian writers.' });
+    this.meta.updateTag({ name: 'description',    content: 'Discover real stories from real people across India. Blogs on Tech, Health, Business, Lifestyle, Village Life & more. Free community blogging platform.' });
     this.meta.updateTag({ name: 'keywords',       content: 'Indian blog platform, community stories India, read blogs India, write blogs free, trending stories, technology blog India, village life stories, health stories India, ApnaInsights' });
     this.meta.updateTag({ name: 'robots',         content: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' });
     this.meta.updateTag({ name: 'author',         content: 'ApnaInsights Community' });
@@ -831,18 +831,30 @@ export class Home implements OnInit, OnDestroy {
     const schemas = [
       {
         '@context': 'https://schema.org',
-        '@type': 'CollectionPage',
-        '@id': site,
-        url: site,
-        name: 'ApnaInsights — Community Stories from Every Corner of India',
-        description: 'Browse trending, most-viewed, and latest community blogs from writers across India.',
-        inLanguage: 'en-IN',
-        isPartOf: { '@type': 'WebSite', url: site },
-        about: { '@type': 'Thing', name: 'Community Blogging India' },
-        breadcrumb: {
-          '@type': 'BreadcrumbList',
-          itemListElement: [{ '@type': 'ListItem', position: 1, name: 'Home', item: site }]
-        }
+        '@graph': [
+          {
+            '@type':       'CollectionPage',
+            '@id':         `${site}/#homepage`,
+            url:           `${site}/`,
+            name:          'ApnaInsights — Community Stories from Every Corner of India',
+            description:   'Browse trending, most-viewed, and latest community blogs from writers across India.',
+            inLanguage:    'en-IN',
+            isPartOf:      { '@id': `${site}/#website` },
+            about:         { '@type': 'Thing', name: 'Community Blogging India' },
+            publisher:     { '@id': `${site}/#organization` },
+            primaryImageOfPage: {
+              '@type': 'ImageObject',
+              url:     environment.ogImage,
+              width:   1200,
+              height:  630,
+            },
+            breadcrumb: {
+              '@type': 'BreadcrumbList',
+              '@id':   `${site}/#breadcrumb`,
+              itemListElement: [{ '@type': 'ListItem', position: 1, name: 'Home', item: `${site}/` }]
+            }
+          }
+        ]
       }
     ];
 
