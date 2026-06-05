@@ -138,10 +138,17 @@ export class CategoryPage implements OnInit {
     return this.allPosts()
       .filter(p =>
         (p.status === 'published') &&
-        p.categories?.some(c => c.toLowerCase() === name)
+        p.categories?.some(c => c.toLowerCase() === name) &&
+        this._hasQualityDescription(p.description)
       )
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   });
+
+  private _hasQualityDescription(desc: string | null | undefined): boolean {
+    if (!desc) return false;
+    const words = desc.trim().split(/\s+/).filter(Boolean);
+    return words.length >= 12;
+  }
 
   currentYear = new Date().getFullYear();
 

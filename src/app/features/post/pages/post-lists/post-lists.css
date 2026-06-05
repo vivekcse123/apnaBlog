@@ -361,9 +361,11 @@
   font-size: 11px;
   font-weight: 600;
 }
-.ap-tag--gold   { background:rgba(245,158,11,.12); color:#d97706; border:1px solid rgba(245,158,11,.25); }
-.ap-tag--purple { background:rgba(139,92,246,.1);  color:#7c3aed; border:1px solid rgba(139,92,246,.22); }
-.ap-tag--red    { background:rgba(220,38,38,.1);   color:#dc2626; border:1px solid rgba(220,38,38,.2); }
+.ap-tag--gold     { background:rgba(245,158,11,.12); color:#d97706; border:1px solid rgba(245,158,11,.25); }
+.ap-tag--purple   { background:rgba(139,92,246,.1);  color:#7c3aed; border:1px solid rgba(139,92,246,.22); }
+.ap-tag--red      { background:rgba(220,38,38,.1);   color:#dc2626; border:1px solid rgba(220,38,38,.2); }
+.ap-tag--reassign { background:rgba(59,130,246,.1);  color:#2563eb; border:1px solid rgba(59,130,246,.25); cursor:pointer; margin-left:4px; }
+.ap-tag--reassign:hover { background:rgba(59,130,246,.18); }
 
 /* Category pills */
 .ap-td-cat { max-width: 130px; }

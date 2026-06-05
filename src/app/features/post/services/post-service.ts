@@ -162,6 +162,11 @@ export class PostService {
     return this.http.patch<apiResponse<Post>>(`${this.endPoint}/${id}/reject-delete-request`, {});
   }
 
+  reassignAuthor(postId: string, userId: string): Observable<apiResponse<Post>> {
+    this.invalidatePost(postId);
+    return this.http.patch<apiResponse<Post>>(`${this.endPoint}/${postId}/reassign-author`, { userId });
+  }
+
   likePost(postId: string): Observable<apiResponse<Post>> {
     return this.http.post<apiResponse<Post>>(`${this.endPoint}/${postId}/like`, {});
   }

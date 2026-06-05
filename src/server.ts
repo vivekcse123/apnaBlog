@@ -55,7 +55,8 @@ const STATIC_PAGES = [
   { url: '/about',          changefreq: 'monthly',  priority: 0.7 },
   { url: '/privacy-policy', changefreq: 'yearly',   priority: 0.3 },
   { url: '/terms',          changefreq: 'yearly',   priority: 0.3 },
-  { url: '/disclaimer',     changefreq: 'yearly',   priority: 0.3 },
+  { url: '/disclaimer',        changefreq: 'yearly',   priority: 0.3 },
+  { url: '/editorial-policy', changefreq: 'yearly',   priority: 0.5 },
   // Category landing pages — one per topic
   ...ALL_CATEGORIES.map(cat => ({
     url:        `/category/${cat.toLowerCase()}`,
@@ -99,16 +100,15 @@ app.get('/sitemap.xml', async (_req: Request, res: Response) => {
       fetchAll<ShortEntry>(`${API_BASE}/shorts?status=published`),
     ]);
 
-    // Collect unique tags and author slugs from posts
+    // Collect unique tags and author IDs from posts
     const tagCounts = new Map<string, number>();
-    const authorSlugs = new Map<string, string>(); // _id → name slug
+    const authorIds = new Set<string>(); // use _id directly — route is /author/:id
     for (const p of posts) {
       for (const tag of (p.tags ?? [])) {
         tagCounts.set(tag, (tagCounts.get(tag) ?? 0) + 1);
       }
-      if (p.user?._id && p.user?.name) {
-        const slug = encodeURIComponent(p.user.name.toLowerCase().replace(/\s+/g, '-'));
-        authorSlugs.set(p.user._id, slug);
+      if (p.user?._id) {
+        authorIds.add(p.user._id);
       }
     }
 
@@ -117,8 +117,8 @@ app.get('/sitemap.xml', async (_req: Request, res: Response) => {
       .filter(([, count]) => count >= 2)
       .map(([tag]) => ({ url: `/tag/${encodeURIComponent(tag)}`, changefreq: 'weekly' as const, priority: 0.6 }));
 
-    const authorPages = [...authorSlugs.values()].map(slug => ({
-      url: `/author/${slug}`, changefreq: 'weekly' as const, priority: 0.6,
+    const authorPages = [...authorIds].map(id => ({
+      url: `/author/${id}`, changefreq: 'weekly' as const, priority: 0.6,
     }));
 
     const links = [
@@ -274,6 +274,11 @@ app.get('/blog/:id', async (req: Request, res: Response, next: NextFunction) => 
  * ```
  */
 
+// /contact → /about (server-side 301 so bots follow without JavaScript)
+app.get('/contact', (_req: Request, res: Response) => {
+  res.redirect(301, '/about');
+});
+
 /**
  * Serve static files from /browser
  */
@@ -302,35 +307,57 @@ app.use((req, res, next) => {
         // RenderMode.Client route — Angular returns null, serve the SPA shell
         return res.sendFile(join(browserDistFolder, 'index.html'));
       }
-      // If Angular SSR itself produced a 5xx (e.g. API timeout during render),
-      // fall back to the client shell so the browser can bootstrap normally.
+
+      // If Angular SSR failed (e.g. backend cold-start timeout), distinguish
+      // between bot and browser traffic:
+      //  • Bots/crawlers (Googlebot, AdSense) get a 503 + Retry-After so they
+      //    retry later rather than caching an empty page as "low value content".
+      //  • Real browsers get the client shell so Angular can bootstrap and
+      //    fetch the data itself — user experience is preserved.
       if (response.status >= 500) {
-        console.warn(`SSR returned ${response.status} for ${req.url} — falling back to client shell`);
-        return res.status(200).sendFile(join(browserDistFolder, 'index.html'));
+        console.warn(`SSR returned ${response.status} for ${req.url}`);
+        const ua = (req.headers['user-agent'] ?? '').toLowerCase();
+        const isBot = /googlebot|adsbot|mediapartners|bingbot|yandex|duckduckbot|slurp|baiduspider|facebookexternalhit|twitterbot|rogerbot|linkedinbot|embedly|quora|pinterest|slackbot|vkshare|outbrain|facebot|ia_archiver/.test(ua);
+        if (isBot) {
+          res.setHeader('Retry-After', '60');
+          res.status(503).send(
+            '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>ApnaInsights — Service Temporarily Unavailable</title></head>' +
+            '<body><h1>503 Service Temporarily Unavailable</h1><p>ApnaInsights is starting up. Please try again in a moment.</p></body></html>'
+          );
+          return;
+        }
+        res.sendFile(join(browserDistFolder, 'index.html'));
+        return;
       }
+
       return writeResponseToNodeResponse(response, res);
     })
     .catch(next);
 });
 
 /**
- * When Angular SSR throws (e.g. API timeout during render), fall back to the
- * client-side shell so the browser can bootstrap and fetch data itself.
- * This prevents the hosting platform from showing its own "Something went wrong" error page.
+ * When Angular SSR throws (e.g. API timeout during render), apply the same
+ * bot/browser split: bots get 503 so they retry; browsers get the SPA shell.
  */
-app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
-  console.error('SSR render error — falling back to client shell:', err);
-  res.status(200).sendFile(join(browserDistFolder, 'index.html'));
+app.use((err: unknown, req: Request, res: Response, _next: NextFunction) => {
+  console.error('SSR render error:', err);
+  const ua = (req.headers['user-agent'] ?? '').toLowerCase();
+  const isBot = /googlebot|adsbot|mediapartners|bingbot|yandex|duckduckbot|slurp|baiduspider|facebookexternalhit|twitterbot|rogerbot|linkedinbot|embedly|quora|pinterest|slackbot|vkshare|outbrain|facebot|ia_archiver/.test(ua);
+  if (isBot) {
+    res.setHeader('Retry-After', '60');
+    res.status(503).send(
+      '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>ApnaInsights — Service Temporarily Unavailable</title></head>' +
+      '<body><h1>503 Service Temporarily Unavailable</h1><p>ApnaInsights is starting up. Please try again in a moment.</p></body></html>'
+    );
+    return;
+  }
+  res.sendFile(join(browserDistFolder, 'index.html'));
 });
 
 /**
  * Start the server if this module is the main entry point, or it is ran via PM2.
  * The server listens on the port defined by the `PORT` environment variable, or defaults to 4000.
  */
-// Fire-and-forget warmup: immediately kick the Render backend so it starts
-// waking up on Vercel cold-start. The next SSR request will succeed.
-fetch(`${API_BASE}/post?page=1&limit=1`, { signal: AbortSignal.timeout(30000) }).catch(() => {});
-
 if (isMainModule(import.meta.url) || process.env['pm_id']) {
   const port = process.env['PORT'] || 4000;
   app.listen(port, (error) => {
@@ -338,13 +365,10 @@ if (isMainModule(import.meta.url) || process.env['pm_id']) {
       throw error;
     }
   });
-
-  // Keepalive: ping the backend every 10 minutes so Render's free-tier instance
-  // stays warm and doesn't cold-start during AdSense / Googlebot crawls.
-  setInterval(() => {
-    fetch(`${API_BASE}/post?page=1&limit=1`, { signal: AbortSignal.timeout(15000) })
-      .catch(() => {});
-  }, 10 * 60 * 1000);
+  // NOTE: Do NOT add a setInterval keepalive here.
+  // On Vercel (serverless), this function process is killed after each request —
+  // any interval set here never fires. Use an external uptime monitor (e.g.
+  // UptimeRobot free tier) to ping the Render backend every 5 minutes instead.
 }
 
 /**

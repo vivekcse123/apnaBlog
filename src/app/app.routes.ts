@@ -50,6 +50,11 @@ export const routes: Routes = [
         title: 'Disclaimer | ApnaInsights'
     },
     {
+        path: 'editorial-policy',
+        loadComponent: () => import('./features/landing/pages/editorial-policy/editorial-policy').then(m => m.EditorialPolicy),
+        title: 'Editorial Policy | ApnaInsights'
+    },
+    {
         path: 'advertise',
         loadComponent: () => import('./features/landing/pages/advertise/advertise').then(m => m.Advertise),
         title: 'Advertise with Us | ApnaInsights'

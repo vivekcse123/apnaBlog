@@ -10,6 +10,10 @@ Disallow: /user/
 Disallow: /auth/
 Disallow: /sponsor/
 Disallow: /search
+Disallow: /history
+Disallow: /bookmarks
+Disallow: /splash
+Disallow: /onboarding
 
 # ── Google AdSense & Ads crawlers (must be explicitly allowed) ────────────────
 User-agent: Mediapartners-Google

@@ -2,8 +2,12 @@
   "outputDirectory": "dist/blog-app/browser",
   "functions": {
     "api/ssr.js": {
-      "includeFiles": "dist/blog-app/**"
-    }
+      "includeFiles": "dist/blog-app/**",
+      "maxDuration": 30
+    },
+    "api/sitemap.js": { "maxDuration": 15 },
+    "api/rss.js":     { "maxDuration": 15 },
+    "api/news-sitemap.js": { "maxDuration": 10 }
   },
   "headers": [
     {

@@ -140,6 +140,8 @@ export class AuthorPage implements OnInit {
           const published = (res.data ?? []).filter((p: Post) => p.status === 'published' || p.status === 'draft');
           this.posts.set(published);
           this.injectAuthorItemList(published);
+          const robotsValue = published.length >= 3 ? 'index, follow' : 'noindex, follow';
+          this.meta.updateTag({ name: 'robots', content: robotsValue });
         },
         error: () => {},
       });

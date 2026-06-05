@@ -201,8 +201,12 @@
                     @if ((role() === 'admin' || role() === 'super_admin') && blog.isSponsored) {
                       <span class="ap-tag ap-tag--gold">★ Sponsored</span>
                     }
-                    @if ((role() === 'admin' || role() === 'super_admin') && blog.user.role === 'sponsor' && !blog.isSponsored) {
+                    @if ((role() === 'admin' || role() === 'super_admin') && $any(blog.user)?.role === 'sponsor' && !blog.isSponsored) {
                       <span class="ap-tag ap-tag--purple">📋 Sponsor Request</span>
+                    }
+                    @if ((role() === 'admin' || role() === 'super_admin') && !$any(blog.user)) {
+                      <span class="ap-tag ap-tag--red">⚠ Orphan Post</span>
+                      <button class="ap-tag ap-tag--reassign" (click)="openReassignModal(blog)" type="button">↩ Reassign</button>
                     }
                     @if (blog.deleteRequested) {
                       <span class="ap-tag ap-tag--red">Deletion Requested</span>
@@ -519,6 +523,45 @@
         </button>
       </div>
 
+    </div>
+  </div>
+}
+
+<!-- ══ REASSIGN AUTHOR MODAL ══ -->
+@if (showReassignModal()) {
+  <div class="ap-overlay" (click)="closeReassignModal()">
+    <div class="ap-dialog" (click)="$event.stopPropagation()">
+      <div class="ap-dialog-icon ap-dialog-icon--warn">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+      <h3 class="ap-dialog-title">Reassign Author</h3>
+      <p class="ap-dialog-body">
+        Post <strong>{{ reassignPostTitle() }}</strong> has no author.
+        Assign it to an existing author.
+      </p>
+
+      @if (!allUsers().length) {
+        <p class="ap-dialog-body" style="text-align:center;color:var(--text-muted)">Loading authors…</p>
+      } @else {
+        <select class="ap-sp-select" style="width:100%;margin-bottom:8px"
+                [ngModel]="selectedUserId()"
+                (ngModelChange)="selectedUserId.set($event)">
+          <option value="">— Select an author —</option>
+          @for (u of allUsers(); track u._id) {
+            <option [value]="u._id">{{ u.name }} ({{ u.role }})</option>
+          }
+        </select>
+      }
+
+      <div class="ap-dialog-actions">
+        <button class="ap-btn ap-btn--ghost" (click)="closeReassignModal()" [disabled]="reassignSubmitting()">Cancel</button>
+        <button class="ap-btn ap-btn--primary"
+                [disabled]="!selectedUserId() || reassignSubmitting()"
+                (click)="submitReassign()">
+          @if (reassignSubmitting()) { <span class="ap-spinner"></span> Saving… }
+          @else { Reassign }
+        </button>
+      </div>
     </div>
   </div>
 }

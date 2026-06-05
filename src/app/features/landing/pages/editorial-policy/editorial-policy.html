@@ -1,0 +1,281 @@
+<div class="policy-page">
+
+  <!-- NAV -->
+  <nav class="policy-nav" role="navigation" aria-label="Page navigation">
+    <div class="policy-nav-inner">
+      <a routerLink="/" class="back-btn" aria-label="Back to homepage">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+        <span class="back-label">Back to Home</span>
+      </a>
+      <a routerLink="/" class="nav-logo" aria-label="ApnaInsights">
+        <img src="/logo-96.png" alt="ApnaInsights" width="28" height="28" loading="eager" class="nav-logo-img" />
+      </a>
+      <div></div>
+    </div>
+  </nav>
+
+  <!-- BREADCRUMB -->
+  <nav class="breadcrumb-nav" aria-label="Breadcrumb">
+    <div class="breadcrumb-inner">
+      <ol class="breadcrumb-list" itemscope itemtype="https://schema.org/BreadcrumbList">
+        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+          <a routerLink="/" itemprop="item"><span itemprop="name">Home</span></a>
+          <meta itemprop="position" content="1" />
+        </li>
+        <span class="breadcrumb-sep" aria-hidden="true">›</span>
+        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+          <span itemprop="name">Editorial Policy</span>
+          <meta itemprop="position" content="2" />
+        </li>
+      </ol>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <header class="policy-hero">
+    <div class="policy-hero-inner">
+      <span class="policy-eyebrow">Content Standards</span>
+      <h1 class="policy-title">Editorial Policy</h1>
+      <p class="policy-subtitle">
+        How ApnaInsights reviews, moderates, and maintains quality standards for every story published on our platform.
+      </p>
+      <div class="policy-meta">
+        <span class="meta-badge">Effective Date: {{ effectiveDate }}</span>
+        <span class="meta-badge">Last Updated: {{ effectiveDate }}</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTENT -->
+  <main class="policy-content" id="main-content">
+    <div class="policy-inner">
+
+      <!-- TOC -->
+      <aside class="policy-toc" aria-label="Table of contents">
+        <p class="toc-title">Contents</p>
+        <ol class="toc-list">
+          <li><a href="#our-mission">1. Our Editorial Mission</a></li>
+          <li><a href="#content-standards">2. Content Quality Standards</a></li>
+          <li><a href="#what-we-accept">3. What We Accept</a></li>
+          <li><a href="#what-we-prohibit">4. Prohibited Content</a></li>
+          <li><a href="#review-process">5. Review &amp; Moderation Process</a></li>
+          <li><a href="#accuracy">6. Accuracy &amp; Fact-Checking</a></li>
+          <li><a href="#originality">7. Originality &amp; Plagiarism</a></li>
+          <li><a href="#corrections">8. Corrections Policy</a></li>
+          <li><a href="#reporting">9. Reporting Violations</a></li>
+          <li><a href="#advertising">10. Editorial Independence &amp; Advertising</a></li>
+          <li><a href="#contact">11. Contact the Editorial Team</a></li>
+        </ol>
+      </aside>
+
+      <div class="policy-body">
+
+        <section id="our-mission" class="policy-section">
+          <h2>1. Our Editorial Mission</h2>
+          <p>
+            ApnaInsights is a free community blogging platform built to amplify real voices across India and beyond.
+            Our editorial mission is to provide a trusted space where genuine people share genuine stories — covering
+            Technology, Health, Lifestyle, Village Life, Sports, Business, Education, Entertainment, Cooking,
+            Exercise, Social issues, Quotes, and News.
+          </p>
+          <p>
+            We are committed to maintaining a high standard of content quality, accuracy, and authenticity. Every
+            story published on ApnaInsights must inform, educate, or meaningfully engage readers. We do not publish
+            content that is thin, spammy, misleading, or harmful.
+          </p>
+        </section>
+
+        <section id="content-standards" class="policy-section">
+          <h2>2. Content Quality Standards</h2>
+          <p>All content published on ApnaInsights must meet the following minimum standards:</p>
+          <ul>
+            <li><strong>Minimum length:</strong> Blog posts must be at least 300 words of original, substantive content. We encourage posts of 500+ words for depth and reader value.</li>
+            <li><strong>Original writing:</strong> Content must be the author's own original work. Copying or closely paraphrasing content from other sources without proper attribution is not permitted.</li>
+            <li><strong>Accurate information:</strong> Authors are responsible for ensuring that factual claims in their posts are accurate and verifiable.</li>
+            <li><strong>Readable formatting:</strong> Posts must be clearly structured with a title, body content, and appropriate use of headings, paragraphs, and punctuation.</li>
+            <li><strong>Relevant images:</strong> Featured images must be relevant to the post topic and must not violate copyright.</li>
+            <li><strong>Language:</strong> Posts may be written in English or Indian regional languages. Content must be readable and coherent.</li>
+          </ul>
+        </section>
+
+        <section id="what-we-accept" class="policy-section">
+          <h2>3. What We Accept</h2>
+          <p>ApnaInsights welcomes a wide range of content across 14 categories, including:</p>
+          <ul>
+            <li>Personal stories and lived experiences</li>
+            <li>Informational and how-to articles</li>
+            <li>Opinion pieces and commentary (clearly labelled as opinion)</li>
+            <li>News and current events coverage</li>
+            <li>Health and wellness tips (non-medical advice)</li>
+            <li>Technology tutorials and reviews</li>
+            <li>Sports analysis and match coverage</li>
+            <li>Recipes and cooking guides</li>
+            <li>Village life, agriculture, and rural stories</li>
+            <li>Business insights and entrepreneurship</li>
+            <li>Inspirational quotes and motivational content</li>
+            <li>Exercise and fitness guides</li>
+            <li>Educational resources and study tips</li>
+            <li>Entertainment reviews and commentary</li>
+          </ul>
+        </section>
+
+        <section id="what-we-prohibit" class="policy-section">
+          <h2>4. Prohibited Content</h2>
+          <p>The following types of content are <strong>strictly prohibited</strong> on ApnaInsights and will be removed immediately:</p>
+          <ul>
+            <li><strong>Hate speech:</strong> Content that attacks individuals or groups based on religion, caste, ethnicity, gender, sexual orientation, disability, or nationality.</li>
+            <li><strong>Misinformation:</strong> Deliberately false or misleading factual claims, including health misinformation, fake news, and conspiracy theories.</li>
+            <li><strong>Adult content:</strong> Sexually explicit or pornographic material.</li>
+            <li><strong>Violence:</strong> Graphic depictions of violence, content that glorifies or incites violence.</li>
+            <li><strong>Spam:</strong> Repetitive, auto-generated, keyword-stuffed, or purely promotional content with no reader value.</li>
+            <li><strong>Plagiarism:</strong> Copying content from other websites, publications, or authors without express permission and attribution.</li>
+            <li><strong>Illegal content:</strong> Content that promotes illegal activities, including drug use, fraud, piracy, or defamation.</li>
+            <li><strong>Personal attacks:</strong> Content that targets private individuals with the intent to harass, threaten, or shame them.</li>
+            <li><strong>Child safety violations:</strong> Any content that sexualises or endangers minors.</li>
+            <li><strong>Malware or phishing:</strong> Links or content designed to deceive users or compromise their devices.</li>
+          </ul>
+        </section>
+
+        <section id="review-process" class="policy-section">
+          <h2>5. Review &amp; Moderation Process</h2>
+          <p>ApnaInsights uses a multi-step content review process to maintain quality standards:</p>
+          <ul>
+            <li><strong>Pre-publication review:</strong> All posts submitted by new authors are reviewed by our moderation team before going live. Posts that do not meet our standards are returned to the author with feedback.</li>
+            <li><strong>Automated screening:</strong> Our system automatically flags posts that fall below minimum length requirements or contain prohibited keywords for manual review.</li>
+            <li><strong>Post-publication monitoring:</strong> Published content is monitored on an ongoing basis. Content that receives community reports or is flagged by our team is reviewed promptly.</li>
+            <li><strong>Admin review:</strong> Our admin team has the authority to unpublish, edit, or permanently remove any content that violates our policies at any time.</li>
+            <li><strong>Author accountability:</strong> Authors who repeatedly violate our policies may have their accounts suspended or permanently banned.</li>
+          </ul>
+          <p>
+            Our goal is not to censor legitimate opinion or expression, but to maintain a platform that is safe,
+            trustworthy, and valuable for all readers.
+          </p>
+        </section>
+
+        <section id="accuracy" class="policy-section">
+          <h2>6. Accuracy &amp; Fact-Checking</h2>
+          <p>
+            ApnaInsights is a community platform — authors are personally responsible for the accuracy of the
+            factual claims in their posts. We do not independently fact-check every article before publication.
+            However, we take the following steps to promote accuracy:
+          </p>
+          <ul>
+            <li>Authors are required to agree to our Terms of Service, which require that content be accurate and non-misleading.</li>
+            <li>Readers can report inaccurate content using our reporting tool on every post.</li>
+            <li>Reported content is reviewed within 48 hours. If factual errors are confirmed, we may request corrections or remove the post.</li>
+            <li>Opinion articles must be clearly identifiable as opinion and not presented as objective fact.</li>
+          </ul>
+        </section>
+
+        <section id="originality" class="policy-section">
+          <h2>7. Originality &amp; Plagiarism</h2>
+          <p>
+            All content published on ApnaInsights must be original work authored by the person submitting it.
+            Submitting plagiarised content — including content copied from other websites, books, or publications —
+            is a serious violation of our policies and our Terms of Service.
+          </p>
+          <p>
+            If you are referencing or quoting another source, you must:
+          </p>
+          <ul>
+            <li>Clearly attribute the original source</li>
+            <li>Quote only short excerpts (not reproduce entire articles)</li>
+            <li>Add your own original analysis or commentary alongside the quote</li>
+          </ul>
+          <p>
+            Posts found to contain plagiarised content will be removed immediately. Repeat offenders will
+            have their accounts permanently banned.
+          </p>
+        </section>
+
+        <section id="corrections" class="policy-section">
+          <h2>8. Corrections Policy</h2>
+          <p>
+            We believe in transparency. If a factual error is identified in a published post, we take the
+            following steps:
+          </p>
+          <ul>
+            <li>We contact the author and request a correction within 24 hours of the error being confirmed.</li>
+            <li>If the author corrects the post, a correction note is added at the bottom of the article noting what was changed and when.</li>
+            <li>If the author does not respond within 48 hours, our editorial team may correct the factual error directly.</li>
+            <li>For significant errors that affect the meaning or integrity of the post, we may temporarily unpublish the article pending correction.</li>
+          </ul>
+          <p>
+            To request a correction, email us at
+            <a href="mailto:supports@apnainsights.com">supports&#64;apnainsights.com</a>
+            with the post URL and details of the error.
+          </p>
+        </section>
+
+        <section id="reporting" class="policy-section">
+          <h2>9. Reporting Violations</h2>
+          <p>
+            ApnaInsights relies on our community to help maintain content quality. If you encounter content
+            that you believe violates our Editorial Policy, please report it immediately.
+          </p>
+          <p>You can report content by:</p>
+          <ul>
+            <li>Emailing <a href="mailto:supports@apnainsights.com">supports&#64;apnainsights.com</a> with the post URL and a brief description of the violation</li>
+            <li>Using the contact form on our <a routerLink="/about">About page</a></li>
+          </ul>
+          <p>
+            All reports are reviewed within 48 hours. We take every report seriously and will take appropriate
+            action where a violation is confirmed. Reporters' identities are kept confidential.
+          </p>
+        </section>
+
+        <section id="advertising" class="policy-section">
+          <h2>10. Editorial Independence &amp; Advertising</h2>
+          <p>
+            ApnaInsights maintains a strict separation between editorial content and advertising. Our editorial
+            decisions — what content is published, featured, or removed — are never influenced by advertisers
+            or sponsors.
+          </p>
+          <ul>
+            <li><strong>Google AdSense:</strong> ApnaInsights displays advertisements via Google AdSense. Ad selection is controlled by Google's algorithms, not by ApnaInsights. Our editorial team has no influence over which ads are shown.</li>
+            <li><strong>Sponsored content:</strong> Any sponsored or paid-for content is clearly labelled with a "Sponsored" badge and is distinct from organic editorial content.</li>
+            <li><strong>No pay-to-publish:</strong> Authors cannot pay to have their content prioritised, featured, or approved. All content is evaluated solely on its quality and compliance with our editorial standards.</li>
+          </ul>
+        </section>
+
+        <section id="contact" class="policy-section">
+          <h2>11. Contact the Editorial Team</h2>
+          <p>
+            For questions about our Editorial Policy, content moderation decisions, or to report a violation,
+            please contact us:
+          </p>
+          <div class="contact-block">
+            <p><strong>ApnaInsights Editorial Team</strong></p>
+            <p>Email: <a href="mailto:supports@apnainsights.com">supports&#64;apnainsights.com</a></p>
+            <p>General: <a href="mailto:hello@apnainsights.com">hello&#64;apnainsights.com</a></p>
+            <p>Website: <a routerLink="/">apnainsights.com</a></p>
+          </div>
+          <p>We aim to respond to all editorial inquiries within 48 hours.</p>
+        </section>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="policy-footer">
+    <div class="policy-footer-inner">
+      <p>© {{ currentYear }} ApnaInsights. All rights reserved.</p>
+      <nav class="policy-footer-links" aria-label="Legal links">
+        <a routerLink="/privacy-policy" class="pf-link">Privacy Policy</a>
+        <span aria-hidden="true">·</span>
+        <a routerLink="/terms" class="pf-link">Terms of Service</a>
+        <span aria-hidden="true">·</span>
+        <a routerLink="/disclaimer" class="pf-link">Disclaimer</a>
+        <span aria-hidden="true">·</span>
+        <a routerLink="/editorial-policy" class="pf-link">Editorial Policy</a>
+        <span aria-hidden="true">·</span>
+        <a routerLink="/about" class="pf-link">About Us</a>
+        <span aria-hidden="true">·</span>
+        <a routerLink="/" class="pf-link">Home</a>
+      </nav>
+    </div>
+  </footer>
+
+  <app-mobile-bottom-nav></app-mobile-bottom-nav>
+</div>

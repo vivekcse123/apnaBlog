@@ -743,8 +743,9 @@ export class Home implements OnInit, OnDestroy {
     const incoming = new Map<string, PostWithTs>();
 
     for (const p of raw) {
-      // Home page is public — only published posts, never drafts/pending
+      // Home page is public — only published posts with quality descriptions
       if (p.status !== 'published') continue;
+      if ((p.description ?? '').trim().split(/\s+/).filter(Boolean).length < 12) continue;
       if (incoming.has(p._id)) continue;
       const prev = existing.get(p._id);
       incoming.set(p._id, {

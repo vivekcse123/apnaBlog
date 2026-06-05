@@ -768,11 +768,12 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
       this._bootstrapPost(cached as unknown as Post);
     }
 
-    // On SSR: cap at 8 s so a cold API never hangs the server response.
+    // On SSR: cap at 25 s — Vercel function maxDuration is 30 s, giving Render
+    // enough time to wake from a cold start before we give up.
     // On browser: no timeout — let the user's connection decide.
     const request$ = isBrowser
       ? this.postService.getPostById(postId)
-      : this.postService.getPostById(postId).pipe(timeout(8000));
+      : this.postService.getPostById(postId).pipe(timeout(25000));
 
     request$
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -1403,11 +1404,17 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
 
     this.titleService.setTitle(`${post.title}${titleSuffix} | ApnaInsights`);
 
-    // Pending and draft posts must not be indexed
+    // Pending and draft posts must not be indexed.
+    // Thin posts (< 300 words) get noindex so they don't drag down site quality
+    // for AdSense review — they stay accessible to users but Google won't index them.
+    const plainTextForCount = (post.content ?? '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+    const wordCount         = plainTextForCount.split(/\s+/).filter(Boolean).length;
+    const isThinPost        = !isMcq && wordCount < 300;
+
     // News articles get max-snippet for Top Stories eligibility
     const NEWS_CATS_META = new Set(['News','Sports','Business','Entertainment','Health','Science','Technology']);
     const isNewsMeta = post.categories?.some(c => NEWS_CATS_META.has(c));
-    const robotsValue = (post.status === 'published')
+    const robotsValue = (post.status === 'published' && !isThinPost)
       ? `index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1${isNewsMeta ? ', max-image-preview:large' : ''}`
       : 'noindex, nofollow';
 

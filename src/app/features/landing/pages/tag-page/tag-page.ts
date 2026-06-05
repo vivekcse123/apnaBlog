@@ -78,6 +78,7 @@ export class TagPage implements OnInit {
       this.allPosts.set(cached);
       this.isLoading.set(false);
       this.injectItemList(this.posts());
+      this._updateRobotsForPostCount(this.posts().length);
       return;
     }
 
@@ -92,7 +93,13 @@ export class TagPage implements OnInit {
         this.allPosts.set(posts);
         this.isLoading.set(false);
         this.injectItemList(this.posts());
+        this._updateRobotsForPostCount(this.posts().length);
       });
+  }
+
+  private _updateRobotsForPostCount(count: number): void {
+    const value = count >= 3 ? 'index, follow' : 'noindex, follow';
+    this.meta.updateTag({ name: 'robots', content: value });
   }
 
   private setMeta(tag: string): void {

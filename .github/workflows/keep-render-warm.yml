@@ -1,0 +1,34 @@
+name: Keep Render Backend Warm
+
+# Pings the Render backend every 5 minutes so it never goes cold.
+# A cold Render instance takes 20-60 s to wake — long enough for Googlebot
+# and AdSense crawlers to time out and see an empty page (= "low value content").
+# This workflow prevents that by keeping the free-tier instance awake 24/7.
+#
+# Cost: FREE on public GitHub repos (unlimited Actions minutes).
+#       On private repos this uses ~8,640 min/month — consider making the
+#       repo public or upgrading Render to a paid plan instead.
+
+on:
+  schedule:
+    # Every 5 minutes, 24/7
+    - cron: '*/5 * * * *'
+  # Allow manual trigger from the GitHub Actions tab
+  workflow_dispatch:
+
+jobs:
+  ping:
+    name: Ping Render backend
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+
+    steps:
+      - name: Wake up Render
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            --max-time 55 \
+            "https://apnablogserver.onrender.com/api/post?page=1&limit=1")
+          echo "Render responded with HTTP $STATUS"
+          if [ "$STATUS" = "000" ]; then
+            echo "::warning::Render did not respond within 55 s — it may still be waking up."
+          fi

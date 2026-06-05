@@ -13,6 +13,8 @@ import { Auth } from '../../../../core/services/auth';
 import { ToastService } from '../../../../core/services/toast.service';
 import { DashboardCache } from '../../../../core/services/dashboard-cache';
 import { NotificationNavigationService, POST_NOTIFICATION_TYPES } from '../../../../core/services/open-notification/notification-navigation';
+import { AdminService } from '../../../admin/services/admin-service';
+import { User } from '../../../user/models/user.mode';
 @Component({
   selector: 'app-post-lists',
   standalone: true,
@@ -26,6 +28,7 @@ export class PostLists implements OnInit, OnDestroy {
   private route          = inject(ActivatedRoute);
   private router         = inject(Router);
   private postService    = inject(PostService);
+  private adminService   = inject(AdminService);
   private destroyRef     = inject(DestroyRef);
   private authService    = inject(Auth);
   private toastService   = inject(ToastService);
@@ -453,6 +456,58 @@ private _fetchUserPosts(uid: string, showLoader = false): void {
     this.isPostViewed.set(false);
     this.selectedPostId.set('');
     this.selectedPost.set(null);
+  }
+
+  // ── Reassign Author (orphan posts) ───────────────────────────────────────
+  showReassignModal   = signal(false);
+  reassignPostId      = signal('');
+  reassignPostTitle   = signal('');
+  allUsers            = signal<User[]>([]);
+  selectedUserId      = signal('');
+  reassignSubmitting  = signal(false);
+
+  openReassignModal(blog: Post): void {
+    this.reassignPostId.set(blog._id);
+    this.reassignPostTitle.set(blog.title || 'Untitled');
+    this.selectedUserId.set('');
+    this.showReassignModal.set(true);
+
+    if (this.allUsers().length) return;
+    this.adminService.getAllUsersRaw(1, 200)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({ next: res => this.allUsers.set(res.data ?? []), error: () => {} });
+  }
+
+  closeReassignModal(): void {
+    this.showReassignModal.set(false);
+    this.reassignPostId.set('');
+    this.reassignPostTitle.set('');
+    this.selectedUserId.set('');
+  }
+
+  submitReassign(): void {
+    const postId = this.reassignPostId();
+    const userId = this.selectedUserId();
+    if (!postId || !userId || this.reassignSubmitting()) return;
+    this.reassignSubmitting.set(true);
+
+    this.postService.reassignAuthor(postId, userId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: res => {
+          this.reassignSubmitting.set(false);
+          this.toastService.show('Author reassigned successfully.', 'success');
+          if (res.data) {
+            this.allBlogs.update(blogs => blogs.map(b => b._id === postId ? { ...b, user: res.data!.user } : b));
+          }
+          this.dashboardCache.invalidateAdminPosts();
+          this.closeReassignModal();
+        },
+        error: err => {
+          this.reassignSubmitting.set(false);
+          this.toastService.show(err?.error?.message ?? 'Failed to reassign author.', 'error');
+        },
+      });
   }
 
   ngOnDestroy(): void {
