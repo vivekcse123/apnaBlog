@@ -11,7 +11,9 @@ import { Visitor } from './pages/visitor/visitor';
 import { ManageShorts } from './pages/manage-shorts/manage-shorts';
 import { ManageSubscribers } from './pages/manage-subscribers/manage-subscribers';
 import { SponsoredReport } from './pages/sponsored-report/sponsored-report';
-import { NewsFeed } from './pages/news-feed/news-feed';
+import { NewsFeed }          from './pages/news-feed/news-feed';
+import { ManageChallenges } from './pages/manage-challenges/manage-challenges';
+import { ManageFlags }      from './pages/manage-flags/manage-flags';
 
 const routes: Routes = [
   {
@@ -72,6 +74,16 @@ const routes: Routes = [
         path: 'news-feed',
         component: NewsFeed,
         title: 'ApnaInsights - News Feed'
+      },
+      {
+        path: 'challenges',
+        component: ManageChallenges,
+        title: 'ApnaInsights - Manage Challenges'
+      },
+      {
+        path: 'flags',
+        component: ManageFlags,
+        title: 'ApnaInsights - Community Flags'
       }
     ]
   }

@@ -58,18 +58,18 @@
       <span class="mob-nav-label">Users</span>
     </a>
 
-    <!-- Manage Shorts -->
+    <!-- Flags -->
     <a class="mob-nav-item"
-       [routerLink]="adminShortsRoute"
+       [routerLink]="adminFlagsRoute"
        routerLinkActive="mob-nav-item--active"
-       aria-label="Manage Shorts">
+       aria-label="Manage Flags">
       <span class="mob-nav-icon">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.9L15 14v-4z"/>
-          <rect x="3" y="6" width="12" height="12" rx="2"/>
+          <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>
+          <line x1="4" y1="22" x2="4" y2="15"/>
         </svg>
       </span>
-      <span class="mob-nav-label">Shorts</span>
+      <span class="mob-nav-label">Flags</span>
     </a>
 
     <!-- Settings -->
@@ -306,8 +306,11 @@
        routerLinkActive="mob-nav-item--active"
        [attr.aria-label]="publicProfileLabel">
       <span class="mob-nav-icon">
-        @if (isLoggedIn()) {
-          <!-- Dashboard icon when logged in -->
+        @if (isLoggedIn() && userInitial()) {
+          <!-- User initial when logged in with a name -->
+          <span class="mob-nav-avatar" aria-hidden="true">{{ userInitial() }}</span>
+        } @else if (isLoggedIn()) {
+          <!-- Dashboard icon when logged in but name not yet loaded -->
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
             <rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>

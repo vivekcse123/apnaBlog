@@ -1,0 +1,203 @@
+<div class="mc-page">
+
+  <!-- Header -->
+  <div class="mc-header">
+    <div>
+      <h1 class="mc-title">Writing Challenges</h1>
+      <p class="mc-sub">Create and manage community writing challenges.</p>
+    </div>
+    <button class="mc-btn mc-btn--primary" (click)="openCreate()">+ New Challenge</button>
+  </div>
+
+  <!-- Create / Edit form -->
+  @if (showForm()) {
+    <div class="mc-form-wrap">
+      <div class="mc-form">
+        <h2 class="mc-form-title">{{ editId() ? 'Edit Challenge' : 'New Challenge' }}</h2>
+
+        <div class="mc-field">
+          <label class="mc-label">Title *</label>
+          <input class="mc-input" [(ngModel)]="form.title" maxlength="150" placeholder="e.g. Write About Your Village Life">
+        </div>
+
+        <div class="mc-field">
+          <label class="mc-label">Description *</label>
+          <textarea class="mc-textarea" [(ngModel)]="form.description" maxlength="1000" rows="4"
+            placeholder="What should writers write about? What makes a good submission?"></textarea>
+        </div>
+
+        <div class="mc-row">
+          <div class="mc-field">
+            <label class="mc-label">Start Date *</label>
+            <input class="mc-input" type="date" [(ngModel)]="form.startDate">
+          </div>
+          <div class="mc-field">
+            <label class="mc-label">End Date *</label>
+            <input class="mc-input" type="date" [(ngModel)]="form.endDate">
+          </div>
+        </div>
+
+        <div class="mc-row">
+          <div class="mc-field">
+            <label class="mc-label">Category (optional)</label>
+            <select class="mc-input" [(ngModel)]="form.category">
+              @for (cat of categories; track cat) {
+                <option [value]="cat">{{ cat || '— Any category —' }}</option>
+              }
+            </select>
+          </div>
+          <div class="mc-field">
+            <label class="mc-label">Prize / Recognition (optional)</label>
+            <input class="mc-input" [(ngModel)]="form.prize" maxlength="200" placeholder="e.g. Featured on homepage for a week">
+          </div>
+        </div>
+
+        <div class="mc-field">
+          <label class="mc-label">Banner image URL (optional)</label>
+          <input class="mc-input" [(ngModel)]="form.banner" placeholder="https://res.cloudinary.com/…">
+          @if (form.banner) {
+            <img [src]="form.banner" alt="Banner preview" class="mc-banner-preview">
+          }
+        </div>
+
+        @if (saveMsg()) {
+          <p class="mc-msg" [class.mc-msg--error]="saveMsgType() === 'error'">{{ saveMsg() }}</p>
+        }
+
+        <div class="mc-form-actions">
+          <button class="mc-btn mc-btn--ghost" (click)="cancel()" type="button">Cancel</button>
+          <button class="mc-btn mc-btn--primary" (click)="save()" [disabled]="saving()" type="button">
+            {{ saving() ? 'Saving…' : (editId() ? 'Update Challenge' : 'Create Challenge') }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Challenges list -->
+  @if (isLoading()) {
+    <div class="mc-loading">Loading challenges…</div>
+  } @else if (challenges().length === 0) {
+    <div class="mc-empty">No challenges yet. Create your first one above.</div>
+  } @else {
+    <div class="mc-list">
+      @for (c of challenges(); track c._id) {
+        <div class="mc-card" [class.mc-card--inactive]="!c.isActive">
+
+          @if (c.banner) {
+            <img [src]="c.banner" [alt]="c.title" class="mc-card-banner">
+          }
+
+          <div class="mc-card-body">
+            <div class="mc-card-top">
+              <h3 class="mc-card-title">{{ c.title }}</h3>
+              <span class="mc-badge" [class.mc-badge--active]="c.isActive">
+                {{ c.isActive ? 'Active' : 'Inactive' }}
+              </span>
+            </div>
+            <p class="mc-card-desc">{{ c.description }}</p>
+
+            <div class="mc-card-meta">
+              <span>📅 {{ c.startDate | date:'mediumDate' }} → {{ c.endDate | date:'mediumDate' }}</span>
+              <span>⏳ {{ daysLeft(c.endDate) }} days left</span>
+              <span>📝 {{ c.submissionCount }} submissions</span>
+              @if (c.category) { <span>📂 {{ c.category }}</span> }
+              @if (c.prize)    { <span>🏅 {{ c.prize }}</span> }
+            </div>
+
+            <div class="mc-card-actions">
+              <button class="mc-btn mc-btn--sm mc-btn--ghost" (click)="openEdit(c)">Edit</button>
+              <button class="mc-btn mc-btn--sm"
+                [class.mc-btn--danger]="c.isActive"
+                [class.mc-btn--outline]="!c.isActive"
+                (click)="toggleActive(c)">
+                {{ c.isActive ? 'Deactivate' : 'Activate' }}
+              </button>
+              <button class="mc-btn mc-btn--sm mc-btn--winners" (click)="openWinnersModal(c)">🏆 Declare Winners</button>
+              <a [href]="'/challenges'" target="_blank" class="mc-btn mc-btn--sm mc-btn--ghost">View →</a>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+</div>
+
+<!-- ── Declare Winners Modal ─────────────────────────────────────────────── -->
+@if (showWinnersModal()) {
+  <div class="mc-modal-overlay" (click)="closeWinnersModal()">
+    <div class="mc-modal" (click)="$event.stopPropagation()">
+
+      <div class="mc-modal-header">
+        <div>
+          <h3 class="mc-modal-title">🏆 Declare Winners</h3>
+          <p class="mc-modal-sub">{{ winnersChallenge()?.title }}</p>
+        </div>
+        <button class="mc-modal-close" (click)="closeWinnersModal()">✕</button>
+      </div>
+
+      <!-- Selected ranks summary -->
+      <div class="mc-ranks-row">
+        @for (rank of [1, 2, 3]; track rank) {
+          <div class="mc-rank-slot" [class.mc-rank-slot--filled]="!!getWinnerByRank(rank)">
+            <span class="mc-rank-medal">{{ rank === 1 ? '🥇' : rank === 2 ? '🥈' : '🥉' }}</span>
+            @if (getWinnerByRank(rank); as winner) {
+              <span class="mc-rank-name">{{ getPostTitle(winner.postId) | slice:0:28 }}…</span>
+              <button class="mc-rank-clear" (click)="clearRank(rank === 1 ? 1 : rank === 2 ? 2 : 3)">✕</button>
+            } @else {
+              <span class="mc-rank-empty">Not assigned</span>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Leaderboard picker -->
+      <div class="mc-modal-posts">
+        @if (lbLoading()) {
+          <div class="mc-modal-loading">Loading submissions…</div>
+        } @else if (leaderboard().length === 0) {
+          <div class="mc-modal-empty">No submissions for this challenge yet.</div>
+        } @else {
+          @for (post of leaderboard(); track post._id; let i = $index) {
+            <div class="mc-lb-item" [class.mc-lb-item--ranked]="!!getRankForPost(post._id)">
+              <span class="mc-lb-pos">#{{ i + 1 }}</span>
+              @if (post.featuredImage) {
+                <img [src]="post.featuredImage" [alt]="post.title" class="mc-lb-thumb">
+              }
+              <div class="mc-lb-info">
+                <div class="mc-lb-title">{{ post.title }}</div>
+                <div class="mc-lb-author">{{ post.user?.name ?? 'Unknown' }} · ❤️ {{ post.likesCount }} · 👁 {{ post.views }}</div>
+              </div>
+              <div class="mc-lb-ranks">
+                @for (rank of [1, 2, 3]; track rank) {
+                  <button class="mc-rank-btn"
+                    [class.mc-rank-btn--active]="getRankForPost(post._id) === rank"
+                    (click)="assignRank(post._id, rank === 1 ? 1 : rank === 2 ? 2 : 3)">
+                    {{ rank === 1 ? '🥇' : rank === 2 ? '🥈' : '🥉' }}
+                  </button>
+                }
+              </div>
+            </div>
+          }
+        }
+      </div>
+
+      @if (winnersMsg()) {
+        <p class="mc-modal-msg" [class.mc-modal-msg--error]="winnersMsgType() === 'error'">
+          {{ winnersMsg() }}
+        </p>
+      }
+
+      <div class="mc-modal-footer">
+        <button class="mc-btn mc-btn--ghost" (click)="closeWinnersModal()">Cancel</button>
+        <button class="mc-btn mc-btn--primary"
+          [disabled]="selectedWinners().length === 0 || declaringWinners()"
+          (click)="declareWinners()">
+          {{ declaringWinners() ? 'Saving…' : 'Confirm Winners' }}
+        </button>
+      </div>
+
+    </div>
+  </div>
+}

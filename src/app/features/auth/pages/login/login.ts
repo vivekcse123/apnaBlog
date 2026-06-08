@@ -1,5 +1,5 @@
 import {
-  ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject, signal
+  ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject, signal, afterNextRender
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
@@ -8,6 +8,8 @@ import { Meta } from '@angular/platform-browser';
 import { Auth } from '../../../../core/services/auth';
 import { ToastService } from '../../../../core/services/toast.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+
+declare const google: any;
 
 @Component({
   selector: 'app-login',
@@ -25,13 +27,63 @@ export class Login implements OnInit {
   private destroyRef   = inject(DestroyRef);
   private toastService = inject(ToastService);
   private meta         = inject(Meta);
-
   loginForm: FormGroup = new FormGroup({});
 
-  isSubmitted  = signal(false);
-  isLoading    = signal(false);
-  errorMessage = signal('');
-  showPassword   = false;
+  isSubmitted     = signal(false);
+  isLoading       = signal(false);
+  isGoogleLoading = signal(false);
+  errorMessage    = signal('');
+  showPassword    = false;
+
+  constructor() {
+    afterNextRender(() => {
+      const init = () => {
+        google.accounts.id.initialize({
+          client_id: '602340491283-om39opmifq815fsvs15ju1et07kk0laq.apps.googleusercontent.com',
+          callback: (response: any) => this.handleGoogleCallback(response),
+        });
+      };
+      if (typeof google !== 'undefined') {
+        init();
+      } else {
+        (window as any)['onGoogleLibraryLoad'] = init;
+      }
+    });
+  }
+
+  signInWithGoogle(): void {
+    if (typeof google === 'undefined') return;
+    google.accounts.id.prompt();
+  }
+
+  handleGoogleCallback(response: any): void {
+    this.isGoogleLoading.set(true);
+    this.errorMessage.set('');
+    this.authService.googleLogin(response.credential)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          this.isGoogleLoading.set(false);
+          const data   = res.data as any;
+          const userId = data?._id;
+          const role   = data?.role;
+          const token  = data?.token;
+          if (!userId || !role || !token) {
+            this.errorMessage.set('Google sign-in failed. Please try again.');
+            return;
+          }
+          this.toastService.show('Welcome to ApnaInsights!', 'success');
+          if (role === 'super_admin')     this.router.navigate(['/super-admin', userId]);
+          else if (role === 'admin')      this.router.navigate(['/admin', userId]);
+          else if (role === 'sponsor')    this.router.navigate(['/sponsor', userId]);
+          else                            this.router.navigate(['/user', userId]);
+        },
+        error: (err) => {
+          this.isGoogleLoading.set(false);
+          this.errorMessage.set(err?.error?.message || 'Google sign-in failed. Please try again.');
+        },
+      });
+  }
 
   ngOnInit(): void {
     this.meta.updateTag({ name: 'robots', content: 'noindex, nofollow' });

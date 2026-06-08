@@ -175,6 +175,14 @@ export class PostService {
     return this.http.delete<apiResponse<Post>>(`${this.endPoint}/${postId}/like`);
   }
 
+  getPostReactions(postId: string): Observable<{ status: number; data: { counts: Record<string, number>; myEmoji: string | null } }> {
+    return this.http.get<any>(`${this.endPoint}/${postId}/post-reactions`);
+  }
+
+  postReact(postId: string, emoji: string | null): Observable<{ status: number; message: string }> {
+    return this.http.post<any>(`${this.endPoint}/${postId}/post-react`, { emoji });
+  }
+
   addView(postId: string): Observable<apiResponse<Post>> {
     return this.http.post<apiResponse<Post>>(`${this.endPoint}/${postId}/view`, {});
   }

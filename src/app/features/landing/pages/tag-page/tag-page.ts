@@ -98,7 +98,7 @@ export class TagPage implements OnInit {
   }
 
   private _updateRobotsForPostCount(count: number): void {
-    const value = count >= 3 ? 'index, follow' : 'noindex, follow';
+    const value = count >= 5 ? 'index, follow' : 'noindex, follow';
     this.meta.updateTag({ name: 'robots', content: value });
   }
 

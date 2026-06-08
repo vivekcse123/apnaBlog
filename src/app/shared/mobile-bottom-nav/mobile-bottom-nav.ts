@@ -19,6 +19,12 @@ export class MobileBottomNav {
 
   isLoggedIn = computed(() => !!this.auth.getCurrentUser());
 
+  userInitial = computed(() => {
+    const name = this.auth.userName();
+    if (!name) return '';
+    return name.trim().charAt(0).toUpperCase();
+  });
+
   private get currentUser() { return this.auth.getCurrentUser(); }
   private get userRole(): string { return this.currentUser?.role?.toLowerCase() ?? ''; }
   private get userId(): string { return this.currentUser?.id ?? ''; }
@@ -56,6 +62,12 @@ export class MobileBottomNav {
   get adminUsersRoute(): string {
     if (this.userRole === 'admin')       return `/admin/${this.userId}/manage-users`;
     if (this.userRole === 'super_admin') return `/super-admin/${this.userId}/manage-users`;
+    return '/';
+  }
+
+  get adminFlagsRoute(): string {
+    if (this.userRole === 'admin')       return `/admin/${this.userId}/flags`;
+    if (this.userRole === 'super_admin') return `/super-admin/${this.userId}/flags`;
     return '/';
   }
 

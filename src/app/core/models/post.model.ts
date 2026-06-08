@@ -70,4 +70,12 @@ export interface Post {
   sponsorPriority?:       number;
   sponsorCtaText?:        string | null;
   sponsorCtaUrl?:         string | null;
+
+  // Community
+  hotScore?:          number;
+  flagCount?:         number;
+  isFlagged?:         boolean;
+  challengeId?:       { _id: string; title: string; endDate: string; isActive: boolean } | string | null;
+  isFeaturedWinner?:  boolean;
+  featuredWinnerRank?: number | null;
 }

@@ -1,0 +1,67 @@
+<div class="mf-page">
+
+  <div class="mf-header">
+    <div>
+      <h1 class="mf-title">🚩 Community Flags</h1>
+      <p class="mf-sub">Unresolved reports from the community. Resolve a group to unset the flagged status on the post.</p>
+    </div>
+    <button class="mf-refresh" (click)="loadFlags()">↻ Refresh</button>
+  </div>
+
+  @if (isLoading()) {
+    <div class="mf-loading">
+      @for (_ of [1,2,3]; track $index) { <div class="mf-skeleton"></div> }
+    </div>
+  } @else if (error()) {
+    <div class="mf-error">{{ error() }}</div>
+  } @else if (grouped().length === 0) {
+    <div class="mf-empty">
+      <span class="mf-empty__icon">✅</span>
+      <p>No unresolved flags. The community is happy!</p>
+    </div>
+  } @else {
+    <div class="mf-list">
+      @for (group of grouped(); track group.postId) {
+        <div class="mf-group" [class.mf-group--flagged]="group.isFlagged">
+
+          <div class="mf-group__head" (click)="toggleExpand(group)">
+            <div class="mf-group__info">
+              <span class="mf-flag-count">🚩 {{ group.flags.length }} report{{ group.flags.length > 1 ? 's' : '' }}</span>
+              @if (group.isFlagged) { <span class="mf-badge mf-badge--hidden">Hidden</span> }
+              <span class="mf-group__title">{{ group.postTitle }}</span>
+              <span class="mf-group__author">by {{ group.author }}</span>
+            </div>
+            <div class="mf-group__actions">
+              <button class="mf-btn mf-btn--view" (click)="viewPost(group); $event.stopPropagation()">View Post</button>
+              <button class="mf-btn mf-btn--resolve"
+                [disabled]="resolving().has(group.postId)"
+                (click)="resolveAll(group); $event.stopPropagation()">
+                {{ resolving().has(group.postId) ? 'Resolving…' : 'Resolve All' }}
+              </button>
+              <span class="mf-chevron">{{ group.expanded ? '▲' : '▼' }}</span>
+            </div>
+          </div>
+
+          @if (group.expanded) {
+            <div class="mf-group__body">
+              @for (flag of group.flags; track flag._id) {
+                <div class="mf-flag-item">
+                  <div class="mf-flag-item__top">
+                    <span class="mf-reason-badge">{{ reasonLabel(flag.reason) }}</span>
+                    <span class="mf-reporter">Reported by {{ flag.user?.name ?? 'Anonymous' }}</span>
+                    <span class="mf-date">{{ flag.createdAt | date:'mediumDate' }}</span>
+                  </div>
+                  @if (flag.details) {
+                    <p class="mf-details">"{{ flag.details }}"</p>
+                  }
+                </div>
+              }
+            </div>
+          }
+
+        </div>
+      }
+    </div>
+  }
+
+</div>

@@ -16,7 +16,7 @@ import { switchMap } from 'rxjs';
 
 type NotifKey = 'newPosts' | 'comments' | 'likes' | 'newUsers' | 'weeklyDigest' | 'security';
 type Role = 'user' | 'admin' | 'super_admin';
-const USER_ALLOWED_KEYS = ['comments', 'likes', 'security'] as const;
+const USER_ALLOWED_KEYS = ['comments', 'likes', 'security', 'weeklyDigest'] as const;
 
 interface NotifState {
   newPosts:     boolean;
@@ -267,6 +267,9 @@ export class Settings implements OnInit {
           this.role = (res.data?.role?.toLowerCase() as Role) ?? 'user';
           this.isLoading.set(false);
           this.loadTwoFactor();
+          // Sync digest preference from server
+          const digestEnabled = (res.data as any)?.digestEnabled ?? true;
+          this.notifications.update(n => ({ ...n, weeklyDigest: digestEnabled }));
         },
         error: () => {
           this.isLoading.set(false);
@@ -402,6 +405,15 @@ export class Settings implements OnInit {
 
   toggleNotif(key: NotifKey): void {
     this.notifications.update(n => ({ ...n, [key]: !n[key] }));
+    // Persist weekly digest preference to the backend
+    if (key === 'weeklyDigest') {
+      const id = this.userId();
+      if (id) {
+        this.userService.updateUser(id, { digestEnabled: this.notifications().weeklyDigest })
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe();
+      }
+    }
   }
 
   isNotifOn(key: NotifKey): boolean {

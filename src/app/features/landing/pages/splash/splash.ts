@@ -3,6 +3,7 @@ import {
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
+import { Meta, Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-splash',
@@ -14,8 +15,12 @@ import { Router } from '@angular/router';
 export class SplashScreen implements OnInit {
   private router     = inject(Router);
   private platformId = inject(PLATFORM_ID);
+  private meta       = inject(Meta);
+  private titleSvc   = inject(Title);
 
   ngOnInit(): void {
+    this.titleSvc.setTitle('ApnaInsights');
+    this.meta.updateTag({ name: 'robots', content: 'noindex, nofollow' });
     if (!isPlatformBrowser(this.platformId)) return;
 
     const onboarded = localStorage.getItem('apna_onboarded');

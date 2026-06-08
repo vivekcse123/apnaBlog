@@ -1,12 +1,12 @@
 import {
-  Component, inject, signal, computed, OnInit, OnDestroy, DestroyRef,
+  Component, inject, signal, computed, effect, OnInit, OnDestroy, DestroyRef,
   Input, HostBinding, ChangeDetectionStrategy, WritableSignal, PLATFORM_ID,
   HostListener, ElementRef, ViewChild
 } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../../environments/environment';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { CommonModule, isPlatformBrowser, NgTemplateOutlet } from '@angular/common';
+import { ActivatedRoute, Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { CommonModule, isPlatformBrowser, NgTemplateOutlet, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Meta, Title } from '@angular/platform-browser';
 import { DOCUMENT } from '@angular/common';
@@ -72,7 +72,7 @@ function persistStats(total: number, totalViews: number, categoryCounts: Record<
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [RouterLink, CommonModule, FormsModule, NgTemplateOutlet, WelcomeModal, FormatCountPipe, TimeAgoPipe, MobileBottomNav],
+  imports: [RouterLink, RouterLinkActive, CommonModule, FormsModule, NgTemplateOutlet, WelcomeModal, FormatCountPipe, TimeAgoPipe, MobileBottomNav],
   templateUrl: './home.html',
   styleUrl: './home.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -88,6 +88,7 @@ export class Home implements OnInit, OnDestroy {
   private destroyRef     = inject(DestroyRef);
   private route          = inject(ActivatedRoute);
   private router         = inject(Router);
+  private location       = inject(Location);
   private auth           = inject(Auth);
   private http           = inject(HttpClient);
   pushService            = inject(PushNotificationService);
@@ -116,6 +117,9 @@ export class Home implements OnInit, OnDestroy {
   showScrollTop    = signal(false);
 
   mobileTab = signal<'for-you' | 'trending' | 'latest'>('for-you');
+
+  activeChallenge = signal<{ _id: string; title: string; description: string; prize: string | null; endDate: string; submissionCount: number } | null>(null);
+  featuredWinners = signal<any[]>([]);
 
   showWelcomeModal      = signal(false);
   showInstallBanner     = signal(false);
@@ -148,11 +152,16 @@ export class Home implements OnInit, OnDestroy {
   private _fullPostPool       = signal<PostWithTs[]>([]);
   // True while fetchAccurateStats is in flight (shows skeleton in filter results)
   filterPoolLoading           = signal(true);
+  filterError                 = signal('');
 
   trendingPage = signal(0);
   hotPage      = signal(0);
   latestPage   = signal(0);
   filteredPage = signal(0);
+
+  // Infinite scroll: grows as user scrolls; resets when filters change
+  filteredVisibleCount = signal(PAGE_SIZE);
+  filterOutOfView      = signal(false);
 
   likedPostIds      = signal<Set<string>>(new Set());
   bookmarkedPostIds = this.bookmarkService.bookmarkedIds;
@@ -240,11 +249,11 @@ export class Home implements OnInit, OnDestroy {
   hotPageCount      = computed(() => Math.max(1, Math.ceil(this.allPosts().length / PAGE_SIZE)));
   latestPageCount   = computed(() => Math.max(1, Math.ceil(this.allPosts().length / PAGE_SIZE)));
 
-  filteredPageCount = computed(() => Math.max(1, Math.ceil(this.filteredPosts().length / PAGE_SIZE)));
-  visibleFilteredPosts = computed(() => {
-    const start = this.filteredPage() * PAGE_SIZE;
-    return this.filteredPosts().slice(start, start + PAGE_SIZE);
-  });
+  filteredPageCount    = computed(() => Math.max(1, Math.ceil(this.filteredPosts().length / PAGE_SIZE)));
+  visibleFilteredPosts = computed(() => this.filteredPosts().slice(0, this.filteredVisibleCount()));
+  hasMoreFiltered      = computed(() => this.filteredVisibleCount() < this.filteredPosts().length);
+  // Only show "all loaded" after user has scrolled past the first page of results
+  showAllLoadedBanner  = computed(() => !this.hasMoreFiltered() && this.filteredPosts().length > PAGE_SIZE);
 
   filteredPosts = computed(() => {
     const cat  = this.selectedCategory();
@@ -298,6 +307,18 @@ export class Home implements OnInit, OnDestroy {
     !!this.selectedCategory() || !!this.selectedTag() || !!this.selectedReadingTime() ||
     !!this.searchQuery().trim() || this.selectedSort() !== 'newest'
   );
+
+  // Runs after Angular's OnPush rendering completes — element is always in the DOM by then.
+  private readonly _filterScrollEffect = effect(() => {
+    const filtering = this.isFiltering();
+    if (!filtering || !isPlatformBrowser(this.platformId)) return;
+    Promise.resolve().then(() => {
+      const el = this.document.getElementById('filtered-results');
+      if (!el) return;
+      const top = el.getBoundingClientRect().top + window.scrollY - 60;
+      window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+    });
+  });
 
   /** Top 15 tags by frequency across published posts only. */
   popularTags = computed(() => {
@@ -380,6 +401,7 @@ export class Home implements OnInit, OnDestroy {
   showSponsored = computed(() => this.sponsoredPosts().length > 0);
 
   navCatOpen   = signal(false);
+  navMoreOpen  = signal(false);
   filterOpen   = signal(false);
 
   // Use synchronous auth signals (localStorage) so the button routes correctly
@@ -400,9 +422,9 @@ export class Home implements OnInit, OnDestroy {
 
   @HostListener('document:click', ['$event'])
   onDocClick(e: MouseEvent): void {
-    if (!(e.target as HTMLElement).closest('.nav-cat-wrap')) {
-      this.navCatOpen.set(false);
-    }
+    const t = e.target as HTMLElement;
+    if (!t.closest('.nav-cat-wrap'))  this.navCatOpen.set(false);
+    if (!t.closest('.nav-more-wrap')) this.navMoreOpen.set(false);
   }
 
   @HostListener('document:keydown', ['$event'])
@@ -413,17 +435,29 @@ export class Home implements OnInit, OnDestroy {
       this.searchInputEl?.nativeElement?.focus();
     }
     if (event.key === 'Escape') {
-      if (this.menuOpen()) this.menuOpen.set(false);
-      if (this.navCatOpen()) this.navCatOpen.set(false);
+      if (this.menuOpen())    this.menuOpen.set(false);
+      if (this.navCatOpen())  this.navCatOpen.set(false);
+      if (this.navMoreOpen()) this.navMoreOpen.set(false);
       if (this.showWelcomeModal()) this.dismissWelcomeModal();
     }
   }
 
   @HostListener('window:scroll')
   onScroll(): void {
-    if (isPlatformBrowser(this.platformId)) {
-      this.showScrollTop.set(window.scrollY > 500);
+    if (!isPlatformBrowser(this.platformId)) return;
+    const scrollY = window.scrollY;
+
+    this.showScrollTop.set(scrollY > 500);
+
+    // Infinite scroll: load next batch when within 400px of page bottom
+    if (this.isFiltering() && this.hasMoreFiltered()) {
+      const nearBottom = scrollY + window.innerHeight >= this.document.documentElement.scrollHeight - 400;
+      if (nearBottom) this.filteredVisibleCount.update(n => n + PAGE_SIZE);
     }
+
+    // Floating filter badge: show when filter-wrap has been scrolled past
+    const fw = this.document.querySelector('.filter-wrap') as HTMLElement | null;
+    if (fw) this.filterOutOfView.set(fw.getBoundingClientRect().bottom < 0);
   }
 
   ngOnInit(): void {
@@ -435,6 +469,8 @@ export class Home implements OnInit, OnDestroy {
     this.bookmarkService.syncFromServer();
     this.restoreReadHistory();
     this.loadPwaInstalls();
+    this.loadActiveChallenge();
+    this.loadFeaturedWinners();
 
     if (isPlatformBrowser(this.platformId)) {
       // Detect if already running as installed PWA (standalone mode)
@@ -524,6 +560,7 @@ export class Home implements OnInit, OnDestroy {
     this.readingTimeCache.clear();
     const scripts = this.document.querySelectorAll('script[data-apna-home-schema]');
     scripts.forEach(s => s.remove());
+    this.document.getElementById('home-trending-schema')?.remove();
   }
 
   private pushHomeAds(): void {
@@ -632,7 +669,11 @@ export class Home implements OnInit, OnDestroy {
         }),
         reduce((acc: Post[], res) => acc.concat(res.data ?? []), [] as Post[]),
         timeout(30_000),
-        catchError(() => { this.filterPoolLoading.set(false); return of([] as Post[]); }),
+        catchError(() => {
+          this.filterPoolLoading.set(false);
+          this.filterError.set('Could not load all posts. Filter results may be incomplete.');
+          return of([] as Post[]);
+        }),
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe((allPosts: Post[]) => {
@@ -765,6 +806,7 @@ export class Home implements OnInit, OnDestroy {
     this.allPosts.set(visible);
     this.postCache.set(visible);
     this.updateJsonLdPostCount(visible.length);
+    this.updateTrendingItemList();
 
     // Bump max-seen views — all items in visible are already published
     const summed = visible.reduce((s, p) => s + (p.views ?? 0), 0);
@@ -856,7 +898,62 @@ export class Home implements OnInit, OnDestroy {
             }
           }
         ]
-      }
+      },
+      // FAQ schema — helps Google show rich FAQ snippets in search results
+      {
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: [
+          {
+            '@type': 'Question',
+            name:    'Is ApnaInsights free to use?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text:    'Yes, ApnaInsights is completely free — free to read all stories and free to write and publish your own blogs. No subscription or payment is required.',
+            },
+          },
+          {
+            '@type': 'Question',
+            name:    'Who can write on ApnaInsights?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text:    'Anyone can write on ApnaInsights! Create a free account and start sharing your stories on topics like Technology, Health, Lifestyle, Village Life, Sports, Business, and more.',
+            },
+          },
+          {
+            '@type': 'Question',
+            name:    'What topics can I read about on ApnaInsights?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text:    'ApnaInsights covers a wide range of topics including Technology, Health, Sports, Business, Entertainment, Education, Lifestyle, Village Life, Social Issues, Cooking, Exercise, and more — all written by real people from across India.',
+            },
+          },
+          {
+            '@type': 'Question',
+            name:    'Can I read blogs in Hindi or other Indian languages?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text:    'Yes! ApnaInsights supports reading any blog in Hindi, Marathi, Tamil, Telugu, Malayalam, and Kannada using the built-in translation feature on every blog post.',
+            },
+          },
+          {
+            '@type': 'Question',
+            name:    'How do I get started on ApnaInsights?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text:    'Simply visit apnainsights.com, create a free account using your email or Google account, and you can immediately start reading or writing blogs. No setup or payment needed.',
+            },
+          },
+          {
+            '@type': 'Question',
+            name:    'Is ApnaInsights available as a mobile app?',
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text:    'ApnaInsights is a Progressive Web App (PWA). You can install it directly on your Android or iOS device from the browser — no app store download required. It works like a native app with offline support.',
+            },
+          },
+        ],
+      },
     ];
 
     schemas.forEach((schema, i) => {
@@ -876,6 +973,38 @@ export class Home implements OnInit, OnDestroy {
       data.numberOfItems = count;
       script.textContent = JSON.stringify(data);
     } catch { /* non-critical */ }
+  }
+
+  private updateTrendingItemList(): void {
+    const site = environment.siteUrl;
+    const top5 = this.byLikes().slice(0, 5) as any[];
+    if (!top5.length) return;
+
+    const schema = {
+      '@context': 'https://schema.org',
+      '@type':    'ItemList',
+      name:       'Trending Stories on ApnaInsights',
+      description: 'The most-liked community blog posts on ApnaInsights right now.',
+      url:        `${site}/`,
+      numberOfItems: top5.length,
+      itemListElement: top5.map((p: any, i: number) => ({
+        '@type':    'ListItem',
+        position:   i + 1,
+        url:        `${site}/blog/${p.slug || p._id}`,
+        name:       p.title,
+        image:      p.featuredImage || environment.ogImage,
+        description: p.description || p.title,
+      })),
+    };
+
+    let el = this.document.getElementById('home-trending-schema') as HTMLScriptElement | null;
+    if (!el) {
+      el      = this.document.createElement('script') as HTMLScriptElement;
+      el.id   = 'home-trending-schema';
+      el.type = 'application/ld+json';
+      this.document.head.appendChild(el);
+    }
+    el.textContent = JSON.stringify(schema);
   }
 
   dismissWelcomeModal(): void {
@@ -1001,6 +1130,39 @@ export class Home implements OnInit, OnDestroy {
       });
   }
 
+  private loadActiveChallenge(): void {
+    this.http.get<any>(`${environment.apiUrl}/challenge`)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: res => {
+          const challenges = res.data ?? [];
+          this.activeChallenge.set(challenges[0] ?? null);
+        },
+        error: () => {},
+      });
+  }
+
+  challengeDaysLeft(endDate: string): number {
+    return Math.max(0, Math.ceil((new Date(endDate).getTime() - Date.now()) / 86_400_000));
+  }
+
+  private loadFeaturedWinners(): void {
+    this.http.get<any>(`${environment.apiUrl}/challenge/featured-winners`)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: res => this.featuredWinners.set(res.data ?? []),
+        error: () => {},
+      });
+  }
+
+  winnerRankLabel(rank: number): string {
+    return rank === 1 ? '🥇 1st Place' : rank === 2 ? '🥈 2nd Place' : '🥉 3rd Place';
+  }
+
+  navigateToWinner(post: any): void {
+    this.router.navigate(['/blog', post.slug || post._id]);
+  }
+
   dismissInstallBanner(): void {
     this.showInstallBanner.set(false);
     if (isPlatformBrowser(this.platformId)) {
@@ -1035,91 +1197,92 @@ export class Home implements OnInit, OnDestroy {
     const next = this.selectedCategory() === cat ? '' : cat;
     this.selectedCategory.set(next);
     this.resetVisibleCounts();
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: next ? { category: next } : {},
-      replaceUrl: true,
-    });
-    if (next) this.scrollToResults();
+    this.setQueryParams(next ? { category: next } : {});
   }
 
   private resetVisibleCounts(): void {
     this.filteredPage.set(0);
+    this.filteredVisibleCount.set(PAGE_SIZE);
   }
 
   private scrollToSearchInput(): void {
     if (!isPlatformBrowser(this.platformId)) return;
-    const resultsEl = this.document.getElementById('filtered-results');
-    if (!resultsEl) return;
-    const headerEl = this.document.querySelector('.header') as HTMLElement;
-    const filterWrap = this.document.querySelector('.filter-wrap') as HTMLElement;
-    const headerH = headerEl ? headerEl.offsetHeight : 64;
-    const filterH = filterWrap ? filterWrap.offsetHeight : 50;
-    const top = resultsEl.getBoundingClientRect().top + window.scrollY - headerH - filterH - 8;
-    window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  private scrollToResults(): void {
-    if (!isPlatformBrowser(this.platformId)) return;
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        const filterWrap = this.document.querySelector('.filter-wrap') as HTMLElement;
-        const resultsEl  = this.document.getElementById('filtered-results') as HTMLElement | null;
-        if (!resultsEl) return;
-        const filterBottom = filterWrap ? filterWrap.getBoundingClientRect().bottom : 66;
-        const top = resultsEl.getBoundingClientRect().top + window.scrollY - filterBottom - 12;
-        window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
-      });
-    });
+  clearAllFilters(): void {
+    this.selectedCategory.set('');
+    this.selectedTag.set('');
+    this.selectedReadingTime.set('');
+    this.selectedSort.set('newest');
+    this.searchQuery.set('');
+    this.resetVisibleCounts();
+    this.setQueryParams({});
+    if (isPlatformBrowser(this.platformId)) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+
+  activeFilterLabel = computed(() => {
+    if (this.selectedCategory()) return this.selectedCategory();
+    if (this.selectedTag())      return '#' + this.selectedTag();
+    if (this.searchQuery().trim()) return '"' + this.searchQuery().trim() + '"';
+    if (this.selectedReadingTime()) {
+      const map: Record<string, string> = { quick: '≤4 min', medium: '5–9 min', long: '10+ min' };
+      return map[this.selectedReadingTime()] ?? this.selectedReadingTime();
+    }
+    return '';
+  });
+
+  // Update URL without triggering Angular Router navigation (and its scrollPositionRestoration
+  // which fires on NavigationEnd and undoes our smooth scroll with replaceUrl:true).
+  // When applying a filter for the first time, push a history entry so the back button
+  // clears the filter and restores scroll position.
+  private setQueryParams(params: Record<string, string>): void {
+    const url = this.router.serializeUrl(
+      this.router.createUrlTree([], { relativeTo: this.route, queryParams: params })
+    );
+    const isApplyingFilter = Object.keys(params).length > 0;
+    const hasExistingFilter = isPlatformBrowser(this.platformId) &&
+      /[?&](category|tag|rt|q)=/.test(window.location.search);
+
+    if (isApplyingFilter && !hasExistingFilter && isPlatformBrowser(this.platformId)) {
+      window.history.pushState({}, '', url);
+    } else {
+      this.location.replaceState(url);
+    }
   }
 
   selectTag(tag: string): void {
     const next = this.selectedTag() === tag ? '' : tag;
     this.selectedTag.set(next);
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: next ? { tag: next } : {},
-      replaceUrl: true,
-    });
+    this.resetVisibleCounts();
+    this.setQueryParams(next ? { tag: next } : {});
   }
 
   selectReadingTime(rt: '' | 'quick' | 'medium' | 'long'): void {
     const next = this.selectedReadingTime() === rt ? '' : rt;
     this.selectedReadingTime.set(next);
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: next ? { rt: next } : {},
-      replaceUrl: true,
-    });
+    this.resetVisibleCounts();
+    this.setQueryParams(next ? { rt: next } : {});
   }
 
   // Used by <select> elements — sets directly (no toggle)
   onTagSelectChange(tag: string): void {
     this.selectedTag.set(tag);
     this.resetVisibleCounts();
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: tag ? { tag } : {},
-      replaceUrl: true,
-    });
-    if (tag) this.scrollToResults();
+    this.setQueryParams(tag ? { tag } : {});
   }
 
   onTimeSelectChange(rt: string): void {
     this.selectedReadingTime.set(rt as any);
     this.resetVisibleCounts();
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: rt ? { rt } : {},
-      replaceUrl: true,
-    });
-    if (rt) this.scrollToResults();
+    this.setQueryParams(rt ? { rt } : {});
   }
 
   onSortChange(sort: string): void {
     this.selectedSort.set(sort);
     this.resetVisibleCounts();
-    if (this.isFiltering()) this.scrollToResults();
   }
 
   prevPage(page: WritableSignal<number>): void {

@@ -52,7 +52,8 @@
   gap: 2px;
   padding: 12px 10px 8px;
   overflow-y: auto;
-  flex-shrink: 0;
+  flex: 1;
+  min-height: 0;
 }
 
 /* Links */
@@ -112,7 +113,7 @@
 }
 
 /* Spacer */
-.sb-spacer { flex: 1; }
+.sb-spacer { flex: 0; }
 
 /* User card */
 .sb-user {

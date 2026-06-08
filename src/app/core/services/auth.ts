@@ -77,6 +77,28 @@ export class Auth {
     );
   }
 
+  googleLogin(credential: string): Observable<apiResponse<User>> {
+    return this.http.post<apiResponse<User>>(`${this.authEndpoint}google`, { credential }).pipe(
+      tap((res) => {
+        const { _id, role, token, sessionId, name } = res.data as any;
+
+        this.userId.set(_id);
+        this.userRole.set(role);
+        this.token.set(token);
+        this.sessionId.set(sessionId ?? null);
+        this.userName.set(name ?? null);
+
+        if (this.isBrowser) {
+          localStorage.setItem('userId', _id);
+          localStorage.setItem('role', role);
+          localStorage.setItem('token', token);
+          if (sessionId) localStorage.setItem('sessionId', sessionId);
+          if (name) localStorage.setItem('userName', name);
+        }
+      })
+    );
+  }
+
   logout(): void {
     // Unsubscribe push notifications before clearing credentials
     if (this.push.subscribed()) this.push.unsubscribe();

@@ -1,8 +1,9 @@
 import {
-  Component, signal, computed, inject, PLATFORM_ID, ChangeDetectionStrategy
+  Component, signal, computed, inject, PLATFORM_ID, ChangeDetectionStrategy, OnInit
 } from '@angular/core';
 import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
+import { Meta, Title } from '@angular/platform-browser';
 
 interface Slide {
   id:       number;
@@ -22,9 +23,16 @@ interface Slide {
   styleUrl:    './onboarding.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class Onboarding {
+export class Onboarding implements OnInit {
   private router     = inject(Router);
   private platformId = inject(PLATFORM_ID);
+  private meta       = inject(Meta);
+  private titleSvc   = inject(Title);
+
+  ngOnInit(): void {
+    this.titleSvc.setTitle('Welcome to ApnaInsights');
+    this.meta.updateTag({ name: 'robots', content: 'noindex, nofollow' });
+  }
 
   current = signal(0);
 

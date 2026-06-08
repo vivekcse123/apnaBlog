@@ -1,0 +1,183 @@
+<section class="challenges-page">
+
+  <!-- Hero -->
+  <div class="ch-hero">
+    <button class="ch-back-btn" (click)="goBack()" aria-label="Go back">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 12H5M12 5l-7 7 7 7"/>
+      </svg>
+    </button>
+    <h1 class="ch-hero__title">Writing Challenges</h1>
+    <p class="ch-hero__sub">Pick a theme, write your best story, and let the community vote.</p>
+  </div>
+
+  @if (isLoading()) {
+    <div class="ch-loading">
+      @for (_ of [1,2]; track $index) { <div class="ch-card ch-card--skeleton"></div> }
+    </div>
+  } @else if (challenges().length === 0) {
+    <div class="ch-empty">
+      <span class="ch-empty__icon">🏆</span>
+      <p>No active challenges right now. Check back soon!</p>
+      <a routerLink="/" class="ch-empty__btn">Browse Stories</a>
+    </div>
+  } @else {
+
+    <div class="ch-layout">
+
+      <!-- Sidebar -->
+      <aside class="ch-sidebar">
+        <h2 class="ch-sidebar__heading">Active Challenges</h2>
+        @for (c of challenges(); track c._id) {
+          <button class="ch-item" [class.ch-item--active]="selectedId() === c._id"
+            (click)="selectChallenge(c._id)">
+            @if (c.banner) { <img [src]="c.banner" [alt]="c.title" class="ch-item__banner"> }
+            <div class="ch-item__body">
+              <div class="ch-item__title">{{ c.title }}</div>
+              <div class="ch-item__meta">
+                <span class="ch-badge ch-badge--days">{{ daysLeft(c.endDate) }}d left</span>
+                <span class="ch-badge ch-badge--count">{{ c.submissionCount }} entries</span>
+              </div>
+              @if (c.prize) { <div class="ch-item__prize">🏅 {{ c.prize }}</div> }
+            </div>
+          </button>
+        }
+      </aside>
+
+      <!-- Main -->
+      <main class="ch-main">
+        @if (selectedChallenge(); as ch) {
+
+          <div class="ch-detail">
+            @if (ch.banner) { <img [src]="ch.banner" [alt]="ch.title" class="ch-detail__banner"> }
+            <h2 class="ch-detail__title">{{ ch.title }}</h2>
+            <p class="ch-detail__desc">{{ ch.description }}</p>
+
+            <div class="ch-detail__meta">
+              <span>⏳ {{ daysLeft(ch.endDate) }} days left</span>
+              <span>📝 {{ ch.submissionCount }} submissions</span>
+              @if (ch.category) { <span>📂 {{ ch.category }}</span> }
+              @if (ch.prize)    { <span>🏅 {{ ch.prize }}</span> }
+            </div>
+
+            @if (isLoggedIn()) {
+              <button class="ch-btn ch-btn--primary" (click)="openSubmitModal()">
+                ✍️ Submit Your Story
+              </button>
+            } @else {
+              <a routerLink="/auth/login" class="ch-btn ch-btn--outline">Log in to participate</a>
+            }
+          </div>
+
+          <!-- Leaderboard -->
+          <div class="ch-lb">
+            <h3 class="ch-lb__heading">🏆 Leaderboard</h3>
+            @if (lbLoading()) {
+              <div class="ch-lb__loading">Loading entries…</div>
+            } @else if (leaderboard().length === 0) {
+              <div class="ch-lb__empty">No submissions yet — be the first!</div>
+            } @else {
+              <ol class="ch-lb__list">
+                @for (post of leaderboard(); track post._id; let i = $index) {
+                  <li class="ch-lb__item" (click)="navigateToBlog(post)">
+                    <span class="ch-lb__rank"
+                      [class.ch-lb__rank--gold]="i === 0"
+                      [class.ch-lb__rank--silver]="i === 1"
+                      [class.ch-lb__rank--bronze]="i === 2">#{{ i + 1 }}</span>
+                    @if (post.featuredImage) {
+                      <img [src]="post.featuredImage" [alt]="post.title" class="ch-lb__thumb">
+                    }
+                    <div class="ch-lb__content">
+                      <div class="ch-lb__title">{{ post.title }}</div>
+                      <div class="ch-lb__author">
+                        by {{ post.user?.name ?? 'Anonymous' }}
+                        @if ((post.user?.karma ?? 0) > 0) {
+                          <span class="ch-karma">⚡ {{ post.user?.karma }}</span>
+                        }
+                      </div>
+                      <div class="ch-lb__stats">
+                        <span>❤️ {{ post.likesCount }}</span>
+                        <span>👁 {{ post.views }}</span>
+                        <span>💬 {{ post.commentsCount }}</span>
+                      </div>
+                    </div>
+                  </li>
+                }
+              </ol>
+            }
+          </div>
+        }
+      </main>
+    </div>
+  }
+</section>
+
+<!-- ── Submit Modal ─────────────────────────────────────────────────────── -->
+@if (showSubmitModal()) {
+  <div class="ch-modal-overlay" (click)="closeSubmitModal()">
+    <div class="ch-modal" (click)="$event.stopPropagation()">
+
+      <div class="ch-modal-header">
+        <div>
+          <h3 class="ch-modal-title">Submit a Story</h3>
+          <p class="ch-modal-sub">Choose one of your published posts for <strong>{{ selectedChallenge()?.title }}</strong></p>
+        </div>
+        <button class="ch-modal-close" (click)="closeSubmitModal()">✕</button>
+      </div>
+
+      <!-- Search -->
+      <div class="ch-modal-search-wrap">
+        <input class="ch-modal-search" type="search" placeholder="Search your posts…"
+          [value]="postSearch()" (input)="postSearch.set($any($event.target).value)">
+      </div>
+
+      <!-- Post list -->
+      <div class="ch-modal-posts">
+        @if (userPostsLoading()) {
+          <div class="ch-modal-loading">Loading your posts…</div>
+        } @else if (filteredUserPosts().length === 0) {
+          <div class="ch-modal-empty">
+            @if (userPosts().length === 0) {
+              You have no published posts yet.
+              <a routerLink="/auth/login" class="ch-link">Write your first story →</a>
+            } @else {
+              No posts match your search.
+            }
+          </div>
+        } @else {
+          @for (post of filteredUserPosts(); track post._id) {
+            <button class="ch-post-item"
+              [class.ch-post-item--selected]="selectedPostId() === post._id"
+              (click)="selectedPostId.set(post._id)">
+              <div class="ch-post-item__check">
+                @if (selectedPostId() === post._id) { ✓ } @else { ○ }
+              </div>
+              <div class="ch-post-item__body">
+                <div class="ch-post-item__title">{{ post.title }}</div>
+                <div class="ch-post-item__desc">{{ post.description | slice:0:100 }}…</div>
+              </div>
+            </button>
+          }
+        }
+      </div>
+
+      @if (submitMsg()) {
+        <p class="ch-modal-msg" [class.ch-modal-msg--error]="submitMsgType() === 'error'">
+          {{ submitMsg() }}
+        </p>
+      }
+
+      <div class="ch-modal-footer">
+        <button class="ch-btn ch-btn--ghost" (click)="closeSubmitModal()">Cancel</button>
+        <button class="ch-btn ch-btn--primary"
+          [disabled]="!selectedPostId() || submitLoading()"
+          (click)="submitToChallenge()">
+          {{ submitLoading() ? 'Submitting…' : 'Submit Story' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<app-mobile-bottom-nav />

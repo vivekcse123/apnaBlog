@@ -17,8 +17,11 @@ export interface User {
   avatar: string;
   followersCount?: number;
   isFollowing?:   boolean;
-  companyName?:   string | null;
-  phone?:         string | null;
-  website?:       string | null;
-  industry?:      string | null;
+  companyName?:    string | null;
+  phone?:          string | null;
+  website?:        string | null;
+  industry?:       string | null;
+  karma?:          number;
+  digestEnabled?:  boolean;
+  writerOfMonthBadge?: { active: boolean; awardedAt?: string; challengeTitle?: string };
 }

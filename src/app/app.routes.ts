@@ -85,6 +85,11 @@ export const routes: Routes = [
         title: 'Search Stories | ApnaInsights'
     },
     {
+        path: 'challenges',
+        loadComponent: () => import('./features/landing/pages/challenges/challenges').then(m => m.ChallengesPage),
+        title: 'Writing Challenges | ApnaInsights'
+    },
+    {
         path: 'shorts',
         loadComponent: () => import('./features/shorts/pages/shorts-feed/shorts-feed').then(m => m.ShortsFeed),
         title: 'Shorts | ApnaInsights'

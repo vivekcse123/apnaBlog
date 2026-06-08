@@ -12,6 +12,7 @@ import { Meta, Title, DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { TimeAgoPipe } from '../../../../shared/pipes/time-ago-pipe';
 import { TransferState, makeStateKey } from '@angular/core';
 
+import { HttpClient }     from '@angular/common/http';
 import { PostService }    from '../../../post/services/post-service';
 import { PostCache }      from '../../../post/services/post-cache';
 import { Post }           from '../../../../core/models/post.model';
@@ -94,6 +95,8 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   themeService          = inject(ThemeService);
   private toastService  = inject(ToastService);
   taxonomyService       = inject(TaxonomyService);
+  private http          = inject(HttpClient);
+  private readonly apiBase = environment.apiUrl;
 
   // ── Post state ────────────────────────────────────────────────────────────
   // Read TransferState once at construction so every signal that depends on the
@@ -216,6 +219,13 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   likedPostIds      = signal<Set<string>>(new Set());
   bookmarkedPostIds = signal<Set<string>>(new Set());
 
+  // ── Post emoji reactions ──────────────────────────────────────────────────
+  readonly LIKE_EMOJIS = ['👍', '❤️', '🔥', '😂', '😮', '😢'];
+  postReactions      = signal<Map<string, string>>(new Map());
+  postEmojiCounts    = signal<Partial<Record<string, number>>>({});
+  showLikePicker     = signal(false);
+  private pickerOpenedAt = 0; // ghost-click guard
+
   // ── MCQ quiz state ────────────────────────────────────────────────────────
   mcqUserAnswers    = signal<Map<number, number>>(new Map());
   mcqSubmitted      = signal(false);
@@ -280,9 +290,18 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   // ── Reading / ToC ─────────────────────────────────────────────────────────
   tableOfContents = signal<TableOfContentsItem[]>([]);
   activeHeadingId = signal<string>('');
-  readingProgress = signal(0);
-  readingTime     = signal(0);
-  showToc         = signal(false);
+  readingProgress  = signal(0);
+  readingTime      = signal(0);
+  contentWordCount = signal(0);
+  showToc          = signal(false);
+
+  // Hide ads on posts with < 300 words — ad-to-content ratio signals AdSense reviewers
+  isThinPost = computed(() => {
+    const p = this.post();
+    if (!p) return true;
+    if (p.postType === 'mcq') return (p.mcqQuestions?.length ?? 0) < 3;
+    return this.contentWordCount() < 300;
+  });
 
   minutesLeft = computed(() => {
     const pct   = this.readingProgress();
@@ -402,6 +421,78 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
 
   private contentEl: HTMLElement | null = null;
   private adsInitialised = false;
+
+  // ── Community flagging ────────────────────────────────────────────────────
+  showFlagModal = signal(false);
+  flagLoading   = signal(false);
+  hasFlagged    = signal(false);
+  flagReason    = signal('');
+  flagDetails   = signal('');
+  flagMsg       = signal('');
+
+  get authorKarma(): number { return (this.post()?.user as any)?.karma ?? 0; }
+
+  get authorWOM(): { active: boolean; challengeTitle?: string } | null {
+    return (this.post()?.user as any)?.writerOfMonthBadge ?? null;
+  }
+
+  get postChallenge(): { _id: string; title: string; endDate: string; isActive: boolean } | null {
+    const c = this.post()?.challengeId;
+    if (!c || typeof c === 'string') return null;
+    return c;
+  }
+
+  get challengeEnded(): boolean {
+    const c = this.postChallenge;
+    if (!c) return false;
+    return new Date(c.endDate) < new Date();
+  }
+
+  get isWinner(): boolean {
+    return !!(this.post() as any)?.isFeaturedWinner && this.challengeEnded;
+  }
+
+  get winnerRankLabel(): string {
+    const rank = (this.post() as any)?.featuredWinnerRank;
+    return rank === 1 ? '🥇 1st Place Winner' : rank === 2 ? '🥈 2nd Place Winner' : '🥉 3rd Place Winner';
+  }
+
+  openFlagModal(): void {
+    if (!this.isLoggedIn) return;
+    this.showFlagModal.set(true);
+    this.flagMsg.set('');
+  }
+
+  closeFlagModal(): void {
+    this.showFlagModal.set(false);
+    this.flagReason.set('');
+    this.flagDetails.set('');
+    this.flagMsg.set('');
+  }
+
+  submitFlag(): void {
+    const reason = this.flagReason();
+    if (!reason) { this.flagMsg.set('Please select a reason.'); return; }
+    const postId = this.post()?._id;
+    if (!postId) return;
+
+    this.flagLoading.set(true);
+    this.http.post<any>(`${this.apiBase}/flag/${postId}`, {
+      reason,
+      details: this.flagDetails(),
+    }).subscribe({
+      next: () => {
+        this.hasFlagged.set(true);
+        this.flagLoading.set(false);
+        this.flagMsg.set('Reported. Our team will review this post.');
+        setTimeout(() => this.closeFlagModal(), 2000);
+      },
+      error: (err) => {
+        this.flagLoading.set(false);
+        this.flagMsg.set(err?.error?.message ?? 'Something went wrong. Try again.');
+      },
+    });
+  }
 
   // ── Computed helpers ──────────────────────────────────────────────────────
   isPostOwner = computed(() => {
@@ -628,6 +719,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
 
     this.restoreLikedIds();
     this.restoreBookmarkedIds();
+    this.restoreReactions();
     this.fetchCurrentUser();
     this.restoreFontSize();
 
@@ -658,6 +750,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe(e => {
           if (e.key !== 'Escape') return;
+          if (this.showLikePicker())        { this.showLikePicker.set(false);  return; }
           if (this.pickerIdx() >= 0)       { this.pickerIdx.set(-1);          return; }
           if (this.lightboxSrc())          { this.closeLightbox();            return; }
           if (this.showAuthorPostsModal()) { this.closeAuthorPostsModal();    return; }
@@ -870,6 +963,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
       this.loadRelatedAndAuthorPosts(postData);
       this.loadRelatedShorts(postData);
       if (postData._id) this.loadReactions(postData._id);
+      if (postData._id) this.loadPostReactions(postData._id);
     }, 0);
 
     // ── FIX: Use requestAnimationFrame instead of an arbitrary 300 ms timeout
@@ -1409,6 +1503,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     // for AdSense review — they stay accessible to users but Google won't index them.
     const plainTextForCount = (post.content ?? '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
     const wordCount         = plainTextForCount.split(/\s+/).filter(Boolean).length;
+    this.contentWordCount.set(wordCount);
     const isThinPost        = !isMcq && wordCount < 300;
 
     // News articles get max-snippet for Top Stories eligibility
@@ -1984,6 +2079,123 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  getPostEmoji(postId: string): string {
+    if (!this.isLiked(postId)) return '🤍';
+    return this.postReactions().get(postId) ?? '❤️';
+  }
+
+  loadPostReactions(postId: string): void {
+    this.postService.getPostReactions(postId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          this.postEmojiCounts.set(res.data.counts ?? {});
+          if (res.data.myEmoji) {
+            const map = new Map(this.postReactions());
+            map.set(postId, res.data.myEmoji);
+            this.postReactions.set(map);
+            // Sync liked state with backend
+            const ids = new Set(this.likedPostIds());
+            ids.add(postId);
+            this.likedPostIds.set(ids);
+            this.persistLikedIds(ids);
+          }
+        },
+        error: () => {},
+      });
+  }
+
+  toggleLikePicker(event: Event): void {
+    event.stopPropagation();
+    event.preventDefault();
+    if (this.isLiked(this.post()!._id)) {
+      this.removeReaction(this.post()!, event);
+      return;
+    }
+    this.pickerOpenedAt = Date.now();
+    this.showLikePicker.set(true);
+  }
+
+  closeMobLikePicker(event: Event): void {
+    event.stopPropagation();
+    // Ghost-click guard: ignore taps within 350ms of opening
+    if (Date.now() - this.pickerOpenedAt < 350) return;
+    this.showLikePicker.set(false);
+  }
+
+  selectReaction(post: Post, emoji: string, event: Event): void {
+    event.stopPropagation();
+    this.showLikePicker.set(false);
+
+    const wasLiked   = this.isLiked(post._id);
+    const prevEmoji  = this.postReactions().get(post._id) ?? null;
+
+    // Optimistic update
+    const map = new Map(this.postReactions());
+    map.set(post._id, emoji);
+    this.postReactions.set(map);
+
+    const counts = { ...this.postEmojiCounts() };
+    if (prevEmoji && counts[prevEmoji]) counts[prevEmoji] = Math.max(0, counts[prevEmoji] - 1);
+    counts[emoji] = (counts[emoji] ?? 0) + 1;
+    this.postEmojiCounts.set(counts);
+
+    if (!wasLiked) {
+      const ids = new Set(this.likedPostIds());
+      ids.add(post._id);
+      this.likedPostIds.set(ids);
+      this.persistLikedIds(ids);
+      this.post.set({ ...post, likesCount: post.likesCount + 1 });
+    }
+
+    this.postService.postReact(post._id, emoji)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        error: () => {
+          // Revert on failure
+          const revert = new Map(this.postReactions());
+          if (prevEmoji) revert.set(post._id, prevEmoji); else revert.delete(post._id);
+          this.postReactions.set(revert);
+          this.loadPostReactions(post._id);
+          if (!wasLiked) {
+            const ids = new Set(this.likedPostIds());
+            ids.delete(post._id);
+            this.likedPostIds.set(ids);
+            this.persistLikedIds(ids);
+            this.post.set({ ...post, likesCount: post.likesCount });
+          }
+        },
+      });
+  }
+
+  removeReaction(post: Post, event: Event): void {
+    event.stopPropagation();
+    const prevEmoji = this.postReactions().get(post._id) ?? null;
+
+    // Optimistic update
+    const map = new Map(this.postReactions());
+    map.delete(post._id);
+    this.postReactions.set(map);
+
+    const counts = { ...this.postEmojiCounts() };
+    if (prevEmoji && counts[prevEmoji]) counts[prevEmoji] = Math.max(0, counts[prevEmoji] - 1);
+    this.postEmojiCounts.set(counts);
+
+    const ids = new Set(this.likedPostIds());
+    ids.delete(post._id);
+    this.likedPostIds.set(ids);
+    this.persistLikedIds(ids);
+    this.post.set({ ...post, likesCount: Math.max(0, post.likesCount - 1) });
+
+    this.postService.postReact(post._id, null)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({ error: () => this.loadPostReactions(post._id) });
+  }
+
+  private restoreReactions(): void {
+    // No longer uses localStorage — loads from backend after post loads
+  }
+
   // ══════════════════════════════════════════════════════════════════════════
   // Auth / User
   // ══════════════════════════════════════════════════════════════════════════
@@ -2173,7 +2385,8 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     // Picker handled by its own (click) + stopPropagation — ignore here
     if (target.closest('.rp-picker')) return;
 
-    // Close open picker on any prose click that isn't the picker itself
+    // Close pickers on any prose click
+    if (this.showLikePicker()) { this.showLikePicker.set(false); }
     if (this.pickerIdx() >= 0) {
       this.pickerIdx.set(-1);
       return;

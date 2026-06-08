@@ -128,6 +128,14 @@
     <button class="float-btn" (click)="printArticle()" title="Print">
       <span class="float-icon">🖨️</span>
     </button>
+    @if (isLoggedIn && !isPostOwner()) {
+      <button class="float-btn float-btn--flag"
+        [class.flagged]="hasFlagged()"
+        [title]="hasFlagged() ? 'Already reported' : 'Report this post'"
+        (click)="openFlagModal()">
+        <span class="float-icon">🚩</span>
+      </button>
+    }
     <button class="float-btn" (click)="nativeSharePost()" [class.active]="shareMenuOpen()" title="Share">
       <span class="float-icon">↗</span>
       @if (shareCount() > 0) {
@@ -154,11 +162,14 @@
 
   <!-- Mobile bottom article action bar — replaces floating-actions on small screens -->
   <div class="mob-article-bar">
-    <button class="mob-art-btn" [class.mob-art-btn--liked]="isLiked(post()!._id)"
-            (click)="toggleLike(post()!, $event)" aria-label="Like this article">
-      <span class="mob-art-btn-icon">{{ isLiked(post()!._id) ? '❤️' : '🤍' }}</span>
-      <span class="mob-art-btn-label">{{ post()!.likesCount }}</span>
-    </button>
+    <!-- Mobile like button -->
+    <div class="mob-like-wrap">
+      <button class="mob-art-btn" [class.mob-art-btn--liked]="isLiked(post()!._id)"
+              (click)="toggleLikePicker($event)" aria-label="Like this article">
+        <span class="mob-art-btn-icon">{{ getPostEmoji(post()!._id) }}</span>
+        <span class="mob-art-btn-label">{{ post()!.likesCount }}</span>
+      </button>
+    </div>
     <button class="mob-art-btn" (click)="openCommentDrawer()" aria-label="Open comments">
       <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor"
            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -186,6 +197,26 @@
       <span class="mob-art-btn-label">{{ isBookmarked() ? 'Saved' : 'Save' }}</span>
     </button>
   </div>
+
+  <!-- Mobile emoji picker — OUTSIDE mob-article-bar (backdrop-filter fix) -->
+  @if (showLikePicker()) {
+    <!-- Transparent backdrop — ghost-click guard built in -->
+    <div class="mob-like-backdrop" (click)="closeMobLikePicker($event)"></div>
+
+    <!-- Picker — spans full viewport width so it never clips on iOS -->
+    <div class="mob-like-picker-wrap" (click)="$event.stopPropagation()">
+      <div class="mob-like-picker">
+        @for (emoji of LIKE_EMOJIS; track emoji) {
+          <button class="mob-like-emoji"
+                  [class.mob-like-emoji--active]="postReactions().get(post()!._id) === emoji && isLiked(post()!._id)"
+                  (click)="selectReaction(post()!, emoji, $event)">
+            <span class="mob-like-emoji-icon">{{ emoji }}</span>
+            <span class="mob-like-emoji-count">{{ (postEmojiCounts()[emoji] ?? 0) > 0 ? postEmojiCounts()[emoji] : '' }}</span>
+          </button>
+        }
+      </div>
+    </div>
+  }
 
   <!-- TOC sidebar -->
   @if (showToc() && tableOfContents().length > 0) {
@@ -286,6 +317,18 @@
         }
       </div>
 
+      @if (isWinner) {
+        <div class="winner-rank-badge">{{ winnerRankLabel }}</div>
+      }
+
+      @if (postChallenge) {
+        <a class="challenge-badge" routerLink="/challenges">
+          <span class="challenge-badge__icon">🏆</span>
+          <span class="challenge-badge__text">Part of: <strong>{{ postChallenge.title }}</strong></span>
+          @if (!postChallenge.isActive) { <span class="challenge-badge__ended">Ended</span> }
+        </a>
+      }
+
       <h1 class="blog-title">{{ translation()?.title || post()!.title }}</h1>
       <p class="blog-description">{{ translation()?.description || post()!.description }}</p>
 
@@ -334,10 +377,42 @@
             <button class="fs-btn" [class.fs-active]="fontSize() === 'md'" (click)="setFontSize('md')" title="Default text">A</button>
             <button class="fs-btn fs-btn--lg" [class.fs-active]="fontSize() === 'lg'" (click)="setFontSize('lg')" title="Large text">A<sup>+</sup></button>
           </div>
-          <button class="like-btn-main" [class.liked]="isLiked(post()!._id)" (click)="toggleLike(post()!, $event)">
-            <span class="like-icon">{{ isLiked(post()!._id) ? '❤️' : '🤍' }}</span>
-            <span class="like-count">{{ post()!.likesCount }}</span>
-          </button>
+          <!-- Desktop like button with emoji picker on hover -->
+          <div class="like-reaction-wrap"
+               (mouseenter)="showLikePicker.set(true)"
+               (mouseleave)="showLikePicker.set(false)">
+            @if (showLikePicker()) {
+              <div class="like-emoji-picker">
+                @for (emoji of LIKE_EMOJIS; track emoji) {
+                  <button class="like-emoji-btn"
+                          [class.like-emoji-selected]="postReactions().get(post()!._id) === emoji && isLiked(post()!._id)"
+                          (click)="selectReaction(post()!, emoji, $event)"
+                          [title]="emoji">
+                    {{ emoji }}
+                  </button>
+                }
+              </div>
+            }
+            <button class="like-btn-main" [class.liked]="isLiked(post()!._id)"
+                    (click)="toggleLikePicker($event)">
+              <span class="like-icon">{{ getPostEmoji(post()!._id) }}</span>
+              <span class="like-count">{{ post()!.likesCount }}</span>
+            </button>
+          </div>
+
+          <!-- Emoji breakdown strip -->
+          @if (post()!.likesCount > 0) {
+            <div class="emoji-count-strip">
+              @for (emoji of LIKE_EMOJIS; track emoji) {
+                @if ((postEmojiCounts()[emoji] ?? 0) > 0) {
+                  <span class="emoji-count-chip"
+                        [class.emoji-count-chip--mine]="postReactions().get(post()!._id) === emoji && isLiked(post()!._id)">
+                    {{ emoji }} {{ postEmojiCounts()[emoji] }}
+                  </span>
+                }
+              }
+            </div>
+          }
         </div>
       </div>
 
@@ -364,14 +439,16 @@
     </header>
 
     <!-- AdSense — top of article (below meta/lang bar, above content) -->
-    <div class="ad-unit-wrap ad-unit-wrap--top">
-      <ins class="adsbygoogle"
-        style="display:block"
-        data-ad-client="ca-pub-6477809641944524"
-        data-ad-slot="1776889784"
-        data-ad-format="auto"
-        data-full-width-responsive="true"></ins>
-    </div>
+    @if (!isThinPost()) {
+      <div class="ad-unit-wrap ad-unit-wrap--top">
+        <ins class="adsbygoogle"
+          style="display:block"
+          data-ad-client="ca-pub-6477809641944524"
+          data-ad-slot="1776889784"
+          data-ad-format="auto"
+          data-full-width-responsive="true"></ins>
+      </div>
+    }
 
     @if (post()!.postType === 'mcq') {
       <!-- ── MCQ Quiz UI ── -->
@@ -464,14 +541,16 @@
     }
 
     <!-- AdSense — mid-content unit -->
-    <div class="ad-unit-wrap">
-      <ins class="adsbygoogle"
-        style="display:block"
-        data-ad-client="ca-pub-6477809641944524"
-        data-ad-slot="3027610867"
-        data-ad-format="auto"
-        data-full-width-responsive="true"></ins>
-    </div>
+    @if (!isThinPost()) {
+      <div class="ad-unit-wrap">
+        <ins class="adsbygoogle"
+          style="display:block"
+          data-ad-client="ca-pub-6477809641944524"
+          data-ad-slot="3027610867"
+          data-ad-format="auto"
+          data-full-width-responsive="true"></ins>
+      </div>
+    }
 
     @if (post()!.categories.length) {
       <div class="tags-section">
@@ -513,14 +592,16 @@
     }
 
     <!-- AdSense — end of article (after tags, before author card) -->
-    <div class="ad-unit-wrap ad-unit-wrap--bottom">
-      <ins class="adsbygoogle"
-        style="display:block"
-        data-ad-client="ca-pub-6477809641944524"
-        data-ad-slot="9018304148"
-        data-ad-format="auto"
-        data-full-width-responsive="true"></ins>
-    </div>
+    @if (!isThinPost()) {
+      <div class="ad-unit-wrap ad-unit-wrap--bottom">
+        <ins class="adsbygoogle"
+          style="display:block"
+          data-ad-client="ca-pub-6477809641944524"
+          data-ad-slot="9018304148"
+          data-ad-format="auto"
+          data-full-width-responsive="true"></ins>
+      </div>
+    }
 
     <!-- Author card -->
     <div class="author-card">
@@ -534,7 +615,12 @@
       </button>
       <div class="author-card-body">
         <span class="author-card-label">About the author</span>
-        <button class="author-card-name" type="button" (click)="navigateToAuthor()">{{ authorName }}</button>
+        <button class="author-card-name" type="button" (click)="navigateToAuthor()">
+          {{ authorName }}
+          @if (authorWOM?.active && challengeEnded) {
+            <span class="wom-badge" [title]="'Writer of the Month — ' + (authorWOM?.challengeTitle || '')">👑 Writer of the Month</span>
+          }
+        </button>
         <p class="author-card-bio">
           {{ authorBio || 'Writer on ApnaInsights.' }}
         </p>
@@ -548,6 +634,12 @@
           <span class="author-stat-value">{{ authorFollowersCount() }}</span>
           <span class="author-stat-label">Followers</span>
         </div>
+        @if (authorKarma > 0) {
+          <div class="author-card-stat author-karma-stat" title="Writer karma — earned from published posts, likes and comments">
+            <span class="author-stat-value author-stat-karma">⚡ {{ authorKarma }}</span>
+            <span class="author-stat-label">Karma</span>
+          </div>
+        }
         @if (isLoggedIn && currentUser?._id !== authorId()) {
           <button class="author-card-follow-btn"
             [class.following]="isFollowingAuthor()"
@@ -1157,6 +1249,50 @@
       <span class="rp-login-hint">Login to react ✨</span>
     }
 
+  </div>
+}
+
+<!-- ── Flag / Report modal ──────────────────────────────────────────────── -->
+@if (showFlagModal()) {
+  <div class="flag-modal-overlay" (click)="closeFlagModal()">
+    <div class="flag-modal" (click)="$event.stopPropagation()">
+      <button class="flag-modal-close" (click)="closeFlagModal()">✕</button>
+      <h3 class="flag-modal-title">Report this post</h3>
+      <p class="flag-modal-sub">Help us keep ApnaInsights safe and accurate.</p>
+
+      <div class="flag-reasons">
+        @for (r of [
+          {value:'misinformation', label:'Misinformation'},
+          {value:'spam',           label:'Spam or clickbait'},
+          {value:'inappropriate',  label:'Inappropriate content'},
+          {value:'plagiarism',     label:'Plagiarism'},
+          {value:'hate_speech',    label:'Hate speech'},
+          {value:'other',          label:'Other'}
+        ]; track r.value) {
+          <button class="flag-reason-btn"
+            [class.active]="flagReason() === r.value"
+            (click)="flagReason.set(r.value)">
+            {{ r.label }}
+          </button>
+        }
+      </div>
+
+      <textarea class="flag-details"
+        placeholder="Optional: add more details (max 500 chars)"
+        maxlength="500"
+        [value]="flagDetails()"
+        (input)="flagDetails.set($any($event.target).value)"></textarea>
+
+      @if (flagMsg()) {
+        <p class="flag-msg">{{ flagMsg() }}</p>
+      }
+
+      <button class="flag-submit-btn"
+        [disabled]="flagLoading() || !flagReason()"
+        (click)="submitFlag()">
+        @if (flagLoading()) { Submitting… } @else { Submit Report }
+      </button>
+    </div>
   </div>
 }
 
