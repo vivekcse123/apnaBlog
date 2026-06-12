@@ -176,7 +176,7 @@ html {
 }
 
 body {
-  font-family: 'DM Sans', system-ui, sans-serif;
+  font-family: 'DM Sans', system-ui, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
   background-color: var(--bg-base);
   color: var(--text-primary);
   transition: background-color 0.25s ease, color 0.25s ease;
@@ -731,11 +731,16 @@ body > iframe[style*="display: none"] { width: 0 !important; height: 0 !importan
   margin: 24px auto;
   padding: 0 16px;
   box-sizing: border-box;
-  min-height: 250px;
+  min-height: 100px;
 }
 .page-ad-wrap:has(ins.adsbygoogle[data-ad-status="unfilled"]) {
   min-height: 0;
   margin: 0;
   padding: 0;
   overflow: hidden;
+}
+/* Once the ad has actually rendered, let the wrap shrink to its real size —
+   the 100px placeholder shouldn't linger as extra white space below it. */
+.page-ad-wrap:has(ins.adsbygoogle[data-ad-status="filled"]) {
+  min-height: 0;
 }

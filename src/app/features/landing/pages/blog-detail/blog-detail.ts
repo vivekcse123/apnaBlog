@@ -225,6 +225,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   postReactions      = signal<Map<string, string>>(new Map());
   postEmojiCounts    = signal<Partial<Record<string, number>>>({});
   showLikePicker     = signal(false);
+  pickerShiftX       = signal(0); // px correction so .like-emoji-picker stays on-screen
   private pickerOpenedAt = 0; // ghost-click guard
 
   // ── MCQ quiz state ────────────────────────────────────────────────────────
@@ -665,6 +666,15 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
       .subscribe(params => {
         const postId = params.get('id');
         if (!postId) { this.router.navigate(['/welcome']); return; }
+
+        // ── Reset scroll position ─────────────────────────────────────────
+        // Angular reuses this component instance when navigating between two
+        // /blog/:id routes (e.g. clicking a related post), so the host's own
+        // scroll container retains its old scrollTop unless reset here —
+        // window.scrollTo (from withInMemoryScrolling) doesn't touch it.
+        if (isPlatformBrowser(this.platformId)) {
+          this.elementRef.nativeElement.scrollTo({ top: 0, behavior: 'instant' });
+        }
 
         // ── Reset all state on route change ───────────────────────────────
         this.isLoading.set(true);
@@ -2098,7 +2108,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   }
 
   getPostEmoji(postId: string): string {
-    if (!this.isLiked(postId)) return '🤍';
+    if (!this.isLiked(postId)) return '♡';
     return this.postReactions().get(postId) ?? '❤️';
   }
 
@@ -2131,7 +2141,26 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
     this.pickerOpenedAt = Date.now();
+    this.showEmojiPicker();
+  }
+
+  // Opens the desktop hover/click emoji picker and nudges it back on-screen
+  // if it would otherwise overflow the left or right viewport edge.
+  showEmojiPicker(): void {
+    this.pickerShiftX.set(0);
     this.showLikePicker.set(true);
+    if (!isPlatformBrowser(this.platformId)) return;
+    requestAnimationFrame(() => {
+      const el = (this.elementRef.nativeElement as HTMLElement).querySelector('.like-emoji-picker') as HTMLElement | null;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const margin = 8;
+      if (rect.left < margin) {
+        this.pickerShiftX.set(margin - rect.left);
+      } else if (rect.right > window.innerWidth - margin) {
+        this.pickerShiftX.set((window.innerWidth - margin) - rect.right);
+      }
+    });
   }
 
   closeMobLikePicker(event: Event): void {
@@ -2164,6 +2193,30 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
       this.likedPostIds.set(ids);
       this.persistLikedIds(ids);
       this.post.set({ ...post, likesCount: post.likesCount + 1 });
+    }
+
+    // Guests can't use the authenticated /post-react endpoint (401), which
+    // would otherwise revert this optimistic update right away. Fall back to
+    // the anonymous like endpoint for a first-time like; switching emoji on
+    // an already-liked post is a local-only display change for guests.
+    if (!this.isLoggedIn) {
+      if (!wasLiked) {
+        this.postService.likePost(post._id)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe({
+            error: () => {
+              const revert = new Map(this.postReactions());
+              if (prevEmoji) revert.set(post._id, prevEmoji); else revert.delete(post._id);
+              this.postReactions.set(revert);
+              const ids = new Set(this.likedPostIds());
+              ids.delete(post._id);
+              this.likedPostIds.set(ids);
+              this.persistLikedIds(ids);
+              this.post.set({ ...post, likesCount: post.likesCount });
+            },
+          });
+      }
+      return;
     }
 
     this.postService.postReact(post._id, emoji)
@@ -2204,6 +2257,10 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     this.likedPostIds.set(ids);
     this.persistLikedIds(ids);
     this.post.set({ ...post, likesCount: Math.max(0, post.likesCount - 1) });
+
+    // Guests have no working anonymous "unlike" endpoint — keep this
+    // local-only so the tap doesn't get reverted by a failed request.
+    if (!this.isLoggedIn) return;
 
     this.postService.postReact(post._id, null)
       .pipe(takeUntilDestroyed(this.destroyRef))

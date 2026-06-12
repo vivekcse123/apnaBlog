@@ -1320,7 +1320,7 @@
               <button class="stat-btn like-btn" [class.liked]="isLiked(blog._id)"
                       (click)="toggleLike(blog, $event)"
                       [attr.aria-label]="(isLiked(blog._id) ? 'Unlike' : 'Like') + ' — ' + blog.likesCount + ' likes'">
-                <span class="stat-icon" aria-hidden="true">{{ isLiked(blog._id) ? '❤️' : '🤍' }}</span>
+                <span class="stat-icon" aria-hidden="true">{{ isLiked(blog._id) ? '❤️' : '♡' }}</span>
                 <span class="stat-count" aria-hidden="true">{{ blog.likesCount }}</span>
               </button>
               <span class="stat-display" [attr.aria-label]="blog.commentsCount + ' comments'">

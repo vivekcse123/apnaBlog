@@ -386,10 +386,10 @@
           </div>
           <!-- Desktop like button with emoji picker on hover -->
           <div class="like-reaction-wrap"
-               (mouseenter)="showLikePicker.set(true)"
+               (mouseenter)="showEmojiPicker()"
                (mouseleave)="showLikePicker.set(false)">
             @if (showLikePicker()) {
-              <div class="like-emoji-picker">
+              <div class="like-emoji-picker" [style.--picker-shift]="pickerShiftX() + 'px'">
                 @for (emoji of LIKE_EMOJIS; track emoji) {
                   <button class="like-emoji-btn"
                           [class.like-emoji-selected]="postReactions().get(post()!._id) === emoji && isLiked(post()!._id)"

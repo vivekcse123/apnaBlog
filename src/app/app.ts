@@ -67,6 +67,19 @@ export class App implements OnInit, OnDestroy {
         // Track every completed navigation — deduplication handled inside trackVisit
         if (event instanceof NavigationEnd) {
           this.visitorService.trackVisit(event.urlAfterRedirects);
+
+          // Always land a freshly-navigated page at the top. withInMemoryScrolling's
+          // window.scrollTo can be undone by withViewTransitions' DOM swap, and it
+          // never reaches into routed components that scroll their own host element
+          // — so reset window/document scroll here, unless this navigation targets
+          // an in-page anchor (let anchorScrolling handle those).
+          if (isPlatformBrowser(this.platformId) && !this.router.parseUrl(event.urlAfterRedirects).fragment) {
+            requestAnimationFrame(() => {
+              window.scrollTo(0, 0);
+              document.documentElement.scrollTop = 0;
+              document.body.scrollTop = 0;
+            });
+          }
         }
       }
     });

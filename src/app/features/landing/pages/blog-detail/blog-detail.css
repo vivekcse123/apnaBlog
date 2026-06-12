@@ -570,7 +570,10 @@
   position: absolute;
   bottom: calc(100% + 8px);
   left: 50%;
-  transform: translateX(-50%);
+  /* --picker-shift is computed in JS so the picker never overflows the
+     viewport edge (would otherwise hide the leftmost 1-2 emoji options
+     when the like button sits close to the screen edge). */
+  transform: translateX(calc(-50% + var(--picker-shift, 0px)));
   display: flex;
   align-items: center;
   gap: 4px;
@@ -588,15 +591,15 @@
   content: '';
   position: absolute;
   top: 100%;
-  left: 50%;
+  left: calc(50% - var(--picker-shift, 0px));
   transform: translateX(-50%);
   border: 5px solid transparent;
   border-top-color: var(--border);
 }
 
 @keyframes picker-pop {
-  from { opacity: 0; transform: translateX(-50%) scale(0.8) translateY(6px); }
-  to   { opacity: 1; transform: translateX(-50%) scale(1) translateY(0); }
+  from { opacity: 0; transform: translateX(calc(-50% + var(--picker-shift, 0px))) scale(0.8) translateY(6px); }
+  to   { opacity: 1; transform: translateX(calc(-50% + var(--picker-shift, 0px))) scale(1) translateY(0); }
 }
 
 .like-emoji-btn {
@@ -690,9 +693,12 @@
 /* Reserve space for the typical responsive ad size up front so the page
    doesn't shift when AdSense fills the slot in (CLS). Only collapse once
    AdSense explicitly reports "unfilled" — never for the pre-JS/initial state. */
-.ad-unit-wrap { margin: 0; min-height: 250px; box-sizing: border-box; }
+.ad-unit-wrap { margin: 0; min-height: 100px; box-sizing: border-box; }
 .ad-unit-wrap:empty { display: none; }
 .ad-unit-wrap:has(ins.adsbygoogle[data-ad-status="unfilled"]) { display: none; }
+/* Once the ad has actually rendered, let the wrap shrink to its real size —
+   the 100px placeholder shouldn't linger as extra white space below it. */
+.ad-unit-wrap:has(ins.adsbygoogle[data-ad-status="filled"]) { min-height: 0; }
 
 /* Extra space + divider below the mid-content ad so it isn't flush against
    the clickable category/tag badges (reduces accidental-click risk). */
