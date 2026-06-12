@@ -1,68 +1,41 @@
 @if (standalone) {
 
 <header class="header" role="banner">
-
-  <!-- Left — logo -->
   <div class="header-left">
     <a class="app-logo" routerLink="/" aria-label="ApnaInsights — Go to homepage">
-      <img class="app-logo-img" src="/logo-96.png" alt="ApnaInsights"
-           width="30" height="30" loading="eager" fetchpriority="high" />
+      <img class="app-logo-img" src="/logo-96.png" alt="ApnaInsights" width="30" height="30" loading="eager" />
       <span class="app-logo-text">ApnaInsights</span>
     </a>
   </div>
 
-  <!-- Center — slim nav (desktop only) -->
   <nav class="header-nav" aria-label="Main navigation">
     <a class="nav-link" routerLink="/" routerLinkActive="nav-link--active"
        [routerLinkActiveOptions]="{exact:true}" aria-label="Explore stories">Explore</a>
-
-    <a class="nav-link" routerLink="/search" [queryParams]="{q:'trending'}" aria-label="Trending stories">
-      Trending
-    </a>
-
+    <a class="nav-link" routerLink="/search" [queryParams]="{q:'trending'}" aria-label="Trending stories">Trending</a>
     <a class="nav-link nav-link--shorts" routerLink="/shorts" aria-label="Watch Shorts">
-      <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-        <path d="M8 5v14l11-7z"/>
-      </svg>
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
       Shorts
     </a>
+    <a class="nav-link nav-link--challenge" routerLink="/challenges" aria-label="Writing Challenges">🏆 Challenges</a>
+    <a class="nav-link" routerLink="/topics" aria-label="Browse topics">Topics</a>
 
-    <a class="nav-link nav-link--challenge" routerLink="/challenges" aria-label="Writing Challenges">
-      🏆 Challenges
-    </a>
-
-    <!-- More dropdown -->
     <div class="nav-more-wrap" (click)="$event.stopPropagation()">
-      <button class="nav-link nav-link--more"
-              (click)="navMoreOpen.set(!navMoreOpen())"
-              [class.open]="navMoreOpen()"
-              aria-haspopup="true"
-              [attr.aria-expanded]="navMoreOpen()">
+      <button class="nav-link nav-link--more" (click)="navMoreOpen.set(!navMoreOpen())"
+              [class.open]="navMoreOpen()" aria-haspopup="true" [attr.aria-expanded]="navMoreOpen()">
         More
-        <svg class="nav-chevron" [class.open]="navMoreOpen()"
-             width="11" height="11" viewBox="0 0 24 24" fill="none"
-             stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+        <svg class="nav-chevron" [class.open]="navMoreOpen()" width="11" height="11" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
           <path d="M6 9l6 6 6-6"/>
         </svg>
       </button>
       @if (navMoreOpen()) {
         <div class="nav-more-dropdown" role="menu">
           <a class="nav-more-item" role="menuitem" routerLink="/about" (click)="navMoreOpen.set(false)">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 stroke-width="2" stroke-linecap="round" aria-hidden="true">
-              <circle cx="12" cy="12" r="10"/>
-              <line x1="12" y1="8" x2="12" y2="12"/>
-              <line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
             About Us
           </a>
           <a class="nav-more-item nav-more-item--advertise" role="menuitem" routerLink="/advertise" (click)="navMoreOpen.set(false)">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 stroke-width="2" stroke-linecap="round" aria-hidden="true">
-              <rect x="2" y="3" width="20" height="14" rx="2"/>
-              <line x1="8" y1="21" x2="16" y2="21"/>
-              <line x1="12" y1="17" x2="12" y2="21"/>
-            </svg>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
             Advertise
           </a>
         </div>
@@ -70,39 +43,21 @@
     </div>
   </nav>
 
-  <!-- Right — search · write · theme · avatar -->
   <div class="header-right">
-
-    <a class="hdr-icon-btn desktop-only" routerLink="/search" aria-label="Search stories" title="Search">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-           stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
+    <a class="hdr-icon-btn hdr-search-bar desktop-only" routerLink="/search" aria-label="Search stories">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
         <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
       </svg>
     </a>
 
-    <a class="write-btn desktop-only"
-       [routerLink]="writeRoute"
-       aria-label="{{ isLoggedIn ? 'Go to dashboard to write' : 'Sign in to write a story' }}">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-           stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
-        <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
-      </svg>
-      Write
-    </a>
-
-    <button class="hdr-icon-btn theme-toggle"
-            (click)="themeService.toggleTheme()"
-            [attr.aria-label]="themeService.theme() === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
-            title="Toggle theme">
+    <button class="hdr-icon-btn theme-toggle" (click)="themeService.toggleTheme()"
+            [attr.aria-label]="themeService.theme() === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'">
       <span aria-hidden="true">{{ themeService.theme() === 'dark' ? '☀' : '☾' }}</span>
     </button>
 
     @if (isLoggedIn) {
-      <a class="hdr-avatar desktop-only"
-         [routerLink]="dashboardRoute"
-         [attr.aria-label]="'Dashboard — ' + loggedInFirstName"
-         [title]="loggedInFirstName">
+      <a class="hdr-avatar desktop-only" [routerLink]="dashboardRoute"
+         [attr.aria-label]="'Dashboard — ' + loggedInFirstName" [title]="loggedInFirstName">
         @if (loggedInAvatar) {
           <img [src]="loggedInAvatar" [alt]="loggedInFirstName" width="32" height="32" />
         } @else {
@@ -110,46 +65,48 @@
         }
       </a>
     } @else {
-      <a class="hdr-signin-btn desktop-only" routerLink="/auth/login"
-         aria-label="Sign in to your account">Sign In</a>
-      <a class="hdr-signup-btn desktop-only" routerLink="/auth/register"
-         aria-label="Create a free account">Get started</a>
+      <a class="hdr-signin-btn desktop-only" routerLink="/auth/login" aria-label="Sign in">Sign In</a>
     }
 
-    <button class="hamburger"
-            (click)="menuOpen.set(!menuOpen())"
-            [class.open]="menuOpen()"
-            [attr.aria-expanded]="menuOpen()"
-            aria-controls="mobile-drawer"
-            aria-label="Toggle navigation menu">
-      <span aria-hidden="true"></span>
-      <span aria-hidden="true"></span>
-      <span aria-hidden="true"></span>
+    <a class="write-btn" [routerLink]="writeRoute" aria-label="Write a story">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+        <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+      </svg>
+      <span class="write-btn-label-full">Write Story</span>
+      <span class="write-btn-label-short">Write</span>
+    </a>
+
+    <button class="hamburger" (click)="menuOpen.set(!menuOpen())" [class.open]="menuOpen()"
+            [attr.aria-expanded]="menuOpen()" aria-controls="mobile-drawer" aria-label="Toggle navigation menu">
+      <span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>
     </button>
   </div>
-
 </header>
 
-<nav id="mobile-drawer"
-     class="mobile-drawer"
-     [class.open]="menuOpen()"
-     role="navigation"
-     aria-label="Mobile navigation">
-
-  <!-- Drawer header -->
+<nav id="mobile-drawer" class="mobile-drawer" [class.open]="menuOpen()" role="navigation" aria-label="Mobile navigation">
   <div class="drawer-header">
     <div class="drawer-brand">
       <img src="/logo-96.png" alt="ApnaInsights" class="drawer-brand-logo" />
       <span class="drawer-brand-name">ApnaInsights</span>
     </div>
-    <button class="drawer-close" (click)="menuOpen.set(false)" aria-label="Close menu">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
-        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-      </svg>
-    </button>
+    <div class="drawer-header-actions">
+      <button class="drawer-theme-toggle" (click)="themeService.toggleTheme()"
+              [attr.aria-label]="themeService.theme() === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'">
+        @if (themeService.theme() === 'dark') {
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        } @else {
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        }
+      </button>
+      <button class="drawer-close" (click)="menuOpen.set(false)" aria-label="Close menu">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
   </div>
 
-  <!-- User card -->
   @if (isLoggedIn) {
     <a class="drawer-user-card" [routerLink]="dashboardRoute" (click)="menuOpen.set(false)">
       <div class="drawer-user-avatar">{{ loggedInFirstName.charAt(0).toUpperCase() }}</div>
@@ -166,88 +123,63 @@
   }
 
   <div class="drawer-divider"></div>
-
-  <!-- Shorts featured card -->
   <a class="drawer-shorts-card" routerLink="/shorts" (click)="menuOpen.set(false)" aria-label="Watch Shorts">
     <span class="drawer-shorts-icon">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="white" aria-hidden="true">
-        <path d="M8 5v14l11-7z"/>
-      </svg>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="white" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
     </span>
     <span class="drawer-shorts-label">
       <strong>Shorts</strong>
       <span>News &amp; Sports in seconds</span>
     </span>
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.7)" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
-      <path d="M9 18l6-6-6-6"/>
-    </svg>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.7)" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
   </a>
 
   <div class="drawer-divider"></div>
   <span class="drawer-section-label">Explore</span>
-
-  <a class="drawer-link drawer-link--challenge" routerLink="/challenges" (click)="menuOpen.set(false)" aria-label="Writing Challenges">
-    <span class="drawer-link-icon">🏆</span>
+  <a class="drawer-link drawer-link--challenge" routerLink="/challenges" (click)="menuOpen.set(false)">
+    <span class="drawer-link-icon drawer-link-icon--gold">🏆</span>
     Writing Challenges
     @if (activeChallenge()) {
       <span class="drawer-challenge-pill">{{ challengeDaysLeft(activeChallenge()!.endDate) }}d left</span>
     }
   </a>
-
-  <a class="drawer-link" routerLink="/search" (click)="menuOpen.set(false)" aria-label="Search stories">
-    <span class="drawer-link-icon">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-        <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
-      </svg>
+  <a class="drawer-link" routerLink="/search" (click)="menuOpen.set(false)">
+    <span class="drawer-link-icon drawer-link-icon--blue">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
     </span>
     Search Stories
   </a>
-  <a class="drawer-link" routerLink="/bookmarks" (click)="menuOpen.set(false)" aria-label="My bookmarks">
-    <span class="drawer-link-icon">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-        <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/>
-      </svg>
+  <a class="drawer-link" routerLink="/bookmarks" (click)="menuOpen.set(false)">
+    <span class="drawer-link-icon drawer-link-icon--violet">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
     </span>
     My Bookmarks
   </a>
   @if (historyLoaded() && readHistoryIds().size > 0) {
-    <a class="drawer-link" routerLink="/history" (click)="menuOpen.set(false)" aria-label="Reading history">
-      <span class="drawer-link-icon">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-          <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-        </svg>
+    <a class="drawer-link" routerLink="/history" (click)="menuOpen.set(false)">
+      <span class="drawer-link-icon drawer-link-icon--cyan">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
       </span>
       Reading History
       <span class="drawer-history-count">{{ readHistoryIds().size }}</span>
     </a>
   }
-
   <div class="drawer-divider"></div>
   <span class="drawer-section-label">Company</span>
-
-  <a class="drawer-link" routerLink="/about" (click)="menuOpen.set(false)" aria-label="About">
-    <span class="drawer-link-icon">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-      </svg>
+  <a class="drawer-link" routerLink="/about" (click)="menuOpen.set(false)">
+    <span class="drawer-link-icon drawer-link-icon--indigo">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
     </span>
     About Us
   </a>
-  <a class="drawer-link drawer-link--advertise" routerLink="/advertise" (click)="menuOpen.set(false)" aria-label="Advertise">
-    <span class="drawer-link-icon">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-        <rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
-      </svg>
+  <a class="drawer-link drawer-link--advertise" routerLink="/advertise" (click)="menuOpen.set(false)">
+    <span class="drawer-link-icon drawer-link-icon--orange">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
     </span>
     Advertise with Us
   </a>
-
 </nav>
-
-<div class="drawer-backdrop"
-     [class.open]="menuOpen()"
-     (click)="menuOpen.set(false)"
-     aria-hidden="true"></div>
+<div class="drawer-backdrop" [class.open]="menuOpen()" (click)="menuOpen.set(false)" aria-hidden="true"></div>
 }
 
 @defer (on idle) {
@@ -256,171 +188,540 @@
   }
 }
 
-<!-- ══ Mobile tab bar ══ -->
+<!-- Mobile tab bar -->
 <nav class="mob-tabs" aria-label="Feed tabs">
   <button class="mob-tab" [class.mob-tab--active]="mobileTab() === 'for-you'"
-          (click)="mobileTab.set('for-you')" [attr.aria-pressed]="mobileTab() === 'for-you'">
-    <span class="mob-tab-icon" aria-hidden="true">🎯</span>
-    <span class="mob-tab-text">For You</span>
+          (click)="setMobileTab('for-you')" [attr.aria-pressed]="mobileTab() === 'for-you'">
+    <span class="mob-tab-icon" aria-hidden="true">🎯</span><span class="mob-tab-text">For You</span>
   </button>
   <button class="mob-tab" [class.mob-tab--active]="mobileTab() === 'trending'"
-          (click)="mobileTab.set('trending')" [attr.aria-pressed]="mobileTab() === 'trending'">
-    <span class="mob-tab-icon" aria-hidden="true">🔥</span>
-    <span class="mob-tab-text">Trending</span>
+          (click)="setMobileTab('trending')" [attr.aria-pressed]="mobileTab() === 'trending'">
+    <span class="mob-tab-icon" aria-hidden="true">🔥</span><span class="mob-tab-text">Trending</span>
   </button>
   <button class="mob-tab" [class.mob-tab--active]="mobileTab() === 'latest'"
-          (click)="mobileTab.set('latest')" [attr.aria-pressed]="mobileTab() === 'latest'">
-    <span class="mob-tab-icon" aria-hidden="true">✨</span>
-    <span class="mob-tab-text">Latest</span>
+          (click)="setMobileTab('latest')" [attr.aria-pressed]="mobileTab() === 'latest'">
+    <span class="mob-tab-icon" aria-hidden="true">✨</span><span class="mob-tab-text">Latest</span>
   </button>
 </nav>
 
-<!-- ── Mobile Install Strip (hidden on desktop, shown when PWA not installed) ── -->
 @if (!isAppInstalled()) {
   <div class="mob-install-strip" (click)="triggerInstall()" role="button" tabindex="0"
        (keydown.enter)="triggerInstall()" aria-label="Install ApnaInsights app">
     <div class="mob-install-strip-left">
       <div class="mob-install-strip-icon" aria-hidden="true">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-          <polyline points="7 10 12 15 17 10"/>
-          <line x1="12" y1="15" x2="12" y2="3"/>
-        </svg>
+        <img src="/logo-96.png" alt="" width="26" height="26" loading="lazy" />
       </div>
       <div class="mob-install-strip-text">
         <span class="mob-install-strip-title">Get the App</span>
         <span class="mob-install-strip-sub">Faster · Offline · Free</span>
       </div>
     </div>
-    <button class="mob-install-strip-btn" (click)="$event.stopPropagation(); triggerInstall()"
-            aria-label="Install now" type="button">
+    <button class="mob-install-strip-btn" (click)="$event.stopPropagation(); triggerInstall()" type="button">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       Install
     </button>
   </div>
 }
 
-<!-- ── Mobile Stories Row (category circles, Instagram-style) ── -->
+<!-- Mobile stories row -->
 <div class="mob-stories-row" role="navigation" aria-label="Browse by category">
-  <button class="mob-story"
-          [class.mob-story--active]="selectedCategory() === ''"
-          (click)="selectedCategory.set('')"
-          aria-label="All categories">
-    <div class="mob-story-circle mob-story-circle--all">
-      <span class="mob-story-emoji" aria-hidden="true">🏠</span>
-    </div>
+  <button class="mob-story" [class.mob-story--active]="selectedCategory() === ''"
+          (click)="selectedCategory.set('')" aria-label="All categories">
+    <div class="mob-story-circle mob-story-circle--all"><span class="mob-story-emoji" aria-hidden="true">🏠</span></div>
     <span class="mob-story-name">All</span>
   </button>
   @for (cat of categories(); track cat) {
-    <button class="mob-story"
-            [class.mob-story--active]="selectedCategory() === cat"
-            (click)="selectCategory(cat)"
-            [attr.aria-label]="'Browse ' + cat + ' stories'">
+    <a class="mob-story" [class.mob-story--active]="selectedCategory() === cat"
+       [href]="'/category/' + cat.toLowerCase()"
+       (click)="$event.preventDefault(); selectCategory(cat)" [attr.aria-label]="'Browse ' + cat + ' stories'">
       <div class="mob-story-circle" [class.mob-story-circle--active]="selectedCategory() === cat">
         @if (cat === 'Update') { <span class="mob-story-live" aria-hidden="true"></span> }
         <span class="mob-story-emoji" aria-hidden="true">{{ categoryEmojis()[cat] }}</span>
       </div>
       <span class="mob-story-name">{{ cat }}</span>
-    </button>
+    </a>
   }
 </div>
 
 <main id="main-content" role="main" [attr.data-mob-tab]="mobileTab()">
 
-  <!-- ── Compact SEO Hero ─────────────────────────────────────────────────── -->
-  <section class="home-hero"
-           itemscope
-           itemtype="https://schema.org/Blog"
-           aria-labelledby="home-h1">
-
+  <!-- ══ HERO SECTION ══════════════════════════════════════════════════════ -->
+  <section class="v2-hero" itemscope itemtype="https://schema.org/Blog" aria-labelledby="hero-h1">
     <meta itemprop="name" content="ApnaInsights — Community Stories" />
-    <meta itemprop="description" content="Discover real stories from real people across India on technology, lifestyle, health, business, education and village life." />
+    <meta itemprop="description" content="Discover real stories from real people." />
     <link itemprop="url" href="https://apnainsights.com" />
 
-    <div class="home-hero__inner">
+    <!-- Background elements -->
+    <div class="v2-hero-bg-orb v2-hero-bg-orb--1" aria-hidden="true"></div>
+    <div class="v2-hero-bg-orb v2-hero-bg-orb--2" aria-hidden="true"></div>
+    <div class="v2-hero-grid-pattern" aria-hidden="true"></div>
 
-      <div class="home-hero__text">
-        <span class="home-hero__eyebrow" aria-hidden="true">✦ India's Free Community Blogging Platform</span>
-        <h1 class="home-hero__h1" id="home-h1">
-          Real Stories. <span class="home-hero__accent">Every Topic.</span>
+    <div class="v2-hero-inner">
+
+      <!-- Left content -->
+      <div class="v2-hero-left">
+        <div class="v2-hero-eyebrow" aria-hidden="true">
+          <span class="v2-hero-eyebrow-dot"></span>
+          Built in India · Open to Everyone
+        </div>
+
+        <h1 class="v2-hero-h1" id="hero-h1">
+          Discover Real Stories<br>
+          <span class="v2-hero-accent">By Real People</span>
         </h1>
-        <p class="home-hero__sub">
-          From village life to tech breakthroughs, cricket to cooking — explore authentic stories
-          across <strong>14 topics</strong> written by real people from across India.
+
+        <p class="v2-hero-desc">
+          Explore authentic stories across <strong>14+ topics</strong> - written by real people.
         </p>
-      </div>
 
-      <!-- Stats row — visible to crawlers, hydrated by JS -->
-      <div class="home-hero__stats" role="region" aria-label="Platform statistics">
-        <div class="home-hero__stat">
-          @if (storiesReady()) {
-            <strong itemprop="numberOfItems" [attr.content]="publishedCount()">{{ publishedCount() }}</strong>
-          } @else { <span class="home-hero__skel" aria-label="Loading"></span> }
-          <span> Stories</span>
-        </div>
-        <div class="home-hero__divider" aria-hidden="true"></div>
-        <div class="home-hero__stat">
-          @if (totalReadsReady()) {
-            <strong>{{ totalViews() | formatCount }}</strong>
-          } @else { <span class="home-hero__skel" aria-label="Loading"></span> }
-          <span> Total Reads</span>
-        </div>
-        <div class="home-hero__divider" aria-hidden="true"></div>
-        <div class="home-hero__stat">
-          @if (communityMembersReady()) {
-            <strong>{{ communityMembersCount() }}</strong>
-          } @else { <span class="home-hero__skel" aria-label="Loading"></span> }
-          <span> Writers</span>
-        </div>
-        @if (readingStreak() >= 2) {
-          <div class="home-hero__divider" aria-hidden="true"></div>
-          <div class="home-hero__stat home-hero__stat--streak" [attr.aria-label]="readingStreak() + '-day reading streak'">
-            <strong>{{ readingStreak() }}</strong>
-            <span> 🔥 Streak</span>
+        <!-- Topic categories -->
+        <nav class="v2-hero-categories" aria-label="Browse stories by category">
+          <a class="v2-hero-cat v2-hero-cat--all" routerLink="/" routerLinkActive="v2-hero-cat--active" [routerLinkActiveOptions]="{ exact: true }">
+            <span class="v2-hero-cat-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+            </span>
+            <span class="v2-hero-cat-label">All</span>
+          </a>
+          <a class="v2-hero-cat v2-hero-cat--technology" routerLink="/category/technology">
+            <span class="v2-hero-cat-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            </span>
+            <span class="v2-hero-cat-label">Technology</span>
+          </a>
+          <a class="v2-hero-cat v2-hero-cat--health" routerLink="/category/health">
+            <span class="v2-hero-cat-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+            </span>
+            <span class="v2-hero-cat-label">Health</span>
+          </a>
+          <a class="v2-hero-cat v2-hero-cat--sports" routerLink="/category/sports">
+            <span class="v2-hero-cat-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            </span>
+            <span class="v2-hero-cat-label">Sports</span>
+          </a>
+          <a class="v2-hero-cat v2-hero-cat--business" routerLink="/category/business">
+            <span class="v2-hero-cat-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
+            </span>
+            <span class="v2-hero-cat-label">Business</span>
+          </a>
+          <a class="v2-hero-cat v2-hero-cat--lifestyle" routerLink="/category/lifestyle">
+            <span class="v2-hero-cat-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 019.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>
+            </span>
+            <span class="v2-hero-cat-label">Lifestyle</span>
+          </a>
+          <a class="v2-hero-cat v2-hero-cat--more" routerLink="/topics" aria-label="More topics">
+            <span class="v2-hero-cat-icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+            </span>
+            <span class="v2-hero-cat-label">More</span>
+          </a>
+        </nav>
+
+        <!-- Value highlights -->
+        <div class="v2-hero-highlights" role="list" aria-label="Why ApnaInsights">
+          <div class="v2-hero-highlight" role="listitem">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+            100% Free, Always
           </div>
-        }
+          <div class="v2-hero-highlight" role="listitem">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+            14+ Topics to Explore
+          </div>
+          <div class="v2-hero-highlight" role="listitem">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l8 4v5c0 5-3.5 9-8 11-4.5-2-8-6-8-11V6l8-4z"/></svg>
+            No Spam, Ever
+          </div>
+        </div>
+
+        <!-- CTA row -->
+        <div class="v2-hero-cta">
+          <a class="v2-hero-write-btn" [routerLink]="writeRoute" aria-label="Start writing for free">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Start Writing Free
+          </a>
+          @if (!isAppInstalled()) {
+            <button class="v2-hero-install-btn" (click)="triggerInstall()" aria-label="Install app">
+              📱 Get the App
+            </button>
+          }
+        </div>
       </div>
 
-      <!-- Category links — crawlable internal links for SEO -->
-      <nav class="home-hero__cats" aria-label="Browse stories by category">
-        <a class="home-hero__cat-chip" routerLink="/category/technology">💻 Technology</a>
-        <a class="home-hero__cat-chip" routerLink="/category/health">❤️ Health</a>
-        <a class="home-hero__cat-chip" routerLink="/category/sports">🏏 Sports</a>
-        <a class="home-hero__cat-chip" routerLink="/category/news">📰 News</a>
-        <a class="home-hero__cat-chip" routerLink="/category/village">🌾 Village</a>
-        <a class="home-hero__cat-chip" routerLink="/category/business">💼 Business</a>
-        <a class="home-hero__cat-chip" routerLink="/category/lifestyle">🌿 Lifestyle</a>
-        <a class="home-hero__cat-chip" routerLink="/category/education">📚 Education</a>
-        <a class="home-hero__cat-chip" routerLink="/category/entertainment">🎭 Entertainment</a>
-        <a class="home-hero__cat-chip" routerLink="/category/cooking">🍳 Cooking</a>
-        <a class="home-hero__cat-chip" routerLink="/category/exercise">🏋️ Exercise</a>
-        <a class="home-hero__cat-chip" routerLink="/category/social">🤝 Social</a>
-        <a class="home-hero__cat-chip" routerLink="/category/quotes">💬 Quotes</a>
-        <a class="home-hero__cat-chip" routerLink="/category/update">📢 Update</a>
-      </nav>
+      <!-- Right illustration -->
+      <div class="v2-hero-right" aria-hidden="true">
+        <div class="v2-hero-illustration">
+          <!-- India landscape SVG illustration -->
+          <svg class="v2-india-svg" viewBox="0 0 540 440" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="India landscape illustration">
+            <defs>
+              <linearGradient id="skyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" style="stop-color:#FFF7ED;stop-opacity:1" />
+                <stop offset="60%" style="stop-color:#FEF3C7;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#FDE68A;stop-opacity:1" />
+              </linearGradient>
+              <linearGradient id="waterGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" style="stop-color:#BFDBFE;stop-opacity:0.8" />
+                <stop offset="100%" style="stop-color:#93C5FD;stop-opacity:0.5" />
+              </linearGradient>
+              <radialGradient id="sunGrad" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" style="stop-color:#FCD34D;stop-opacity:1" />
+                <stop offset="70%" style="stop-color:#FBBF24;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#F59E0B;stop-opacity:0.8" />
+              </radialGradient>
+              <filter id="glow">
+                <feGaussianBlur stdDeviation="8" result="coloredBlur"/>
+                <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+            </defs>
 
-      <!-- CTA row -->
-      <div class="home-hero__cta">
-        <a class="home-hero__write-btn" [routerLink]="writeRoute" aria-label="Start writing on ApnaInsights for free">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
-            <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            <!-- Sky -->
+            <rect width="540" height="440" fill="url(#skyGrad)" rx="20"/>
+
+            <!-- Sun glow -->
+            <circle cx="410" cy="95" r="70" fill="#FCD34D" opacity="0.15" filter="url(#glow)"/>
+            <!-- Sun -->
+            <circle cx="410" cy="95" r="48" fill="url(#sunGrad)" opacity="0.95"/>
+            <!-- Sun rays -->
+            <g stroke="#FBBF24" stroke-width="2" opacity="0.5">
+              <line x1="410" y1="30" x2="410" y2="16"/>
+              <line x1="410" y1="160" x2="410" y2="174"/>
+              <line x1="346" y1="95" x2="332" y2="95"/>
+              <line x1="474" y1="95" x2="488" y2="95"/>
+              <line x1="364" y1="49" x2="355" y2="40"/>
+              <line x1="456" y1="141" x2="465" y2="150"/>
+              <line x1="456" y1="49" x2="465" y2="40"/>
+              <line x1="364" y1="141" x2="355" y2="150"/>
+            </g>
+
+            <!-- Birds -->
+            <g stroke="#92400E" stroke-width="1.5" fill="none" opacity="0.6">
+              <path d="M60 70 Q65 65 70 70"/>
+              <path d="M78 62 Q83 57 88 62"/>
+              <path d="M95 74 Q100 69 105 74"/>
+              <path d="M150 50 Q155 45 160 50"/>
+              <path d="M168 58 Q173 53 178 58"/>
+            </g>
+
+            <!-- Distant hills -->
+            <path d="M0 280 Q80 230 160 260 Q240 230 320 250 Q400 220 480 240 Q520 230 540 235 L540 440 L0 440 Z" fill="#D1FAE5" opacity="0.4"/>
+
+            <!-- Ground -->
+            <rect x="0" y="310" width="540" height="130" fill="#ECFDF5" rx="0"/>
+
+            <!-- Trees left -->
+            <g fill="#065F46">
+              <ellipse cx="30" cy="295" rx="18" ry="22" opacity="0.8"/>
+              <rect x="27" y="295" width="6" height="18" opacity="0.7"/>
+              <ellipse cx="65" cy="285" rx="22" ry="26" opacity="0.9"/>
+              <rect x="62" y="285" width="7" height="20" opacity="0.7"/>
+            </g>
+
+            <!-- Trees right -->
+            <g fill="#065F46">
+              <ellipse cx="490" cy="290" rx="20" ry="24" opacity="0.8"/>
+              <rect x="487" y="290" width="6" height="20" opacity="0.7"/>
+              <ellipse cx="520" cy="285" rx="16" ry="20" opacity="0.7"/>
+              <rect x="517" y="285" width="6" height="16" opacity="0.7"/>
+            </g>
+
+            <!-- Taj Mahal (center-left) -->
+            <g fill="#FEF9EE" stroke="#D97706" stroke-width="0.8" opacity="0.95">
+              <!-- Base platform -->
+              <rect x="80" y="288" width="160" height="22" rx="2"/>
+              <!-- Main body -->
+              <rect x="100" y="250" width="120" height="42" rx="2"/>
+              <!-- Side minarets -->
+              <rect x="83" y="252" width="14" height="36" rx="3"/>
+              <ellipse cx="90" cy="252" rx="7" ry="4"/>
+              <ellipse cx="90" cy="250" rx="3" ry="5"/>
+              <rect x="223" y="252" width="14" height="36" rx="3"/>
+              <ellipse cx="230" cy="252" rx="7" ry="4"/>
+              <ellipse cx="230" cy="250" rx="3" ry="5"/>
+              <!-- Main arch -->
+              <path d="M120 292 L120 268 Q160 245 200 268 L200 292 Z" fill="#FDE68A" stroke="#D97706" stroke-width="1"/>
+              <!-- Dome -->
+              <ellipse cx="160" cy="248" rx="28" ry="10" fill="#FEF9EE"/>
+              <path d="M132 248 Q160 215 188 248 Z" fill="#FEF9EE"/>
+              <!-- Finial -->
+              <line x1="160" y1="215" x2="160" y2="206" stroke="#D97706" stroke-width="1.5"/>
+              <ellipse cx="160" cy="206" rx="3" ry="4" fill="#D97706"/>
+              <!-- Decorative windows -->
+              <ellipse cx="145" cy="268" rx="7" ry="9" fill="#FDE68A"/>
+              <ellipse cx="175" cy="268" rx="7" ry="9" fill="#FDE68A"/>
+              <!-- Small domes on sides -->
+              <ellipse cx="90" cy="252" rx="6" ry="4"/>
+              <ellipse cx="230" cy="252" rx="6" ry="4"/>
+            </g>
+
+            <!-- India Gate (right) -->
+            <g fill="#FEF3C7" stroke="#92400E" stroke-width="0.8" opacity="0.9">
+              <!-- Base -->
+              <rect x="360" y="286" width="100" height="20" rx="1"/>
+              <!-- Pillars -->
+              <rect x="368" y="248" width="16" height="40"/>
+              <rect x="476" y="248" width="16" height="40"/>
+              <!-- Arch -->
+              <path d="M384 248 Q460 210 476 248" fill="none" stroke="#92400E" stroke-width="2"/>
+              <!-- Top block -->
+              <rect x="355" y="235" width="150" height="18" rx="2"/>
+              <!-- Keystone -->
+              <rect x="415" y="220" width="30" height="18" rx="1"/>
+              <ellipse cx="430" cy="220" rx="15" ry="6"/>
+              <!-- Road through arch -->
+              <rect x="420" y="266" width="20" height="20" fill="#FDE68A"/>
+            </g>
+
+            <!-- Water/River reflection -->
+            <ellipse cx="270" cy="370" rx="210" ry="32" fill="url(#waterGrad)" opacity="0.6"/>
+
+            <!-- Water ripples -->
+            <g stroke="#93C5FD" stroke-width="1" fill="none" opacity="0.5">
+              <path d="M120 365 Q160 360 200 365"/>
+              <path d="M240 372 Q280 367 320 372"/>
+              <path d="M350 365 Q390 360 430 365"/>
+            </g>
+
+            <!-- Boat on water -->
+            <g fill="#92400E" opacity="0.7">
+              <path d="M225 360 Q255 352 285 360 L280 368 L230 368 Z"/>
+              <line x1="255" y1="352" x2="255" y2="338" stroke="#92400E" stroke-width="2"/>
+              <path d="M255 338 L275 348 L255 352 Z" fill="#F97316" opacity="0.8"/>
+            </g>
+
+            <!-- Floating story card 1 -->
+            <g transform="translate(10, 140)">
+              <rect width="130" height="56" rx="12" fill="white" opacity="0.95" filter="url(#glow)"/>
+              <rect width="130" height="56" rx="12" fill="none" stroke="#E2E8F0" stroke-width="1"/>
+              <rect x="10" y="10" width="36" height="36" rx="8" fill="#EFF6FF"/>
+              <text x="28" y="33" text-anchor="middle" font-size="18">📖</text>
+              <rect x="54" y="14" width="62" height="7" rx="3" fill="#CBD5E1" opacity="0.8"/>
+              <rect x="54" y="25" width="48" height="5" rx="2.5" fill="#E2E8F0" opacity="0.8"/>
+              <rect x="54" y="34" width="55" height="5" rx="2.5" fill="#E2E8F0" opacity="0.6"/>
+            </g>
+
+            <!-- Floating story card 2 -->
+            <g transform="translate(395, 155)">
+              <rect width="120" height="52" rx="12" fill="white" opacity="0.92" filter="url(#glow)"/>
+              <rect width="120" height="52" rx="12" fill="none" stroke="#E2E8F0" stroke-width="1"/>
+              <circle cx="26" cy="26" r="16" fill="#ECFDF5"/>
+              <text x="26" y="31" text-anchor="middle" font-size="16">❤️</text>
+              <rect x="50" y="13" width="56" height="7" rx="3" fill="#CBD5E1" opacity="0.8"/>
+              <rect x="50" y="24" width="42" height="5" rx="2.5" fill="#E2E8F0" opacity="0.8"/>
+              <rect x="50" y="33" width="50" height="5" rx="2.5" fill="#E2E8F0" opacity="0.6"/>
+            </g>
+
+            <!-- Floating likes badge -->
+            <g transform="translate(340, 250)">
+              <rect width="88" height="32" rx="16" fill="white" opacity="0.96"/>
+              <rect width="88" height="32" rx="16" fill="none" stroke="#FCA5A5" stroke-width="1"/>
+              <text x="12" y="21" font-size="14">❤️</text>
+              <text x="32" y="21" font-size="11" fill="#374151" font-family="system-ui, sans-serif" font-weight="600">1.2K likes</text>
+            </g>
+
+            <!-- Floating pen badge -->
+            <g transform="translate(90, 210)">
+              <rect width="96" height="32" rx="16" fill="white" opacity="0.96"/>
+              <rect width="96" height="32" rx="16" fill="none" stroke="#A5B4FC" stroke-width="1"/>
+              <text x="12" y="21" font-size="14">✍️</text>
+              <text x="32" y="21" font-size="11" fill="#374151" font-family="system-ui, sans-serif" font-weight="600">New story!</text>
+            </g>
           </svg>
-          Start Writing Free
-        </a>
-        @if (!isAppInstalled()) {
-          <button class="home-hero__install-btn" (click)="triggerInstall()" aria-label="Install ApnaInsights app">
-            📱 Get the App
-            @if (pwaInstalls() > 0) {
-              <span class="home-hero__install-count" aria-hidden="true">{{ pwaInstalls() }}+</span>
-            }
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ Centered hero search ════════════════════════════════════════════ -->
+    <div class="v2-hero-search-zone">
+      <form class="v2-mega-search" role="search" aria-label="Search stories"
+            (submit)="onHeroSearch($event, megaSearchInput.value)">
+        <span class="v2-mega-search-icon" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </span>
+        <input #megaSearchInput type="text" class="v2-mega-search-input"
+               [placeholder]="heroPlaceholder()"
+               aria-label="Search stories, topics, writers"
+               autocomplete="off"
+               aria-haspopup="listbox"
+               [attr.aria-expanded]="heroSearchOpen()"
+               (focus)="openHeroSearch()"
+               (click)="openHeroSearch()"
+               (input)="onHeroSearchInput($any($event.target).value)" />
+        @if (heroDropdownHasQuery()) {
+          <button type="button" class="v2-mega-search-clear-btn" aria-label="Clear search" (click)="clearHeroSearch()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
         }
-      </div>
+        <kbd class="v2-mega-search-kbd" aria-hidden="true">⌘K</kbd>
+        <button type="button" class="v2-mega-search-voice-btn" aria-label="Voice search (coming soon)" disabled>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        </button>
+        <button type="submit" class="v2-mega-search-btn" aria-label="Search">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
+      </form>
 
+      <!-- Trending searches — always-visible chip row, mobile only -->
+      @if (heroDropdownTags().length > 0) {
+        <div class="v2-hero-trending-chips" aria-label="Trending searches">
+          @for (tag of heroDropdownTags().slice(0, 8); track tag) {
+            <button type="button" class="v2-hero-trending-chip" (click)="selectHeroTag(tag)">#{{ tag }}</button>
+          }
+        </div>
+      }
+
+      @if (heroSearchOpen()) {
+        <div class="v2-mega-dropdown" role="listbox" aria-label="Search suggestions">
+          <button type="button" class="v2-mega-dd-close" aria-label="Close search" (click)="closeHeroSearch()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+
+          <!-- Quick actions -->
+          <div class="v2-mega-dd-quick">
+            @if (heroDropdownTrending().length > 0) {
+              <button type="button" class="v2-mega-dd-chip" (click)="scrollDropdownTo('v2-mega-dd-trending')">🔥 Trending Today</button>
+            }
+            @if (recentSearches().length > 0) {
+              <button type="button" class="v2-mega-dd-chip" (click)="scrollDropdownTo('v2-mega-dd-recent')">🕒 Recent Searches</button>
+            }
+            <a class="v2-mega-dd-chip" routerLink="/topics" (click)="closeHeroSearch()">📚 Explore Categories</a>
+          </div>
+
+          @if (!heroDropdownHasQuery() && recentSearches().length === 0 && heroDropdownTrending().length === 0) {
+            <!-- Empty state -->
+            <div class="v2-mega-dd-empty">
+              <span class="v2-mega-dd-empty-icon" aria-hidden="true">🔎</span>
+              <p>Start typing to discover stories…</p>
+            </div>
+          } @else {
+
+            <!-- Recent searches -->
+            @if (recentSearches().length > 0) {
+              <div class="v2-mega-dd-section v2-mega-dd-recent">
+                <div class="v2-mega-dd-section-head">
+                  <h3>Recent Searches</h3>
+                  <button type="button" class="v2-mega-dd-clear" (click)="clearRecentSearches()">Clear</button>
+                </div>
+                <div class="v2-mega-dd-chips">
+                  @for (term of recentSearches(); track term) {
+                    <span class="v2-mega-dd-recent-chip">
+                      <button type="button" role="option" (click)="applyHeroSearchTerm(term)">🕒 {{ term }}</button>
+                      <button type="button" class="v2-mega-dd-chip-x" (click)="removeRecentSearch(term)" aria-label="Remove from recent searches">✕</button>
+                    </span>
+                  }
+                </div>
+              </div>
+            }
+
+            <!-- Categories -->
+            @if (heroDropdownCategories().length > 0) {
+              <div class="v2-mega-dd-section v2-mega-dd-categories">
+                <div class="v2-mega-dd-section-head"><h3>Categories</h3></div>
+                <div class="v2-mega-dd-cat-grid">
+                  @for (cat of heroDropdownCategories(); track cat) {
+                    <button type="button" class="v2-mega-dd-cat-card" role="option" (click)="selectHeroCategory(cat)">
+                      <span class="v2-mega-dd-cat-emoji" aria-hidden="true">{{ categoryEmojis()[cat] }}</span>
+                      <span class="v2-mega-dd-cat-name">{{ cat }}</span>
+                      @if (getCatCount(cat) > 0) {
+                        <span class="v2-mega-dd-cat-count">{{ getCatCount(cat) | formatCount }} Stories</span>
+                      }
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+
+            <!-- Trending blogs -->
+            @if (heroDropdownTrending().length > 0) {
+              <div class="v2-mega-dd-section v2-mega-dd-trending">
+                <div class="v2-mega-dd-section-head"><h3>Trending Blogs</h3></div>
+                <div class="v2-mega-dd-list">
+                  @for (blog of heroDropdownTrending(); track blog._id) {
+                    <a class="v2-mega-dd-item" role="option" [routerLink]="['/blog', blog.slug || blog._id]" (click)="closeHeroSearch()">
+                      <span class="v2-mega-dd-item-thumb">
+                        @if (blog.featuredImage) {
+                          <img [src]="blog.featuredImage" [alt]="blog.title" loading="lazy" />
+                        } @else {
+                          <span class="v2-mega-dd-item-noimg" aria-hidden="true">{{ blog.title.charAt(0).toUpperCase() }}</span>
+                        }
+                      </span>
+                      <span class="v2-mega-dd-item-body">
+                        <span class="v2-mega-dd-item-title">{{ blog.title }}</span>
+                        <span class="v2-mega-dd-item-meta">👁 {{ blog.views | formatCount }} views</span>
+                      </span>
+                      <span class="v2-mega-dd-badge">🔥 Trending</span>
+                    </a>
+                  }
+                </div>
+              </div>
+            }
+
+            <!-- Latest blogs -->
+            @if (heroDropdownLatest().length > 0) {
+              <div class="v2-mega-dd-section v2-mega-dd-latest">
+                <div class="v2-mega-dd-section-head"><h3>Latest Blogs</h3></div>
+                <div class="v2-mega-dd-list">
+                  @for (blog of heroDropdownLatest(); track blog._id) {
+                    <a class="v2-mega-dd-item" role="option" [routerLink]="['/blog', blog.slug || blog._id]" (click)="closeHeroSearch()">
+                      <span class="v2-mega-dd-item-thumb">
+                        @if (blog.featuredImage) {
+                          <img [src]="blog.featuredImage" [alt]="blog.title" loading="lazy" />
+                        } @else {
+                          <span class="v2-mega-dd-item-noimg" aria-hidden="true">{{ blog.title.charAt(0).toUpperCase() }}</span>
+                        }
+                      </span>
+                      <span class="v2-mega-dd-item-body">
+                        <span class="v2-mega-dd-item-title">{{ blog.title }}</span>
+                        <span class="v2-mega-dd-item-meta">{{ blog.user.name || 'Anonymous' }} · {{ blog.createdAt | timeAgo }}</span>
+                      </span>
+                    </a>
+                  }
+                </div>
+              </div>
+            }
+
+            <!-- Suggested writers -->
+            @if (heroDropdownWriters().length > 0) {
+              <div class="v2-mega-dd-section v2-mega-dd-writers">
+                <div class="v2-mega-dd-section-head"><h3>Suggested Writers</h3></div>
+                <div class="v2-mega-dd-writer-list">
+                  @for (w of heroDropdownWriters(); track w.id) {
+                    <a class="v2-mega-dd-writer" role="option" [routerLink]="['/author', w.id]" (click)="closeHeroSearch()">
+                      <span class="v2-mega-dd-writer-avatar" aria-hidden="true">{{ w.name.charAt(0).toUpperCase() }}</span>
+                      <span class="v2-mega-dd-writer-info">
+                        <span class="v2-mega-dd-writer-name">{{ w.name }}</span>
+                        <span class="v2-mega-dd-writer-stat">{{ w.reads | formatCount }} reads</span>
+                      </span>
+                    </a>
+                  }
+                </div>
+              </div>
+            }
+
+            <!-- Popular searches -->
+            @if (heroDropdownTags().length > 0) {
+              <div class="v2-mega-dd-section">
+                <div class="v2-mega-dd-section-head"><h3>Popular Searches</h3></div>
+                <div class="v2-mega-dd-chips">
+                  @for (tag of heroDropdownTags(); track tag) {
+                    <button type="button" class="v2-mega-dd-tag-chip" role="option" (click)="selectHeroTag(tag)">#{{ tag }}</button>
+                  }
+                </div>
+              </div>
+            }
+          }
+
+          <!-- Footer -->
+          <div class="v2-mega-dd-footer">
+            <a routerLink="/topics" (click)="closeHeroSearch()">Can't find what you're looking for? Explore all topics →</a>
+          </div>
+        </div>
+      }
     </div>
   </section>
 
-  <!-- ── Active Challenge Banner ──────────────────────────────────────────── -->
+  <!-- ══ ACTIVE CHALLENGE BANNER ══════════════════════════════════════════ -->
   @if (activeChallenge()) {
     <a class="challenge-strip" routerLink="/challenges" aria-label="View writing challenge">
       <span class="challenge-strip__trophy">🏆</span>
@@ -439,7 +740,7 @@
     </a>
   }
 
-  <!-- ── Challenge Winners Section ────────────────────────────────────────── -->
+  <!-- ══ CHALLENGE WINNERS ════════════════════════════════════════════════ -->
   @if (featuredWinners().length > 0) {
     <section class="winners-section" aria-labelledby="winners-heading">
       <div class="winners-inner">
@@ -450,8 +751,7 @@
         <div class="winners-grid">
           @for (post of featuredWinners(); track post._id) {
             <article class="winner-card" (click)="navigateToWinner(post)" role="button" tabindex="0"
-              (keydown.enter)="navigateToWinner(post)"
-              [attr.aria-label]="'Read ' + post.title">
+              (keydown.enter)="navigateToWinner(post)" [attr.aria-label]="'Read ' + post.title">
               <div class="winner-card__rank">{{ winnerRankLabel(post.featuredWinnerRank) }}</div>
               @if (post.featuredImage) {
                 <img [src]="post.featuredImage" [alt]="post.title" class="winner-card__img" loading="lazy">
@@ -467,7 +767,7 @@
                     <span class="winner-card__author-name">
                       {{ post.user?.name }}
                       @if (post.user?.writerOfMonthBadge?.active && post.featuredWinnerRank === 1) {
-                        <span class="winner-card__wom-badge" title="Writer of the Month">👑 WOM</span>
+                        <span class="winner-card__wom-badge">👑 WOM</span>
                       }
                     </span>
                     <span class="winner-card__stats">❤️ {{ post.likesCount }} · 👁 {{ post.views }}</span>
@@ -481,183 +781,173 @@
     </section>
   }
 
-  <!-- ── Two-column layout: feed (left) + sidebar (right, desktop only) ── -->
-  <div class="home-layout">
-    <div class="home-feed">
-
-  <div class="filter-wrap" role="search" aria-label="Filter and search stories">
-
-    <div class="filter-inner">
-      <!-- Row 1: Search full-width + filter toggle + clear -->
-      <div class="filter-inner-scroll">
-        <div class="search-wrap">
-          <span class="search-icon" aria-hidden="true">🔍</span>
-          <input
-            #searchInput
-            type="text"
-            class="search-box"
-            placeholder="Search stories…"
-            aria-label="Search community stories"
-            autocomplete="off"
-            (input)="onSearchInput($any($event.target).value)"
-            (keydown.enter)="scrollToResultsPublic()"
-          />
-          <kbd class="search-shortcut" aria-label="Press / to focus search">/</kbd>
+  <!-- ══ TRENDING TODAY ════════════════════════════════════════════════════ -->
+  @if (!isFiltering()) {
+  <section class="v2-trending-section" aria-labelledby="trending-today-heading">
+    <div class="v2-trending-inner">
+      <div class="v2-section-header">
+        <div class="v2-section-header-left">
+          <span class="v2-section-fire" aria-hidden="true">🔥</span>
+          <h2 class="v2-section-title" id="trending-today-heading">Trending Today</h2>
         </div>
-        <!-- Mobile-only filter toggle button -->
-        <button class="mob-filter-btn"
-                [class.mob-filter-btn--active]="filterOpen() || isFiltering()"
-                (click)="filterOpen.set(!filterOpen())"
-                aria-label="Toggle filter options">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-               stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <line x1="4" y1="6" x2="20" y2="6"/>
-            <line x1="8" y1="12" x2="16" y2="12"/>
-            <line x1="11" y1="18" x2="13" y2="18"/>
-          </svg>
-        </button>
-        @if (isFiltering()) {
-          <button class="cat-clear-btn"
-                  (click)="selectedCategory.set(''); selectedTag.set(''); selectedReadingTime.set(''); selectedSort.set('newest'); searchQuery.set('')"
-                  aria-label="Clear all filters">
-            ✕ Clear
-          </button>
-        }
+        <a class="v2-section-viewall" routerLink="/search" [queryParams]="{q:'trending'}" aria-label="View all trending">
+          View all
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
+        </a>
       </div>
 
-      <!-- Row 2: Tag / Length / Sort pills -->
-      <div class="filter-pills-row" [class.filter-pills-row--open]="filterOpen() || isFiltering()">
-        <div class="filter-pills">
-          @if (popularTags().length > 0) {
-            <select class="filter-pill"
-                    [class.filter-pill--active]="!!selectedTag()"
-                    aria-label="Filter by tag"
-                    [ngModel]="selectedTag()"
-                    (ngModelChange)="onTagSelectChange($event)">
-              <option value=""># Tags</option>
-              @for (tag of popularTags(); track tag) {
-                <option [value]="tag">#{{ tag }}</option>
-              }
-            </select>
+      @if (isLoading() || allPosts().length === 0) {
+        <div class="v2-trending-scroll">
+          @for (s of [1,2,3,4]; track $index) {
+            <div class="v2-trending-skel" aria-hidden="true"></div>
           }
-
-          <select class="filter-pill"
-                  [class.filter-pill--active]="!!selectedReadingTime()"
-                  aria-label="Filter by reading time"
-                  [ngModel]="selectedReadingTime()"
-                  (ngModelChange)="onTimeSelectChange($event)">
-            <option value="">⏱ Any Length</option>
-            <option value="quick">⚡ Quick &lt;5 min</option>
-            <option value="medium">📖 Medium 5–9 min</option>
-            <option value="long">📚 Long 10+ min</option>
-          </select>
-
-          <select class="filter-pill"
-                  [class.filter-pill--active]="selectedSort() !== 'newest'"
-                  aria-label="Sort stories by"
-                  [ngModel]="selectedSort()"
-                  (ngModelChange)="onSortChange($event)">
-            <option value="newest">↕ Newest</option>
-            <option value="liked">❤️ Most Liked</option>
-            <option value="viewed">👁 Most Viewed</option>
-            <option value="comments">💬 Most Comments</option>
-          </select>
         </div>
-      </div>
-    </div>
-
-    <!-- Row 2: Category chips -->
-    <nav class="category-bar"
-         role="navigation"
-         aria-label="Browse by topic">
-      <button class="cat-tag"
-              [class.active]="selectedCategory() === ''"
-              (click)="selectedCategory.set('')"
-              [attr.aria-pressed]="selectedCategory() === ''"
-              aria-label="Show all categories">
-        All
-      </button>
-      @for (cat of categories(); track trackByCategory($index, cat)) {
-        <button
-          class="cat-tag"
-          [class.active]="selectedCategory() === cat"
-          [class.cat-update]="cat === 'Update'"
-          [class.cat-news]="cat === 'News'"
-          (click)="selectCategory(cat)"
-          [attr.aria-pressed]="selectedCategory() === cat"
-          [attr.aria-label]="'Browse ' + cat + ' stories' + (getCatCount(cat) > 0 ? ', ' + getCatCount(cat) + ' stories' : '')">
-          @if (cat === 'Update') {
-            <span class="live-dot live-dot--green" aria-hidden="true"></span>
+      } @else {
+        <div class="v2-trending-scroll" role="list">
+          @for (blog of trendingPosts().slice(0, 6); track blog._id) {
+            <article class="v2-trending-card" role="listitem"
+                     (click)="readBlog(blog.slug || blog._id)"
+                     (keydown.enter)="readBlog(blog.slug || blog._id)"
+                     tabindex="0"
+                     [attr.aria-label]="blog.title">
+              <!-- Thumbnail -->
+              <div class="v2-trending-card-img">
+                @if (blog.featuredImage) {
+                  <img [src]="blog.featuredImage" [alt]="blog.title" loading="lazy" />
+                } @else {
+                  <div class="v2-trending-card-noimg">
+                    <span>{{ blog.title.charAt(0).toUpperCase() }}</span>
+                  </div>
+                }
+                <div class="v2-trending-card-gradient"></div>
+                <!-- Category badge -->
+                <span class="v2-trending-cat-badge">
+                  {{ categoryEmojis()[blog.categories[0]] }} {{ blog.categories[0] }}
+                </span>
+                <!-- Bookmark -->
+                <button class="v2-trending-bookmark"
+                        [class.bookmarked]="isBookmarked(blog._id)"
+                        (click)="toggleBookmark(blog._id, $event)"
+                        [attr.aria-label]="(isBookmarked(blog._id) ? 'Remove bookmark' : 'Bookmark') + ': ' + blog.title">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
+                </button>
+              </div>
+              <!-- Card info -->
+              <div class="v2-trending-card-body">
+                <h3 class="v2-trending-card-title">{{ blog.title }}</h3>
+                <div class="v2-trending-card-meta">
+                  <span>⏱ {{ getReadingTime(blog) }} min read</span>
+                  <span class="v2-trending-meta-sep" aria-hidden="true">·</span>
+                  <span>👁 {{ blog.views | formatCount }} views</span>
+                </div>
+              </div>
+            </article>
           }
-          @if (cat === 'News') {
-            <span class="live-dot live-dot--red" aria-hidden="true"></span>
-          }
-          <span class="cat-emoji" aria-hidden="true">{{ categoryEmojis()[cat] }}</span> {{ cat }}
-          @if (getCatCount(cat) > 0) {
-            <span class="cat-pill-count" aria-hidden="true">{{ getCatCount(cat) }}</span>
-          }
-        </button>
+        </div>
       }
-    </nav>
+    </div>
+  </section>
+  }
 
-  </div>
+  <!-- ══ MAIN 2-COLUMN LAYOUT ═════════════════════════════════════════════ -->
+  <div class="v2-main-layout">
 
-  <ng-template #skeletonGrid>
-    <div class="blog-grid" aria-busy="true" aria-label="Loading stories…">
-      @for (s of skeletonItems; track $index) {
-        <div class="skeleton-card" role="status" aria-label="Loading story">
-          <div class="skeleton-card-header">
-            <div class="skeleton-hdr-avatar"></div>
-            <div class="skeleton-hdr-lines">
-              <div class="skeleton-line" style="width:80px;height:11px;"></div>
-              <div class="skeleton-line" style="width:55px;height:9px;margin-top:4px;"></div>
+    <!-- LEFT: Story feed -->
+    <div class="v2-feed-col">
+
+      <!-- Filter wrap (sticky) -->
+      <div class="filter-wrap" role="search" aria-label="Filter and search stories">
+        <div class="filter-inner">
+          <div class="filter-inner-scroll">
+            <div class="search-wrap">
+              <span class="search-icon" aria-hidden="true">🔍</span>
+              <input #searchInput type="text" class="search-box" placeholder="Search stories…"
+                     aria-label="Search community stories" autocomplete="off"
+                     (input)="onSearchInput($any($event.target).value)"
+                     (keydown.enter)="scrollToResultsPublic()" />
+              <kbd class="search-shortcut" aria-label="Press / to focus search">/</kbd>
             </div>
-            <div class="skeleton-line" style="width:64px;height:22px;border-radius:20px;flex-shrink:0;"></div>
+            <button class="mob-filter-btn"
+                    [class.mob-filter-btn--active]="filterOpen() || isFiltering()"
+                    (click)="filterOpen.set(!filterOpen())" aria-label="Toggle filter options">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/>
+              </svg>
+              <span class="mob-filter-btn-label">Filter &amp; Sort</span>
+            </button>
+            @if (isFiltering()) {
+              <button class="cat-clear-btn"
+                      (click)="selectedCategory.set(''); selectedTag.set(''); selectedReadingTime.set(''); selectedSort.set('newest'); searchQuery.set('')"
+                      aria-label="Clear all filters">✕ Clear</button>
+            }
           </div>
-          <div class="skeleton-img-block"></div>
-          <div class="skeleton-action-bar">
-            <div class="skeleton-line" style="width:36px;height:18px;border-radius:6px;"></div>
-            <div class="skeleton-line" style="width:36px;height:18px;border-radius:6px;"></div>
-            <div class="skeleton-line" style="width:36px;height:18px;border-radius:6px;"></div>
-            <div style="flex:1"></div>
-            <div class="skeleton-line" style="width:24px;height:24px;border-radius:6px;"></div>
-          </div>
-          <div class="skeleton-body">
-            <div class="skeleton-line title w-70"></div>
-            <div class="skeleton-line w-full"></div>
-            <div class="skeleton-line w-85"></div>
-            <div class="skeleton-line w-50" style="margin-top:4px;height:10px;"></div>
-          </div>
-          <div class="skeleton-footer">
-            <div class="skeleton-line" style="width:110px;height:28px;border-radius:8px;"></div>
-            <div class="skeleton-line" style="width:66px;height:28px;border-radius:8px;"></div>
+
+          <div class="filter-pills-row" [class.filter-pills-row--open]="filterOpen() || isFiltering()">
+            <div class="filter-pills">
+              @if (popularTags().length > 0) {
+                <select class="filter-pill" [class.filter-pill--active]="!!selectedTag()"
+                        aria-label="Filter by tag" [ngModel]="selectedTag()"
+                        (ngModelChange)="onTagSelectChange($event)">
+                  <option value=""># Tags</option>
+                  @for (tag of popularTags(); track tag) {
+                    <option [value]="tag">#{{ tag }}</option>
+                  }
+                </select>
+              }
+              <select class="filter-pill" [class.filter-pill--active]="!!selectedReadingTime()"
+                      aria-label="Filter by reading time" [ngModel]="selectedReadingTime()"
+                      (ngModelChange)="onTimeSelectChange($event)">
+                <option value="">⏱ Any Length</option>
+                <option value="quick">⚡ Quick &lt;5 min</option>
+                <option value="medium">📖 Medium 5–9 min</option>
+                <option value="long">📚 Long 10+ min</option>
+              </select>
+              <select class="filter-pill" [class.filter-pill--active]="selectedSort() !== 'newest'"
+                      aria-label="Sort stories by" [ngModel]="selectedSort()"
+                      (ngModelChange)="onSortChange($event)">
+                <option value="newest">↕ Newest</option>
+                <option value="liked">❤️ Most Liked</option>
+                <option value="viewed">👁 Most Viewed</option>
+                <option value="comments">💬 Most Comments</option>
+              </select>
+            </div>
           </div>
         </div>
-      }
-    </div>
-  </ng-template>
 
-  @if (isFiltering()) {
-    <section class="section" id="filtered-results" aria-labelledby="results-heading">
-      <div class="section-header">
-        <h2 class="section-title" id="results-heading">
-          @if (selectedTag()) { 🏷 #{{ selectedTag() }}
-          } @else { 🔍 Results }
-        </h2>
-        <span class="result-count"
-              role="status"
-              aria-live="polite"
-              aria-atomic="true">
-          @if (!filterPoolLoading()) { {{ filteredPosts().length }} found }
-        </span>
+        <nav class="category-bar" role="navigation" aria-label="Browse by topic">
+          <button class="cat-tag" [class.active]="selectedCategory() === ''"
+                  (click)="selectedCategory.set('')" [attr.aria-pressed]="selectedCategory() === ''"
+                  aria-label="Show all categories">All</button>
+          @for (cat of categories(); track trackByCategory($index, cat)) {
+            <a class="cat-tag" [class.active]="selectedCategory() === cat"
+               [class.cat-update]="cat === 'Update'" [class.cat-news]="cat === 'News'"
+               [href]="'/category/' + cat.toLowerCase()"
+               (click)="$event.preventDefault(); selectCategory(cat)" [attr.aria-pressed]="selectedCategory() === cat"
+               [attr.aria-label]="'Browse ' + cat + ' stories'">
+              @if (cat === 'Update') { <span class="live-dot live-dot--green" aria-hidden="true"></span> }
+              @if (cat === 'News')   { <span class="live-dot live-dot--red"   aria-hidden="true"></span> }
+              <span class="cat-emoji" aria-hidden="true">{{ categoryEmojis()[cat] }}</span> {{ cat }}
+              @if (getCatCount(cat) > 0) { <span class="cat-pill-count" aria-hidden="true">{{ getCatCount(cat) }}</span> }
+            </a>
+          }
+        </nav>
       </div>
-      <div class="blog-grid">
-        @if (filterError()) {
-          <div class="filter-error-msg" role="alert">
-            <span>⚠️ {{ filterError() }}</span>
-          </div>
-        }
-        @if (filterPoolLoading()) {
+
+      <!-- Floating active filter badge -->
+      @if (isFiltering() && filterOutOfView() && activeFilterLabel()) {
+        <div class="active-filter-badge" role="status" aria-live="polite">
+          <span class="active-filter-badge__label">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+            {{ activeFilterLabel() }}
+          </span>
+          <button class="active-filter-badge__clear" (click)="clearAllFilters()" aria-label="Clear filter">✕</button>
+        </div>
+      }
+
+      <!-- Skeleton template -->
+      <ng-template #skeletonGrid>
+        <div class="blog-grid" aria-busy="true" aria-label="Loading stories…">
           @for (s of skeletonItems; track $index) {
             <div class="skeleton-card" role="status" aria-label="Loading story">
               <div class="skeleton-card-header">
@@ -672,498 +962,434 @@
               <div class="skeleton-action-bar">
                 <div class="skeleton-line" style="width:36px;height:18px;border-radius:6px;"></div>
                 <div class="skeleton-line" style="width:36px;height:18px;border-radius:6px;"></div>
+                <div class="skeleton-line" style="width:36px;height:18px;border-radius:6px;"></div>
                 <div style="flex:1"></div>
                 <div class="skeleton-line" style="width:24px;height:24px;border-radius:6px;"></div>
               </div>
               <div class="skeleton-body">
-                <div class="skeleton-line skeleton-line--title"></div>
-                <div class="skeleton-line skeleton-line--sub"></div>
-                <div class="skeleton-line skeleton-line--sub" style="width:55%"></div>
+                <div class="skeleton-line title w-70"></div>
+                <div class="skeleton-line w-full"></div>
+                <div class="skeleton-line w-85"></div>
+                <div class="skeleton-line w-50" style="margin-top:4px;height:10px;"></div>
+              </div>
+              <div class="skeleton-footer">
+                <div class="skeleton-line" style="width:110px;height:28px;border-radius:8px;"></div>
+                <div class="skeleton-line" style="width:66px;height:28px;border-radius:8px;"></div>
               </div>
             </div>
           }
-        } @else if (filteredPosts().length === 0) {
-          <div class="no-results" role="status">
-            <span class="no-results-icon" aria-hidden="true">🔍</span>
-            <span>No stories match your filters.</span>
-            <button class="clear-filter-btn"
-                    (click)="selectedCategory.set(''); selectedTag.set(''); selectedReadingTime.set(''); selectedSort.set('newest')"
-                    aria-label="Clear filters to see all stories">
-              Clear filters
-            </button>
+        </div>
+      </ng-template>
+
+      <!-- Filtered results -->
+      @if (isFiltering()) {
+        <section class="section" id="filtered-results" aria-labelledby="results-heading">
+          <div class="section-header">
+            <h2 class="section-title" id="results-heading">
+              @if (selectedTag()) { 🏷 #{{ selectedTag() }} }
+              @else if (searchQuery().trim()) { 🔍 "{{ searchQuery().trim() }}" }
+              @else { 🔍 Results }
+            </h2>
+            <span class="result-count" role="status" aria-live="polite" aria-atomic="true">
+              @if (!filterPoolLoading()) { {{ filteredPosts().length }} found }
+            </span>
           </div>
-        } @else {
-          @for (blog of visibleFilteredPosts(); track blog._id) {
-            <ng-container [ngTemplateOutlet]="blogCard"
-                          [ngTemplateOutletContext]="{ $implicit: blog }"></ng-container>
-          }
-        }
-      </div>
-      <!-- Infinite scroll sentinel -->
-      @if (hasMoreFiltered()) {
-        <div class="load-more-sentinel" aria-hidden="true">
-          <span class="load-more-dots"><span></span><span></span><span></span></span>
-        </div>
-      } @else if (showAllLoadedBanner()) {
-        <p class="all-loaded-msg">✓ All {{ filteredPosts().length }} stories shown</p>
-      }
-    </section>
-  }
-
-  <!-- ── Floating active-filter badge (appears when scrolled past filter-wrap) ── -->
-  @if (isFiltering() && filterOutOfView() && activeFilterLabel()) {
-    <div class="active-filter-badge" role="status" aria-live="polite">
-      <span class="active-filter-badge__label">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-             stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
-          <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
-        </svg>
-        {{ activeFilterLabel() }}
-      </span>
-      <button class="active-filter-badge__clear"
-              (click)="clearAllFilters()"
-              aria-label="Clear filter">✕</button>
-    </div>
-  }
-
-  @if (!isFiltering() && showSponsored()) {
-    <div class="feat-section" role="region" aria-label="Sponsored stories">
-      <div class="feat-row">
-        @for (blog of sponsoredPosts(); track blog._id) {
-          <article class="feat-item" (click)="readBlog(blog.slug || blog._id)"
-                   [attr.aria-label]="blog.title">
-            <div class="feat-item-img">
-              @if (blog.featuredImage) {
-                <img [src]="blog.featuredImage" [alt]="blog.title" loading="lazy" />
-              } @else {
-                <div class="feat-item-noimg">{{ blog.title.charAt(0).toUpperCase() }}</div>
-              }
-            </div>
-            <div class="feat-item-body">
-              <div class="feat-item-top">
-                <span class="feat-item-cat">{{ blog.categories[0] }}</span>
-                <span class="feat-item-sp">Sponsored</span>
-              </div>
-              <h4 class="feat-item-title">{{ blog.title }}</h4>
-              <p class="feat-item-desc">{{ blog.description }}</p>
-              @if (blog.sponsorCtaText && blog.sponsorCtaUrl) {
-                <a class="feat-cta-btn"
-                   [href]="blog.sponsorCtaUrl"
-                   target="_blank" rel="noopener sponsored"
-                   (click)="$event.stopPropagation()">
-                  {{ blog.sponsorCtaText }}
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-                    <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
-                    <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
-                  </svg>
-                </a>
-              }
-              <div class="feat-item-foot">
-                <span class="feat-item-author">{{ blog.user.name }}</span>
-                <span class="feat-item-dot" aria-hidden="true">·</span>
-                <span class="feat-item-time">{{ getReadingTime(blog) }} min read</span>
-              </div>
-            </div>
-          </article>
-        }
-      </div>
-    </div>
-  }
-
-  @if (!isFiltering() && showSponsoredShorts()) {
-    <div class="sp-shorts-section" role="region" aria-label="Sponsored shorts">
-      <div class="sp-shorts-header">
-        <div class="sp-shorts-header-left">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-            <path d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.9L15 14v-4z"/>
-            <rect x="3" y="6" width="12" height="12" rx="2"/>
-          </svg>
-          <span>Featured Shorts</span>
-          <span class="sp-shorts-sp-pill">Sponsored</span>
-        </div>
-        <a class="sp-shorts-all" routerLink="/shorts">Watch all →</a>
-      </div>
-
-      <div class="sp-shorts-grid">
-        @for (s of sponsoredShorts(); track s._id) {
-          <a class="sp-sc" [routerLink]="['/shorts']" [fragment]="s._id">
-            <div class="sp-sc-thumb">
-              @if (s.thumbnailUrl) {
-                <img [src]="s.thumbnailUrl" [alt]="s.title" loading="lazy" />
-              } @else {
-                <div class="sp-sc-noimg">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="rgba(255,255,255,.3)"><path d="M8 5v14l11-7z"/></svg>
+          <div class="blog-grid">
+            @if (filterError()) {
+              <div class="filter-error-msg" role="alert"><span>⚠️ {{ filterError() }}</span></div>
+            }
+            @if (filterPoolLoading()) {
+              @for (s of skeletonItems; track $index) {
+                <div class="skeleton-card" role="status" aria-label="Loading story">
+                  <div class="skeleton-card-header">
+                    <div class="skeleton-hdr-avatar"></div>
+                    <div class="skeleton-hdr-lines">
+                      <div class="skeleton-line" style="width:80px;height:11px;"></div>
+                      <div class="skeleton-line" style="width:55px;height:9px;margin-top:4px;"></div>
+                    </div>
+                    <div class="skeleton-line" style="width:64px;height:22px;border-radius:20px;flex-shrink:0;"></div>
+                  </div>
+                  <div class="skeleton-img-block"></div>
+                  <div class="skeleton-action-bar">
+                    <div class="skeleton-line" style="width:36px;height:18px;border-radius:6px;"></div>
+                    <div class="skeleton-line" style="width:36px;height:18px;border-radius:6px;"></div>
+                    <div style="flex:1"></div>
+                    <div class="skeleton-line" style="width:24px;height:24px;border-radius:6px;"></div>
+                  </div>
+                  <div class="skeleton-body">
+                    <div class="skeleton-line skeleton-line--title"></div>
+                    <div class="skeleton-line skeleton-line--sub"></div>
+                    <div class="skeleton-line skeleton-line--sub" style="width:55%"></div>
+                  </div>
                 </div>
               }
-              <div class="sp-sc-grad"></div>
-              <div class="sp-sc-play">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+            } @else if (filteredPosts().length === 0) {
+              <div class="no-results" role="status">
+                <span class="no-results-icon" aria-hidden="true">🔍</span>
+                <span>No stories match your filters.</span>
+                <button class="clear-filter-btn"
+                        (click)="clearAllFilters()"
+                        aria-label="Clear filters">Clear filters</button>
               </div>
-              <span class="sp-sc-cat">{{ s.category }}</span>
-            </div>
-            <div class="sp-sc-body">
-              <p class="sp-sc-title">{{ s.title }}</p>
-              @if (s.sponsorCtaText && s.sponsorCtaUrl) {
-                <a class="sp-sc-cta"
-                   [href]="s.sponsorCtaUrl"
-                   target="_blank" rel="noopener sponsored"
-                   (click)="$event.stopPropagation()">
-                  {{ s.sponsorCtaText }}
-                  <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-                    <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
-                    <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
-                  </svg>
-                </a>
-              }
-            </div>
-          </a>
-        }
-      </div>
-    </div>
-  }
-
-  @defer (on idle) {
-    @if (!isFiltering() && showFavorites()) {
-      <section class="section section--pers" aria-labelledby="fav-heading">
-        <div class="section-header">
-          <span class="section-pill fav" aria-hidden="true">SAVED</span>
-          <h2 class="section-title" id="fav-heading">⭐ Saved Stories</h2>
-          <span class="fav-count-chip"
-                aria-label="{{ favoritePosts().length }} saved {{ favoritePosts().length === 1 ? 'story' : 'stories' }}">
-            {{ favoritePosts().length }}
-          </span>
-        </div>
-        <div class="blog-grid">
-          @for (blog of favoritePosts(); track blog._id) {
-            <ng-container [ngTemplateOutlet]="blogCard"
-                          [ngTemplateOutletContext]="{ $implicit: blog }"></ng-container>
-          }
-        </div>
-      </section>
-    }
-
-    @if (!isFiltering() && showRecommended()) {
-      <section class="section section--pers" aria-labelledby="rec-heading">
-        <div class="section-header">
-          <span class="section-pill rec" aria-hidden="true">FOR YOU</span>
-          <h2 class="section-title" id="rec-heading">✨ Recommended for You</h2>
-        </div>
-        <p class="rec-subtitle">Based on your reading interests</p>
-        <div class="blog-grid">
-          @for (blog of recommendedPosts(); track blog._id) {
-            <ng-container [ngTemplateOutlet]="blogCard"
-                          [ngTemplateOutletContext]="{ $implicit: blog }"></ng-container>
-          }
-        </div>
-      </section>
-    }
-  }
-
-  @if (!isFiltering()) {
-  <section class="section mob-tab-section mob-tab-section--trending" aria-labelledby="trending-heading">
-    <div class="section-header">
-      <span class="section-pill trending" aria-hidden="true">HOT</span>
-      <h2 class="section-title" id="trending-heading">🔥 Trending Stories</h2>
-      <nav class="pagination-btns" aria-label="Trending stories pagination">
-        <button class="page-btn" [disabled]="trendingPage() === 0"
-                (click)="prevPage(trendingPage)" aria-label="Previous">‹</button>
-        <span class="page-info">{{ trendingPage() + 1 }} / {{ trendingPageCount() }}</span>
-        <button class="page-btn" [disabled]="trendingPage() >= trendingPageCount() - 1"
-                (click)="nextPage(trendingPage, trendingPageCount())" aria-label="Next">›</button>
-      </nav>
-    </div>
-    @if (isLoading() || allPosts().length === 0) {
-      <ng-container [ngTemplateOutlet]="skeletonGrid"></ng-container>
-    } @else {
-      <div class="blog-grid">
-        @for (blog of trendingPosts(); track blog._id) {
-          <ng-container [ngTemplateOutlet]="blogCard"
-                        [ngTemplateOutletContext]="{ $implicit: blog }"></ng-container>
-        }
-      </div>
-    }
-  </section>
-
-  <!-- AdSense — between Trending and Most Viewed -->
-  <div class="home-ad-wrap">
-    <ins class="adsbygoogle"
-      style="display:block"
-      data-ad-client="ca-pub-6477809641944524"
-      data-ad-slot="2024301795"
-      data-ad-format="auto"
-      data-full-width-responsive="true"></ins>
-  </div>
-
-  <section class="section mob-tab-section mob-tab-section--most-viewed" aria-labelledby="hot-heading">
-    <div class="section-header">
-      <span class="section-pill hot" aria-hidden="true">VIEWS</span>
-      <h2 class="section-title" id="hot-heading">👁 Most Viewed</h2>
-      <nav class="pagination-btns" aria-label="Most viewed pagination">
-        <button class="page-btn" [disabled]="hotPage() === 0"
-                (click)="prevPage(hotPage)" aria-label="Previous">‹</button>
-        <span class="page-info">{{ hotPage() + 1 }} / {{ hotPageCount() }}</span>
-        <button class="page-btn" [disabled]="hotPage() >= hotPageCount() - 1"
-                (click)="nextPage(hotPage, hotPageCount())" aria-label="Next">›</button>
-      </nav>
-    </div>
-    @if (isLoading() || allPosts().length === 0) {
-      <ng-container [ngTemplateOutlet]="skeletonGrid"></ng-container>
-    } @else {
-      <div class="blog-grid">
-        @for (blog of hotPosts(); track blog._id) {
-          <ng-container [ngTemplateOutlet]="blogCard"
-                        [ngTemplateOutletContext]="{ $implicit: blog }"></ng-container>
-        }
-      </div>
-    }
-  </section>
-
-  <!-- AdSense — between Most Viewed and Latest Stories -->
-  <div class="home-ad-wrap">
-    <ins class="adsbygoogle"
-      style="display:block"
-      data-ad-client="ca-pub-6477809641944524"
-      data-ad-slot="7546879763"
-      data-ad-format="auto"
-      data-full-width-responsive="true"></ins>
-  </div>
-
-  <section class="section mob-tab-section mob-tab-section--latest" aria-labelledby="latest-heading">
-    <div class="section-header">
-      <span class="section-pill new" aria-hidden="true">NEW</span>
-      <h2 class="section-title" id="latest-heading">✨ Latest Stories</h2>
-      <nav class="pagination-btns" aria-label="Latest stories pagination">
-        <button class="page-btn" [disabled]="latestPage() === 0"
-                (click)="prevPage(latestPage)" aria-label="Previous">‹</button>
-        <span class="page-info">
-          {{ latestPage() + 1 }} / {{ latestPageCount() }}
-          @if (isFetchingMore()) { <span class="page-loading">…</span> }
-        </span>
-        <button class="page-btn"
-                [disabled]="latestPage() >= latestPageCount() - 1 && !hasMoreOnServer()"
-                (click)="nextPage(latestPage, latestPageCount())" aria-label="Next">›</button>
-      </nav>
-    </div>
-    @if (isLoading() || allPosts().length === 0) {
-      <ng-container [ngTemplateOutlet]="skeletonGrid"></ng-container>
-    } @else {
-      <div class="blog-grid">
-        @for (blog of latestPosts(); track blog._id) {
-          <ng-container [ngTemplateOutlet]="blogCard"
-                        [ngTemplateOutletContext]="{ $implicit: blog }"></ng-container>
-        }
-      </div>
-    }
-  </section>
-  } <!-- /!isFiltering() -->
-
-  <ng-template #blogCard let-blog>
-    <article class="blog-card"
-             itemscope
-             itemtype="https://schema.org/BlogPosting"
-             [attr.aria-label]="blog.title">
-
-      <!-- Hidden schema markup — critical for Google rich results -->
-      <meta itemprop="headline"       [attr.content]="blog.title" />
-      <meta itemprop="description"    [attr.content]="blog.description" />
-      <meta itemprop="datePublished"  [attr.content]="blog.createdAt" />
-      <meta itemprop="url"            [attr.content]="'https://apnainsights.com/blog/' + (blog.slug || blog._id)" />
-      @if (blog.categories?.[0]) {
-        <meta itemprop="articleSection" [attr.content]="blog.categories[0]" />
-      }
-      <div itemprop="author" itemscope itemtype="https://schema.org/Person" style="display:none">
-        <meta itemprop="name" [attr.content]="(blog.user?.name) || 'Anonymous Writer'" />
-      </div>
-      <div itemprop="publisher" itemscope itemtype="https://schema.org/Organization" style="display:none">
-        <meta itemprop="name" content="ApnaInsights" />
-        <div itemprop="logo" itemscope itemtype="https://schema.org/ImageObject">
-          <meta itemprop="url" content="https://apnainsights.com/logo.png" />
-        </div>
-      </div>
-      <div itemprop="interactionStatistic" itemscope itemtype="https://schema.org/InteractionCounter" style="display:none">
-        <meta itemprop="interactionType" content="https://schema.org/LikeAction" />
-        <meta itemprop="userInteractionCount" [attr.content]="blog.likesCount" />
-      </div>
-      <div itemprop="interactionStatistic" itemscope itemtype="https://schema.org/InteractionCounter" style="display:none">
-        <meta itemprop="interactionType" content="https://schema.org/ReadAction" />
-        <meta itemprop="userInteractionCount" [attr.content]="blog.views" />
-      </div>
-
-      <!-- Card inner: content left + thumbnail right -->
-      <div class="card-inner" (click)="readBlog(blog.slug || blog._id)"
-           role="link" tabindex="0"
-           (keydown.enter)="readBlog(blog.slug || blog._id)"
-           [attr.aria-label]="'Read: ' + blog.title">
-
-        <!-- Left: text content -->
-        <div class="card-content">
-
-          <!-- Meta top: category badge + trending/new pill + read time -->
-          <div class="card-meta-top">
-            <span class="card-cat-badge"
-                  [class.cat-badge--update]="blog.categories[0] === 'Update'"
-                  [class.cat-badge--news]  ="blog.categories[0] === 'News'">
-              @if (blog.categories[0] === 'Update') { <span class="live-dot live-dot--green" aria-hidden="true"></span> }
-              @if (blog.categories[0] === 'News')   { <span class="live-dot live-dot--red"   aria-hidden="true"></span> }
-              <span aria-hidden="true">{{ categoryEmojis()[blog.categories[0]] }}</span>
-              {{ blog.categories[0] }}
-            </span>
-            @if (blog.isSponsored) {
-              <span class="card-badge card-badge--sp">★ Sponsored</span>
-            } @else if (isTrending(blog._id)) {
-              <span class="card-badge card-badge--hot">🔥 Trending</span>
-            } @else if (isNew(blog)) {
-              <span class="card-badge card-badge--new">NEW</span>
-            }
-            <span class="card-read-time" aria-label="{{ getReadingTime(blog) }} minute read">⏱ {{ getReadingTime(blog) }} min</span>
-          </div>
-
-          <!-- Title & description -->
-          <h3 class="card-title" itemprop="name">{{ blog.title }}</h3>
-          <p class="card-desc" itemprop="abstract">{{ blog.description }}</p>
-
-          <!-- Tags -->
-          @if (blog.tags?.length) {
-            <div class="card-tags" aria-label="Story tags" (click)="$event.stopPropagation()">
-              @for (tag of blog.tags.slice(0, 3); track tag) {
-                <a class="card-tag-chip"
-                   [href]="'/tag/' + tag"
-                   (click)="$event.preventDefault(); selectTag(tag)"
-                   [class.active]="selectedTag() === tag"
-                   [attr.aria-label]="'Filter by tag: ' + tag"
-                   [attr.aria-pressed]="selectedTag() === tag">
-                  #{{ tag }}
-                </a>
-              }
-            </div>
-          }
-
-          <!-- Author row -->
-          <div class="card-author-row">
-            <span class="card-author-avatar" aria-hidden="true">{{ (blog.user?.name || 'A').charAt(0).toUpperCase() }}</span>
-            <span class="card-author-name">{{ blog.user?.name || 'Anonymous' }}</span>
-            <span class="card-meta-sep" aria-hidden="true">·</span>
-            <time class="card-date" itemprop="datePublished" [attr.datetime]="blog.createdAt">
-              {{ blog.createdAt | timeAgo }}
-            </time>
-          </div>
-
-        </div><!-- /card-content -->
-
-        <!-- Right: thumbnail -->
-        <div class="card-thumb-wrap">
-          @if (blog.featuredImage) {
-            <img itemprop="image"
-                 [src]="blog.featuredImage"
-                 [alt]="blog.title"
-                 loading="lazy"
-                 decoding="async"
-                 width="200"
-                 height="140"
-                 (error)="blog.featuredImage = null" />
-          } @else {
-            <div class="card-no-thumb" role="img" [attr.aria-label]="blog.title">
-              <span class="card-no-thumb-letter" aria-hidden="true">{{ blog.title?.charAt(0)?.toUpperCase() }}</span>
-            </div>
-          }
-          @if (historyLoaded() && isRead(blog._id)) {
-            @if (getSavedProgress(blog._id) > 0) {
-              <span class="continue-badge continue-badge--progress"
-                    [attr.aria-label]="getSavedProgress(blog._id) + '% read'">
-                ↩ {{ getSavedProgress(blog._id) }}%
-                <span class="continue-progress-bar" [style.width.%]="getSavedProgress(blog._id)" aria-hidden="true"></span>
-              </span>
             } @else {
-              <span class="continue-badge" aria-label="You've read this story">↩ Continue</span>
-            }
-          }
-        </div><!-- /card-thumb-wrap -->
-
-      </div><!-- /card-inner -->
-
-      <!-- Footer: stats + actions (outside clickable zone) -->
-      <div class="card-footer">
-        <div class="card-stats">
-          <button class="stat-btn like-btn"
-                  [class.liked]="isLiked(blog._id)"
-                  (click)="toggleLike(blog, $event)"
-                  [attr.aria-label]="(isLiked(blog._id) ? 'Unlike' : 'Like') + ' — ' + blog.likesCount + ' likes'">
-            <span class="stat-icon" aria-hidden="true">{{ isLiked(blog._id) ? '❤️' : '🤍' }}</span>
-            <span class="stat-count" aria-hidden="true">{{ blog.likesCount }}</span>
-          </button>
-          <span class="stat-display" [attr.aria-label]="blog.commentsCount + ' comments'">
-            <span class="stat-icon" aria-hidden="true">💬</span>
-            <span class="stat-count" aria-hidden="true">{{ blog.commentsCount }}</span>
-          </span>
-          <span class="stat-display" [attr.aria-label]="(blog.views | formatCount) + ' views'">
-            <span class="stat-icon" aria-hidden="true">👁</span>
-            <span class="stat-count" aria-hidden="true">{{ blog.views | formatCount }}</span>
-          </span>
-        </div>
-        <div class="card-actions">
-          <button class="card-bookmark-btn"
-                  [class.bookmarked]="isBookmarked(blog._id)"
-                  (click)="toggleBookmark(blog._id, $event)"
-                  [attr.aria-label]="(isBookmarked(blog._id) ? 'Remove bookmark' : 'Bookmark') + ': ' + blog.title"
-                  [attr.aria-pressed]="isBookmarked(blog._id)">
-            <span aria-hidden="true">{{ isBookmarked(blog._id) ? '🔖' : '📑' }}</span>
-          </button>
-          <a class="read-btn"
-             [attr.href]="'/blog/' + (blog.slug || blog._id)"
-             (click)="$event.preventDefault(); readBlog(blog.slug || blog._id)"
-             [attr.aria-label]="'Read story: ' + blog.title"
-             itemprop="url">
-            Read →
-          </a>
-        </div>
-      </div>
-
-    </article>
-  </ng-template>
-
-    </div><!-- /home-feed -->
-
-    <!-- ── Right Sidebar (desktop only) ──────────────────────────────────── -->
-    <aside class="home-sidebar" aria-label="Explore more on ApnaInsights">
-
-      <!-- Browse Topics — filter feed in-page -->
-      <div class="sb-widget">
-        <h2 class="sb-widget-title">Browse Topics</h2>
-        <nav class="sb-cats" aria-label="Filter stories by topic">
-          <button class="sb-cat-link"
-                  [class.active]="selectedCategory() === ''"
-                  (click)="selectCategory('')"
-                  aria-label="All topics">
-            <span class="sb-cat-emoji" aria-hidden="true">🏠</span>
-            <span class="sb-cat-name">All</span>
-          </button>
-          @for (cat of categories(); track cat) {
-            <button class="sb-cat-link"
-                    [class.active]="selectedCategory() === cat"
-                    (click)="selectCategory(cat)"
-                    [attr.aria-label]="cat + (getCatCount(cat) > 0 ? ', ' + getCatCount(cat) + ' stories' : '')">
-              <span class="sb-cat-emoji" aria-hidden="true">{{ categoryEmojis()[cat] }}</span>
-              <span class="sb-cat-name">{{ cat }}</span>
-              @if (getCatCount(cat) > 0) {
-                <span class="sb-cat-count" aria-hidden="true">{{ getCatCount(cat) }}</span>
+              @for (blog of visibleFilteredPosts(); track blog._id) {
+                <ng-container [ngTemplateOutlet]="blogCard" [ngTemplateOutletContext]="{ $implicit: blog }"></ng-container>
               }
-            </button>
+            }
+          </div>
+          @if (hasMoreFiltered()) {
+            <div class="load-more-sentinel" aria-hidden="true">
+              <span class="load-more-dots"><span></span><span></span><span></span></span>
+            </div>
+          } @else if (showAllLoadedBanner()) {
+            <p class="all-loaded-msg">✓ All {{ filteredPosts().length }} stories shown</p>
           }
-        </nav>
+        </section>
+      }
+
+      @if (!isFiltering()) {
+
+      <!-- Sponsored stories -->
+      @if (showSponsored()) {
+        <div class="feat-section" role="region" aria-label="Sponsored stories">
+          <div class="feat-row">
+            @for (blog of sponsoredPosts(); track blog._id) {
+              <article class="feat-item" (click)="readBlog(blog.slug || blog._id)" [attr.aria-label]="blog.title">
+                <div class="feat-item-img">
+                  @if (blog.featuredImage) { <img [src]="blog.featuredImage" [alt]="blog.title" loading="lazy" /> }
+                  @else { <div class="feat-item-noimg">{{ blog.title.charAt(0).toUpperCase() }}</div> }
+                </div>
+                <div class="feat-item-body">
+                  <div class="feat-item-top">
+                    <span class="feat-item-cat">{{ blog.categories[0] }}</span>
+                    <span class="feat-item-sp">Sponsored</span>
+                  </div>
+                  <h4 class="feat-item-title">{{ blog.title }}</h4>
+                  <p class="feat-item-desc">{{ blog.description }}</p>
+                  @if (blog.sponsorCtaText && blog.sponsorCtaUrl) {
+                    <a class="feat-cta-btn" [href]="blog.sponsorCtaUrl" target="_blank" rel="noopener sponsored" (click)="$event.stopPropagation()">
+                      {{ blog.sponsorCtaText }}
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                    </a>
+                  }
+                  <div class="feat-item-foot">
+                    <span class="feat-item-author">{{ blog.user.name }}</span>
+                    <span class="feat-item-dot">·</span>
+                    <span class="feat-item-time">{{ getReadingTime(blog) }} min read</span>
+                  </div>
+                </div>
+              </article>
+            }
+          </div>
+        </div>
+      }
+
+      @if (showSponsoredShorts()) {
+        <div class="sp-shorts-section" role="region" aria-label="Sponsored shorts">
+          <div class="sp-shorts-header">
+            <div class="sp-shorts-header-left">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.9L15 14v-4z"/><rect x="3" y="6" width="12" height="12" rx="2"/></svg>
+              <span>Featured Shorts</span>
+              <span class="sp-shorts-sp-pill">Sponsored</span>
+            </div>
+            <a class="sp-shorts-all" routerLink="/shorts">Watch all →</a>
+          </div>
+          <div class="sp-shorts-grid">
+            @for (s of sponsoredShorts(); track s._id) {
+              <a class="sp-sc" [routerLink]="['/shorts']" [fragment]="s._id">
+                <div class="sp-sc-thumb">
+                  @if (s.thumbnailUrl) { <img [src]="s.thumbnailUrl" [alt]="s.title" loading="lazy" /> }
+                  @else { <div class="sp-sc-noimg"><svg width="22" height="22" viewBox="0 0 24 24" fill="rgba(255,255,255,.3)"><path d="M8 5v14l11-7z"/></svg></div> }
+                  <div class="sp-sc-grad"></div>
+                  <div class="sp-sc-play"><svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg></div>
+                  <span class="sp-sc-cat">{{ s.category }}</span>
+                </div>
+                <div class="sp-sc-body">
+                  <p class="sp-sc-title">{{ s.title }}</p>
+                  @if (s.sponsorCtaText && s.sponsorCtaUrl) {
+                    <a class="sp-sc-cta" [href]="s.sponsorCtaUrl" target="_blank" rel="noopener sponsored" (click)="$event.stopPropagation()">
+                      {{ s.sponsorCtaText }}
+                      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                    </a>
+                  }
+                </div>
+              </a>
+            }
+          </div>
+        </div>
+      }
+
+      @defer (on idle) {
+        @if (showFavorites()) {
+          <section class="section section--pers" aria-labelledby="fav-heading">
+            <div class="section-header">
+              <span class="section-pill fav" aria-hidden="true">SAVED</span>
+              <h2 class="section-title" id="fav-heading">⭐ Saved Stories</h2>
+              <span class="fav-count-chip">{{ favoritePosts().length }}</span>
+            </div>
+            <div class="blog-grid">
+              @for (blog of favoritePosts(); track blog._id) {
+                <ng-container [ngTemplateOutlet]="blogCard" [ngTemplateOutletContext]="{ $implicit: blog }"></ng-container>
+              }
+            </div>
+          </section>
+        }
+        @if (showRecommended()) {
+          <section class="section section--pers" aria-labelledby="rec-heading">
+            <div class="section-header">
+              <span class="section-pill rec" aria-hidden="true">FOR YOU</span>
+              <h2 class="section-title" id="rec-heading">✨ Recommended for You</h2>
+            </div>
+            <p class="rec-subtitle">Based on your reading interests</p>
+            <div class="blog-grid">
+              @for (blog of recommendedPosts(); track blog._id) {
+                <ng-container [ngTemplateOutlet]="blogCard" [ngTemplateOutletContext]="{ $implicit: blog }"></ng-container>
+              }
+            </div>
+          </section>
+        }
+      }
+
+      <!-- AdSense -->
+      <div class="home-ad-wrap">
+        <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6477809641944524"
+             data-ad-slot="2024301795" data-ad-format="auto" data-full-width-responsive="true"></ins>
       </div>
 
-      <!-- Trending Tags -->
-      @if (popularTags().length > 0) {
-        <div class="sb-widget">
-          <h2 class="sb-widget-title">Trending Tags</h2>
-          <div class="sb-tags">
-            @for (tag of popularTags().slice(0, 12); track tag) {
-              <button class="sb-tag"
-                      [class.active]="selectedTag() === tag"
-                      (click)="selectTag(tag)"
-                      [attr.aria-pressed]="selectedTag() === tag">
-                #{{ tag }}
+      <!-- Trending Today section (mobile "Trending" tab) -->
+      <section class="section mob-tab-section mob-tab-section--trending" aria-labelledby="trending-heading">
+        <div class="section-header">
+          <span class="section-pill trending" aria-hidden="true">HOT</span>
+          <h2 class="section-title" id="trending-heading">🔥 Trending Today</h2>
+          <nav class="pagination-btns" aria-label="Trending pagination">
+            <button class="page-btn" [disabled]="trendingPage() === 0" (click)="prevPage(trendingPage)" aria-label="Previous">‹</button>
+            <span class="page-info">{{ trendingPage() + 1 }} / {{ trendingPageCount() }}</span>
+            <button class="page-btn" [disabled]="trendingPage() >= trendingPageCount() - 1" (click)="nextPage(trendingPage, trendingPageCount())" aria-label="Next">›</button>
+          </nav>
+        </div>
+        @if (isLoading() || allPosts().length === 0) {
+          <ng-container [ngTemplateOutlet]="skeletonGrid"></ng-container>
+        } @else {
+          <div class="blog-grid">
+            @for (blog of trendingPosts(); track blog._id) {
+              <ng-container [ngTemplateOutlet]="blogCard" [ngTemplateOutletContext]="{ $implicit: blog }"></ng-container>
+            }
+          </div>
+        }
+      </section>
+
+      <!-- Most Viewed section -->
+      <section class="section mob-tab-section mob-tab-section--most-viewed" aria-labelledby="hot-heading">
+        <div class="section-header">
+          <span class="section-pill hot" aria-hidden="true">VIEWS</span>
+          <h2 class="section-title" id="hot-heading">👁 Most Viewed</h2>
+          <nav class="pagination-btns" aria-label="Most viewed pagination">
+            <button class="page-btn" [disabled]="hotPage() === 0" (click)="prevPage(hotPage)" aria-label="Previous">‹</button>
+            <span class="page-info">{{ hotPage() + 1 }} / {{ hotPageCount() }}</span>
+            <button class="page-btn" [disabled]="hotPage() >= hotPageCount() - 1" (click)="nextPage(hotPage, hotPageCount())" aria-label="Next">›</button>
+          </nav>
+        </div>
+        @if (isLoading() || allPosts().length === 0) {
+          <ng-container [ngTemplateOutlet]="skeletonGrid"></ng-container>
+        } @else {
+          <div class="blog-grid">
+            @for (blog of hotPosts(); track blog._id) {
+              <ng-container [ngTemplateOutlet]="blogCard" [ngTemplateOutletContext]="{ $implicit: blog }"></ng-container>
+            }
+          </div>
+        }
+      </section>
+
+      <!-- AdSense -->
+      <div class="home-ad-wrap">
+        <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-6477809641944524"
+             data-ad-slot="7546879763" data-ad-format="auto" data-full-width-responsive="true"></ins>
+      </div>
+
+      <!-- Latest Stories -->
+      <section class="section mob-tab-section mob-tab-section--latest" aria-labelledby="latest-heading">
+        <div class="section-header">
+          <span class="section-pill new" aria-hidden="true">NEW</span>
+          <h2 class="section-title" id="latest-heading">✨ Latest Stories</h2>
+          <nav class="pagination-btns" aria-label="Latest stories pagination">
+            <button class="page-btn" [disabled]="latestPage() === 0" (click)="prevPage(latestPage)" aria-label="Previous">‹</button>
+            <span class="page-info">
+              {{ latestPage() + 1 }} / {{ latestPageCount() }}
+              @if (isFetchingMore()) { <span class="page-loading">…</span> }
+            </span>
+            <button class="page-btn" [disabled]="latestPage() >= latestPageCount() - 1 && !hasMoreOnServer()"
+                    (click)="nextPage(latestPage, latestPageCount())" aria-label="Next">›</button>
+          </nav>
+        </div>
+        @if (isLoading() || allPosts().length === 0) {
+          <ng-container [ngTemplateOutlet]="skeletonGrid"></ng-container>
+        } @else {
+          <div class="blog-grid">
+            @for (blog of latestPosts(); track blog._id) {
+              <ng-container [ngTemplateOutlet]="blogCard" [ngTemplateOutletContext]="{ $implicit: blog }"></ng-container>
+            }
+          </div>
+        }
+      </section>
+
+      } <!-- /!isFiltering() -->
+
+      <!-- Blog card template -->
+      <ng-template #blogCard let-blog>
+        <article class="blog-card" itemscope itemtype="https://schema.org/BlogPosting" [attr.aria-label]="blog.title">
+          <meta itemprop="headline" [attr.content]="blog.title" />
+          <meta itemprop="description" [attr.content]="blog.description" />
+          <meta itemprop="datePublished" [attr.content]="blog.createdAt" />
+          <meta itemprop="url" [attr.content]="'https://apnainsights.com/blog/' + (blog.slug || blog._id)" />
+          @if (blog.categories?.[0]) { <meta itemprop="articleSection" [attr.content]="blog.categories[0]" /> }
+          <div itemprop="author" itemscope itemtype="https://schema.org/Person" style="display:none">
+            <meta itemprop="name" [attr.content]="(blog.user?.name) || 'Anonymous Writer'" />
+          </div>
+          <div itemprop="publisher" itemscope itemtype="https://schema.org/Organization" style="display:none">
+            <meta itemprop="name" content="ApnaInsights" />
+            <div itemprop="logo" itemscope itemtype="https://schema.org/ImageObject">
+              <meta itemprop="url" content="https://apnainsights.com/logo.png" />
+            </div>
+          </div>
+
+          <div class="card-inner" (click)="readBlog(blog.slug || blog._id)" role="link" tabindex="0"
+               (keydown.enter)="readBlog(blog.slug || blog._id)" [attr.aria-label]="'Read: ' + blog.title">
+            <div class="card-content">
+              <div class="card-meta-top">
+                <span class="card-cat-badge"
+                      [class.cat-badge--update]="blog.categories[0] === 'Update'"
+                      [class.cat-badge--news]="blog.categories[0] === 'News'">
+                  @if (blog.categories[0] === 'Update') { <span class="live-dot live-dot--green" aria-hidden="true"></span> }
+                  @if (blog.categories[0] === 'News')   { <span class="live-dot live-dot--red"   aria-hidden="true"></span> }
+                  <span aria-hidden="true">{{ categoryEmojis()[blog.categories[0]] }}</span>
+                  {{ blog.categories[0] }}
+                </span>
+                @if (blog.isSponsored) {
+                  <span class="card-badge card-badge--sp">★ Sponsored</span>
+                } @else if (isTrending(blog._id)) {
+                  <span class="card-badge card-badge--hot">🔥 Trending</span>
+                } @else if (isNew(blog)) {
+                  <span class="card-badge card-badge--new">NEW</span>
+                }
+                <span class="card-read-time" aria-label="{{ getReadingTime(blog) }} minute read">⏱ {{ getReadingTime(blog) }} min</span>
+              </div>
+              <h3 class="card-title" itemprop="name">{{ blog.title }}</h3>
+              <p class="card-desc" itemprop="abstract">{{ blog.description }}</p>
+              @if (blog.tags?.length) {
+                <div class="card-tags" aria-label="Story tags" (click)="$event.stopPropagation()">
+                  @for (tag of blog.tags.slice(0, 3); track tag) {
+                    <a class="card-tag-chip" [href]="'/tag/' + tag"
+                       (click)="$event.preventDefault(); selectTag(tag)"
+                       [class.active]="selectedTag() === tag"
+                       [attr.aria-label]="'Filter by tag: ' + tag"
+                       [attr.aria-pressed]="selectedTag() === tag">#{{ tag }}</a>
+                  }
+                </div>
+              }
+              <div class="card-author-row">
+                <span class="card-author-avatar" aria-hidden="true">{{ (blog.user?.name || 'A').charAt(0).toUpperCase() }}</span>
+                <span class="card-author-name">{{ blog.user?.name || 'Anonymous' }}</span>
+                <span class="card-meta-sep" aria-hidden="true">·</span>
+                <time class="card-date" itemprop="datePublished" [attr.datetime]="blog.createdAt">{{ blog.createdAt | timeAgo }}</time>
+              </div>
+            </div>
+            <div class="card-thumb-wrap">
+              @if (blog.featuredImage) {
+                <img itemprop="image" [src]="blog.featuredImage" [alt]="blog.title" loading="lazy" decoding="async"
+                     width="200" height="140" (error)="blog.featuredImage = null" />
+              } @else {
+                <div class="card-no-thumb" role="img" [attr.aria-label]="blog.title">
+                  <span class="card-no-thumb-letter" aria-hidden="true">{{ blog.title?.charAt(0)?.toUpperCase() }}</span>
+                </div>
+              }
+              @if (historyLoaded() && isRead(blog._id)) {
+                @if (getSavedProgress(blog._id) > 0) {
+                  <span class="continue-badge continue-badge--progress" [attr.aria-label]="getSavedProgress(blog._id) + '% read'">
+                    ↩ {{ getSavedProgress(blog._id) }}%
+                    <span class="continue-progress-bar" [style.width.%]="getSavedProgress(blog._id)" aria-hidden="true"></span>
+                  </span>
+                } @else {
+                  <span class="continue-badge" aria-label="You've read this story">↩ Continue</span>
+                }
+              }
+            </div>
+          </div>
+
+          <div class="card-footer">
+            <div class="card-stats">
+              <button class="stat-btn like-btn" [class.liked]="isLiked(blog._id)"
+                      (click)="toggleLike(blog, $event)"
+                      [attr.aria-label]="(isLiked(blog._id) ? 'Unlike' : 'Like') + ' — ' + blog.likesCount + ' likes'">
+                <span class="stat-icon" aria-hidden="true">{{ isLiked(blog._id) ? '❤️' : '🤍' }}</span>
+                <span class="stat-count" aria-hidden="true">{{ blog.likesCount }}</span>
               </button>
+              <span class="stat-display" [attr.aria-label]="blog.commentsCount + ' comments'">
+                <span class="stat-icon" aria-hidden="true">💬</span>
+                <span class="stat-count" aria-hidden="true">{{ blog.commentsCount }}</span>
+              </span>
+              <span class="stat-display" [attr.aria-label]="(blog.views | formatCount) + ' views'">
+                <span class="stat-icon" aria-hidden="true">👁</span>
+                <span class="stat-count" aria-hidden="true">{{ blog.views | formatCount }}</span>
+              </span>
+            </div>
+            <div class="card-actions">
+              <button class="card-bookmark-btn" [class.bookmarked]="isBookmarked(blog._id)"
+                      (click)="toggleBookmark(blog._id, $event)"
+                      [attr.aria-label]="(isBookmarked(blog._id) ? 'Remove bookmark' : 'Bookmark') + ': ' + blog.title"
+                      [attr.aria-pressed]="isBookmarked(blog._id)">
+                <span aria-hidden="true">{{ isBookmarked(blog._id) ? '🔖' : '📑' }}</span>
+              </button>
+              <a class="read-btn" [attr.href]="'/blog/' + (blog.slug || blog._id)"
+                 (click)="$event.preventDefault(); readBlog(blog.slug || blog._id)"
+                 [attr.aria-label]="'Read story: ' + blog.title" itemprop="url">
+                Read →
+              </a>
+            </div>
+          </div>
+        </article>
+      </ng-template>
+
+    </div><!-- /v2-feed-col -->
+
+    <!-- RIGHT: Sidebar -->
+    <aside class="v2-sidebar" aria-label="Explore more">
+
+      <!-- Popular Topics -->
+      <div class="v2-sb-card">
+        <div class="v2-sb-card-header">
+          <h2 class="v2-sb-card-title">Popular Topics</h2>
+          <a class="v2-sb-card-link" routerLink="/topics" aria-label="View all topics">View all →</a>
+        </div>
+        <div class="v2-sb-topics">
+          @for (cat of categories().slice(0, 8); track cat) {
+            <a class="v2-sb-topic" [class.active]="selectedCategory() === cat"
+               [href]="'/category/' + cat.toLowerCase()"
+               (click)="$event.preventDefault(); selectCategory(cat)" [attr.aria-label]="cat + ' stories'">
+              <span class="v2-sb-topic-emoji" aria-hidden="true">{{ categoryEmojis()[cat] }}</span>
+              <span class="v2-sb-topic-name">{{ cat }}</span>
+              @if (getCatCount(cat) > 0) {
+                <span class="v2-sb-topic-count" aria-hidden="true">{{ getCatCount(cat) }}</span>
+              }
+            </a>
+          }
+        </div>
+      </div>
+
+      <!-- Top Writers (from trending posts) -->
+      @if (!isLoading() && trendingPosts().length > 0) {
+        <div class="v2-sb-card">
+          <div class="v2-sb-card-header">
+            <h2 class="v2-sb-card-title">Top Writers</h2>
+          </div>
+          <div class="v2-sb-writers">
+            @for (blog of trendingPosts().slice(0, 4); track blog._id) {
+              <a class="v2-sb-writer" [routerLink]="['/author', blog.user._id]" [attr.aria-label]="blog.user.name">
+                <div class="v2-sb-writer-avatar">{{ (blog.user.name || 'A').charAt(0).toUpperCase() }}</div>
+                <div class="v2-sb-writer-info">
+                  <span class="v2-sb-writer-name">{{ blog.user.name || 'Anonymous' }}</span>
+                  <span class="v2-sb-writer-stat">{{ blog.views | formatCount }} reads</span>
+                </div>
+              </a>
             }
           </div>
         </div>
@@ -1171,41 +1397,63 @@
 
       <!-- Active Challenge -->
       @if (activeChallenge()) {
-        <a class="sb-challenge-card" routerLink="/challenges" aria-label="Join the active writing challenge">
-          <div class="sb-challenge-card__label">🏆 Active Challenge</div>
-          <div class="sb-challenge-card__title">{{ activeChallenge()!.title }}</div>
+        <a class="v2-sb-challenge" routerLink="/challenges" aria-label="Join the active writing challenge">
+          <div class="v2-sb-challenge-label">🏆 Active Challenge</div>
+          <div class="v2-sb-challenge-title">{{ activeChallenge()!.title }}</div>
           @if (activeChallenge()!.prize) {
-            <div class="sb-challenge-card__prize">🏅 {{ activeChallenge()!.prize }}</div>
+            <div class="v2-sb-challenge-prize">🏅 {{ activeChallenge()!.prize }}</div>
           }
-          <div class="sb-challenge-card__footer">
-            <span>{{ challengeDaysLeft(activeChallenge()!.endDate) }} days left</span>
-            <span class="sb-challenge-card__cta">Participate →</span>
+          <div class="v2-sb-challenge-footer">
+            <div class="v2-sb-challenge-days-wrap">
+              <span class="v2-sb-challenge-days">{{ challengeDaysLeft(activeChallenge()!.endDate) }}</span>
+              <span class="v2-sb-challenge-days-label">days left</span>
+            </div>
+            <span class="v2-sb-challenge-cta">Participate Now</span>
           </div>
         </a>
       }
 
-      <!-- Write CTA -->
-      <div class="sb-widget sb-write-cta">
-        <div class="sb-write-cta__icon" aria-hidden="true">✍️</div>
-        <h2 class="sb-write-cta__title">Share Your Story</h2>
-        <p class="sb-write-cta__sub">Join thousands of writers. Free to write, free to reach millions.</p>
-        <a class="sb-write-cta__btn" [routerLink]="writeRoute" aria-label="Start writing on ApnaInsights for free">
+      <!-- Trending Tags -->
+      @if (popularTags().length > 0) {
+        <div class="v2-sb-card">
+          <div class="v2-sb-card-header">
+            <h2 class="v2-sb-card-title">Trending Tags</h2>
+          </div>
+          <div class="v2-sb-tags">
+            @for (tag of popularTags().slice(0, 12); track tag) {
+              <button class="v2-sb-tag" [class.active]="selectedTag() === tag"
+                      (click)="selectTag(tag)" [attr.aria-pressed]="selectedTag() === tag">
+                #{{ tag }}
+              </button>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Community stats card -->
+      <div class="v2-sb-community">
+        <div class="v2-sb-community-header">
+          <span class="v2-sb-community-icon" aria-hidden="true">🌟</span>
+          <div>
+            <strong>Join Our Growing Community</strong>
+            <span>Writers &amp; readers everywhere</span>
+          </div>
+        </div>
+        <div class="v2-sb-community-stats">
+          <div class="v2-sb-community-stat">
+            @if (communityMembersReady()) { <strong>{{ communityMembersCount() }}+</strong> }
+            @else { <strong>—</strong> }
+            <span>Active Writers</span>
+          </div>
+          <div class="v2-sb-community-stat">
+            @if (storiesReady()) { <strong>{{ publishedCount() }}</strong> }
+            @else { <strong>—</strong> }
+            <span>Stories</span>
+          </div>
+        </div>
+        <a class="v2-sb-community-btn" [routerLink]="writeRoute" aria-label="Start writing for free">
           Start Writing Free
         </a>
-      </div>
-
-      <!-- About — SEO paragraph with internal links -->
-      <div class="sb-widget sb-about">
-        <h2 class="sb-widget-title">About ApnaInsights</h2>
-        <p class="sb-about-text">
-          India's free community blogging platform. Read stories on
-          <a routerLink="/category/technology">Technology</a>,
-          <a routerLink="/category/health">Health</a>,
-          <a routerLink="/category/village">Village Life</a>,
-          <a routerLink="/category/sports">Sports</a> and
-          <a routerLink="/category/business">Business</a> — written by real people across India.
-        </p>
-        <a class="sb-about-link" routerLink="/about">Learn more →</a>
       </div>
 
       <!-- Install CTA -->
@@ -1219,30 +1467,93 @@
               <span>Faster · Offline · Free</span>
             </div>
           </div>
-          <button class="sb-install-cta__btn" (click)="$event.stopPropagation(); triggerInstall()" type="button">
-            Install
-          </button>
+          <button class="sb-install-cta__btn" (click)="$event.stopPropagation(); triggerInstall()" type="button">Install</button>
         </div>
       }
 
-    </aside><!-- /home-sidebar -->
+      <!-- About section -->
+      <div class="v2-sb-about">
+        <h2 class="v2-sb-about-title">About ApnaInsights</h2>
+        <p class="v2-sb-about-text">A free community blogging platform. Read stories on
+          <a routerLink="/category/technology">Technology</a>,
+          <a routerLink="/category/health">Health</a>,
+          <a routerLink="/category/village">Village Life</a>,
+          <a routerLink="/category/sports">Sports</a> and
+          <a routerLink="/category/business">Business</a> — written by real people.
+        </p>
+        <a class="v2-sb-about-link" routerLink="/about">Learn more →</a>
+      </div>
 
-  </div><!-- /home-layout -->
+    </aside><!-- /v2-sidebar -->
+
+  </div><!-- /v2-main-layout -->
+
+  <!-- ══ BROWSE TOPICS ════════════════════════════════════════════════════ -->
+  <section class="v2-topics-section" aria-labelledby="browse-topics-heading">
+    <div class="v2-topics-inner">
+      <div class="v2-section-header">
+        <div class="v2-section-header-left">
+          <h2 class="v2-section-title" id="browse-topics-heading">Browse Topics</h2>
+        </div>
+        <a class="v2-section-viewall" routerLink="/topics" aria-label="Explore all topics">
+          Explore all topics
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
+        </a>
+      </div>
+      <div class="v2-topics-grid">
+        <a class="v2-topic-card" routerLink="/category/technology" aria-label="Technology stories">
+          <span class="v2-topic-card-emoji" aria-hidden="true">💻</span>
+          <span class="v2-topic-card-name">Technology</span>
+          @if (getCatCount('Technology') > 0) { <span class="v2-topic-card-count">{{ getCatCount('Technology') }} Stories</span> }
+        </a>
+        <a class="v2-topic-card" routerLink="/category/health" aria-label="Health stories">
+          <span class="v2-topic-card-emoji" aria-hidden="true">❤️</span>
+          <span class="v2-topic-card-name">Health</span>
+          @if (getCatCount('Health') > 0) { <span class="v2-topic-card-count">{{ getCatCount('Health') }} Stories</span> }
+        </a>
+        <a class="v2-topic-card" routerLink="/category/sports" aria-label="Sports stories">
+          <span class="v2-topic-card-emoji" aria-hidden="true">🏏</span>
+          <span class="v2-topic-card-name">Sports</span>
+          @if (getCatCount('Sports') > 0) { <span class="v2-topic-card-count">{{ getCatCount('Sports') }} Stories</span> }
+        </a>
+        <a class="v2-topic-card" routerLink="/category/business" aria-label="Business stories">
+          <span class="v2-topic-card-emoji" aria-hidden="true">💼</span>
+          <span class="v2-topic-card-name">Business</span>
+          @if (getCatCount('Business') > 0) { <span class="v2-topic-card-count">{{ getCatCount('Business') }} Stories</span> }
+        </a>
+        <a class="v2-topic-card" routerLink="/category/lifestyle" aria-label="Lifestyle stories">
+          <span class="v2-topic-card-emoji" aria-hidden="true">🌿</span>
+          <span class="v2-topic-card-name">Lifestyle</span>
+          @if (getCatCount('Lifestyle') > 0) { <span class="v2-topic-card-count">{{ getCatCount('Lifestyle') }} Stories</span> }
+        </a>
+        <a class="v2-topic-card" routerLink="/category/education" aria-label="Education stories">
+          <span class="v2-topic-card-emoji" aria-hidden="true">📚</span>
+          <span class="v2-topic-card-name">Education</span>
+          @if (getCatCount('Education') > 0) { <span class="v2-topic-card-count">{{ getCatCount('Education') }} Stories</span> }
+        </a>
+        <a class="v2-topic-card" routerLink="/category/news" aria-label="News stories">
+          <span class="v2-topic-card-emoji" aria-hidden="true">📰</span>
+          <span class="v2-topic-card-name">News</span>
+          @if (getCatCount('News') > 0) { <span class="v2-topic-card-count">{{ getCatCount('News') }} Stories</span> }
+        </a>
+        <a class="v2-topic-card v2-topic-card--more" routerLink="/topics" aria-label="More topics">
+          <span class="v2-topic-card-emoji" aria-hidden="true">⊞</span>
+          <span class="v2-topic-card-name">More</span>
+          <span class="v2-topic-card-count">View all</span>
+        </a>
+      </div>
+    </div>
+  </section>
 
 </main>
 
-
-<button
-  class="scroll-top-fab"
-  [class.visible]="showScrollTop()"
-  (click)="scrollToTop()"
-  title="Back to top"
-  aria-label="Scroll back to top of page">
+<!-- ══ SCROLL TO TOP ════════════════════════════════════════════════════ -->
+<button class="scroll-top-fab" [class.visible]="showScrollTop()" (click)="scrollToTop()"
+        title="Back to top" aria-label="Scroll back to top of page">
   <span aria-hidden="true">↑</span>
 </button>
 
-<!-- ── Newsletter Subscribe ── -->
-<!-- ── Push Notification banner ── -->
+<!-- ══ PUSH NOTIFICATION BANNER ════════════════════════════════════════ -->
 @if (pushService.isSupported && pushService.permission() !== 'denied') {
   @if (!pushService.subscribed()) {
     <div class="push-banner">
@@ -1261,11 +1572,20 @@
   }
 }
 
-<section class="newsletter-section" aria-labelledby="newsletter-heading">
-  <div class="newsletter-inner">
-    <div class="newsletter-text">
-      <h2 id="newsletter-heading" class="newsletter-title">Stay in the loop</h2>
-      <p class="newsletter-sub">Get the best stories from ApnaInsights delivered to your inbox. No spam, ever.</p>
+<!-- ══ NEWSLETTER SECTION ════════════════════════════════════════════════ -->
+<section class="v2-newsletter-section" aria-labelledby="newsletter-heading">
+  <div class="v2-newsletter-bg" aria-hidden="true">
+    <div class="v2-newsletter-orb v2-newsletter-orb--1"></div>
+    <div class="v2-newsletter-orb v2-newsletter-orb--2"></div>
+    <svg class="v2-newsletter-plane" width="80" height="80" viewBox="0 0 80 80" fill="none" opacity="0.15" aria-hidden="true">
+      <path d="M10 40L70 10L50 70L38 48L10 40Z" fill="white"/>
+      <path d="M38 48L45 38" stroke="white" stroke-width="2"/>
+    </svg>
+  </div>
+  <div class="v2-newsletter-inner">
+    <div class="v2-newsletter-text">
+      <h2 id="newsletter-heading" class="v2-newsletter-title">Never miss a story that inspires you.</h2>
+      <p class="v2-newsletter-sub">Get the week's best stories on tech, lifestyle, business & more — straight to your inbox. No spam, ever.</p>
     </div>
     @if (subscribeSuccess()) {
       <div class="newsletter-success" role="alert">
@@ -1276,27 +1596,17 @@
         {{ subscribeMessage() }}
       </div>
     } @else {
-      <form class="newsletter-form" (ngSubmit)="onSubscribe()" novalidate>
-        <input
-          id="newsletter-email"
-          name="newsletter-email"
-          type="email"
-          class="newsletter-input"
-          placeholder="Enter your email address"
-          [(ngModel)]="subscribeEmail"
-          (ngModelChange)="onEmailInput($event)"
-          required
-          autocomplete="email"
-          [disabled]="subscribing()"
-          [class.newsletter-input--invalid]="emailInputError()"
-          [class.newsletter-input--valid]="subscribeEmail && !emailInputError()"
-        />
-        <button type="submit" class="newsletter-btn" [disabled]="subscribing() || !subscribeEmail.trim() || !!emailInputError()">
-          @if (subscribing()) {
-            <span class="nl-spinner"></span>
-          } @else {
-            Subscribe
-          }
+      <form class="v2-newsletter-form" (ngSubmit)="onSubscribe()" novalidate>
+        <input id="newsletter-email" name="newsletter-email" type="email"
+               class="v2-newsletter-input" placeholder="Enter your email address"
+               [(ngModel)]="subscribeEmail" (ngModelChange)="onEmailInput($event)"
+               required autocomplete="email" [disabled]="subscribing()"
+               [class.v2-newsletter-input--invalid]="emailInputError()"
+               [class.v2-newsletter-input--valid]="subscribeEmail && !emailInputError()" />
+        <button type="submit" class="v2-newsletter-btn"
+                [disabled]="subscribing() || !subscribeEmail.trim() || !!emailInputError()">
+          @if (subscribing()) { <span class="nl-spinner"></span> }
+          @else { Subscribe }
         </button>
       </form>
       @if (emailInputError()) {
@@ -1308,59 +1618,100 @@
   </div>
 </section>
 
-<footer class="site-footer" role="contentinfo" aria-label="Site footer">
-  <div class="footer-inner">
+<!-- ══ FOOTER ════════════════════════════════════════════════════════════ -->
+<footer class="v2-footer" role="contentinfo" aria-label="Site footer">
+  <div class="v2-footer-inner">
 
-    <div class="footer-brand">
-      <a class="app-logo" routerLink="/" aria-label="ApnaInsights — back to homepage">
-        <img class="app-logo-img"
-             src="/logo-96.png"
-             alt="ApnaInsights"
-             width="28"
-             height="28"
-             loading="lazy" />
+    <!-- Brand column -->
+    <div class="v2-footer-brand-col">
+      <a class="app-logo v2-footer-logo" routerLink="/" aria-label="ApnaInsights homepage">
+        <img class="app-logo-img" src="/logo-96.png" alt="ApnaInsights" width="28" height="28" loading="lazy" />
         <span class="app-logo-text">ApnaInsights</span>
       </a>
-      <p class="footer-tagline">Every story matters. Every voice belongs.</p>
+      <p class="v2-footer-tagline">Born in India. Real stories for everyone.</p>
+      <div class="v2-footer-social" aria-label="Social media links">
+        <a class="v2-footer-social-link" href="https://x.com/apnainsights_" target="_blank" rel="noopener" aria-label="Follow on X (Twitter)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.74l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        </a>
+        <a class="v2-footer-social-link" href="https://www.instagram.com/apnainsights_/" target="_blank" rel="noopener" aria-label="Follow on Instagram">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+        </a>
+        <a class="v2-footer-social-link" href="https://linkedin.com/company/apnainsights" target="_blank" rel="noopener" aria-label="Follow on LinkedIn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+        </a>
+        <a class="v2-footer-social-link" href="https://www.youtube.com/@apnaInsights46" target="_blank" rel="noopener" aria-label="Watch on YouTube">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+        </a>
+      </div>
     </div>
 
-    <nav class="footer-links" aria-label="Footer navigation">
-      <a routerLink="/about" class="footer-link">About Us</a>
-      <span class="footer-dot" aria-hidden="true">·</span>
-      <a routerLink="/auth/register" class="footer-link">Start Writing Free</a>
-      <span class="footer-dot" aria-hidden="true">·</span>
-      <a routerLink="/auth/login" class="footer-link">Sign In</a>
-      <span class="footer-dot" aria-hidden="true">·</span>
-      <a routerLink="/category/technology" class="footer-link">Technology Blogs</a>
-      <span class="footer-dot" aria-hidden="true">·</span>
-      <a routerLink="/category/health" class="footer-link">Health Stories</a>
-      <span class="footer-dot" aria-hidden="true">·</span>
-      <a routerLink="/category/village" class="footer-link">Village Life</a>
-      <span class="footer-dot" aria-hidden="true">·</span>
-      <a routerLink="/privacy-policy" class="footer-link">Privacy Policy</a>
-      <span class="footer-dot" aria-hidden="true">·</span>
-      <a routerLink="/terms" class="footer-link">Terms of Service</a>
-      <span class="footer-dot" aria-hidden="true">·</span>
-      <a routerLink="/disclaimer" class="footer-link">Disclaimer</a>
-      <span class="footer-dot" aria-hidden="true">·</span>
-      <a routerLink="/editorial-policy" class="footer-link">Editorial Policy</a>
-    </nav>
+    <!-- Explore column -->
+    <div class="v2-footer-col">
+      <h3 class="v2-footer-col-heading">Explore</h3>
+      <nav class="v2-footer-links" aria-label="Explore navigation">
+        <a class="v2-footer-link" routerLink="/topics">All Stories</a>
+        <a class="v2-footer-link" routerLink="/search" [queryParams]="{q:'trending'}">Trending</a>
+        <a class="v2-footer-link" routerLink="/shorts">Shorts</a>
+        <a class="v2-footer-link" routerLink="/challenges">Challenges</a>
+        <a class="v2-footer-link" routerLink="/bookmarks">My Bookmarks</a>
+        <a class="v2-footer-link" routerLink="/category/technology">Technology</a>
+        <a class="v2-footer-link" routerLink="/category/health">Health</a>
+        <a class="v2-footer-link" routerLink="/category/sports">Sports</a>
+      </nav>
+    </div>
 
-    <p class="footer-seo-copy">
-      ApnaInsights is India's free community blogging platform where writers share stories on
-      technology, lifestyle, health, business, education, village life and more.
-      Join thousands of Indian bloggers — read, write and connect for free.
-    </p>
+    <!-- Resources column -->
+    <div class="v2-footer-col">
+      <h3 class="v2-footer-col-heading">Resources</h3>
+      <nav class="v2-footer-links" aria-label="Resources navigation">
+        <a class="v2-footer-link" routerLink="/auth/register">Write for Us</a>
+        <a class="v2-footer-link" routerLink="/advertise">Advertise</a>
+        <a class="v2-footer-link" routerLink="/about">Guidelines</a>
+        <a class="v2-footer-link" routerLink="/about">Help Center</a>
+        <a class="v2-footer-link" routerLink="/about">Contact Us</a>
+        <a class="v2-footer-link" routerLink="/category/village">Village Life</a>
+        <a class="v2-footer-link" routerLink="/category/business">Business</a>
+        <a class="v2-footer-link" routerLink="/category/education">Education</a>
+      </nav>
+    </div>
 
-    <p class="footer-copy">
-      © {{ storiesReady() ? publishedCount() + ' stories · ' : '' }}ApnaInsights 2026
-      &nbsp;·&nbsp; Made with ❤️ in India
-    </p>
+    <!-- Company column -->
+    <div class="v2-footer-col">
+      <h3 class="v2-footer-col-heading">Company</h3>
+      <nav class="v2-footer-links" aria-label="Company navigation">
+        <a class="v2-footer-link" routerLink="/about">About Us</a>
+        <a class="v2-footer-link" routerLink="/privacy-policy">Privacy Policy</a>
+        <a class="v2-footer-link" routerLink="/terms">Terms of Service</a>
+        <a class="v2-footer-link" routerLink="/disclaimer">Disclaimer</a>
+        <a class="v2-footer-link" routerLink="/editorial-policy">Editorial Policy</a>
+        <a class="v2-footer-link" routerLink="/advertise">Advertise with Us</a>
+      </nav>
+      <div class="v2-footer-contact">
+        <span>hello&#64;apnainsights.com</span>
+        <span>Hyderabad, India</span>
+      </div>
+    </div>
 
+  </div>
+
+  <!-- Footer bottom bar -->
+  <div class="v2-footer-bottom">
+    <div class="v2-footer-bottom-inner">
+      <p class="v2-footer-copy">
+        © 2026 ApnaInsights. All rights reserved.
+        @if (storiesReady()) { · {{ publishedCount() }} stories published }
+        &nbsp;·&nbsp; Made with ❤️ in India
+      </p>
+      <div class="v2-footer-bottom-links">
+        <a class="v2-footer-bottom-link" routerLink="/privacy-policy">Privacy</a>
+        <a class="v2-footer-bottom-link" routerLink="/terms">Terms</a>
+        <a class="v2-footer-bottom-link" routerLink="/about">Sitemap</a>
+      </div>
+    </div>
   </div>
 </footer>
 
-<!-- ── PWA Install Banner (auto-shown on returning visits) ── -->
+<!-- ══ PWA INSTALL BANNER ═══════════════════════════════════════════════ -->
 @if (installToast()) {
   <div class="install-toast">{{ installToast() }}</div>
 }
@@ -1381,21 +1732,15 @@
   </div>
 }
 
-<!-- ── Android "Add to Home Screen" Steps Card ── -->
 @if (showAndroidSteps()) {
   <div class="android-steps-backdrop" (click)="dismissAndroidSteps()" aria-hidden="true"></div>
   <div class="android-steps-card" role="dialog" aria-modal="true" aria-label="Install ApnaInsights on Android" (click)="$event.stopPropagation()">
     <button class="android-steps-close" (click)="dismissAndroidSteps()" aria-label="Close">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-      </svg>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
     </button>
     <div class="android-steps-head">
       <div class="android-steps-dl-badge" aria-hidden="true">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-          <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-        </svg>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       </div>
       <div>
         <span class="android-steps-title">APK downloading…</span>
@@ -1403,43 +1748,21 @@
       </div>
     </div>
     <ol class="android-steps-list">
-      <li>
-        <span class="android-step-num">1</span>
-        <span>Open the <strong>notification bar</strong> or <strong>Downloads</strong> app</span>
-      </li>
-      <li>
-        <span class="android-step-num">2</span>
-        <span>Tap <strong>ApnaInsights.apk</strong> to open it</span>
-      </li>
-      <li>
-        <span class="android-step-num">3</span>
-        <span>If prompted, tap <strong>Settings</strong> → enable <strong>"Install unknown apps"</strong> → go back</span>
-      </li>
-      <li>
-        <span class="android-step-num">4</span>
-        <span>Tap <strong>Install</strong> to finish</span>
-      </li>
+      <li><span class="android-step-num">1</span><span>Open the <strong>notification bar</strong> or <strong>Downloads</strong> app</span></li>
+      <li><span class="android-step-num">2</span><span>Tap <strong>ApnaInsights.apk</strong> to open it</span></li>
+      <li><span class="android-step-num">3</span><span>If prompted, tap <strong>Settings</strong> → enable <strong>"Install unknown apps"</strong> → go back</span></li>
+      <li><span class="android-step-num">4</span><span>Tap <strong>Install</strong> to finish</span></li>
     </ol>
   </div>
 }
 
-<!-- ── Mobile Bottom Navigation ── -->
-<app-mobile-bottom-nav></app-mobile-bottom-nav>
-
-<!-- ── Install Modal (iOS & desktop only — Android uses direct APK/PWA prompt) ── -->
+<!-- Install modal -->
 @if (showInstallModal()) {
   <div class="im-backdrop" (click)="closeInstallModal()" role="presentation" aria-hidden="true"></div>
-
   <div class="im-sheet" role="dialog" aria-modal="true" aria-label="Install ApnaInsights" (click)="$event.stopPropagation()">
-
-    <!-- Close -->
     <button class="im-close" (click)="closeInstallModal()" aria-label="Close">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-      </svg>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
     </button>
-
-    <!-- App identity -->
     <div class="im-identity">
       <img src="/logo-96.png" alt="ApnaInsights" class="im-app-icon" />
       <div class="im-app-meta">
@@ -1447,112 +1770,52 @@
         <span class="im-app-domain">apnainsights.com</span>
       </div>
     </div>
-
-    <!-- Feature bullets -->
     <ul class="im-features">
       <li>
-        <span class="im-feature-icon im-feature-icon--green">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>
-        </span>
+        <span class="im-feature-icon im-feature-icon--green"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg></span>
         Works offline — read without internet
       </li>
       <li>
-        <span class="im-feature-icon im-feature-icon--blue">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-        </span>
+        <span class="im-feature-icon im-feature-icon--blue"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span>
         Lightning fast — no Play Store needed
       </li>
       <li>
-        <span class="im-feature-icon im-feature-icon--purple">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-        </span>
+        <span class="im-feature-icon im-feature-icon--purple"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></span>
         Free · No account required to read
       </li>
     </ul>
-
     <div class="im-divider"></div>
-
-    <!-- ── Desktop with native PWA prompt ── -->
     @if (canInstallNatively()) {
       <div class="im-section">
         <p class="im-section-label">Ready to install</p>
         <button class="im-install-btn" (click)="installFromModal()">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-            <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-          </svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           Install App
         </button>
         <p class="im-install-note">Click Install to add ApnaInsights to your device.</p>
       </div>
-    }
-
-    <!-- ── iOS Safari ── -->
-    @else if (isIos()) {
+    } @else if (isIos()) {
       <div class="im-section">
         <p class="im-section-label">Install on iPhone / iPad</p>
         <ol class="im-steps">
-          <li>
-            <span class="im-step-num">1</span>
-            <span class="im-step-text">
-              Tap the <strong>Share</strong> button
-              <span class="im-step-icon">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/>
-                  <polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/>
-                </svg>
-              </span>
-              at the bottom of Safari
-            </span>
-          </li>
-          <li>
-            <span class="im-step-num">2</span>
-            <span class="im-step-text">Scroll down and tap <strong>"Add to Home Screen"</strong></span>
-          </li>
-          <li>
-            <span class="im-step-num">3</span>
-            <span class="im-step-text">Tap <strong>Add</strong> in the top-right corner</span>
-          </li>
+          <li><span class="im-step-num">1</span><span class="im-step-text">Tap the <strong>Share</strong> button <span class="im-step-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg></span> at the bottom of Safari</span></li>
+          <li><span class="im-step-num">2</span><span class="im-step-text">Scroll down and tap <strong>"Add to Home Screen"</strong></span></li>
+          <li><span class="im-step-num">3</span><span class="im-step-text">Tap <strong>Add</strong> in the top-right corner</span></li>
         </ol>
       </div>
-    }
-
-    <!-- ── Desktop browser without prompt ── -->
-    @else {
+    } @else {
       <div class="im-section">
         <p class="im-section-label">Install on your device</p>
         <ol class="im-steps">
-          <li>
-            <span class="im-step-num">1</span>
-            <span class="im-step-text">
-              Click the <strong>menu</strong>
-              <span class="im-step-icon">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-                  <circle cx="12" cy="5" r="1.2" fill="currentColor"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/><circle cx="12" cy="19" r="1.2" fill="currentColor"/>
-                </svg>
-              </span>
-              in your browser
-            </span>
-          </li>
-          <li>
-            <span class="im-step-num">2</span>
-            <span class="im-step-text">Click <strong>"Install App"</strong> or <strong>"Add to Home Screen"</strong></span>
-          </li>
-          <li>
-            <span class="im-step-num">3</span>
-            <span class="im-step-text">Click <strong>Install</strong> to confirm</span>
-          </li>
+          <li><span class="im-step-num">1</span><span class="im-step-text">Click the <strong>menu</strong> <span class="im-step-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="5" r="1.2" fill="currentColor"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/><circle cx="12" cy="19" r="1.2" fill="currentColor"/></svg></span> in your browser</span></li>
+          <li><span class="im-step-num">2</span><span class="im-step-text">Click <strong>"Install App"</strong> or <strong>"Add to Home Screen"</strong></span></li>
+          <li><span class="im-step-num">3</span><span class="im-step-text">Click <strong>Install</strong> to confirm</span></li>
         </ol>
-        <p class="im-install-note">
-          On Chrome, look for the
-          <svg style="vertical-align:middle" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-            <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-          </svg>
-          install icon in the address bar.
-        </p>
+        <p class="im-install-note">On Chrome, look for the <svg style="vertical-align:middle" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> install icon in the address bar.</p>
       </div>
     }
-
   </div>
 }
+
+<!-- Mobile Bottom Navigation -->
+<app-mobile-bottom-nav></app-mobile-bottom-nav>

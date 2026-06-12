@@ -64,12 +64,21 @@ export class SearchPage implements OnInit {
 
   hasQuery = computed(() => this.query().trim().length > 0);
 
+  // Tracks which .adsbygoogle <ins> elements have already been pushed —
+  // avoids re-pushing an already-initialised <ins> ("already have ads in
+  // them") if pushAds() is ever called more than once.
+  private pushedAds = new WeakSet<Element>();
+
   private pushAds(): void {
     if (!isPlatformBrowser(this.platformId)) return;
     try {
       const ads: any[] = (window as any).adsbygoogle ?? [];
       (window as any).adsbygoogle = ads;
-      this.document.querySelectorAll('.page-ad-wrap ins.adsbygoogle').forEach(() => ads.push({}));
+      this.document.querySelectorAll('.page-ad-wrap ins.adsbygoogle').forEach(el => {
+        if (this.pushedAds.has(el)) return;
+        this.pushedAds.add(el);
+        ads.push({});
+      });
     } catch (_) {}
   }
 
@@ -77,6 +86,9 @@ export class SearchPage implements OnInit {
     this.titleSvc.setTitle('Search Stories — ApnaInsights');
     setTimeout(() => this.pushAds(), 500);
     this.meta.updateTag({ name: 'description', content: 'Search thousands of articles on ApnaInsights.' });
+    // robots.txt no longer disallows /search — that previously blocked Google
+    // from crawling this page at all, so it could never see this noindex tag
+    // and properly drop already-indexed /search?q=... URLs from the index.
     this.meta.updateTag({ name: 'robots', content: 'noindex, follow' });
 
     this.route.queryParamMap

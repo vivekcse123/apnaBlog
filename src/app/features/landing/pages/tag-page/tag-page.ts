@@ -1,5 +1,5 @@
 import {
-  ChangeDetectionStrategy, Component, DestroyRef, HostListener, OnInit, PLATFORM_ID, computed, inject, signal
+  ChangeDetectionStrategy, Component, DestroyRef, HostListener, OnInit, OnDestroy, PLATFORM_ID, computed, inject, signal
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { environment } from '../../../../../environments/environment';
@@ -23,7 +23,7 @@ import { MobileBottomNav } from '../../../../shared/mobile-bottom-nav/mobile-bot
   templateUrl: './tag-page.html',
   styleUrl: './tag-page.css',
 })
-export class TagPage implements OnInit {
+export class TagPage implements OnInit, OnDestroy {
   private route         = inject(ActivatedRoute);
   private router        = inject(Router);
   private postService   = inject(PostService);
@@ -51,12 +51,37 @@ export class TagPage implements OnInit {
 
   currentYear = new Date().getFullYear();
 
+  // Same threshold as _updateRobotsForPostCount() — don't show an ad on a
+  // page that's mostly empty (AdSense low-value-content / ad-density risk).
+  isThinPage = computed(() => !this.isLoading() && this.posts().length < 5);
+
+  // Renders posts in batches instead of the full (sometimes 100s-long) list —
+  // popular tags were producing multi-MB prerendered HTML. All posts are
+  // already in memory (allPostsCache), so "Load more" is instant, no refetch.
+  private readonly PAGE_SIZE = 24;
+  displayCount = signal(this.PAGE_SIZE);
+  visiblePosts = computed(() => this.posts().slice(0, this.displayCount()));
+  hasMorePosts = computed(() => this.posts().length > this.displayCount());
+
+  loadMore(): void {
+    this.displayCount.update(n => n + this.PAGE_SIZE);
+  }
+
+  // Tracks which .adsbygoogle <ins> elements have already been pushed —
+  // tag route params can re-fire (e.g. switching tags), and re-pushing an
+  // already-initialised <ins> throws "already have ads in them".
+  private pushedAds = new WeakSet<Element>();
+
   private pushAds(): void {
     if (!isPlatformBrowser(this.platformId)) return;
     try {
       const ads: any[] = (window as any).adsbygoogle ?? [];
       (window as any).adsbygoogle = ads;
-      this.document.querySelectorAll('.page-ad-wrap ins.adsbygoogle').forEach(() => ads.push({}));
+      this.document.querySelectorAll('.page-ad-wrap ins.adsbygoogle').forEach(el => {
+        if (this.pushedAds.has(el)) return;
+        this.pushedAds.add(el);
+        ads.push({});
+      });
     } catch (_) {}
   }
 
@@ -66,10 +91,16 @@ export class TagPage implements OnInit {
       if (!tag) { this.router.navigate(['/']); return; }
 
       this.tagSlug.set(tag.toLowerCase());
+      this.displayCount.set(this.PAGE_SIZE);
       this.setMeta(tag);
       this.loadPosts();
       setTimeout(() => this.pushAds(), 300);
     });
+  }
+
+  ngOnDestroy(): void {
+    this.document.getElementById('tag-schema')?.remove();
+    this.document.getElementById('tag-itemlist')?.remove();
   }
 
   private loadPosts(): void {
@@ -79,6 +110,7 @@ export class TagPage implements OnInit {
       this.isLoading.set(false);
       this.injectItemList(this.posts());
       this._updateRobotsForPostCount(this.posts().length);
+      this._enrichMetaWithTopCategory();
       return;
     }
 
@@ -94,6 +126,7 @@ export class TagPage implements OnInit {
         this.isLoading.set(false);
         this.injectItemList(this.posts());
         this._updateRobotsForPostCount(this.posts().length);
+        this._enrichMetaWithTopCategory();
       });
   }
 
@@ -102,15 +135,43 @@ export class TagPage implements OnInit {
     this.meta.updateTag({ name: 'robots', content: value });
   }
 
+  // Differentiates near-identical tag-page descriptions by folding in the
+  // tag's most common category (e.g. "...Technology community blogs...")
+  // once posts are loaded — avoids duplicate-meta-description across tags.
+  private _enrichMetaWithTopCategory(): void {
+    const posts = this.posts();
+    if (!posts.length) return;
+
+    const counts = new Map<string, number>();
+    for (const p of posts) {
+      for (const c of (p.categories ?? [])) {
+        counts.set(c, (counts.get(c) ?? 0) + 1);
+      }
+    }
+    const topCategory = [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0];
+    if (!topCategory) return;
+
+    const tag     = this.tagSlug();
+    const display = tag.charAt(0).toUpperCase() + tag.slice(1);
+    const desc    = `Read the latest #${display} stories on ApnaInsights — ${topCategory} community blogs from real Indian writers.`;
+
+    this.meta.updateTag({ name: 'description',        content: desc });
+    this.meta.updateTag({ property: 'og:description', content: desc });
+  }
+
   private setMeta(tag: string): void {
     const display = tag.charAt(0).toUpperCase() + tag.slice(1);
     const url     = `${environment.siteUrl}/tag/${tag.toLowerCase()}`;
 
+    const desc = `Read the latest stories tagged #${display} on ApnaInsights — community blogs written by real people.`;
     this.titleSvc.setTitle(`#${display} Stories | ApnaInsights`);
-    this.meta.updateTag({ name: 'description',        content: `Read the latest stories tagged #${display} on ApnaInsights — community blogs written by real people.` });
-    this.meta.updateTag({ name: 'robots',             content: 'index, follow' });
+    this.meta.updateTag({ name: 'description',        content: desc });
+    // Fail safe to noindex until _updateRobotsForPostCount() confirms the tag
+    // has enough posts — avoids a crawler ever seeing `index` on an
+    // empty/thin tag page (soft-404 risk).
+    this.meta.updateTag({ name: 'robots',             content: 'noindex, follow' });
     this.meta.updateTag({ property: 'og:title',       content: `#${display} Stories | ApnaInsights` });
-    this.meta.updateTag({ property: 'og:description', content: `Explore #${display} content on ApnaInsights.` });
+    this.meta.updateTag({ property: 'og:description', content: desc });
     this.meta.updateTag({ property: 'og:url',         content: url });
     this.meta.updateTag({ property: 'og:type',        content: 'website' });
 
@@ -192,6 +253,10 @@ export class TagPage implements OnInit {
 
   getAuthorName(post: Post): string {
     return (post.user as any)?.name ?? 'Anonymous';
+  }
+
+  getAuthorId(post: Post): string | null {
+    return (post.user as any)?._id ?? null;
   }
 
   private rtCache = new Map<string, number>();

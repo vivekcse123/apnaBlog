@@ -1,0 +1,139 @@
+<div class="at-page">
+
+  <!-- NAV -->
+  <nav class="at-nav" role="navigation" aria-label="Page navigation">
+    <div class="at-nav-inner">
+      <a routerLink="/" class="at-back-btn" aria-label="Back to homepage">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+        <span class="at-back-label">Back to Home</span>
+      </a>
+      <a routerLink="/" class="at-nav-logo" aria-label="ApnaInsights">
+        <img src="/logo-96.png" alt="ApnaInsights" width="28" height="28" loading="eager" class="at-nav-logo-img" />
+      </a>
+      <div></div>
+    </div>
+  </nav>
+
+  <!-- BREADCRUMB -->
+  <nav class="at-breadcrumb" aria-label="Breadcrumb">
+    <div class="at-breadcrumb-inner">
+      <ol class="at-breadcrumb-list" itemscope itemtype="https://schema.org/BreadcrumbList">
+        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+          <a routerLink="/" itemprop="item"><span itemprop="name">Home</span></a>
+          <meta itemprop="position" content="1" />
+        </li>
+        <span class="at-breadcrumb-sep" aria-hidden="true">›</span>
+        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+          <span itemprop="name">All Topics</span>
+          <meta itemprop="position" content="2" />
+        </li>
+      </ol>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <header class="at-hero">
+    <div class="at-hero-inner">
+      <span class="at-hero-eyebrow">Browse by Interest</span>
+      <h1 class="at-hero-title">Explore All Topics</h1>
+      <p class="at-hero-subtitle">
+        Discover stories across {{ topics().length }} categories — from technology and health to cooking, village life, and everything in between.
+      </p>
+    </div>
+    <div class="at-hero-orb at-hero-orb--1" aria-hidden="true"></div>
+    <div class="at-hero-orb at-hero-orb--2" aria-hidden="true"></div>
+  </header>
+
+  <!-- TOPICS GRID -->
+  <main class="at-main" id="main-content">
+    <div class="at-main-inner">
+
+      <!-- Loading -->
+      @if (isLoading()) {
+        <div class="at-grid">
+          @for (_ of [1,2,3,4,5,6,7,8,9,10,11,12,13,14]; track $index) {
+            <div class="at-card at-card--skeleton">
+              <div class="at-card-emoji-box at-skel"></div>
+              <div class="at-card-body">
+                <div class="at-skel at-skel--title"></div>
+                <div class="at-skel at-skel--text"></div>
+                <div class="at-skel at-skel--count"></div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Loaded -->
+      @if (!isLoading()) {
+        <div class="at-grid">
+          @for (topic of topics(); track topic.slug) {
+            <a
+              class="at-card"
+              [routerLink]="['/category', topic.slug]"
+              [attr.aria-label]="topic.name + ' stories'"
+              (click)="scrollToTop()"
+            >
+              <div class="at-card-emoji-box" [style.background]="topic.color + '18'" [style.border-color]="topic.color + '30'">
+                <span class="at-card-emoji" aria-hidden="true">{{ topic.emoji }}</span>
+              </div>
+              <div class="at-card-body">
+                <h2 class="at-card-name">{{ topic.name }}</h2>
+                <p class="at-card-desc">{{ topic.description }}</p>
+                <div class="at-card-footer">
+                  @if (topic.count > 0) {
+                    <span class="at-card-count">{{ topic.count }} {{ topic.count === 1 ? 'story' : 'stories' }}</span>
+                  }
+                  <span class="at-card-cta" [style.color]="topic.color">
+                    Explore
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                  </span>
+                </div>
+              </div>
+            </a>
+          }
+        </div>
+
+        <!-- Write CTA -->
+        <div class="at-write-cta">
+          <div class="at-write-cta-inner">
+            <h2 class="at-write-cta-title">Have a story to tell?</h2>
+            <p class="at-write-cta-text">Join thousands of writers sharing authentic stories across India on ApnaInsights. It's free.</p>
+            <a routerLink="/auth/register" class="at-write-cta-btn">Start Writing Today</a>
+          </div>
+        </div>
+      }
+
+    </div>
+  </main>
+
+  <!-- AdSense — above footer -->
+  <div class="page-ad-wrap">
+    <ins class="adsbygoogle"
+      style="display:block"
+      data-ad-client="ca-pub-6477809641944524"
+      data-ad-slot="2024301795"
+      data-ad-format="auto"
+      data-full-width-responsive="true"></ins>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="at-footer">
+    <div class="at-footer-inner">
+      <p>© {{ currentYear }} ApnaInsights. All rights reserved.</p>
+      <nav class="at-footer-links" aria-label="Legal links">
+        <a routerLink="/privacy-policy" class="at-footer-link">Privacy Policy</a>
+        <span aria-hidden="true">·</span>
+        <a routerLink="/terms" class="at-footer-link">Terms of Service</a>
+        <span aria-hidden="true">·</span>
+        <a routerLink="/editorial-policy" class="at-footer-link">Editorial Policy</a>
+        <span aria-hidden="true">·</span>
+        <a routerLink="/about" class="at-footer-link">About Us</a>
+        <span aria-hidden="true">·</span>
+        <a routerLink="/" class="at-footer-link">Home</a>
+      </nav>
+    </div>
+  </footer>
+
+  <app-mobile-bottom-nav></app-mobile-bottom-nav>
+</div>

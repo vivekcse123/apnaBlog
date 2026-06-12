@@ -262,7 +262,7 @@
     </ol>
   </nav>
 
-  <article class="blog-detail-container">
+  <article class="blog-detail-container" id="main-content">
 
     @if (carouselImages().length === 1) {
       <div class="featured-image-wrap">
@@ -279,10 +279,17 @@
           <div class="carousel-track">
             @for (img of carouselImages(); track img; let i = $index) {
               <div class="carousel-slide" [class.active]="i === currentSlide()">
-                <img [src]="img" [alt]="post()!.title + ' image ' + (i + 1)"
-                  class="featured-image zoomable" width="800" loading="lazy"
-                  (click)="openLightbox(img, post()!.title + ' — image ' + (i + 1))"
-                  title="Click to enlarge"/>
+                @if (i === 0) {
+                  <img [src]="img" [alt]="post()!.title + ' image ' + (i + 1)"
+                    class="featured-image zoomable" width="800" fetchpriority="high"
+                    (click)="openLightbox(img, post()!.title + ' — image ' + (i + 1))"
+                    title="Click to enlarge"/>
+                } @else {
+                  <img [src]="img" [alt]="post()!.title + ' image ' + (i + 1)"
+                    class="featured-image zoomable" width="800" loading="lazy"
+                    (click)="openLightbox(img, post()!.title + ' — image ' + (i + 1))"
+                    title="Click to enlarge"/>
+                }
               </div>
             }
           </div>
@@ -542,7 +549,7 @@
 
     <!-- AdSense — mid-content unit -->
     @if (!isThinPost()) {
-      <div class="ad-unit-wrap">
+      <div class="ad-unit-wrap ad-unit-wrap--mid">
         <ins class="adsbygoogle"
           style="display:block"
           data-ad-client="ca-pub-6477809641944524"
@@ -615,12 +622,12 @@
       </button>
       <div class="author-card-body">
         <span class="author-card-label">About the author</span>
-        <button class="author-card-name" type="button" (click)="navigateToAuthor()">
+        <a class="author-card-name" [routerLink]="['/author', authorId()]">
           {{ authorName }}
           @if (authorWOM?.active && challengeEnded) {
             <span class="wom-badge" [title]="'Writer of the Month — ' + (authorWOM?.challengeTitle || '')">👑 Writer of the Month</span>
           }
-        </button>
+        </a>
         <p class="author-card-bio">
           {{ authorBio || 'Writer on ApnaInsights.' }}
         </p>
@@ -670,13 +677,15 @@
         </h2>
         <ol class="trending-list">
           @for (tp of trendingPosts(); track tp._id; let i = $index) {
-            <li class="trending-item" (click)="navigateToBlog(tp.slug || tp._id)">
+            <li class="trending-item">
               <span class="trending-rank">{{ i + 1 }}</span>
               <div class="trending-body">
                 @if (tp.categories.length) {
                   <span class="trending-cat">{{ tp.categories[0] }}</span>
                 }
-                <p class="trending-heading">{{ tp.title }}</p>
+                <p class="trending-heading">
+                  <a class="trending-link" [routerLink]="['/blog', tp.slug || tp._id]">{{ tp.title }}</a>
+                </p>
                 <div class="trending-meta">
                   <span>{{ tp.views | number }} views</span>
                   <span>·</span>
@@ -742,7 +751,7 @@
         <h2 class="related-title"><span class="related-icon">✨</span> Related Stories</h2>
         <div class="related-grid">
           @for (rp of relatedPosts(); track rp._id) {
-            <article class="related-card" (click)="navigateToBlog(rp.slug || rp._id)">
+            <article class="related-card">
               @if (rp.featuredImage) {
                 <img [src]="rp.featuredImage" [alt]="rp.title"
                   class="related-img" loading="lazy" width="280" height="160"/>
@@ -753,7 +762,9 @@
               }
               <div class="related-content">
                 <span class="related-cat">{{ rp.categories[0] }}</span>
-                <h3 class="related-card-title">{{ rp.title }}</h3>
+                <h3 class="related-card-title">
+                  <a class="related-card-link" [routerLink]="['/blog', rp.slug || rp._id]">{{ rp.title }}</a>
+                </h3>
                 <p class="related-desc">{{ rp.description }}</p>
               </div>
             </article>

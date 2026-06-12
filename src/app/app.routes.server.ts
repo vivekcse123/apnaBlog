@@ -14,6 +14,7 @@ export const serverRoutes: ServerRoute[] = [
   { path: 'terms',          renderMode: RenderMode.Prerender },
   { path: 'disclaimer',        renderMode: RenderMode.Prerender },
   { path: 'editorial-policy', renderMode: RenderMode.Prerender },
+  { path: 'topics',         renderMode: RenderMode.Prerender },
   {
     path: 'category/:category',
     renderMode: RenderMode.Prerender,
@@ -22,6 +23,8 @@ export const serverRoutes: ServerRoute[] = [
   { path: 'blog/:id',       renderMode: RenderMode.Server },
   { path: 'author/:id',    renderMode: RenderMode.Server },
   { path: 'tag/:tag',      renderMode: RenderMode.Server },
+  { path: 'search',         renderMode: RenderMode.Server },
+  { path: 'challenges',     renderMode: RenderMode.Server },
   { path: 'shorts',         renderMode: RenderMode.Server },
   { path: 'shorts/:id',     renderMode: RenderMode.Server },
   { path: 'auth/login',     renderMode: RenderMode.Client },

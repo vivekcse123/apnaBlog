@@ -12,6 +12,23 @@
     </a>
   </header>
 
+  <!-- BREADCRUMB -->
+  <nav class="ap-breadcrumb" aria-label="Breadcrumb">
+    <div class="ap-breadcrumb-inner">
+      <ol class="ap-breadcrumb-list" itemscope itemtype="https://schema.org/BreadcrumbList">
+        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+          <a routerLink="/" itemprop="item"><span itemprop="name">Home</span></a>
+          <meta itemprop="position" content="1" />
+        </li>
+        <span class="ap-breadcrumb-sep" aria-hidden="true">›</span>
+        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+          <span itemprop="name" aria-current="page">{{ author()?.name || 'Author' }}</span>
+          <meta itemprop="position" content="2" />
+        </li>
+      </ol>
+    </div>
+  </nav>
+
   @if (isLoading()) {
     <div class="ap-loading">
       <div class="loading-dots"><span></span><span></span><span></span></div>
@@ -146,7 +163,7 @@
 
     <!-- ── Posts tab ── -->
     @if (selectedTab() === 'posts') {
-      <main class="ap-main">
+      <main class="ap-main" id="main-content">
 
         <!-- Top Stories -->
         @if (topPosts().length > 0) {
@@ -329,15 +346,17 @@
     }
   }
 
-  <!-- AdSense — above footer -->
-  <div class="page-ad-wrap">
-    <ins class="adsbygoogle"
-      style="display:block"
-      data-ad-client="ca-pub-6477809641944524"
-      data-ad-slot="7546879763"
-      data-ad-format="auto"
-      data-full-width-responsive="true"></ins>
-  </div>
+  <!-- AdSense — above footer (hidden on thin/empty author pages) -->
+  @if (!isThinPage()) {
+    <div class="page-ad-wrap">
+      <ins class="adsbygoogle"
+        style="display:block"
+        data-ad-client="ca-pub-6477809641944524"
+        data-ad-slot="7546879763"
+        data-ad-format="auto"
+        data-full-width-responsive="true"></ins>
+    </div>
+  }
 
   <!-- FOOTER -->
   <footer class="ap-footer">

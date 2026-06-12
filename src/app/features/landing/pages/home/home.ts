@@ -1,5 +1,5 @@
 import {
-  Component, inject, signal, computed, effect, OnInit, OnDestroy, DestroyRef,
+  Component, inject, signal, computed, OnInit, OnDestroy, DestroyRef,
   Input, HostBinding, ChangeDetectionStrategy, WritableSignal, PLATFORM_ID,
   HostListener, ElementRef, ViewChild
 } from '@angular/core';
@@ -10,7 +10,7 @@ import { CommonModule, isPlatformBrowser, NgTemplateOutlet, Location } from '@an
 import { FormsModule } from '@angular/forms';
 import { Meta, Title } from '@angular/platform-browser';
 import { DOCUMENT } from '@angular/common';
-import { of, Subject, EMPTY } from 'rxjs';
+import { of, Subject, EMPTY, interval } from 'rxjs';
 import { debounceTime, distinctUntilChanged, catchError, expand, reduce, timeout } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { PostService } from '../../../post/services/post-service';
@@ -37,6 +37,31 @@ const FETCH_LIMIT = 20;   // posts per server page — keeps initial payload sma
 
 const STATS_KEY    = 'apna_site_stats_v3'; // v3 — includes accurate category counts
 const STATS_TTL_MS = 30 * 60 * 1000;
+
+const RECENT_SEARCHES_KEY = 'apna_recent_searches';
+const HERO_PLACEHOLDERS = [
+  'Search stories, blogs, topics, writers…',
+  'Search AI, Technology, Sports…',
+  'What would you like to explore today?',
+];
+
+function readRecentSearches(): string[] {
+  try {
+    if (typeof localStorage === 'undefined') return [];
+    const raw = localStorage.getItem(RECENT_SEARCHES_KEY);
+    if (!raw) return [];
+    const arr = JSON.parse(raw);
+    return Array.isArray(arr) ? arr.filter(s => typeof s === 'string').slice(0, 5) : [];
+  } catch { return []; }
+}
+
+function writeRecentSearches(list: string[]): void {
+  try {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(list.slice(0, 5)));
+    }
+  } catch { /* quota */ }
+}
 
 interface PersistedStats {
   total: number;
@@ -102,6 +127,7 @@ export class Home implements OnInit, OnDestroy {
   @Input() standalone = true;
   @HostBinding('class.mode-embedded') get isEmbedded() { return !this.standalone; }
   @ViewChild('searchInput') searchInputEl?: ElementRef<HTMLInputElement>;
+  @ViewChild('megaSearchInput') megaSearchInputEl?: ElementRef<HTMLInputElement>;
 
   allPosts           = signal<PostWithTs[]>([]);
   sponsoredFromApi    = signal<PostWithTs[]>([]);
@@ -117,6 +143,13 @@ export class Home implements OnInit, OnDestroy {
   showScrollTop    = signal(false);
 
   mobileTab = signal<'for-you' | 'trending' | 'latest'>('for-you');
+
+  // Hero "mega search" — centered search bar + discovery dropdown
+  heroSearchOpen     = signal(false);
+  heroDropdownQuery  = signal('');
+  recentSearches     = signal<string[]>(readRecentSearches());
+  heroPlaceholderIdx = signal(0);
+  heroPlaceholder    = computed(() => HERO_PLACEHOLDERS[this.heroPlaceholderIdx()]);
 
   activeChallenge = signal<{ _id: string; title: string; description: string; prize: string | null; endDate: string; submissionCount: number } | null>(null);
   featuredWinners = signal<any[]>([]);
@@ -308,18 +341,6 @@ export class Home implements OnInit, OnDestroy {
     !!this.searchQuery().trim() || this.selectedSort() !== 'newest'
   );
 
-  // Runs after Angular's OnPush rendering completes — element is always in the DOM by then.
-  private readonly _filterScrollEffect = effect(() => {
-    const filtering = this.isFiltering();
-    if (!filtering || !isPlatformBrowser(this.platformId)) return;
-    Promise.resolve().then(() => {
-      const el = this.document.getElementById('filtered-results');
-      if (!el) return;
-      const top = el.getBoundingClientRect().top + window.scrollY - 60;
-      window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
-    });
-  });
-
   /** Top 15 tags by frequency across published posts only. */
   popularTags = computed(() => {
     const counts = new Map<string, number>();
@@ -333,6 +354,52 @@ export class Home implements OnInit, OnDestroy {
       .sort((a, b) => b[1] - a[1])
       .slice(0, 15)
       .map(([tag]) => tag);
+  });
+
+  // ── Hero "mega search" dropdown content ──────────────────────────────
+  // All derived from data already loaded for the page — no extra requests.
+  // When the user is typing, each list is filtered client-side; otherwise
+  // a default top-N slice is shown.
+  heroDropdownHasQuery = computed(() => this.heroDropdownQuery().trim().length > 0);
+
+  heroDropdownCategories = computed(() => {
+    const q = this.heroDropdownQuery().trim().toLowerCase();
+    const cats = this.categories();
+    return (q ? cats.filter(c => c.toLowerCase().includes(q)) : cats).slice(0, 8);
+  });
+
+  heroDropdownTrending = computed(() => {
+    const q = this.heroDropdownQuery().trim().toLowerCase();
+    const posts = this.byViews();
+    return (q ? posts.filter(p => p.title.toLowerCase().includes(q)) : posts).slice(0, 3);
+  });
+
+  heroDropdownLatest = computed(() => {
+    const q = this.heroDropdownQuery().trim().toLowerCase();
+    const posts = this.byDate();
+    return (q ? posts.filter(p => p.title.toLowerCase().includes(q)) : posts).slice(0, 3);
+  });
+
+  heroDropdownWriters = computed(() => {
+    const q = this.heroDropdownQuery().trim().toLowerCase();
+    const seen = new Set<string>();
+    const writers: { id: string; name: string; reads: number }[] = [];
+    for (const post of this.byLikes()) {
+      const id   = post.user?._id;
+      const name = post.user?.name || 'Anonymous';
+      if (!id || seen.has(id)) continue;
+      if (q && !name.toLowerCase().includes(q)) continue;
+      seen.add(id);
+      writers.push({ id, name, reads: post.views });
+      if (writers.length >= 4) break;
+    }
+    return writers;
+  });
+
+  heroDropdownTags = computed(() => {
+    const q = this.heroDropdownQuery().trim().toLowerCase();
+    const tags = this.popularTags();
+    return (q ? tags.filter(t => t.toLowerCase().includes(q)) : tags).slice(0, 8);
   });
 
   /** IDs of the top-5 trending posts — used to show the 🔥 badge on cards. */
@@ -425,6 +492,7 @@ export class Home implements OnInit, OnDestroy {
     const t = e.target as HTMLElement;
     if (!t.closest('.nav-cat-wrap'))  this.navCatOpen.set(false);
     if (!t.closest('.nav-more-wrap')) this.navMoreOpen.set(false);
+    if (!t.closest('.v2-hero-search-zone')) this.closeHeroSearch();
   }
 
   @HostListener('document:keydown', ['$event'])
@@ -438,6 +506,7 @@ export class Home implements OnInit, OnDestroy {
       if (this.menuOpen())    this.menuOpen.set(false);
       if (this.navCatOpen())  this.navCatOpen.set(false);
       if (this.navMoreOpen()) this.navMoreOpen.set(false);
+      if (this.heroSearchOpen()) this.closeHeroSearch();
       if (this.showWelcomeModal()) this.dismissWelcomeModal();
     }
   }
@@ -545,11 +614,18 @@ export class Home implements OnInit, OnDestroy {
       takeUntilDestroyed(this.destroyRef)
     ).subscribe(val => {
       this.searchQuery.set(val);
-      if (val.trim()) setTimeout(() => this.scrollToSearchInput(), 400);
+      if (val.trim()) setTimeout(() => this.scrollToResults(), 400);
     });
 
     this.loadInitialData();
     this.taxonomyService.load().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
+
+    // Rotate the hero search placeholder text every few seconds.
+    if (isPlatformBrowser(this.platformId)) {
+      interval(4000).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+        this.heroPlaceholderIdx.update(i => (i + 1) % HERO_PLACEHOLDERS.length);
+      });
+    }
   }
 
   ngOnDestroy(): void {
@@ -563,13 +639,22 @@ export class Home implements OnInit, OnDestroy {
     this.document.getElementById('home-trending-schema')?.remove();
   }
 
+  // Tracks which .adsbygoogle <ins> elements have already been pushed —
+  // background refreshes can re-trigger pushHomeAds(), and re-pushing an
+  // already-initialised <ins> throws "already have ads in them".
+  private pushedHomeAds = new WeakSet<Element>();
+
   private pushHomeAds(): void {
     if (!isPlatformBrowser(this.platformId)) return;
     try {
       const ads: any[] = (window as any).adsbygoogle ?? [];
       (window as any).adsbygoogle = ads;
       const slots = this.document.querySelectorAll('.home-ad-wrap ins.adsbygoogle');
-      slots.forEach(() => ads.push({}));
+      slots.forEach(el => {
+        if (this.pushedHomeAds.has(el)) return;
+        this.pushedHomeAds.add(el);
+        ads.push({});
+      });
     } catch (_) { }
   }
 
@@ -837,20 +922,21 @@ export class Home implements OnInit, OnDestroy {
   private setMetaTags(): void {
     const site = environment.siteUrl;
     const og   = environment.ogImage;
-    this.titleService.setTitle('ApnaInsights — Community Stories from Every Corner of India');
+    // Kept under ~50 chars so it doesn't get truncated in Google search results.
+    this.titleService.setTitle('ApnaInsights — Community Stories from India');
     this.meta.updateTag({ name: 'description',    content: 'Discover real stories from real people across India. Blogs on Tech, Health, Business, Lifestyle, Village Life & more. Free community blogging platform.' });
     this.meta.updateTag({ name: 'keywords',       content: 'Indian blog platform, community stories India, read blogs India, write blogs free, trending stories, technology blog India, village life stories, health stories India, ApnaInsights' });
     this.meta.updateTag({ name: 'robots',         content: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' });
     this.meta.updateTag({ name: 'author',         content: 'ApnaInsights Community' });
     this.meta.updateTag({ property: 'og:type',         content: 'website' });
-    this.meta.updateTag({ property: 'og:title',        content: 'ApnaInsights — Community Stories from Every Corner of India' });
+    this.meta.updateTag({ property: 'og:title',        content: 'ApnaInsights — Community Stories from India' });
     this.meta.updateTag({ property: 'og:description',  content: 'Discover real stories from real people across India. Blogs on Technology, Lifestyle, Health, Business, Village Life and more. Free to read, free to write.' });
     this.meta.updateTag({ property: 'og:url',          content: `${site}/` });
     this.meta.updateTag({ property: 'og:site_name',    content: 'ApnaInsights' });
     this.meta.updateTag({ property: 'og:image',        content: og });
     this.meta.updateTag({ property: 'og:image:width',  content: '1200' });
     this.meta.updateTag({ property: 'og:image:height', content: '630' });
-    this.meta.updateTag({ property: 'og:image:alt',    content: 'ApnaInsights — Community Stories from Every Corner of India' });
+    this.meta.updateTag({ property: 'og:image:alt',    content: 'ApnaInsights — Community Stories from India' });
     this.meta.updateTag({ property: 'og:locale',       content: 'en_IN' });
     this.meta.updateTag({ name: 'twitter:card',        content: 'summary_large_image' });
     this.meta.updateTag({ name: 'twitter:title',       content: 'ApnaInsights — Community Stories from India' });
@@ -879,7 +965,7 @@ export class Home implements OnInit, OnDestroy {
             '@type':       'CollectionPage',
             '@id':         `${site}/#homepage`,
             url:           `${site}/`,
-            name:          'ApnaInsights — Community Stories from Every Corner of India',
+            name:          'ApnaInsights — Community Stories from India',
             description:   'Browse trending, most-viewed, and latest community blogs from writers across India.',
             inLanguage:    'en-IN',
             isPartOf:      { '@id': `${site}/#website` },
@@ -1175,8 +1261,96 @@ export class Home implements OnInit, OnDestroy {
     this.resetVisibleCounts();
   }
 
+  onHeroSearch(event: Event, value: string): void {
+    event.preventDefault();
+    this.commitHeroSearch(value);
+  }
+
+  /** Apply a search term picked from the mega-search dropdown (recent/popular search chip). */
+  applyHeroSearchTerm(term: string): void {
+    if (this.megaSearchInputEl?.nativeElement) {
+      this.megaSearchInputEl.nativeElement.value = term;
+    }
+    this.commitHeroSearch(term);
+  }
+
+  private commitHeroSearch(value: string): void {
+    const v = value.trim();
+    if (v) this.addRecentSearch(v);
+    this.closeHeroSearch();
+    this.searchQuery.set(v);
+    this.searchInput$.next(v);
+    this.resetVisibleCounts();
+    if (this.searchInputEl?.nativeElement) {
+      this.searchInputEl.nativeElement.value = v;
+    }
+    this.scrollToResultsPublic();
+  }
+
+  // ── Hero "mega search" dropdown ──────────────────────────────────────
+  openHeroSearch(): void {
+    this.heroSearchOpen.set(true);
+  }
+
+  closeHeroSearch(): void {
+    this.heroSearchOpen.set(false);
+    this.heroDropdownQuery.set('');
+  }
+
+  onHeroSearchInput(value: string): void {
+    this.heroDropdownQuery.set(value);
+    this.heroSearchOpen.set(true);
+  }
+
+  /** Clear the mega-search input text without closing the dropdown. */
+  clearHeroSearch(): void {
+    this.heroDropdownQuery.set('');
+    if (this.megaSearchInputEl?.nativeElement) {
+      this.megaSearchInputEl.nativeElement.value = '';
+      this.megaSearchInputEl.nativeElement.focus();
+    }
+  }
+
+  selectHeroCategory(cat: string): void {
+    this.closeHeroSearch();
+    this.selectCategory(cat);
+  }
+
+  selectHeroTag(tag: string): void {
+    this.closeHeroSearch();
+    this.selectTag(tag);
+  }
+
+  /** Smooth-scroll a section of the open dropdown into view (for the quick-action chips). */
+  scrollDropdownTo(sectionClass: string): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    setTimeout(() => {
+      this.document.querySelector(`.v2-mega-dropdown .${sectionClass}`)
+        ?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 0);
+  }
+
+  private addRecentSearch(term: string): void {
+    const trimmed = term.trim();
+    if (!trimmed) return;
+    const next = [trimmed, ...this.recentSearches().filter(s => s.toLowerCase() !== trimmed.toLowerCase())].slice(0, 5);
+    this.recentSearches.set(next);
+    writeRecentSearches(next);
+  }
+
+  removeRecentSearch(term: string): void {
+    const next = this.recentSearches().filter(s => s !== term);
+    this.recentSearches.set(next);
+    writeRecentSearches(next);
+  }
+
+  clearRecentSearches(): void {
+    this.recentSearches.set([]);
+    writeRecentSearches([]);
+  }
+
   scrollToResultsPublic(): void {
-    setTimeout(() => this.scrollToSearchInput(), 300);
+    setTimeout(() => this.scrollToResults(), 300);
   }
 
   isNew(post: Post): boolean {
@@ -1198,6 +1372,7 @@ export class Home implements OnInit, OnDestroy {
     this.selectedCategory.set(next);
     this.resetVisibleCounts();
     this.setQueryParams(next ? { category: next } : {});
+    this.scrollToResults();
   }
 
   private resetVisibleCounts(): void {
@@ -1205,9 +1380,21 @@ export class Home implements OnInit, OnDestroy {
     this.filteredVisibleCount.set(PAGE_SIZE);
   }
 
-  private scrollToSearchInput(): void {
+  // Centralized scroll helper — call after ANY action that changes the
+  // visible feed (search submit/clear, category/tag/sort/filter change,
+  // mobile tab switch) so the user always sees the updated results, no
+  // matter where they're currently scrolled. `.filter-wrap` sits directly
+  // above every feed section (#filtered-results, trending, most-viewed,
+  // latest, etc.), so it's a single stable anchor for "start of results"
+  // in every state. `scroll-margin-top` on `.filter-wrap` (home.css)
+  // accounts for the sticky header so it isn't hidden underneath it.
+  private scrollToResults(): void {
     if (!isPlatformBrowser(this.platformId)) return;
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Wait for Angular to finish rendering the updated feed before scrolling.
+    setTimeout(() => {
+      this.document.querySelector('.filter-wrap')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 80);
   }
 
   clearAllFilters(): void {
@@ -1216,11 +1403,12 @@ export class Home implements OnInit, OnDestroy {
     this.selectedReadingTime.set('');
     this.selectedSort.set('newest');
     this.searchQuery.set('');
+    if (this.searchInputEl?.nativeElement) {
+      this.searchInputEl.nativeElement.value = '';
+    }
     this.resetVisibleCounts();
     this.setQueryParams({});
-    if (isPlatformBrowser(this.platformId)) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    this.scrollToResults();
   }
 
   activeFilterLabel = computed(() => {
@@ -1258,6 +1446,7 @@ export class Home implements OnInit, OnDestroy {
     this.selectedTag.set(next);
     this.resetVisibleCounts();
     this.setQueryParams(next ? { tag: next } : {});
+    this.scrollToResults();
   }
 
   selectReadingTime(rt: '' | 'quick' | 'medium' | 'long'): void {
@@ -1265,6 +1454,7 @@ export class Home implements OnInit, OnDestroy {
     this.selectedReadingTime.set(next);
     this.resetVisibleCounts();
     this.setQueryParams(next ? { rt: next } : {});
+    this.scrollToResults();
   }
 
   // Used by <select> elements — sets directly (no toggle)
@@ -1272,17 +1462,28 @@ export class Home implements OnInit, OnDestroy {
     this.selectedTag.set(tag);
     this.resetVisibleCounts();
     this.setQueryParams(tag ? { tag } : {});
+    this.scrollToResults();
   }
 
   onTimeSelectChange(rt: string): void {
     this.selectedReadingTime.set(rt as any);
     this.resetVisibleCounts();
     this.setQueryParams(rt ? { rt } : {});
+    this.scrollToResults();
   }
 
   onSortChange(sort: string): void {
     this.selectedSort.set(sort);
     this.resetVisibleCounts();
+    this.scrollToResults();
+  }
+
+  // Switch the mobile "For You / Trending / Latest" tab and bring the feed
+  // into view — each tab shows different sections, so without this the user
+  // could be scrolled past the content the new tab actually has to show.
+  setMobileTab(tab: 'for-you' | 'trending' | 'latest'): void {
+    this.mobileTab.set(tab);
+    this.scrollToResults();
   }
 
   prevPage(page: WritableSignal<number>): void {

@@ -9,7 +9,6 @@ Disallow: /super-admin/
 Disallow: /user/
 Disallow: /auth/
 Disallow: /sponsor/
-Disallow: /search
 Disallow: /history
 Disallow: /bookmarks
 Disallow: /splash

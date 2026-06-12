@@ -897,6 +897,9 @@
   -webkit-tap-highlight-color: transparent;
 }
 .sf-fab:active { transform: scale(.88); box-shadow: 0 2px 10px rgba(67,206,162,.3); }
+.sf-page:has(.sf-ad-ins[data-ad-status="filled"]) .sf-fab {
+  bottom: calc(154px + env(safe-area-inset-bottom));
+}
 
 /* ── Ad banner ────────────────────────────────────────────────── */
 .sf-ad-banner { display: none; }

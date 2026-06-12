@@ -39,17 +39,24 @@ export class ShortView implements OnInit, AfterViewInit {
     this.service.getShortById(id).subscribe({
       next: res => {
         const s = res.data;
-        if (!s) { this.notFound.set(true); this.isLoading.set(false); return; }
+        if (!s) { this.notFound.set(true); this.isLoading.set(false); this.applyNotFoundMeta(); return; }
         this.short.set(s);
         this.isLoading.set(false);
         this.applyMeta(s);
       },
-      error: () => { this.notFound.set(true); this.isLoading.set(false); },
+      error: () => { this.notFound.set(true); this.isLoading.set(false); this.applyNotFoundMeta(); },
     });
+  }
+
+  private applyNotFoundMeta(): void {
+    this.titleSvc.setTitle('Short Not Found | ApnaInsights');
+    this.meta.updateTag({ name: 'description', content: 'This short video could not be found — it may have been removed.' });
+    this.meta.updateTag({ name: 'robots', content: 'noindex, follow' });
   }
 
   ngAfterViewInit(): void {
     if (!isPlatformBrowser(this.platformId)) return;
+    if (!this.doc.querySelector('.sv-ad-wrap ins.adsbygoogle')) return;
     try {
       ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
     } catch { /* already initialised */ }
@@ -98,17 +105,31 @@ export class ShortView implements OnInit, AfterViewInit {
     if (thumb) this.meta.updateTag({ property: 'og:image', content: thumb });
 
     const schema = {
-      '@context':    'https://schema.org',
-      '@type':       'VideoObject',
-      name:          s.title,
-      description,
-      thumbnailUrl:  thumb || undefined,
-      uploadDate:    s.createdAt,
-      author: { '@type': 'Person', name: s.user?.name },
-      publisher: { '@type': 'Organization', name: 'ApnaInsights', url: 'https://apnainsights.com' },
-      ...(s.videoType === 'youtube' && s.youtubeId
-        ? { embedUrl: `https://www.youtube.com/embed/${s.youtubeId}` }
-        : s.videoUrl ? { contentUrl: s.videoUrl } : {}),
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type':       'VideoObject',
+          '@id':         `${url}#video`,
+          name:          s.title,
+          description,
+          thumbnailUrl:  thumb || undefined,
+          uploadDate:    s.createdAt,
+          author: { '@type': 'Person', name: s.user?.name },
+          publisher: { '@type': 'Organization', name: 'ApnaInsights', url: 'https://apnainsights.com' },
+          ...(s.videoType === 'youtube' && s.youtubeId
+            ? { embedUrl: `https://www.youtube.com/embed/${s.youtubeId}` }
+            : s.videoUrl ? { contentUrl: s.videoUrl } : {}),
+        },
+        {
+          '@type':         'BreadcrumbList',
+          '@id':           `${url}#breadcrumb`,
+          itemListElement: [
+            { '@type': 'ListItem', position: 1, name: 'Home',   item: 'https://apnainsights.com/' },
+            { '@type': 'ListItem', position: 2, name: 'Shorts', item: 'https://apnainsights.com/shorts' },
+            { '@type': 'ListItem', position: 3, name: s.title,  item: url },
+          ],
+        },
+      ],
     };
     let sd = this.doc.getElementById('sv-schema') as HTMLScriptElement | null;
     if (!sd) {

@@ -22,6 +22,22 @@ export default async function handler(req, res) {
   const urlPath = req.url?.split('?')[0] ?? '';
   const segments = urlPath.split('/').filter(Boolean);
 
+  // Category/tag URLs are canonically lowercase — 301 redirect case-variant
+  // URLs (e.g. /category/Technology) so Google never indexes them separately
+  // from /category/technology.
+  if ((segments[0] === 'category' || segments[0] === 'tag') && segments[1]) {
+    const raw   = decodeURIComponent(segments[1]);
+    const lower = raw.toLowerCase();
+    if (raw !== lower) {
+      const rest = segments.slice(2).join('/');
+      const location = `/${segments[0]}/${encodeURIComponent(lower)}${rest ? '/' + rest : ''}`;
+      res.setHeader('Location', location);
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      res.status(301).end();
+      return;
+    }
+  }
+
   // ObjectId → slug permanent redirect (SEO: collapse old /blog/<id> URLs)
   if (segments[0] === 'blog' && segments[1] && MONGO_ID_RE.test(segments[1])) {
     const postId = segments[1];

@@ -65,13 +65,8 @@
 
     } @else {
       <div class="tp-grid">
-        @for (post of posts(); track post._id) {
-          <article class="tp-card"
-                   (click)="navigateToBlog(post)"
-                   role="button"
-                   tabindex="0"
-                   (keydown.enter)="navigateToBlog(post)"
-                   [attr.aria-label]="post.title">
+        @for (post of visiblePosts(); track post._id) {
+          <article class="tp-card">
 
             <div class="tp-card-img-wrap">
               @if (post.featuredImage) {
@@ -88,10 +83,16 @@
               @if (post.categories[0]) {
                 <span class="tp-card-category">{{ post.categories[0] }}</span>
               }
-              <h2 class="tp-card-title">{{ post.title }}</h2>
+              <h2 class="tp-card-title">
+                <a class="tp-card-link" [routerLink]="['/blog', post.slug || post._id]">{{ post.title }}</a>
+              </h2>
               <p class="tp-card-desc">{{ post.description }}</p>
               <div class="tp-card-meta">
-                <span>{{ getAuthorName(post) }}</span>
+                @if (getAuthorId(post)) {
+                  <a class="tp-card-author-link" [routerLink]="['/author', getAuthorId(post)]">{{ getAuthorName(post) }}</a>
+                } @else {
+                  <span>{{ getAuthorName(post) }}</span>
+                }
                 <span class="meta-dot" aria-hidden="true">·</span>
                 <time [attr.datetime]="post.createdAt | date:'yyyy-MM-dd'">{{ post.createdAt | timeAgo }}</time>
                 <span class="meta-dot" aria-hidden="true">·</span>
@@ -102,19 +103,26 @@
           </article>
         }
       </div>
+      @if (hasMorePosts()) {
+        <div class="tp-load-more-wrap">
+          <button class="tp-load-more-btn" (click)="loadMore()">Load more stories</button>
+        </div>
+      }
     }
 
   </main>
 
-  <!-- AdSense — above footer -->
-  <div class="page-ad-wrap">
-    <ins class="adsbygoogle"
-      style="display:block"
-      data-ad-client="ca-pub-6477809641944524"
-      data-ad-slot="7546879763"
-      data-ad-format="auto"
-      data-full-width-responsive="true"></ins>
-  </div>
+  <!-- AdSense — above footer (hidden on thin/empty tag pages) -->
+  @if (!isThinPage()) {
+    <div class="page-ad-wrap">
+      <ins class="adsbygoogle"
+        style="display:block"
+        data-ad-client="ca-pub-6477809641944524"
+        data-ad-slot="7546879763"
+        data-ad-format="auto"
+        data-full-width-responsive="true"></ins>
+    </div>
+  }
 
   <!-- FOOTER -->
   <footer class="tp-footer">

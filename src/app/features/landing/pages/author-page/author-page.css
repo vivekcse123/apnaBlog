@@ -34,6 +34,25 @@
 }
 .ap-back-btn:hover { border-color: #43cea2; color: #43cea2; }
 
+/* BREADCRUMB */
+.ap-breadcrumb {
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 0;
+}
+.ap-breadcrumb-inner { width: 92%; max-width: 1200px; margin: 0 auto; }
+.ap-breadcrumb-list {
+  display: flex; align-items: center; gap: 6px;
+  list-style: none; margin: 0; padding: 0; flex-wrap: wrap;
+}
+.ap-breadcrumb-list li {
+  font-size: 13px; color: var(--text-muted);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 260px;
+}
+.ap-breadcrumb-list a { color: var(--accent-text); text-decoration: none; font-weight: 500; }
+.ap-breadcrumb-list a:hover { text-decoration: underline; }
+.ap-breadcrumb-sep { color: var(--text-muted); }
+
 /* ── PROFILE HEADER ── */
 .ap-profile-header {
   background: var(--bg-surface);

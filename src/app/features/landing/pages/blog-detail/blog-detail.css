@@ -687,11 +687,17 @@
 .lang-translating { font-size: 12px; color: var(--text-muted); font-style: italic; }
 
 /* ── Ad units ── */
-.ad-unit-wrap { margin: 0; min-height: 0; }
+/* Reserve space for the typical responsive ad size up front so the page
+   doesn't shift when AdSense fills the slot in (CLS). Only collapse once
+   AdSense explicitly reports "unfilled" — never for the pre-JS/initial state. */
+.ad-unit-wrap { margin: 0; min-height: 250px; box-sizing: border-box; }
 .ad-unit-wrap:empty { display: none; }
-/* Hide slot when AdSense has not yet placed an iframe (no ad served / blocked / localhost) */
-.ad-unit-wrap:not(:has(iframe)) { display: none; }
-.ad-unit-wrap ins { min-height: 0 !important; }
+.ad-unit-wrap:has(ins.adsbygoogle[data-ad-status="unfilled"]) { display: none; }
+
+/* Extra space + divider below the mid-content ad so it isn't flush against
+   the clickable category/tag badges (reduces accidental-click risk). */
+.ad-unit-wrap--mid { margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
+.ad-unit-wrap--mid:has(ins.adsbygoogle[data-ad-status="unfilled"]) { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
 
 /* ══════════════════════════════════════════
    BLOG CONTENT  (SEO typography)
@@ -902,6 +908,7 @@
   font-size: 16px; font-weight: 700; color: var(--text-primary);
   background: none; border: none; padding: 0; cursor: pointer;
   font-family: inherit; margin: 2px 0 6px; text-align: left;
+  text-decoration: none;
 }
 .author-card-name:hover { color: #43cea2; }
 .wom-badge {
@@ -943,6 +950,7 @@
 }
 .trending-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 2px; }
 .trending-item {
+  position: relative;
   display: flex; align-items: flex-start; gap: 14px;
   padding: 12px 10px; border-radius: 10px;
   cursor: pointer;
@@ -959,6 +967,9 @@
 .trending-cat { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #43cea2; }
 .trending-heading { font-size: 14px; font-weight: 600; color: var(--text-primary); margin: 2px 0 4px; line-height: 1.4; }
 .trending-meta { display: flex; gap: 8px; font-size: 12px; color: var(--text-muted); }
+/* Stretched link: real crawlable href + whole-item click target */
+.trending-link { color: inherit; text-decoration: none; }
+.trending-link::after { content: ''; position: absolute; inset: 0; }
 
 /* ══════════════════════════════════════════
    SHORTS RECOMMENDATION
@@ -1024,6 +1035,7 @@
 .related-icon { font-size: 18px; }
 .related-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
 .related-card {
+  position: relative;
   background: var(--bg-surface); border: 1px solid var(--border);
   border-radius: 12px; overflow: hidden; cursor: pointer;
   transition: box-shadow 0.2s, transform 0.2s;
@@ -1038,6 +1050,9 @@
 .related-content { padding: 14px; }
 .related-cat { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #43cea2; }
 .related-card-title { font-size: 14px; font-weight: 700; color: var(--text-primary); margin: 4px 0 6px; line-height: 1.35; }
+/* Stretched link: real crawlable href + whole-card click target */
+.related-card-link { color: inherit; text-decoration: none; }
+.related-card-link::after { content: ''; position: absolute; inset: 0; }
 .related-desc { font-size: 13px; color: var(--text-muted); line-height: 1.45; margin: 0; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
 /* ══════════════════════════════════════════

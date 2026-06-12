@@ -25,10 +25,16 @@ export default async function handler(req, res) {
 
     const threeDaysAgo = Date.now() - 3 * 24 * 60 * 60 * 1000;
 
+    // Only categories that get NewsArticle schema in blog-detail.ts qualify for
+    // the News sitemap — submitting Cooking/Quotes/Village posts as "news" risks
+    // the whole sitemap being rejected by Google News.
+    const NEWS_CATS = new Set(['News', 'Sports', 'Business', 'Entertainment', 'Health', 'Science', 'Technology']);
+
     const recentPosts = posts.filter(p =>
       p.status === 'published' &&
       p.title &&
-      new Date(p.createdAt).getTime() >= threeDaysAgo
+      new Date(p.createdAt).getTime() >= threeDaysAgo &&
+      p.categories?.some(c => NEWS_CATS.has(c))
     );
 
     const escape = str =>
@@ -41,6 +47,7 @@ export default async function handler(req, res) {
     const urls = recentPosts.map(post => {
       const loc  = `https://apnainsights.com/blog/${post.slug || post._id}`;
       const date = new Date(post.createdAt).toISOString();
+      const keywords = [...(post.categories ?? []), ...(post.tags ?? [])].join(', ');
       return `
   <url>
     <loc>${loc}</loc>
@@ -51,6 +58,8 @@ export default async function handler(req, res) {
       </news:publication>
       <news:publication_date>${date}</news:publication_date>
       <news:title>${escape(post.title)}</news:title>
+      <news:genres>Blog, UserGenerated</news:genres>${keywords ? `
+      <news:keywords>${escape(keywords)}</news:keywords>` : ''}
     </news:news>
   </url>`;
     }).join('');

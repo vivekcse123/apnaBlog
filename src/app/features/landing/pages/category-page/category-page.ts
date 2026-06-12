@@ -1,5 +1,5 @@
 import {
-  Component, OnInit, inject, signal, computed, DestroyRef, PLATFORM_ID, HostListener,
+  Component, OnInit, OnDestroy, inject, signal, computed, DestroyRef, PLATFORM_ID, HostListener,
   ChangeDetectionStrategy
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -88,7 +88,7 @@ const CATEGORY_DESCRIPTIONS: Record<string, { description: string; intro: string
   templateUrl: './category-page.html',
   styleUrl: './category-page.css',
 })
-export class CategoryPage implements OnInit {
+export class CategoryPage implements OnInit, OnDestroy {
   private route           = inject(ActivatedRoute);
   private router          = inject(Router);
   private postService     = inject(PostService);
@@ -150,14 +150,39 @@ export class CategoryPage implements OnInit {
     return words.length >= 12;
   }
 
+  // Same threshold as applyRobotsForCount() — don't show an ad on a page
+  // that's mostly empty (AdSense low-value-content / ad-density risk).
+  isThinPage = computed(() => !this.isLoading() && this.posts().length < 5);
+
+  // Renders posts in batches instead of the full (sometimes 100s-long) list —
+  // large categories were producing multi-MB prerendered HTML. All posts are
+  // already in memory (allPostsCache), so "Load more" is instant, no refetch.
+  private readonly PAGE_SIZE = 24;
+  displayCount = signal(this.PAGE_SIZE);
+  visiblePosts = computed(() => this.posts().slice(0, this.displayCount()));
+  hasMorePosts = computed(() => this.posts().length > this.displayCount());
+
+  loadMore(): void {
+    this.displayCount.update(n => n + this.PAGE_SIZE);
+  }
+
   currentYear = new Date().getFullYear();
+
+  // Tracks which .adsbygoogle <ins> elements have already been pushed —
+  // category route params can re-fire (e.g. switching categories), and
+  // re-pushing an already-initialised <ins> throws "already have ads in them".
+  private pushedAds = new WeakSet<Element>();
 
   private pushAds(): void {
     if (!isPlatformBrowser(this.platformId)) return;
     try {
       const ads: any[] = (window as any).adsbygoogle ?? [];
       (window as any).adsbygoogle = ads;
-      this.document.querySelectorAll('.page-ad-wrap ins.adsbygoogle').forEach(() => ads.push({}));
+      this.document.querySelectorAll('.page-ad-wrap ins.adsbygoogle').forEach(el => {
+        if (this.pushedAds.has(el)) return;
+        this.pushedAds.add(el);
+        ads.push({});
+      });
     } catch (_) {}
   }
 
@@ -174,10 +199,16 @@ export class CategoryPage implements OnInit {
 
       this.categorySlug.set(slug.toLowerCase());
       this.categoryName.set(matched);
+      this.displayCount.set(this.PAGE_SIZE);
       this.setMeta(matched);
       this.loadPosts();
       setTimeout(() => this.pushAds(), 300);
     });
+  }
+
+  ngOnDestroy(): void {
+    this.document.getElementById('category-schema')?.remove();
+    this.document.getElementById('category-itemlist')?.remove();
   }
 
   private loadPosts(): void {
@@ -225,7 +256,10 @@ export class CategoryPage implements OnInit {
     this.categoryIntro.set(intro);
     this.titleSvc.setTitle(`${name} Stories & Blogs | ApnaInsights`);
     this.meta.updateTag({ name: 'description',        content: desc });
-    this.meta.updateTag({ name: 'robots',             content: 'index, follow' }); // may be overridden after load
+    // Fail safe to noindex until applyRobotsForCount() confirms the category
+    // has enough posts — avoids a crawler ever seeing `index` on an
+    // empty/thin category page (soft-404 risk).
+    this.meta.updateTag({ name: 'robots',             content: 'noindex, follow' });
     this.meta.updateTag({ property: 'og:title',       content: `${name} Stories & Blogs | ApnaInsights` });
     this.meta.updateTag({ property: 'og:description', content: desc });
     this.meta.updateTag({ property: 'og:url',         content: url });
@@ -310,6 +344,10 @@ export class CategoryPage implements OnInit {
 
   getAuthorName(post: Post): string {
     return (post.user as any)?.name ?? 'Anonymous';
+  }
+
+  getAuthorId(post: Post): string | null {
+    return (post.user as any)?._id ?? null;
   }
 
   private rtCache = new Map<string, number>();

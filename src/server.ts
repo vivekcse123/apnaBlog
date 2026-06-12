@@ -36,6 +36,30 @@ const isLoopback = (host: string) =>
   host.startsWith('127.0.0.1:') ||
   host === '::1';
 
+// ── Known client-rendered routes ──────────────────────────────────────────────
+// Angular SSR returns `null` for any route resolving to RenderMode.Client —
+// this includes both legitimate client-only pages (auth, dashboards, splash)
+// AND the catch-all `**` PageNotFound route. Without distinguishing them,
+// truly-missing URLs get served with HTTP 200 (a "soft 404"), which hurts SEO.
+// Anything not matching a known route below gets a real 404 status while still
+// serving the SPA shell so Angular can render the PageNotFound UI.
+const KNOWN_STATIC_PATHS = new Set([
+  '', 'about', 'advertise', 'privacy-policy', 'terms', 'disclaimer',
+  'editorial-policy', 'topics', 'search', 'challenges', 'shorts',
+  'history', 'bookmarks', 'welcome', 'contact', 'splash', 'onboarding',
+]);
+
+const KNOWN_PREFIX_SEGMENTS = new Set([
+  'category', 'author', 'tag', 'blog', 'shorts',
+  'auth', 'admin', 'user', 'super-admin', 'sponsor',
+]);
+
+const isKnownClientRoute = (pathname: string): boolean => {
+  const path = pathname.replace(/^\/+/, '').replace(/\/+$/, '');
+  if (KNOWN_STATIC_PATHS.has(path)) return true;
+  return KNOWN_PREFIX_SEGMENTS.has(path.split('/')[0]);
+};
+
 // Dynamic sitemap — fetches all published posts and emits sitemap.xml.
 // Cached for 1 hour so the API isn't hit on every Googlebot request.
 const SITE_ORIGIN = 'https://apnainsights.com';
@@ -304,7 +328,11 @@ app.use((req, res, next) => {
     .handle(req)
     .then((response) => {
       if (!response) {
-        // RenderMode.Client route — Angular returns null, serve the SPA shell
+        // RenderMode.Client route — Angular returns null, serve the SPA shell.
+        // Unknown URLs (the `**` PageNotFound route) get a real 404 status.
+        if (!isKnownClientRoute(req.path)) {
+          return res.status(404).sendFile(join(browserDistFolder, 'index.html'));
+        }
         return res.sendFile(join(browserDistFolder, 'index.html'));
       }
 

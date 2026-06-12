@@ -60,6 +60,11 @@ export const routes: Routes = [
         title: 'Advertise with Us | ApnaInsights'
     },
     {
+        path: 'topics',
+        loadComponent: () => import('./features/landing/pages/all-topics/all-topics').then(m => m.AllTopicsPage),
+        title: 'Explore All Topics | ApnaInsights'
+    },
+    {
         path: 'category/:category',
         loadComponent: () => import('./features/landing/pages/category-page/category-page').then(m => m.CategoryPage),
         title: 'Category | ApnaInsights'

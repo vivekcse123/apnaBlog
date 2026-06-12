@@ -1,5 +1,5 @@
 import {
-  ChangeDetectionStrategy, Component, DestroyRef, OnInit, PLATFORM_ID, computed, inject, signal
+  ChangeDetectionStrategy, Component, DestroyRef, OnInit, OnDestroy, PLATFORM_ID, computed, inject, signal
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { environment } from '../../../../../environments/environment';
@@ -25,7 +25,7 @@ import { MobileBottomNav } from '../../../../shared/mobile-bottom-nav/mobile-bot
   templateUrl: './author-page.html',
   styleUrl: './author-page.css',
 })
-export class AuthorPage implements OnInit {
+export class AuthorPage implements OnInit, OnDestroy {
   private route         = inject(ActivatedRoute);
   private router        = inject(Router);
   private postService   = inject(PostService);
@@ -63,6 +63,10 @@ export class AuthorPage implements OnInit {
   totalViews = computed(() => this.totalViewsFromApi() || this.posts().reduce((s, p) => s + (p.views ?? 0), 0));
   totalLikes = computed(() => this.totalLikesFromApi() || this.posts().reduce((s, p) => s + (p.likesCount ?? 0), 0));
 
+  // Same threshold as the robots tag in loadPosts() — don't show an ad on a
+  // page that's mostly empty (AdSense low-value-content / ad-density risk).
+  isThinPage = computed(() => !this.isLoading() && this.posts().length < 3);
+
   get authorName(): string    { return (this.author() as any)?.name     ?? 'Anonymous'; }
   get authorInitial(): string { return this.authorName.charAt(0).toUpperCase(); }
   get authorAvatar(): string  { return (this.author() as any)?.avatar   ?? ''; }
@@ -73,12 +77,21 @@ export class AuthorPage implements OnInit {
   currentYear = new Date().getFullYear();
   protected readonly Math = Math;
 
+  // Tracks which .adsbygoogle <ins> elements have already been pushed —
+  // avoids re-pushing an already-initialised <ins> ("already have ads in
+  // them") if pushAds() is ever called more than once.
+  private pushedAds = new WeakSet<Element>();
+
   private pushAds(): void {
     if (!isPlatformBrowser(this.platformId)) return;
     try {
       const ads: any[] = (window as any).adsbygoogle ?? [];
       (window as any).adsbygoogle = ads;
-      this.document.querySelectorAll('.page-ad-wrap ins.adsbygoogle').forEach(() => ads.push({}));
+      this.document.querySelectorAll('.page-ad-wrap ins.adsbygoogle').forEach(el => {
+        if (this.pushedAds.has(el)) return;
+        this.pushedAds.add(el);
+        ads.push({});
+      });
     } catch (_) {}
   }
 
@@ -120,6 +133,11 @@ export class AuthorPage implements OnInit {
           error: () => { this.notFound.set(true); this.isLoading.set(false); },
         });
     });
+  }
+
+  ngOnDestroy(): void {
+    this.document.getElementById('author-schema')?.remove();
+    this.document.getElementById('author-itemlist')?.remove();
   }
 
   private loadShorts(authorId: string): void {
@@ -201,18 +219,24 @@ export class AuthorPage implements OnInit {
     const bio  = (user as any).bio  ?? `Read all blogs by ${name} on ApnaInsights.`;
     const url  = `${environment.siteUrl}/author/${(user as any)._id}`;
 
-    const avatar = (user as any).avatar || environment.ogImage;
+    const hasAvatar = !!(user as any).avatar;
+    const avatar = hasAvatar ? (user as any).avatar : environment.ogImage;
+    const imgWidth  = hasAvatar ? '400'  : '1200';
+    const imgHeight = hasAvatar ? '400'  : '630';
 
     this.titleSvc.setTitle(`${name} — Author | ApnaInsights`);
     this.meta.updateTag({ name: 'description',          content: bio });
-    this.meta.updateTag({ name: 'robots',               content: 'index, follow' });
+    // Fail safe to noindex until loadPosts() confirms the author has enough
+    // published posts — avoids a crawler ever seeing `index` on an
+    // empty/thin author page (soft-404 risk).
+    this.meta.updateTag({ name: 'robots',               content: 'noindex, follow' });
     this.meta.updateTag({ property: 'og:title',         content: `${name} — Author | ApnaInsights` });
     this.meta.updateTag({ property: 'og:description',   content: bio });
     this.meta.updateTag({ property: 'og:url',           content: url });
     this.meta.updateTag({ property: 'og:type',          content: 'profile' });
     this.meta.updateTag({ property: 'og:image',         content: avatar });
-    this.meta.updateTag({ property: 'og:image:width',   content: '400' });
-    this.meta.updateTag({ property: 'og:image:height',  content: '400' });
+    this.meta.updateTag({ property: 'og:image:width',   content: imgWidth });
+    this.meta.updateTag({ property: 'og:image:height',  content: imgHeight });
     this.meta.updateTag({ name: 'twitter:card',         content: 'summary' });
     this.meta.updateTag({ name: 'twitter:title',        content: `${name} — Author | ApnaInsights` });
     this.meta.updateTag({ name: 'twitter:description',  content: bio });

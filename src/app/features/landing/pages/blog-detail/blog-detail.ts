@@ -23,6 +23,7 @@ import { User }           from '../../../user/models/user.mode';
 import { ToastService }   from '../../../../core/services/toast.service';
 import { TaxonomyService } from '../../../../core/services/taxonomy.service';
 import { ShortsService }  from '../../../shorts/services/shorts.service';
+import { sanitizeHtml }   from '../../../../shared/utils/sanitize-html';
 import { VideoShort }     from '../../../shorts/models/video-short.model';
 import { MobileBottomNav } from '../../../../shared/mobile-bottom-nav/mobile-bottom-nav';
 
@@ -69,7 +70,7 @@ const VISIBLE_STATUSES = new Set(['published', 'draft', 'pending']);
   templateUrl: './blog-detail.html',
   styleUrl:    './blog-detail.css',
   // ngSkipHydration prevents DOM reconciliation mismatches caused by the
-  // imperative mutations in addCodeCopyButtons() / addHeadingIds().
+  // imperative mutations in addCodeCopyButtons().
   host: { ngSkipHydration: 'true' },
 })
 export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
@@ -161,11 +162,11 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     if (!translated) {
       if (original === this._safeCacheKey && this._safeCache) return this._safeCache;
       this._safeCacheKey = original;
-      this._safeCache = this.sanitizer.bypassSecurityTrustHtml(original);
+      this._safeCache = this.sanitizer.bypassSecurityTrustHtml(sanitizeHtml(original));
       return this._safeCache;
     }
     return this.sanitizer.bypassSecurityTrustHtml(
-      this.mergeTranslatedContent(translated.content, original)
+      sanitizeHtml(this.mergeTranslatedContent(translated.content, original))
     );
   });
 
@@ -934,9 +935,47 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   // this.post.set() directly with a full post object — so _contentHtml stays in sync.
   private _applyPost(postData: Post): void {
     if (postData.content !== this._contentHtml()) {
-      this._contentHtml.set(postData.content ?? '');
+      const { html, toc } = this._processHeadings(postData.content ?? '');
+      this._contentHtml.set(html);
+      this.tableOfContents.set(toc);
     }
     this.post.set(postData);
+  }
+
+  // Assigns stable `id="heading-N"` attributes to h2/h3/h4 tags directly in the
+  // content HTML string (string-based, not DOM-based) so heading anchors are
+  // present in the SSR-rendered page — needed for Google "jump to section"
+  // sitelinks and for the ToC sidebar to render before hydration.
+  private _processHeadings(html: string): { html: string; toc: TableOfContentsItem[] } {
+    if (!html) return { html, toc: [] };
+
+    const toc: TableOfContentsItem[] = [];
+    let counter = 0;
+
+    const processed = html.replace(
+      /<(h[234])([^>]*)>([\s\S]*?)<\/\1>/gi,
+      (match, tag: string, attrs: string, inner: string) => {
+        const level = parseInt(tag[1], 10);
+        const idMatch = attrs.match(/\sid=["']([^"']+)["']/i);
+        let id: string;
+        let newAttrs = attrs;
+        if (idMatch) {
+          id = idMatch[1];
+        } else {
+          id = `heading-${counter++}`;
+          newAttrs = ` id="${id}"${attrs}`;
+        }
+
+        if (level === 2 || level === 3) {
+          const text = inner.replace(/<[^>]*>/g, '').trim();
+          if (text) toc.push({ id, text, level });
+        }
+
+        return `<${tag}${newAttrs}>${inner}</${tag}>`;
+      }
+    );
+
+    return { html: processed, toc };
   }
 
   private _bootstrapPost(postData: Post): void {
@@ -996,8 +1035,6 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     this.contentEl = this.elementRef.nativeElement.querySelector('.blog-content');
     if (!this.contentEl) return;
     this._stripEdgeNodes();
-    this.generateTableOfContents();
-    this.addHeadingIds();
     this.addCodeCopyButtons();
     this.wrapTables();
     this.addContentImageLightbox();
@@ -1499,12 +1536,12 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     this.titleService.setTitle(`${post.title}${titleSuffix} | ApnaInsights`);
 
     // Pending and draft posts must not be indexed.
-    // Thin posts (< 300 words) get noindex so they don't drag down site quality
+    // Thin posts (< 200 words) get noindex so they don't drag down site quality
     // for AdSense review — they stay accessible to users but Google won't index them.
     const plainTextForCount = (post.content ?? '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
     const wordCount         = plainTextForCount.split(/\s+/).filter(Boolean).length;
     this.contentWordCount.set(wordCount);
-    const isThinPost        = !isMcq && wordCount < 300;
+    const isThinPost        = !isMcq && wordCount < 200;
 
     // News articles get max-snippet for Top Stories eligibility
     const NEWS_CATS_META = new Set(['News','Sports','Business','Entertainment','Health','Science','Technology']);
@@ -1789,25 +1826,6 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   private calculateReadingTime(post: Post): void {
     const text = (post.content ?? '').replace(/<[^>]*>/g, '');
     this.readingTime.set(Math.max(1, Math.ceil(text.trim().split(/\s+/).length / 200)));
-  }
-
-  private generateTableOfContents(): void {
-    if (!isPlatformBrowser(this.platformId) || !this.contentEl) return;
-    const headings = this.contentEl.querySelectorAll('h2, h3');
-    const toc: TableOfContentsItem[] = [];
-    headings.forEach((h: Element, i: number) => {
-      const id = `heading-${i}`;
-      h.id = id;
-      toc.push({ id, text: h.textContent || '', level: parseInt(h.tagName[1]) });
-    });
-    this.tableOfContents.set(toc);
-  }
-
-  private addHeadingIds(): void {
-    if (!isPlatformBrowser(this.platformId) || !this.contentEl) return;
-    this.contentEl.querySelectorAll('h2, h3, h4').forEach((h: Element, i: number) => {
-      if (!h.id) h.id = `heading-${i}`;
-    });
   }
 
   scrollToTop(): void {

@@ -11,6 +11,7 @@ import { Auth }           from '../../core/services/auth';
 import { Post, McqQuestion } from '../../core/models/post.model';
 import { ToastService }   from '../../core/services/toast.service';
 import { TaxonomyService } from '../../core/services/taxonomy.service';
+import { sanitizeHtml } from '../utils/sanitize-html';
 
 interface ImageItem {
   url: string;
@@ -38,7 +39,7 @@ export class ViewPost implements OnInit, OnDestroy {
   private destroy$        = new Subject<void>();
 
   safeContent = computed<SafeHtml>(() =>
-    this.sanitizer.bypassSecurityTrustHtml(this.post()?.content ?? '')
+    this.sanitizer.bypassSecurityTrustHtml(sanitizeHtml(this.post()?.content ?? ''))
   );
 
   isAdmin = computed(() => this.authService.getCurrentUser()?.role?.toLowerCase() === 'admin');

@@ -1,7 +1,7 @@
 import {
   ChangeDetectionStrategy, Component, OnInit, inject, signal, computed, PLATFORM_ID
 } from '@angular/core';
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { CommonModule, DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { RouterLink, Router } from '@angular/router';
@@ -64,6 +64,7 @@ export class ChallengesPage implements OnInit {
   private titleSvc   = inject(Title);
   private auth       = inject(Auth);
   private platformId = inject(PLATFORM_ID);
+  private document   = inject(DOCUMENT);
 
   challenges    = signal<Challenge[]>([]);
   leaderboard   = signal<LeaderboardPost[]>([]);
@@ -95,10 +96,64 @@ export class ChallengesPage implements OnInit {
   isLoggedIn = computed(() => !!this.auth.userId());
 
   ngOnInit(): void {
-    this.titleSvc.setTitle('Writing Challenges | ApnaInsights');
-    this.meta.updateTag({ name: 'description', content: 'Join writing challenges on ApnaInsights. Write on a theme, compete with the community, and win recognition.' });
-    this.meta.updateTag({ name: 'robots', content: 'index, follow' });
+    this.setMeta();
     this.loadChallenges();
+  }
+
+  private setMeta(): void {
+    const url  = `${environment.siteUrl}/challenges`;
+    const desc = 'Join writing challenges on ApnaInsights. Write on a theme, compete with the community, and win recognition.';
+
+    this.titleSvc.setTitle('Writing Challenges | ApnaInsights');
+    this.meta.updateTag({ name: 'description',        content: desc });
+    this.meta.updateTag({ name: 'robots',             content: 'index, follow' });
+    this.meta.updateTag({ property: 'og:title',       content: 'Writing Challenges | ApnaInsights' });
+    this.meta.updateTag({ property: 'og:description', content: desc });
+    this.meta.updateTag({ property: 'og:url',         content: url });
+    this.meta.updateTag({ property: 'og:type',        content: 'website' });
+    this.meta.updateTag({ name: 'twitter:card',        content: 'summary_large_image' });
+    this.meta.updateTag({ name: 'twitter:title',       content: 'Writing Challenges | ApnaInsights' });
+    this.meta.updateTag({ name: 'twitter:description', content: desc });
+
+    let canonical = this.document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
+    if (!canonical) {
+      canonical = this.document.createElement('link');
+      canonical.setAttribute('rel', 'canonical');
+      this.document.head.appendChild(canonical);
+    }
+    canonical.setAttribute('href', url);
+
+    const graph = {
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type': 'CollectionPage',
+          '@id':   `${url}#webpage`,
+          url,
+          name: 'Writing Challenges',
+          description: desc,
+          inLanguage: 'en-IN',
+          isPartOf:  { '@id': `${environment.siteUrl}/#website` },
+          publisher: { '@id': `${environment.siteUrl}/#organization` },
+        },
+        {
+          '@type':         'BreadcrumbList',
+          '@id':           `${url}#breadcrumb`,
+          itemListElement: [
+            { '@type': 'ListItem', position: 1, name: 'Home',       item: environment.siteUrl },
+            { '@type': 'ListItem', position: 2, name: 'Challenges', item: url },
+          ],
+        },
+      ],
+    };
+    let el = this.document.getElementById('challenges-schema');
+    if (!el) {
+      el = this.document.createElement('script');
+      el.id = 'challenges-schema';
+      (el as HTMLScriptElement).type = 'application/ld+json';
+      this.document.head.appendChild(el);
+    }
+    el.textContent = JSON.stringify(graph);
   }
 
   private loadChallenges(): void {

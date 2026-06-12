@@ -83,16 +83,18 @@
         </div>
       </div>
 
-      <!-- ── AdSense unit ── -->
-      <div class="sv-ad-wrap">
-        <ins class="adsbygoogle"
-          style="display:block"
-          data-ad-client="ca-pub-6477809641944524"
-          data-ad-slot="2024301795"
-          data-ad-format="auto"
-          data-full-width-responsive="true">
-        </ins>
-      </div>
+      <!-- ── AdSense unit (hidden on sponsored shorts) ── -->
+      @if (!s.isSponsored) {
+        <div class="sv-ad-wrap">
+          <ins class="adsbygoogle"
+            style="display:block"
+            data-ad-client="ca-pub-6477809641944524"
+            data-ad-slot="2024301795"
+            data-ad-format="auto"
+            data-full-width-responsive="true">
+          </ins>
+        </div>
+      }
 
       <!-- ── CTA to open in feed ── -->
       <a class="sv-feed-btn" [routerLink]="['/shorts']" [fragment]="s._id">

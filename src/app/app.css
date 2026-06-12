@@ -1,0 +1,22 @@
+.skip-to-content {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 10000;
+  padding: 10px 16px;
+  background: var(--accent, #2563eb);
+  color: #fff;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  /* translateY (not a negative `top`) so hiding/showing is independent of any
+     ancestor that establishes its own containing block (sticky/transformed
+     headers) — keeps the link reliably off-screen until focused. */
+  transform: translateY(-150%);
+  transition: transform 0.15s ease;
+}
+
+.skip-to-content:focus {
+  transform: translateY(0);
+}
