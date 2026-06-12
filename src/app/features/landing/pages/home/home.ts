@@ -40,7 +40,7 @@ const STATS_TTL_MS = 30 * 60 * 1000;
 
 const RECENT_SEARCHES_KEY = 'apna_recent_searches';
 const HERO_PLACEHOLDERS = [
-  'Search stories, blogs, topics, writers…',
+  'Search stories, news, sports…',
   'Search AI, Technology, Sports…',
   'What would you like to explore today?',
 ];
@@ -161,6 +161,7 @@ export class Home implements OnInit, OnDestroy {
   pwaInstalls           = signal(0);
   installToast          = signal('');
   isAppInstalled        = signal(false);
+  installStripDismissed = signal(false);
   private installPrompt: any = null;
 
   readonly APK_URL = environment.apkUrl;
@@ -546,6 +547,10 @@ export class Home implements OnInit, OnDestroy {
       const standalone = window.matchMedia('(display-mode: standalone)').matches
         || (navigator as any).standalone === true;
       this.isAppInstalled.set(standalone);
+
+      if (sessionStorage.getItem('apna_install_strip_dismissed')) {
+        this.installStripDismissed.set(true);
+      }
     }
 
     if (isPlatformBrowser(this.platformId)) {
@@ -675,6 +680,12 @@ export class Home implements OnInit, OnDestroy {
       const age = this.postCache.getAge();
       if (age === null || age > this.STALE_THRESHOLD_MS) {
         this.loadFresh(false);
+      } else {
+        // Cache is fresh, so loadFresh() (which normally pushes the ad slots
+        // once data arrives) won't run — push them here instead, otherwise
+        // the <ins> elements never get a data-ad-status and .home-ad-wrap
+        // stays stuck at its reserved min-height placeholder forever.
+        setTimeout(() => this.pushHomeAds(), 300);
       }
     } else {
       this.loadFresh(true);
@@ -1114,6 +1125,14 @@ export class Home implements OnInit, OnDestroy {
 
   canInstallNatively(): boolean {
     return !!this.installPrompt || !!(isPlatformBrowser(this.platformId) && (window as any).__pwaPrompt);
+  }
+
+  dismissInstallStrip(event: Event): void {
+    event.stopPropagation();
+    this.installStripDismissed.set(true);
+    if (isPlatformBrowser(this.platformId)) {
+      sessionStorage.setItem('apna_install_strip_dismissed', '1');
+    }
   }
 
   // Entry point for ALL install triggers.

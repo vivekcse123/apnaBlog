@@ -574,21 +574,33 @@
 }
 
 @media (max-width: 768px) {
+  /* Sticky bar pinned just above the bottom nav, with room to breathe
+     on both sides; sits below the nav's z-index (1100) so the nav
+     always stays on top. */
   .mob-install-strip {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
-    padding: 12px 14px;
-    margin: 0 12px 4px;
-    border-radius: 16px;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: 14px;
     background: linear-gradient(120deg, #0e6645 0%, #43cea2 45%, #185a9d 100%);
-    box-shadow: 0 6px 20px rgba(14,102,69,0.28);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.25);
     cursor: pointer;
-    position: relative;
+    position: fixed;
+    left: 12px;
+    right: 12px;
+    bottom: calc(64px + env(safe-area-inset-bottom, 0px) + 10px);
+    z-index: 1090;
     overflow: hidden;
     -webkit-tap-highlight-color: transparent;
     transition: transform 0.12s ease;
+  }
+
+  /* Reserve space at the end of the feed so the fixed strip never
+     covers the last card or the bottom nav. */
+  main#main-content.has-install-strip {
+    padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px) + 76px);
   }
 
   .mob-install-strip:active { transform: scale(0.985); }
@@ -604,64 +616,92 @@
   .mob-install-strip-left {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 9px;
     min-width: 0;
   }
 
   .mob-install-strip-icon {
-    width: 40px; height: 40px;
-    border-radius: 12px;
+    width: 28px; height: 28px;
+    border-radius: 8px;
     background: #fff;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
     overflow: hidden;
   }
-  .mob-install-strip-icon img { display: block; border-radius: 7px; }
+  .mob-install-strip-icon img { display: block; width: 18px; height: 18px; border-radius: 5px; }
 
   .mob-install-strip-text {
     display: flex;
-    flex-direction: column;
-    gap: 1px;
+    align-items: baseline;
+    gap: 6px;
     min-width: 0;
+    overflow: hidden;
   }
 
   .mob-install-strip-title {
-    font-size: 13.5px;
+    font-size: 12.5px;
     font-weight: 800;
     color: #fff;
-    line-height: 1.25;
+    line-height: 1.2;
     letter-spacing: 0.1px;
+    white-space: nowrap;
   }
 
   .mob-install-strip-sub {
-    font-size: 11px;
-    color: rgba(255,255,255,0.85);
+    font-size: 10.5px;
+    color: rgba(255,255,255,0.8);
     line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+    flex-shrink: 1;
   }
 
   .mob-install-strip-btn {
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 4px;
     flex-shrink: 0;
-    padding: 9px 16px;
+    padding: 6px 13px;
     border-radius: 50px;
     background: #fff;
     border: none;
     color: #0e6645;
-    font-size: 12.5px;
+    font-size: 12px;
     font-weight: 800;
     cursor: pointer;
     font-family: inherit;
     white-space: nowrap;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
-    transition: transform 0.12s ease, box-shadow 0.12s ease;
+    transition: transform 0.12s ease;
   }
 
-  .mob-install-strip-btn:active { transform: scale(0.95); box-shadow: 0 1px 4px rgba(0,0,0,0.12); }
+  .mob-install-strip-btn:active { transform: scale(0.95); }
+
+  .mob-install-strip-btn svg { display: none; }
+
+  /* "Cut" / dismiss button at the end of the strip */
+  .mob-install-strip-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: none;
+    padding: 0;
+    background: rgba(255,255,255,0.16);
+    color: #fff;
+    cursor: pointer;
+    transition: background 0.12s ease, transform 0.12s ease;
+  }
+  .mob-install-strip-close:active {
+    background: rgba(255,255,255,0.3);
+    transform: scale(0.92);
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -1756,6 +1796,14 @@
 }
 
 .card-author-name { font-size: 12.5px; font-weight: 600; color: var(--text-secondary); }
+
+.card-author-badge {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  line-height: 0;
+}
+
 .card-meta-sep    { color: var(--text-muted); font-size: 12px; }
 .card-date        { font-size: 12px; color: var(--text-muted); }
 
@@ -1923,6 +1971,9 @@
 .card-badge--sp  { background: rgba(251,191,36,0.12); color: #b45309; }
 .card-read-time  { font-size: 11px; color: var(--text-muted); margin-left: auto; white-space: nowrap; }
 
+/* Mobile-only inline read time (shown next to the author date) */
+.card-read-time-mob { display: none; }
+
 /* Title & description */
 .card-title {
   font-size: 15.5px;
@@ -1993,12 +2044,6 @@
 }
 .live-dot--green { background: #22c55e; }
 .live-dot--red   { background: #ef4444; }
-
-@media (max-width: 480px) {
-  .card-thumb-wrap { width: 80px; height: 64px; }
-  .card-title { font-size: 14.5px; }
-  .card-desc  { display: none; }
-}
 
 /* ═══════════════════════════════════════════════════════════════
    NO RESULTS
@@ -2265,20 +2310,15 @@
 /* ═══════════════════════════════════════════════════════════════
    AD WRAP
    ═══════════════════════════════════════════════════════════════ */
-/* min-height reserves space for the typical responsive ad size up front, so
-   the page doesn't shift when the ad fills in (CLS). Only collapse when
-   AdSense explicitly reports "unfilled" — never for the pre-JS/initial state. */
-.home-ad-wrap { max-width: 1440px; margin: 0 auto; padding: 8px 24px; overflow: visible; min-height: 100px; box-sizing: border-box; }
-.home-ad-wrap:has(ins.adsbygoogle[data-ad-status="unfilled"]) {
-  padding: 0;
-  min-height: 0;
-  height: 0;
-  overflow: hidden;
-}
-/* Once the ad has actually rendered, let the wrap shrink to its real size —
-   the 100px placeholder shouldn't linger as extra white space below it. */
+/* No reserved placeholder height by default — an unconditional
+   min-height left a permanent blank box for every visitor whose
+   adsbygoogle.js never runs (ad blockers, slow/blocked script, or
+   localhost), which is most of the audience, not the exception.
+   Only add padding once AdSense actually fills the slot; the <ins>
+   itself then sizes the wrap to its real dimensions. */
+.home-ad-wrap { max-width: 1440px; margin: 0 auto; padding: 0; overflow: visible; box-sizing: border-box; }
 .home-ad-wrap:has(ins.adsbygoogle[data-ad-status="filled"]) {
-  min-height: 0;
+  padding: 8px 24px;
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -2744,10 +2784,22 @@
   .header-right { gap: 6px; }
   /* Hide theme toggle from header — lives in drawer */
   .theme-toggle:not(.drawer-theme-toggle) { display: none; }
-  /* Write Story: icon-only circle button on mobile */
-  .write-btn { width: 36px; height: 36px; padding: 0; border-radius: 50%; justify-content: center; border: none; background: linear-gradient(135deg, #2563EB, #10B981); color: #fff; }
-  .write-btn-label-full, .write-btn-label-short { display: none; }
-  .write-btn svg { width: 15px; height: 15px; }
+  /* Search icon hidden on mobile — bottom nav already has a search/explore entry */
+  .hdr-search-bar.desktop-only { display: none !important; }
+  /* Write button takes its place as a compact icon-only button */
+  .write-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--bg-surface);
+  }
+  .write-btn-label-full,
+  .write-btn-label-short { display: none; }
 
   .shorts-mobile-pill {
     display: flex;
@@ -2998,103 +3050,31 @@
   main[data-mob-tab="latest"] .section--pers               { display: none; }
   main[data-mob-tab="latest"] .home-ad-wrap                { display: none; }
 
-  /* ── Trending — horizontal swipe carousel ── */
-  .mob-tab-section--trending .section-header .pagination-btns { display: none; }
-
-  .mob-tab-section--trending .blog-grid {
-    display: flex;
-    flex-direction: row;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    scrollbar-width: none;
-    gap: 12px;
-    padding-bottom: 8px;
-    -webkit-overflow-scrolling: touch;
-  }
-  .mob-tab-section--trending .blog-grid::-webkit-scrollbar { display: none; }
-
-  .mob-tab-section--trending .blog-card,
-  .mob-tab-section--trending .skeleton-card {
-    flex: 0 0 92vw;
-    max-width: 92vw;
-    scroll-snap-align: start;
+  /* ── Trending / Most Viewed / Latest — vertical feed, same card
+     style as the For You feed (matches design reference: a single
+     scrolling list of cards, no horizontal carousels). ── */
+  .mob-tab-section--trending .section-header .pagination-btns,
+  .mob-tab-section--most-viewed .section-header .pagination-btns,
+  .mob-tab-section--latest .section-header .pagination-btns {
+    display: none;
   }
 
-  .mob-tab-section--trending::after {
-    content: '• • •';
-    display: block;
-    text-align: center;
-    font-size: 9px;
-    letter-spacing: 5px;
-    color: var(--accent);
-    margin-top: 6px;
-    opacity: 0.55;
-  }
-
-  /* ── Most Viewed — horizontal swipe carousel ── */
-  .mob-tab-section--most-viewed .section-header .pagination-btns { display: none; }
-
-  .mob-tab-section--most-viewed .blog-grid {
-    display: flex;
-    flex-direction: row;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    scrollbar-width: none;
-    gap: 12px;
-    padding-bottom: 8px;
-    -webkit-overflow-scrolling: touch;
-  }
-  .mob-tab-section--most-viewed .blog-grid::-webkit-scrollbar { display: none; }
-
-  .mob-tab-section--most-viewed .blog-card,
-  .mob-tab-section--most-viewed .skeleton-card {
-    flex: 0 0 92vw;
-    max-width: 92vw;
-    scroll-snap-align: start;
-  }
-
-  .mob-tab-section--most-viewed::after {
-    content: '• • •';
-    display: block;
-    text-align: center;
-    font-size: 9px;
-    letter-spacing: 5px;
-    color: #6366f1;
-    margin-top: 6px;
-    opacity: 0.55;
-  }
-
-  /* ── Latest — horizontal swipe carousel ── */
-  .mob-tab-section--latest .section-header .pagination-btns { display: none; }
-
+  .mob-tab-section--trending .blog-grid,
+  .mob-tab-section--most-viewed .blog-grid,
   .mob-tab-section--latest .blog-grid {
     display: flex;
-    flex-direction: row;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    scrollbar-width: none;
-    gap: 12px;
-    padding-bottom: 8px;
-    -webkit-overflow-scrolling: touch;
+    flex-direction: column;
+    gap: 14px;
   }
-  .mob-tab-section--latest .blog-grid::-webkit-scrollbar { display: none; }
 
+  .mob-tab-section--trending .blog-card,
+  .mob-tab-section--most-viewed .blog-card,
   .mob-tab-section--latest .blog-card,
+  .mob-tab-section--trending .skeleton-card,
+  .mob-tab-section--most-viewed .skeleton-card,
   .mob-tab-section--latest .skeleton-card {
-    flex: 0 0 92vw;
-    max-width: 92vw;
-    scroll-snap-align: start;
-  }
-
-  .mob-tab-section--latest::after {
-    content: '• • •';
-    display: block;
-    text-align: center;
-    font-size: 9px;
-    letter-spacing: 5px;
-    color: #22c55e;
-    margin-top: 6px;
-    opacity: 0.55;
+    flex: unset;
+    max-width: unset;
   }
 
   /* ── Blog grid & cards ── */
@@ -3156,7 +3136,7 @@
     font-size: 16px;
   }
 
-  .home-ad-wrap { padding: 6px 14px; }
+  .home-ad-wrap:has(ins.adsbygoogle[data-ad-status="filled"]) { padding: 6px 14px; }
 }
 
 /* ── ≤ 480px ─────────────────────────────────────────────────── */
@@ -3173,13 +3153,6 @@
   .hero-install-banner { padding: 11px 11px; gap: 8px; }
   .hero-install-btn    { padding: 7px 9px; font-size: 10.5px; }
 
-  .mob-tab-section--trending .blog-card,
-  .mob-tab-section--trending .skeleton-card,
-  .mob-tab-section--most-viewed .blog-card,
-  .mob-tab-section--most-viewed .skeleton-card,
-  .mob-tab-section--latest .blog-card,
-  .mob-tab-section--latest .skeleton-card { flex: 0 0 92vw; }
-
   .section { padding: 14px 12px; }
   .section-title { font-size: 16px; }
   .blog-grid { gap: 12px; }
@@ -3194,12 +3167,6 @@
   .hero-install-btn { padding: 6px 8px; font-size: 10px; }
   .mob-tab { font-size: 12px; padding: 7px 7px; }
   .mob-tab-icon { font-size: 13px; }
-  .mob-tab-section--trending .blog-card,
-  .mob-tab-section--trending .skeleton-card,
-  .mob-tab-section--most-viewed .blog-card,
-  .mob-tab-section--most-viewed .skeleton-card,
-  .mob-tab-section--latest .blog-card,
-  .mob-tab-section--latest .skeleton-card { flex: 0 0 92vw; }
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -3207,8 +3174,8 @@
    All rules here are scoped to ≤768px and override base styles
    ═══════════════════════════════════════════════════════════════ */
 
-/* ── Mobile stories row (always hidden on desktop) ── */
-.mob-stories-row { display: none; }
+/* ── Mobile category chips (always hidden on desktop) ── */
+.mob-cat-chips { display: none; }
 
 /* ── Card header (desktop: hidden, mobile: shown above image) ── */
 .card-header { display: none; }
@@ -3231,7 +3198,7 @@
   /* ── Tighter filter-wrap since cat-bar is gone ── */
   .filter-wrap { padding-bottom: 10px; }
 
-  /* ── Hide hero category icons & install button — mob-stories-row and
+  /* ── Hide hero category icons & install button — mob-cat-chips and
      mob-install-strip above already cover these on mobile.
      !important needed: base .v2-hero-categories/.v2-hero-install-btn rules
      are defined later in this file with equal specificity and would win. ── */
@@ -3260,103 +3227,56 @@
   .v2-hero-left { gap: 0; }
   .v2-hero-inner { gap: 0; margin-bottom: 0; }
 
-  /* ── Mobile stories row ── */
-  .mob-stories-row {
+  /* ── Mobile category chips — single scrollable row, minimal/flat ── */
+  .mob-cat-chips {
     display: flex;
-    align-items: flex-start;
-    gap: 0;
-    padding: 12px 8px 10px;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
     overflow-x: auto;
     scrollbar-width: none;
     background: var(--bg-surface);
     border-bottom: 1px solid var(--border);
   }
-  .mob-stories-row::-webkit-scrollbar { display: none; }
+  .mob-cat-chips::-webkit-scrollbar { display: none; }
 
-  .mob-story {
-    display: flex;
-    flex-direction: column;
+  .mob-cat-chip {
+    display: inline-flex;
     align-items: center;
     gap: 5px;
-    padding: 0 8px;
     flex-shrink: 0;
-    background: none;
-    border: none;
-    color: inherit;
+    padding: 7px 14px;
+    border-radius: 18px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 12.5px;
+    font-weight: 600;
+    font-family: inherit;
     text-decoration: none;
     cursor: pointer;
-    font-family: inherit;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .mob-story-circle {
-    width: 58px;
-    height: 58px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    /* Gradient ring — Instagram style */
-    background: linear-gradient(var(--bg-surface), var(--bg-surface)) padding-box,
-                linear-gradient(135deg, #ccc 0%, #aaa 100%) border-box;
-    border: 2.5px solid transparent;
-    transition: transform 0.15s, border-color 0.2s;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .mob-story-circle:active { transform: scale(0.92); }
-
-  .mob-story-circle--all {
-    background: linear-gradient(var(--bg-surface), var(--bg-surface)) padding-box,
-                var(--brand-gradient) border-box;
-    border-color: transparent;
-  }
-
-  .mob-story-circle--active {
-    background: linear-gradient(135deg, rgba(67,206,162,0.12), rgba(24,90,157,0.08)) padding-box,
-                var(--brand-gradient) border-box;
-    border-color: transparent;
-  }
-
-  /* Inactive circles — desaturated ring */
-  .mob-story:not(.mob-story--active) .mob-story-circle:not(.mob-story-circle--all) {
-    background: linear-gradient(var(--bg-surface), var(--bg-surface)) padding-box,
-                linear-gradient(135deg, rgba(67,206,162,0.5) 0%, rgba(24,90,157,0.5) 100%) border-box;
-  }
-
-  .mob-story--active .mob-story-circle {
-    background: linear-gradient(135deg, rgba(67,206,162,0.15), rgba(24,90,157,0.1)) padding-box,
-                var(--brand-gradient) border-box;
-  }
-
-  .mob-story-emoji { font-size: 22px; line-height: 1; display: block; }
-
-  .mob-story-live {
-    position: absolute;
-    top: 2px;
-    right: 2px;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: #22c55e;
-    border: 2px solid var(--bg-surface);
-    animation: livePulse 1.5s ease-in-out infinite;
-  }
-
-  .mob-story-name {
-    font-size: 10.5px;
-    font-weight: 500;
-    color: var(--text-muted);
-    text-align: center;
     white-space: nowrap;
-    max-width: 62px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    line-height: 1.2;
+    position: relative;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+    -webkit-tap-highlight-color: transparent;
   }
-  .mob-story--active .mob-story-name {
+  .mob-cat-chip:active { transform: scale(0.96); }
+
+  .mob-cat-chip--active {
+    background: var(--accent-subtle);
+    border-color: rgba(67,206,162,0.35);
     color: var(--accent-text);
     font-weight: 700;
+  }
+
+  .mob-cat-chip-emoji { font-size: 14px; line-height: 1; }
+
+  .mob-cat-chip-live {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #22c55e;
+    animation: livePulse 1.5s ease-in-out infinite;
   }
 
   /* ── Instagram-style blog card ── */
@@ -3425,9 +3345,6 @@
     text-transform: uppercase;
     letter-spacing: 0.04em;
   }
-
-  /* Hide the old author row inside card-body on mobile */
-  .card-author-row { display: none; }
 
   /* Remove category badge overlay from image (header shows it now) */
   .card-cat { display: none; }
@@ -3669,55 +3586,6 @@
     border-top: 1px solid var(--border);
     border-bottom: none;
     padding: 7px 12px;
-  }
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   IMPROVEMENT 3 — SWIPE PROGRESS INDICATOR
-   ═══════════════════════════════════════════════════════════════ */
-@media (max-width: 768px) {
-
-  /* Remove old text-dot indicator */
-  .mob-tab-section--trending::after,
-  .mob-tab-section--most-viewed::after,
-  .mob-tab-section--latest::after { display: none; }
-
-  /* Visible thin scrollbar = natural progress bar on the carousel */
-  .mob-tab-section--trending .blog-grid,
-  .mob-tab-section--most-viewed .blog-grid,
-  .mob-tab-section--latest .blog-grid {
-    scrollbar-width: thin;
-    scrollbar-color: var(--accent) rgba(67,206,162,0.12);
-    padding-bottom: 14px;
-  }
-  .mob-tab-section--trending .blog-grid::-webkit-scrollbar,
-  .mob-tab-section--most-viewed .blog-grid::-webkit-scrollbar,
-  .mob-tab-section--latest .blog-grid::-webkit-scrollbar { height: 3px; display: block; }
-
-  .mob-tab-section--trending .blog-grid::-webkit-scrollbar-track,
-  .mob-tab-section--most-viewed .blog-grid::-webkit-scrollbar-track,
-  .mob-tab-section--latest .blog-grid::-webkit-scrollbar-track {
-    background: rgba(67,206,162,0.12);
-    border-radius: 4px;
-  }
-  .mob-tab-section--trending .blog-grid::-webkit-scrollbar-thumb,
-  .mob-tab-section--latest .blog-grid::-webkit-scrollbar-thumb {
-    background: var(--accent);
-    border-radius: 4px;
-  }
-  .mob-tab-section--most-viewed .blog-grid::-webkit-scrollbar-thumb {
-    background: #6366f1;
-    border-radius: 4px;
-  }
-
-  /* Swipe-hint label in section header */
-  .mob-tab-section--trending .section-title::after,
-  .mob-tab-section--most-viewed .section-title::after,
-  .mob-tab-section--latest .section-title::after {
-    content: ' ›';
-    font-size: 14px;
-    opacity: 0.4;
-    font-weight: 400;
   }
 }
 
@@ -4883,30 +4751,9 @@
   /* Voice search — future-ready placeholder, replaces the hidden ⌘K hint */
   .v2-mega-search-voice-btn { display: flex; }
 
-  /* Trending searches — always-visible chip row under the search bar.
-     Mobile gets a single scrollable line instead of the centered/wrapping
-     desktop layout. */
-  .v2-hero-trending-chips {
-    flex-wrap: nowrap;
-    justify-content: flex-start;
-    gap: 8px;
-    margin-top: 8px;
-    overflow-x: auto;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
-  }
-  .v2-hero-trending-chips::-webkit-scrollbar { display: none; }
-  .v2-hero-trending-chip {
-    flex-shrink: 0;
-    padding: 6px 13px;
-    font-size: 12px;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .v2-hero-trending-chip:active {
-    background: var(--accent-subtle);
-    border-color: var(--accent);
-    color: var(--accent-text);
-  }
+  /* Trending searches chip row — hidden on mobile for a leaner
+     search → tabs → categories flow (matches design reference). */
+  .v2-hero-trending-chips { display: none; }
 
   /* Search suggestions open as a sheet anchored to the search bar itself
      (position: absolute relative to .v2-hero-search-zone, which is the
@@ -5455,9 +5302,14 @@
 .v2-sb-about-link:hover { opacity: 0.75; }
 
 @media (max-width: 1024px) {
-  .v2-main-layout { grid-template-columns: 1fr; }
-  .v2-feed-col { border-right: none; }
-  .v2-sidebar { display: none; }
+  /* minmax(0, 1fr): without the 0 minimum, this track (and the whole
+     grid) can be stretched wider than the viewport by a card's
+     -webkit-line-clamp title/description reporting their unclamped
+     text width as a content-based minimum — which then overflows
+     every full-width row below (filter pills, trending tag chips). */
+  .v2-main-layout { grid-template-columns: minmax(0, 1fr); }
+  .v2-feed-col { border-right: none; min-width: 0; }
+  .v2-sidebar { display: none; min-width: 0; }
 }
 
 /* ── V2 Topics Section ───────────────────────────────────────────── */
@@ -5796,4 +5648,160 @@
 }
 @media (min-width: 769px) {
   .mob-tab-section--trending { display: none; } /* desktop uses .v2-trending-section instead */
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ARTICLE FEED CARD — MOBILE REDESIGN
+   Text on the left, square thumbnail on the right (matches the
+   design reference). Category/sponsored/trending/new badges, tag
+   chips and the like/comment/view stats row are hidden; the
+   bookmark becomes a circular overlay on the thumbnail. The
+   publish date is hidden, leaving "Author · X min read".
+   Desktop is unaffected.
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .blog-card,
+  .section--pers .blog-card,
+  #filtered-results .blog-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    grid-template-columns: unset;
+    grid-template-rows: unset;
+    grid-template-areas: unset;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+  }
+  .section--pers .blog-grid {
+    border: none;
+    border-radius: 0;
+    gap: 14px;
+  }
+
+  /* Text content left, square thumbnail right.
+     Grid (not flex) with an explicit minmax(0, 1fr) column — the
+     -webkit-line-clamp title/description can otherwise report their
+     unclamped intrinsic width and push the thumbnail off-screen. */
+  .card-inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 120px;
+    align-items: flex-start;
+    padding: 14px;
+    gap: 12px;
+  }
+  .card-content {
+    min-width: 0;
+    max-width: 100%;
+  }
+  .card-thumb-wrap {
+    width: 120px;
+    height: 120px;
+    align-self: flex-start;
+    border-radius: 12px;
+  }
+
+  /* Hide category/sponsored/trending/new badges, read-time pill and tags */
+  .card-meta-top,
+  .card-tags {
+    display: none;
+  }
+
+  .card-title {
+    font-size: 16px;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    min-width: 0;
+  }
+  .card-desc {
+    display: -webkit-box;
+    font-size: 13px;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    min-width: 0;
+  }
+
+  /* Author row: name + verified badge + read time (publish date hidden) */
+  .card-author-row { display: flex; }
+  .card-author-row .card-meta-sep,
+  .card-author-row .card-date {
+    display: none;
+  }
+  .card-read-time-mob {
+    display: inline;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  /* Hide like/comment/view stats and the "Read →" button */
+  .card-stats,
+  .read-btn {
+    display: none;
+  }
+
+  /* Bookmark becomes a circular overlay on the thumbnail's top-right corner */
+  .card-footer,
+  .section--pers .card-footer,
+  #filtered-results .card-footer {
+    position: absolute;
+    top: 22px;
+    right: 22px;
+    z-index: 2;
+    padding: 0;
+    border: none;
+    background: none;
+    grid-area: unset;
+  }
+  .card-actions { flex: none; gap: 0; }
+  .card-bookmark-btn {
+    width: 30px;
+    height: 30px;
+    font-size: 15px;
+    border-radius: 50%;
+    background: rgba(17,17,17,0.45);
+    color: #fff;
+    backdrop-filter: blur(4px);
+  }
+  .card-bookmark-btn:hover { background: rgba(17,17,17,0.6); }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   TRENDING TOPICS — mobile
+   The sidebar is hidden on mobile (see the ≤1024px rule above);
+   re-show just the "Trending Topics" card as a horizontal chip
+   row between the feed and the install banner (matches design
+   reference). All other sidebar cards (Popular Topics, Top
+   Writers, Active Challenge, Community, install CTA, About)
+   stay hidden on mobile.
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .v2-sidebar {
+    display: flex !important;
+    position: static;
+    max-height: none;
+    overflow: visible;
+    padding: 0 12px 14px;
+    gap: 0;
+  }
+  .v2-sidebar > .v2-sb-card:not(:has(.v2-sb-tags)),
+  .v2-sb-challenge,
+  .v2-sb-community,
+  .sb-install-cta,
+  .v2-sb-about {
+    display: none;
+  }
+  .v2-sidebar > .v2-sb-card:has(.v2-sb-tags) {
+    width: 100%;
+    border-radius: 16px;
+  }
+  .v2-sb-tags {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .v2-sb-tags::-webkit-scrollbar { display: none; }
+  .v2-sb-tag {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
 }

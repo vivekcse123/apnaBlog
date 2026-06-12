@@ -204,46 +204,24 @@
   </button>
 </nav>
 
-@if (!isAppInstalled()) {
-  <div class="mob-install-strip" (click)="triggerInstall()" role="button" tabindex="0"
-       (keydown.enter)="triggerInstall()" aria-label="Install ApnaInsights app">
-    <div class="mob-install-strip-left">
-      <div class="mob-install-strip-icon" aria-hidden="true">
-        <img src="/logo-96.png" alt="" width="26" height="26" loading="lazy" />
-      </div>
-      <div class="mob-install-strip-text">
-        <span class="mob-install-strip-title">Get the App</span>
-        <span class="mob-install-strip-sub">Faster · Offline · Free</span>
-      </div>
-    </div>
-    <button class="mob-install-strip-btn" (click)="$event.stopPropagation(); triggerInstall()" type="button">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-      Install
-    </button>
-  </div>
-}
-
-<!-- Mobile stories row -->
-<div class="mob-stories-row" role="navigation" aria-label="Browse by category">
-  <button class="mob-story" [class.mob-story--active]="selectedCategory() === ''"
+<!-- Mobile category chips -->
+<div class="mob-cat-chips" role="navigation" aria-label="Browse by category">
+  <button class="mob-cat-chip" [class.mob-cat-chip--active]="selectedCategory() === ''"
           (click)="selectedCategory.set('')" aria-label="All categories">
-    <div class="mob-story-circle mob-story-circle--all"><span class="mob-story-emoji" aria-hidden="true">🏠</span></div>
-    <span class="mob-story-name">All</span>
+    <span class="mob-cat-chip-emoji" aria-hidden="true">🏠</span>All
   </button>
   @for (cat of categories(); track cat) {
-    <a class="mob-story" [class.mob-story--active]="selectedCategory() === cat"
+    <a class="mob-cat-chip" [class.mob-cat-chip--active]="selectedCategory() === cat"
        [href]="'/category/' + cat.toLowerCase()"
        (click)="$event.preventDefault(); selectCategory(cat)" [attr.aria-label]="'Browse ' + cat + ' stories'">
-      <div class="mob-story-circle" [class.mob-story-circle--active]="selectedCategory() === cat">
-        @if (cat === 'Update') { <span class="mob-story-live" aria-hidden="true"></span> }
-        <span class="mob-story-emoji" aria-hidden="true">{{ categoryEmojis()[cat] }}</span>
-      </div>
-      <span class="mob-story-name">{{ cat }}</span>
+      <span class="mob-cat-chip-emoji" aria-hidden="true">{{ categoryEmojis()[cat] }}</span>{{ cat }}
+      @if (cat === 'Update') { <span class="mob-cat-chip-live" aria-hidden="true"></span> }
     </a>
   }
 </div>
 
-<main id="main-content" role="main" [attr.data-mob-tab]="mobileTab()">
+<main id="main-content" role="main" [attr.data-mob-tab]="mobileTab()"
+      [class.has-install-strip]="!isAppInstalled() && !installStripDismissed()">
 
   <!-- ══ HERO SECTION ══════════════════════════════════════════════════════ -->
   <section class="v2-hero" itemscope itemtype="https://schema.org/Blog" aria-labelledby="hero-h1">
@@ -1289,8 +1267,12 @@
               <div class="card-author-row">
                 <span class="card-author-avatar" aria-hidden="true">{{ (blog.user?.name || 'A').charAt(0).toUpperCase() }}</span>
                 <span class="card-author-name">{{ blog.user?.name || 'Anonymous' }}</span>
+                <span class="card-author-badge" aria-hidden="true" title="ApnaInsights Author">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="#22c55e"><path d="M12 2l2.4 1.6 2.8-.6 1.2 2.6 2.6 1.2-.6 2.8L22 12l-1.6 2.4.6 2.8-2.6 1.2-1.2 2.6-2.8-.6L12 22l-2.4-1.6-2.8.6-1.2-2.6-2.6-1.2.6-2.8L2 12l1.6-2.4-.6-2.8 2.6-1.2 1.2-2.6 2.8.6z"/><path d="M9 12l2 2 4-4" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
                 <span class="card-meta-sep" aria-hidden="true">·</span>
                 <time class="card-date" itemprop="datePublished" [attr.datetime]="blog.createdAt">{{ blog.createdAt | timeAgo }}</time>
+                <span class="card-read-time-mob" aria-label="{{ getReadingTime(blog) }} minute read">· {{ getReadingTime(blog) }} min read</span>
               </div>
             </div>
             <div class="card-thumb-wrap">
@@ -1413,11 +1395,12 @@
         </a>
       }
 
-      <!-- Trending Tags -->
+      <!-- Trending Topics -->
       @if (popularTags().length > 0) {
         <div class="v2-sb-card">
           <div class="v2-sb-card-header">
-            <h2 class="v2-sb-card-title">Trending Tags</h2>
+            <h2 class="v2-sb-card-title">Trending Topics</h2>
+            <a class="v2-sb-card-link" routerLink="/topics" aria-label="View all topics">More →</a>
           </div>
           <div class="v2-sb-tags">
             @for (tag of popularTags().slice(0, 12); track tag) {
@@ -1546,6 +1529,28 @@
   </section>
 
 </main>
+
+@if (!isAppInstalled() && !installStripDismissed()) {
+  <div class="mob-install-strip" (click)="triggerInstall()" role="button" tabindex="0"
+       (keydown.enter)="triggerInstall()" aria-label="Install ApnaInsights app">
+    <div class="mob-install-strip-left">
+      <div class="mob-install-strip-icon" aria-hidden="true">
+        <img src="/logo-96.png" alt="" width="26" height="26" loading="lazy" />
+      </div>
+      <div class="mob-install-strip-text">
+        <span class="mob-install-strip-title">Get the App</span>
+        <span class="mob-install-strip-sub">Faster · Offline · Free</span>
+      </div>
+    </div>
+    <button class="mob-install-strip-btn" (click)="$event.stopPropagation(); triggerInstall()" type="button">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Install
+    </button>
+    <button class="mob-install-strip-close" (click)="dismissInstallStrip($event)" type="button" aria-label="Dismiss">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+}
 
 <!-- ══ SCROLL TO TOP ════════════════════════════════════════════════════ -->
 <button class="scroll-top-fab" [class.visible]="showScrollTop()" (click)="scrollToTop()"

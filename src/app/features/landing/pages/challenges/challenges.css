@@ -21,7 +21,9 @@
 /* ── Hero ─────────────────────────────────────────────────────────────────── */
 .ch-hero {
   background: linear-gradient(135deg, #0d1b2a 0%, #1a4a3a 100%);
-  padding: 48px 20px 36px;
+  /* viewport-fit=cover means the page renders under the status bar/notch —
+     add the safe-area inset so the back button isn't hidden behind it. */
+  padding: calc(48px + env(safe-area-inset-top, 0px)) 20px 36px;
   text-align: center;
   border-bottom: 1px solid rgba(67, 206, 162, .15);
 }
@@ -231,7 +233,7 @@
 
 /* ── Mobile fixes (≤ 480px) ───────────────────────────────────────────────── */
 @media (max-width: 480px) {
-  .ch-hero { padding: 32px 16px 24px; }
+  .ch-hero { padding: calc(32px + env(safe-area-inset-top, 0px)) 16px 24px; }
 
   .ch-layout { padding: 16px 12px; }
 
