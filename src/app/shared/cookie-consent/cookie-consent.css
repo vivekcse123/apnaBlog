@@ -46,7 +46,7 @@
 }
 
 .cookie-link {
-  color: var(--accent-text);
+  color: #0f7a5a;
   text-decoration: underline;
   text-underline-offset: 2px;
   margin-left: 4px;
@@ -55,6 +55,8 @@
 }
 
 .cookie-link:hover { color: var(--accent); }
+
+[data-theme="dark"] .cookie-link { color: var(--accent-text); }
 
 .cookie-actions {
   display: flex;

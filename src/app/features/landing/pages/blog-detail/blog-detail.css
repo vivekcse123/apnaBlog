@@ -62,14 +62,6 @@
 }
 .app-logo:hover { opacity: 0.8; }
 .app-logo-img { border-radius: 8px; }
-.app-logo-text {
-  font-family: 'Playfair Display', serif;
-  font-size: 18px; font-weight: 700; letter-spacing: -0.3px;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
 
 .header-center {
   min-width: 0;
@@ -371,12 +363,12 @@
   list-style: none; padding: 0; margin: 0; flex-wrap: wrap;
 }
 .blog-breadcrumb-list a {
-  color: #43cea2; font-size: 13px; text-decoration: none;
+  color: #0f7a5a; font-size: 13px; text-decoration: none;
 }
 .blog-breadcrumb-list a:hover { text-decoration: underline; }
 .breadcrumb-sep { color: var(--text-muted); font-size: 13px; }
 .breadcrumb-current {
-  font-size: 13px; color: var(--text-muted);
+  font-size: 13px; color: var(--text-secondary);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   max-width: 320px; display: inline-block; vertical-align: middle;
 }
@@ -443,7 +435,7 @@
 .category-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
 .category-pill {
   display: inline-block;
-  background: var(--accent-subtle); color: var(--accent-text);
+  background: var(--accent-subtle); color: #0f7a5a;
   border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
   font-size: 11px; font-weight: 700; letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -452,6 +444,7 @@
   transition: background 0.2s, color 0.2s;
 }
 .category-pill:hover { background: linear-gradient(135deg,#43cea2,#185a9d); color: #fff; border-color: transparent; }
+[data-theme="dark"] .category-pill { color: var(--accent-text); }
 
 .winner-rank-badge {
   display: inline-flex; align-items: center;
@@ -531,7 +524,7 @@
 .meta-right  { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .meta-item {
   display: inline-flex; align-items: center; gap: 5px;
-  font-size: 13px; color: var(--text-muted);
+  font-size: 13px; color: var(--text-secondary);
   background: none; border: none; font-family: inherit;
   padding: 0; cursor: default;
 }
@@ -1208,11 +1201,6 @@
 .disc-load-more-btn:hover { background: var(--accent-subtle); color: var(--accent-text); border-color: var(--accent); }
 .disc-load-more-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
-.comment-limit-notice {
-  font-size: 13px; font-weight: 600; padding: 10px 14px; border-radius: 8px;
-  text-align: center; background: rgba(239,68,68,0.08); color: #ef4444;
-  border: 1px solid rgba(239,68,68,0.2);
-}
 
 /* ══════════════════════════════════════════
    FOOTER
@@ -1639,7 +1627,6 @@
    SMALL PHONES  ≤ 480px
 ══════════════════════════════════════════ */
 @media (max-width: 480px) {
-  .app-logo-text      { display: none; }
   .header-center      { display: none; }
   .progress-ring-wrap { display: none; }
   .mins-left          { display: none; }

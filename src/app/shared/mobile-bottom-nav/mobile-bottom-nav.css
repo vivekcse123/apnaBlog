@@ -144,6 +144,7 @@
     font-weight: 500;
     font-family: 'DM Sans', sans-serif;
     letter-spacing: 0.01em;
+    color: var(--text-secondary, #4b5563);
     transition: color 0.18s, font-weight 0.18s;
     white-space: nowrap;
   }

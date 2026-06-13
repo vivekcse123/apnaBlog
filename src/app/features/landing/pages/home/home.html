@@ -3,7 +3,7 @@
 <header class="header" role="banner">
   <div class="header-left">
     <a class="app-logo" routerLink="/" aria-label="ApnaInsights — Go to homepage">
-      <img class="app-logo-img" src="/logo-96.png" alt="ApnaInsights" width="30" height="30" loading="eager" />
+      <img class="app-logo-img" src="/logo-96.png" alt="" width="30" height="30" loading="eager" />
       <span class="app-logo-text">ApnaInsights</span>
     </a>
   </div>
@@ -87,7 +87,7 @@
 <nav id="mobile-drawer" class="mobile-drawer" [class.open]="menuOpen()" role="navigation" aria-label="Mobile navigation">
   <div class="drawer-header">
     <div class="drawer-brand">
-      <img src="/logo-96.png" alt="ApnaInsights" class="drawer-brand-logo" />
+      <img src="/logo-96.png" alt="" class="drawer-brand-logo" />
       <span class="drawer-brand-name">ApnaInsights</span>
     </div>
     <div class="drawer-header-actions">
@@ -521,7 +521,10 @@
                [placeholder]="heroPlaceholder()"
                aria-label="Search stories, topics, writers"
                autocomplete="off"
+               role="combobox"
+               aria-autocomplete="list"
                aria-haspopup="listbox"
+               [attr.aria-controls]="heroSearchOpen() ? 'hero-search-listbox' : null"
                [attr.aria-expanded]="heroSearchOpen()"
                (focus)="openHeroSearch()"
                (click)="openHeroSearch()"
@@ -550,7 +553,7 @@
       }
 
       @if (heroSearchOpen()) {
-        <div class="v2-mega-dropdown" role="listbox" aria-label="Search suggestions">
+        <div class="v2-mega-dropdown" id="hero-search-listbox" role="listbox" aria-label="Search suggestions">
           <button type="button" class="v2-mega-dd-close" aria-label="Close search" (click)="closeHeroSearch()">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
@@ -781,9 +784,9 @@
           }
         </div>
       } @else {
-        <div class="v2-trending-scroll" role="list">
+        <div class="v2-trending-scroll">
           @for (blog of trendingPosts().slice(0, 6); track blog._id) {
-            <article class="v2-trending-card" role="listitem"
+            <article class="v2-trending-card"
                      (click)="readBlog(blog.slug || blog._id)"
                      (keydown.enter)="readBlog(blog.slug || blog._id)"
                      tabindex="0"
@@ -1259,8 +1262,7 @@
                     <a class="card-tag-chip" [href]="'/tag/' + tag"
                        (click)="$event.preventDefault(); selectTag(tag)"
                        [class.active]="selectedTag() === tag"
-                       [attr.aria-label]="'Filter by tag: ' + tag"
-                       [attr.aria-pressed]="selectedTag() === tag">#{{ tag }}</a>
+                       [attr.aria-label]="(selectedTag() === tag ? 'Remove filter: ' : 'Filter by tag: ') + tag">#{{ tag }}</a>
                   }
                 </div>
               }
@@ -1305,11 +1307,11 @@
                 <span class="stat-icon" aria-hidden="true">{{ isLiked(blog._id) ? '❤️' : '♡' }}</span>
                 <span class="stat-count" aria-hidden="true">{{ blog.likesCount }}</span>
               </button>
-              <span class="stat-display" [attr.aria-label]="blog.commentsCount + ' comments'">
+              <span class="stat-display" role="group" [attr.aria-label]="blog.commentsCount + ' comments'">
                 <span class="stat-icon" aria-hidden="true">💬</span>
                 <span class="stat-count" aria-hidden="true">{{ blog.commentsCount }}</span>
               </span>
-              <span class="stat-display" [attr.aria-label]="(blog.views | formatCount) + ' views'">
+              <span class="stat-display" role="group" [attr.aria-label]="(blog.views | formatCount) + ' views'">
                 <span class="stat-icon" aria-hidden="true">👁</span>
                 <span class="stat-count" aria-hidden="true">{{ blog.views | formatCount }}</span>
               </span>
@@ -1630,7 +1632,7 @@
     <!-- Brand column -->
     <div class="v2-footer-brand-col">
       <a class="app-logo v2-footer-logo" routerLink="/" aria-label="ApnaInsights homepage">
-        <img class="app-logo-img" src="/logo-96.png" alt="ApnaInsights" width="28" height="28" loading="lazy" />
+        <img class="app-logo-img" src="/logo-96.png" alt="" width="28" height="28" loading="lazy" />
         <span class="app-logo-text">ApnaInsights</span>
       </a>
       <p class="v2-footer-tagline">Born in India. Real stories for everyone.</p>
