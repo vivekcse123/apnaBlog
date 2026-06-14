@@ -94,6 +94,9 @@
               <span class="mc-badge" [class.mc-badge--active]="c.isActive">
                 {{ c.isActive ? 'Active' : 'Inactive' }}
               </span>
+              @if (c.winnersDeclared) {
+                <span class="mc-badge mc-badge--winners">🏆 Winners Declared</span>
+              }
             </div>
             <p class="mc-card-desc">{{ c.description }}</p>
 

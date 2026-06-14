@@ -55,13 +55,19 @@
             <p class="ch-detail__desc">{{ ch.description }}</p>
 
             <div class="ch-detail__meta">
-              <span>⏳ {{ daysLeft(ch.endDate) }} days left</span>
+              @if (ch.winnersDeclared) {
+                <span>🏆 Winners announced</span>
+              } @else {
+                <span>⏳ {{ daysLeft(ch.endDate) }} days left</span>
+              }
               <span>📝 {{ ch.submissionCount }} submissions</span>
               @if (ch.category) { <span>📂 {{ ch.category }}</span> }
               @if (ch.prize)    { <span>🏅 {{ ch.prize }}</span> }
             </div>
 
-            @if (isLoggedIn()) {
+            @if (ch.winnersDeclared) {
+              <div class="ch-winners-banner">🏆 Winners have been announced for this challenge — see the leaderboard below.</div>
+            } @else if (isLoggedIn()) {
               <button class="ch-btn ch-btn--primary" (click)="openSubmitModal()">
                 ✍️ Submit Your Story
               </button>
@@ -90,6 +96,9 @@
                     }
                     <div class="ch-lb__content">
                       <div class="ch-lb__title">{{ post.title }}</div>
+                      @if (post.isFeaturedWinner && post.featuredWinnerRank) {
+                        <div class="ch-lb__winner-badge">{{ winnerRankLabel(post.featuredWinnerRank) }}</div>
+                      }
                       <div class="ch-lb__author">
                         by {{ post.user?.name ?? 'Anonymous' }}
                         @if ((post.user?.karma ?? 0) > 0) {

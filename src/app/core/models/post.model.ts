@@ -12,6 +12,12 @@ export interface McqQuestion {
   explanation?: string;
 }
 
+export interface FaqItem {
+  _id?:      string;
+  question:  string;
+  answer:    string;
+}
+
 export interface Comment {
   _id: string;
   comment: string;
@@ -62,6 +68,9 @@ export interface Post {
   // MCQ
   postType?:      'blog' | 'mcq';
   mcqQuestions?:  McqQuestion[];
+
+  // FAQ section + FAQPage schema
+  faqs?: FaqItem[];
 
   // Sponsorship
   isSponsored?:           boolean;

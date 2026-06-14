@@ -1,6 +1,6 @@
 /* ── Page wrapper ─────────────────────────────────────────────────────────── */
 .challenges-page {
-  min-height: 100vh;
+  min-height: 100dvh;
   background: #0d1b2a;
   color: #e8eaf0;
   padding-bottom: 80px;
@@ -133,6 +133,12 @@
 .ch-btn--outline { background: transparent; border: 1.5px solid #43cea2; color: #43cea2; }
 .ch-btn--ghost   { background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.15); color: #e8eaf0; }
 
+.ch-winners-banner {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 16px; border-radius: 8px; font-size: 13px; font-weight: 600;
+  background: rgba(246,201,14,.12); border: 1px solid rgba(246,201,14,.35); color: #f6c90e;
+}
+
 /* ── Leaderboard ──────────────────────────────────────────────────────────── */
 .ch-lb { margin-top: 32px; }
 .ch-lb__heading {
@@ -166,6 +172,11 @@
 }
 .ch-lb__content { flex: 1; min-width: 0; }
 .ch-lb__title   { font-size: 15px; font-weight: 700; color: #e8eaf0; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ch-lb__winner-badge {
+  display: inline-block; font-size: 11px; font-weight: 700; color: #f6c90e;
+  background: rgba(246,201,14,.12); border: 1px solid rgba(246,201,14,.3);
+  border-radius: 999px; padding: 2px 8px; margin-bottom: 6px;
+}
 .ch-lb__author  { font-size: 12px; color: #8fa3b1; margin-bottom: 6px; }
 .ch-karma       { color: #43cea2; font-weight: 700; margin-left: 6px; font-size: 11px; }
 .ch-lb__stats   { display: flex; gap: 12px; font-size: 12px; color: #64748b; }

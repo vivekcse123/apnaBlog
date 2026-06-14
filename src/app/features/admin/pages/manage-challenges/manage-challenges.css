@@ -94,6 +94,7 @@ select.mc-input { cursor: pointer; }
   font-weight: 700; flex-shrink: 0;
 }
 .mc-badge--active { background: rgba(67,206,162,.15); color: #43cea2; }
+.mc-badge--winners { background: rgba(246,201,14,.12); color: #f6c90e; }
 
 .mc-card-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 .mc-btn--winners { background: rgba(246,201,14,.12); color: #f6c90e; border: 1px solid rgba(246,201,14,.3); }

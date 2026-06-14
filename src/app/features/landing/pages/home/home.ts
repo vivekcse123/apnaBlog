@@ -24,6 +24,7 @@ import { User } from '../../../user/models/user.mode';
 import { WelcomeModal } from '../welcome.modal';
 import { FormatCountPipe } from '../../../../shared/pipes/format-count-pipe';
 import { TimeAgoPipe }     from '../../../../shared/pipes/time-ago-pipe';
+import { CloudinaryResizePipe } from '../../../../shared/pipes/cloudinary-resize-pipe';
 import { MobileBottomNav } from '../../../../shared/mobile-bottom-nav/mobile-bottom-nav';
 import { PostCache, PostWithTs } from '../../../post/services/post-cache';
 import { ReadingHistory }        from '../../../../core/services/reading-history';
@@ -97,7 +98,7 @@ function persistStats(total: number, totalViews: number, categoryCounts: Record<
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, CommonModule, FormsModule, NgTemplateOutlet, WelcomeModal, FormatCountPipe, TimeAgoPipe, MobileBottomNav],
+  imports: [RouterLink, RouterLinkActive, CommonModule, FormsModule, NgTemplateOutlet, WelcomeModal, FormatCountPipe, TimeAgoPipe, CloudinaryResizePipe, MobileBottomNav],
   templateUrl: './home.html',
   styleUrl: './home.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -151,7 +152,7 @@ export class Home implements OnInit, OnDestroy {
   heroPlaceholderIdx = signal(0);
   heroPlaceholder    = computed(() => HERO_PLACEHOLDERS[this.heroPlaceholderIdx()]);
 
-  activeChallenge = signal<{ _id: string; title: string; description: string; prize: string | null; endDate: string; submissionCount: number } | null>(null);
+  activeChallenge = signal<{ _id: string; title: string; description: string; prize: string | null; endDate: string; submissionCount: number; winnersDeclared: boolean } | null>(null);
   featuredWinners = signal<any[]>([]);
 
   showWelcomeModal      = signal(false);
@@ -247,10 +248,15 @@ export class Home implements OnInit, OnDestroy {
 
   private readingTimeCache = new Map<string, number>();
 
+  // "Trending Today" — ranked by the time-decayed hotScore (refreshed on every
+  // like/comment/view) so the list shifts day to day as engagement changes,
+  // instead of being pinned to all-time likesCount. Falls back to likesCount
+  // for posts whose hotScore hasn't been computed yet (score === 0/undefined).
   private byLikes = computed(() => {
     const all = this.allPosts();
-    const sponsored = all.filter(p => p.isSponsored).sort((a, b) => b.likesCount - a.likesCount);
-    const regular   = all.filter(p => !p.isSponsored).sort((a, b) => b.likesCount - a.likesCount);
+    const score = (p: PostWithTs) => (p.hotScore || p.likesCount);
+    const sponsored = all.filter(p => p.isSponsored).sort((a, b) => score(b) - score(a));
+    const regular   = all.filter(p => !p.isSponsored).sort((a, b) => score(b) - score(a));
     return [...sponsored, ...regular];
   });
   private byViews = computed(() => {

@@ -153,6 +153,25 @@ export class CreatePost implements OnInit, OnDestroy {
     );
   }
 
+  // ── FAQ (optional, blog posts) ────────────────────────────────────────────
+  faqs = signal<{ question: string; answer: string }[]>([]);
+
+  addFaq(): void {
+    this.faqs.update(items => [...items, { question: '', answer: '' }]);
+  }
+
+  removeFaq(index: number): void {
+    this.faqs.update(items => items.filter((_, i) => i !== index));
+  }
+
+  updateFaqQuestion(index: number, value: string): void {
+    this.faqs.update(items => items.map((f, i) => i === index ? { ...f, question: value } : f));
+  }
+
+  updateFaqAnswer(index: number, value: string): void {
+    this.faqs.update(items => items.map((f, i) => i === index ? { ...f, answer: value } : f));
+  }
+
   // ── Unified blog images (up to 5 total) ─────────────────────────────────────
   // First entry = featuredImage, rest = images[]
   blogImages     = signal<{ url: string; publicId?: string }[]>([]);
@@ -1247,6 +1266,7 @@ export class CreatePost implements OnInit, OnDestroy {
       user:          userId,
       postType:      isMcq ? 'mcq' : 'blog',
       mcqQuestions:  mcqPayload,
+      faqs:          isMcq ? [] : this.faqs().filter(f => f.question.trim() && f.answer.trim()),
       ...(this.isScheduled && this.createBlogForm.value.scheduledAt
         ? { scheduledAt: new Date(this.createBlogForm.value.scheduledAt).toISOString() }
         : {}),
@@ -1278,6 +1298,7 @@ export class CreatePost implements OnInit, OnDestroy {
           this.imageUrlInput.set('');
           this.postType.set('blog');
           this.mcqQuestions.set([]);
+          this.faqs.set([]);
           this.createBlogForm.reset();
           this.createBlogForm.get('status')?.setValidators(Validators.required);
           this.createBlogForm.get('status')?.updateValueAndValidity();

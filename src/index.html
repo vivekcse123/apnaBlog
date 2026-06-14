@@ -50,6 +50,25 @@
       function apply(px) {
         root.style.setProperty('--safe-area-bottom', px + 'px');
         root.setAttribute('data-safe-ready', '1');
+        nudgeReflow();
+      }
+
+      // iOS PWA cold launch: the layout viewport WebKit uses for
+      // `position: fixed` elements is briefly out of sync with the true
+      // visual viewport, leaving the bottom nav floating above the real
+      // bottom edge with a gap beneath it. Navigating to another route later
+      // forces Angular to relayout the page, which happens to make WebKit
+      // re-derive the correct viewport — fixing it from then on. This nudges
+      // the same recalculation immediately on first paint by forcing two
+      // reflows (grow 1px, then shrink back) within consecutive frames, so
+      // it's visually imperceptible.
+      function nudgeReflow() {
+        var html = root;
+        var prev = html.style.paddingBottom;
+        html.style.paddingBottom = 'calc(' + (html.style.paddingBottom || '0px') + ' + 1px)';
+        requestAnimationFrame(function () {
+          html.style.paddingBottom = prev;
+        });
       }
 
       function poll() {
@@ -60,6 +79,12 @@
       }
 
       document.addEventListener('DOMContentLoaded', poll);
+
+      // Re-run on bfcache restores (e.g. swipe-back into the PWA) where
+      // DOMContentLoaded doesn't fire again.
+      window.addEventListener('pageshow', function (e) {
+        if (e.persisted) nudgeReflow();
+      });
 
       window.addEventListener('orientationchange', function () {
         tries = 0;
@@ -79,8 +104,9 @@
 
   <meta name="theme-color" content="#43cea2">
 
-  <!-- ── iOS PWA (Add to Home Screen) ── -->
-  <!-- Tells iOS to launch as a full-screen standalone app, not inside Safari -->
+  <!-- ── iOS / Android PWA (Add to Home Screen) ── -->
+  <!-- Tells iOS/Android to launch as a full-screen standalone app, not inside the browser -->
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <!-- black-translucent: status bar overlays the app (works with viewport-fit=cover above) -->
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -107,7 +133,6 @@
   <link rel="alternate" type="application/rss+xml" title="ApnaInsights RSS Feed" href="https://apnainsights.com/rss.xml">
   <!-- Preconnect to Google ad servers for faster ad load -->
   <link rel="preconnect" href="https://pagead2.googlesyndication.com" crossorigin>
-  <link rel="preconnect" href="https://googleads.g.doubleclick.net" crossorigin>
 
   <meta name="description" content="ApnaInsights — India's free community blogging platform. Read and write stories on technology, health, lifestyle, village life, sports, business and more.">
   <meta name="keywords"    content="India blogging, community stories, technology, health, lifestyle, village life, sports, business, Hindi, English, ApnaInsights">

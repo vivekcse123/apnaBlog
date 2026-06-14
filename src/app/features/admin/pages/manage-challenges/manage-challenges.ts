@@ -18,6 +18,7 @@ interface Challenge {
   endDate:         string;
   isActive:        boolean;
   submissionCount: number;
+  winnersDeclared: boolean;
 }
 
 interface LeaderboardPost {

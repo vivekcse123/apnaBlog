@@ -1,6 +1,18 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap');
 @import './mobile-ui.css';
 
+/* Playfair Display's "&" is an ornate italic swash that looks out of place
+   next to the bold upright letters in blog/section titles — swap in a plain
+   serif ampersand for just that codepoint so titles read consistently. */
+@font-face {
+  font-family: 'Playfair Display';
+  font-style: normal;
+  font-weight: 700 900;
+  font-display: swap;
+  src: local('Georgia Bold'), local('Georgia'), local('Times New Roman Bold'), local('Times New Roman');
+  unicode-range: U+0026;
+}
+
 /* ── View Transitions (route cross-fade) ─────────────────────────────────────
    Angular's withViewTransitions() hooks into the browser View Transitions API.
    These rules define the enter/leave animation for the whole page swap.       */

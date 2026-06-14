@@ -259,6 +259,7 @@
 .float-btn.active { background: linear-gradient(135deg,#43cea2,#185a9d); border-color: transparent; }
 .float-btn.bookmarked { background: linear-gradient(135deg,#f59e0b,#f97316); border-color: transparent; }
 .float-icon { font-size: 19px; line-height: 1; color: var(--text-primary); }
+.float-icon--svg { display: block; }
 .float-btn.active .float-icon,
 .float-btn.bookmarked .float-icon { filter: brightness(0) invert(1); }
 
@@ -666,10 +667,11 @@
 }
 
 /* Language bar */
+/* No border-top here — .blog-meta's border-bottom directly above already
+   acts as the divider; adding another would draw two lines back-to-back. */
 .lang-bar {
   display: flex; align-items: center; flex-wrap: wrap;
   gap: 6px; margin-top: 12px; padding-top: 12px;
-  border-top: 1px solid var(--border);
 }
 .lang-bar-label { font-size: 12px; color: var(--text-muted); font-weight: 600; white-space: nowrap; }
 .lang-btn {
@@ -686,20 +688,28 @@
 .lang-translating { font-size: 12px; color: var(--text-muted); font-style: italic; }
 
 /* ── Ad units ── */
-/* Reserve space for the typical responsive ad size up front so the page
-   doesn't shift when AdSense fills the slot in (CLS). Only collapse once
-   AdSense explicitly reports "unfilled" — never for the pre-JS/initial state. */
-.ad-unit-wrap { margin: 0; min-height: 100px; box-sizing: border-box; }
+/* While adsbygoogle.js is initializing a slot — well before data-ad-status
+   settles to "filled" or "unfilled" — it can inject an iframe with an opaque
+   white background sized by "auto"/full-width-responsive, producing a large
+   blank white box. Collapse the wrap by default and only let it grow once a
+   fill is confirmed, so that loading and permanently-unfilled slots both stay
+   hidden instead of flashing white. */
+.ad-unit-wrap { margin: 0; max-height: 0; overflow: hidden; box-sizing: border-box; }
 .ad-unit-wrap:empty { display: none; }
-.ad-unit-wrap:has(ins.adsbygoogle[data-ad-status="unfilled"]) { display: none; }
-/* Once the ad has actually rendered, let the wrap shrink to its real size —
-   the 100px placeholder shouldn't linger as extra white space below it. */
-.ad-unit-wrap:has(ins.adsbygoogle[data-ad-status="filled"]) { min-height: 0; }
+.ad-unit-wrap:has(ins.adsbygoogle[data-ad-status="filled"]) { max-height: none; min-height: 100px; }
 
 /* Extra space + divider below the mid-content ad so it isn't flush against
-   the clickable category/tag badges (reduces accidental-click risk). */
-.ad-unit-wrap--mid { margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
-.ad-unit-wrap--mid:has(ins.adsbygoogle[data-ad-status="unfilled"]) { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+   the clickable category/tag badges (reduces accidental-click risk) — only
+   once the ad has actually rendered. */
+.ad-unit-wrap--mid:has(ins.adsbygoogle[data-ad-status="filled"]) { margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
+
+/* Fallback for browsers without :has() support (the reveal-on-filled rules
+   above can never match): fall back to the old "visible by default" layout
+   so ads still render instead of staying collapsed forever. */
+@supports not selector(:has(a)) {
+  .ad-unit-wrap { max-height: none; min-height: 100px; overflow: visible; }
+  .ad-unit-wrap--mid { margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
+}
 
 /* ══════════════════════════════════════════
    BLOG CONTENT  (SEO typography)
@@ -858,6 +868,40 @@
 }
 .tag-badge:hover { background: var(--accent-subtle); color: var(--accent-text); border-color: var(--accent); }
 .tag-badge--tag { color: var(--accent-text); }
+
+/* ══════════════════════════════════════════
+   FAQ SECTION
+   ══════════════════════════════════════════ */
+.faq-section { margin: 28px 0; }
+.faq-title {
+  font-size: 20px; font-weight: 700; color: var(--text-primary);
+  margin: 0 0 16px; display: flex; align-items: center; gap: 8px;
+}
+.faq-icon { font-size: 18px; }
+.faq-item {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-surface);
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+.faq-question {
+  padding: 14px 18px;
+  font-size: 15px; font-weight: 600; color: var(--text-primary);
+  cursor: pointer; list-style: none;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+}
+.faq-question::-webkit-details-marker { display: none; }
+.faq-question::after {
+  content: '+';
+  font-size: 18px; font-weight: 400; color: var(--text-secondary);
+  flex-shrink: 0; transition: transform 0.2s;
+}
+.faq-item[open] .faq-question::after { transform: rotate(45deg); }
+.faq-answer {
+  margin: 0; padding: 0 18px 16px;
+  font-size: 14px; line-height: 1.65; color: var(--text-secondary);
+}
 
 /* ══════════════════════════════════════════
    SPONSOR CTA
@@ -1268,7 +1312,7 @@
 }
 @keyframes lbIn { from { opacity: 0; transform: scale(0.94); } to { opacity: 1; transform: none; } }
 .lightbox-close {
-  position: fixed; top: 20px; right: 20px;
+  position: fixed; top: calc(20px + env(safe-area-inset-top, 0px)); right: 20px;
   width: 40px; height: 40px; border-radius: 50%; border: none;
   background: rgba(255,255,255,0.15); color: #fff; font-size: 18px;
   cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 3001;
@@ -1947,8 +1991,9 @@
   .mob-art-btn--liked { color: #ef4444; }
   .mob-art-btn--bookmarked { color: var(--accent-text); }
 
-  /* Hide desktop emoji breakdown on mobile — mobile has its own in the picker */
-  .emoji-count-strip { display: none; }
+  /* Show the per-emoji breakdown on mobile too — wraps onto its own row */
+  .meta-right { flex-wrap: wrap; }
+  .emoji-count-strip { display: flex; width: 100%; margin-top: 6px; }
 
   /* Hide desktop emoji picker popup on mobile — mob-like-picker-wrap handles it */
   .like-emoji-picker { display: none !important; }
@@ -1961,12 +2006,12 @@
     background: transparent;
   }
 
-  /* Picker wrap — spans full viewport width so overflow-x: clip never clips it */
+  /* Picker wrap — fixed over the whole viewport so the picker appears
+     centered on screen no matter which like button (top of article or
+     bottom action bar) opened it. */
   .mob-like-picker-wrap {
     position: fixed;
-    bottom: calc(64px + env(safe-area-inset-bottom, 0px) + 62px);
-    left: 0;
-    right: 0;
+    inset: 0;
     display: flex;
     justify-content: center;
     align-items: center;

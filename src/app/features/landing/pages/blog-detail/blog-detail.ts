@@ -69,9 +69,6 @@ const VISIBLE_STATUSES = new Set(['published', 'draft', 'pending']);
   imports:     [RouterLink, CommonModule, FormsModule, TimeAgoPipe, MobileBottomNav],
   templateUrl: './blog-detail.html',
   styleUrl:    './blog-detail.css',
-  // ngSkipHydration prevents DOM reconciliation mismatches caused by the
-  // imperative mutations in addCodeCopyButtons().
-  host: { ngSkipHydration: 'true' },
 })
 export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
 
@@ -101,10 +98,20 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
 
   // ── Post state ────────────────────────────────────────────────────────────
   // Read TransferState once at construction so every signal that depends on the
-  // SSR post is pre-populated before Angular's first render pass.  That makes
-  // ngSkipHydration's DOM-wipe invisible — the re-render is already complete.
+  // SSR post is pre-populated before Angular's first render pass — this keeps
+  // safeContent() identical to what SSR rendered, so hydration reuses the
+  // server DOM for .blog-content instead of re-rendering it.
   private readonly _initPost: Post | null = isPlatformBrowser(this.platformId)
     ? this.transferState.get<Post | null>(POST_STATE_KEY, null)
+    : null;
+
+  // SSR renders .blog-content from heading-processed HTML (see _processHeadings).
+  // TransferState only carries the raw post, so run the same pure/deterministic
+  // processing here too — otherwise the first client-side computation of
+  // safeContent() would differ from the SSR DOM (missing heading ids), causing
+  // Angular to replace the whole .blog-content subtree right after hydration.
+  private readonly _initProcessed = this._initPost
+    ? this._processHeadings(this._initPost.content ?? '')
     : null;
 
   post          = signal<Post | null>(this._initPost);
@@ -135,7 +142,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   // so that like/view/comment mutations — which replace the post signal with a
   // new object but don't touch content — do NOT cause [innerHTML] to re-render
   // and destroy the imperatively injected code-block wrappers.
-  private readonly _contentHtml = signal<string>(this._initPost?.content ?? '');
+  private readonly _contentHtml = signal<string>(this._initProcessed?.html ?? this._initPost?.content ?? '');
 
   // ── Translation ────────────────────────────────────────────────────────────
   readonly LANGUAGES = [
@@ -290,7 +297,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   private currentUserData = signal<User | null>(null);
 
   // ── Reading / ToC ─────────────────────────────────────────────────────────
-  tableOfContents = signal<TableOfContentsItem[]>([]);
+  tableOfContents = signal<TableOfContentsItem[]>(this._initProcessed?.toc ?? []);
   activeHeadingId = signal<string>('');
   readingProgress  = signal(0);
   readingTime      = signal(0);
@@ -1797,6 +1804,15 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
             dateModified:     new Date(post.updatedAt ?? post.createdAt).toISOString(),
             inLanguage:       'en-IN',
           },
+          ...(post.faqs?.length ? [{
+            '@type': 'FAQPage',
+            '@id':   `${postUrl}#faq`,
+            mainEntity: post.faqs.map(f => ({
+              '@type': 'Question',
+              name:    f.question,
+              acceptedAnswer: { '@type': 'Answer', text: f.answer },
+            })),
+          }] : []),
         ],
       };
 

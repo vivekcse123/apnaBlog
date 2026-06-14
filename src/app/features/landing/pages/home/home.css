@@ -1746,10 +1746,24 @@
    adsbygoogle.js never runs (ad blockers, slow/blocked script, or
    localhost), which is most of the audience, not the exception.
    Only add padding once AdSense actually fills the slot; the <ins>
-   itself then sizes the wrap to its real dimensions. */
-.home-ad-wrap { max-width: 1440px; margin: 0 auto; padding: 0; overflow: visible; box-sizing: border-box; }
+   itself then sizes the wrap to its real dimensions.
+
+   While adsbygoogle.js is still initializing a slot (before data-ad-status
+   settles), it can inject an iframe with an opaque white background sized by
+   "auto"/full-width-responsive — a large blank white box. Collapse the wrap
+   by default with max-height:0/overflow:hidden and only let it grow once a
+   fill is confirmed. */
+.home-ad-wrap { max-width: 1440px; margin: 0 auto; padding: 0; max-height: 0; overflow: hidden; box-sizing: border-box; }
 .home-ad-wrap:has(ins.adsbygoogle[data-ad-status="filled"]) {
+  max-height: none;
   padding: 8px 24px;
+}
+
+/* Fallback for browsers without :has() support (the reveal-on-filled rule
+   above can never match): fall back to the old "visible by default" layout
+   so ads still render instead of staying collapsed forever. */
+@supports not selector(:has(a)) {
+  .home-ad-wrap { max-height: none; overflow: visible; padding: 8px 24px; }
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -2273,8 +2287,8 @@
   }
 
   :host(.mode-embedded) .filter-wrap {
-    top: 47px; /* mob-tabs height only, no header offset */
-    scroll-margin-top: 47px;
+    top: 55px; /* mob-tabs height (47px) + 8px gap, no header offset */
+    scroll-margin-top: 55px;
   }
 
   .mob-tab {
@@ -2355,8 +2369,9 @@
      .filter-wrap is the next bar to catch. ── */
   .filter-wrap {
     padding: 10px 12px 8px;
-    top: calc(56px + 47px + env(safe-area-inset-top, 0px));
-    scroll-margin-top: calc(56px + 47px + env(safe-area-inset-top, 0px));
+    /* +8px so the bar sticks just below the mob-tabs bar instead of flush against it. */
+    top: calc(56px + 47px + env(safe-area-inset-top, 0px) + 8px);
+    scroll-margin-top: calc(56px + 47px + env(safe-area-inset-top, 0px) + 8px);
     z-index: 87;
   }
   .filter-inner { gap: 8px; }

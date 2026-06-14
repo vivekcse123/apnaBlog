@@ -140,7 +140,11 @@
     <span class="drawer-link-icon drawer-link-icon--gold">🏆</span>
     Writing Challenges
     @if (activeChallenge()) {
-      <span class="drawer-challenge-pill">{{ challengeDaysLeft(activeChallenge()!.endDate) }}d left</span>
+      @if (activeChallenge()!.winnersDeclared) {
+        <span class="drawer-challenge-pill">Winners 🏆</span>
+      } @else {
+        <span class="drawer-challenge-pill">{{ challengeDaysLeft(activeChallenge()!.endDate) }}d left</span>
+      }
     }
   </a>
   <a class="drawer-link" routerLink="/search" (click)="menuOpen.set(false)">
@@ -622,7 +626,7 @@
                     <a class="v2-mega-dd-item" role="option" [routerLink]="['/blog', blog.slug || blog._id]" (click)="closeHeroSearch()">
                       <span class="v2-mega-dd-item-thumb">
                         @if (blog.featuredImage) {
-                          <img [src]="blog.featuredImage" [alt]="blog.title" loading="lazy" />
+                          <img [src]="blog.featuredImage | cldResize:120" [alt]="blog.title" loading="lazy" />
                         } @else {
                           <span class="v2-mega-dd-item-noimg" aria-hidden="true">{{ blog.title.charAt(0).toUpperCase() }}</span>
                         }
@@ -647,7 +651,7 @@
                     <a class="v2-mega-dd-item" role="option" [routerLink]="['/blog', blog.slug || blog._id]" (click)="closeHeroSearch()">
                       <span class="v2-mega-dd-item-thumb">
                         @if (blog.featuredImage) {
-                          <img [src]="blog.featuredImage" [alt]="blog.title" loading="lazy" />
+                          <img [src]="blog.featuredImage | cldResize:120" [alt]="blog.title" loading="lazy" />
                         } @else {
                           <span class="v2-mega-dd-item-noimg" aria-hidden="true">{{ blog.title.charAt(0).toUpperCase() }}</span>
                         }
@@ -707,16 +711,20 @@
     <a class="challenge-strip" routerLink="/challenges" aria-label="View writing challenge">
       <span class="challenge-strip__trophy">🏆</span>
       <div class="challenge-strip__body">
-        <span class="challenge-strip__label">Active Challenge</span>
+        <span class="challenge-strip__label">{{ activeChallenge()!.winnersDeclared ? 'Winners Announced' : 'Active Challenge' }}</span>
         <span class="challenge-strip__title">{{ activeChallenge()!.title }}</span>
         @if (activeChallenge()!.prize) {
           <span class="challenge-strip__prize">🏅 {{ activeChallenge()!.prize }}</span>
         }
       </div>
       <div class="challenge-strip__right">
-        <span class="challenge-strip__days">{{ challengeDaysLeft(activeChallenge()!.endDate) }}d left</span>
-        <span class="challenge-strip__entries">{{ activeChallenge()!.submissionCount }} entries</span>
-        <span class="challenge-strip__cta">Participate →</span>
+        @if (activeChallenge()!.winnersDeclared) {
+          <span class="challenge-strip__cta">View Winners →</span>
+        } @else {
+          <span class="challenge-strip__days">{{ challengeDaysLeft(activeChallenge()!.endDate) }}d left</span>
+          <span class="challenge-strip__entries">{{ activeChallenge()!.submissionCount }} entries</span>
+          <span class="challenge-strip__cta">Participate →</span>
+        }
       </div>
     </a>
   }
@@ -735,7 +743,7 @@
               (keydown.enter)="navigateToWinner(post)" [attr.aria-label]="'Read ' + post.title">
               <div class="winner-card__rank">{{ winnerRankLabel(post.featuredWinnerRank) }}</div>
               @if (post.featuredImage) {
-                <img [src]="post.featuredImage" [alt]="post.title" class="winner-card__img" loading="lazy">
+                <img [src]="post.featuredImage | cldResize:480:320" [alt]="post.title" class="winner-card__img" loading="lazy">
               } @else {
                 <div class="winner-card__img winner-card__img--placeholder">✍️</div>
               }
@@ -794,7 +802,7 @@
               <!-- Thumbnail -->
               <div class="v2-trending-card-img">
                 @if (blog.featuredImage) {
-                  <img [src]="blog.featuredImage" [alt]="blog.title" loading="lazy" />
+                  <img [src]="blog.featuredImage | cldResize:400:350" [alt]="blog.title" loading="lazy" />
                 } @else {
                   <div class="v2-trending-card-noimg">
                     <span>{{ blog.title.charAt(0).toUpperCase() }}</span>
@@ -810,7 +818,7 @@
                         [class.bookmarked]="isBookmarked(blog._id)"
                         (click)="toggleBookmark(blog._id, $event)"
                         [attr.aria-label]="(isBookmarked(blog._id) ? 'Remove bookmark' : 'Bookmark') + ': ' + blog.title">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
+                  <svg width="14" height="14" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" [attr.fill]="isBookmarked(blog._id) ? 'currentColor' : 'none'"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
                 </button>
               </div>
               <!-- Card info -->
@@ -1037,7 +1045,7 @@
             @for (blog of sponsoredPosts(); track blog._id) {
               <article class="feat-item" (click)="readBlog(blog.slug || blog._id)" [attr.aria-label]="blog.title">
                 <div class="feat-item-img">
-                  @if (blog.featuredImage) { <img [src]="blog.featuredImage" [alt]="blog.title" loading="lazy" /> }
+                  @if (blog.featuredImage) { <img [src]="blog.featuredImage | cldResize:200:170" [alt]="blog.title" loading="lazy" /> }
                   @else { <div class="feat-item-noimg">{{ blog.title.charAt(0).toUpperCase() }}</div> }
                 </div>
                 <div class="feat-item-body">
@@ -1279,7 +1287,7 @@
             </div>
             <div class="card-thumb-wrap">
               @if (blog.featuredImage) {
-                <img itemprop="image" [src]="blog.featuredImage" [alt]="blog.title" loading="lazy" decoding="async"
+                <img itemprop="image" [src]="blog.featuredImage | cldResize:240" [alt]="blog.title" loading="lazy" decoding="async"
                      width="200" height="140" (error)="blog.featuredImage = null" />
               } @else {
                 <div class="card-no-thumb" role="img" [attr.aria-label]="blog.title">
@@ -1321,7 +1329,11 @@
                       (click)="toggleBookmark(blog._id, $event)"
                       [attr.aria-label]="(isBookmarked(blog._id) ? 'Remove bookmark' : 'Bookmark') + ': ' + blog.title"
                       [attr.aria-pressed]="isBookmarked(blog._id)">
-                <span aria-hidden="true">{{ isBookmarked(blog._id) ? '🔖' : '📑' }}</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"
+                     [attr.fill]="isBookmarked(blog._id) ? 'currentColor' : 'none'">
+                  <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/>
+                </svg>
               </button>
               <a class="read-btn" [attr.href]="'/blog/' + (blog.slug || blog._id)"
                  (click)="$event.preventDefault(); readBlog(blog.slug || blog._id)"
@@ -1381,19 +1393,25 @@
 
       <!-- Active Challenge -->
       @if (activeChallenge()) {
-        <a class="v2-sb-challenge" routerLink="/challenges" aria-label="Join the active writing challenge">
-          <div class="v2-sb-challenge-label">🏆 Active Challenge</div>
+        <a class="v2-sb-challenge" routerLink="/challenges" aria-label="View the writing challenge">
+          <div class="v2-sb-challenge-label">{{ activeChallenge()!.winnersDeclared ? '🏆 Winners Announced' : '🏆 Active Challenge' }}</div>
           <div class="v2-sb-challenge-title">{{ activeChallenge()!.title }}</div>
           @if (activeChallenge()!.prize) {
             <div class="v2-sb-challenge-prize">🏅 {{ activeChallenge()!.prize }}</div>
           }
-          <div class="v2-sb-challenge-footer">
-            <div class="v2-sb-challenge-days-wrap">
-              <span class="v2-sb-challenge-days">{{ challengeDaysLeft(activeChallenge()!.endDate) }}</span>
-              <span class="v2-sb-challenge-days-label">days left</span>
+          @if (activeChallenge()!.winnersDeclared) {
+            <div class="v2-sb-challenge-footer">
+              <span class="v2-sb-challenge-cta">View Winners</span>
             </div>
-            <span class="v2-sb-challenge-cta">Participate Now</span>
-          </div>
+          } @else {
+            <div class="v2-sb-challenge-footer">
+              <div class="v2-sb-challenge-days-wrap">
+                <span class="v2-sb-challenge-days">{{ challengeDaysLeft(activeChallenge()!.endDate) }}</span>
+                <span class="v2-sb-challenge-days-label">days left</span>
+              </div>
+              <span class="v2-sb-challenge-cta">Participate Now</span>
+            </div>
+          }
         </a>
       }
 

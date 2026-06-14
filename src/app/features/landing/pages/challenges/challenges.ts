@@ -22,6 +22,7 @@ export interface Challenge {
   endDate:         string;
   isActive:        boolean;
   submissionCount: number;
+  winnersDeclared: boolean;
   createdBy:       { name: string; avatar?: string } | null;
 }
 
@@ -36,6 +37,8 @@ interface LeaderboardPost {
   commentsCount: number;
   createdAt:     string;
   challengeId:   string | null;
+  isFeaturedWinner:   boolean;
+  featuredWinnerRank: number | null;
   user: { name: string; avatar?: string; karma?: number } | null;
 }
 
@@ -249,6 +252,10 @@ export class ChallengesPage implements OnInit {
   // ── Helpers ────────────────────────────────────────────────────────────────
   daysLeft(endDate: string): number {
     return Math.max(0, Math.ceil((new Date(endDate).getTime() - Date.now()) / 86_400_000));
+  }
+
+  winnerRankLabel(rank: number): string {
+    return rank === 1 ? '🥇 1st Place' : rank === 2 ? '🥈 2nd Place' : '🥉 3rd Place';
   }
 
   navigateToBlog(post: LeaderboardPost): void {

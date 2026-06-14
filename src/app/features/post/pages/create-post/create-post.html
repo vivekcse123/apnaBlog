@@ -523,6 +523,55 @@
 
       }
 
+      <!-- ── FAQ Builder (optional, blog posts only) ── -->
+      @if (postType() === 'blog') {
+      <div class="form-field mcq-builder">
+        <div class="form-section-label">
+          <span class="form-section-icon">💬</span> FAQs (optional)
+          <span class="field-hint-text">Add common reader questions — shown at the end of the article and eligible for Google's FAQ rich results</span>
+        </div>
+
+        @if (faqs().length === 0) {
+          <div class="mcq-empty-state">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            <p>No FAQs yet. Click "Add FAQ" to add one.</p>
+          </div>
+        }
+
+        @for (f of faqs(); track $index; let fi = $index) {
+          <div class="mcq-question-card">
+            <div class="mcq-q-header">
+              <span class="mcq-q-num">Q{{ fi + 1 }}</span>
+              <button type="button" class="mcq-remove-btn" (click)="removeFaq(fi)" title="Remove FAQ">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+
+            <textarea class="mcq-question-input"
+              placeholder="Question…"
+              rows="2"
+              [value]="f.question"
+              (input)="updateFaqQuestion(fi, $any($event.target).value)"></textarea>
+
+            <textarea class="mcq-question-input"
+              placeholder="Answer…"
+              rows="3"
+              [value]="f.answer"
+              (input)="updateFaqAnswer(fi, $any($event.target).value)"></textarea>
+          </div>
+        }
+
+        @if (faqs().length < 10) {
+          <button type="button" class="mcq-add-question-btn" (click)="addFaq()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add FAQ
+          </button>
+        }
+      </div>
+      }
+
       <!-- ── Categories ── -->
       <div class="form-field">
         <div class="form-section-label">
