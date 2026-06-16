@@ -1,0 +1,164 @@
+/* ── Overlay ── */
+.cc-backdrop {
+  position: fixed; inset: 0; background: rgba(0,0,0,.55);
+  z-index: 1000; backdrop-filter: blur(2px);
+}
+
+.cc-sheet {
+  position: fixed; inset: 0; z-index: 1001;
+  display: flex; flex-direction: column;
+  width: min(600px, 100vw); max-height: 100dvh;
+  margin: auto;
+  background: var(--bg-card, #fff);
+  border-radius: 16px;
+  box-shadow: 0 24px 60px rgba(0,0,0,.25);
+  overflow: hidden;
+}
+
+/* ── Header ── */
+.cc-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 20px;
+  background: linear-gradient(135deg, #185a9d, #43cea2);
+  flex-shrink: 0;
+}
+.cc-header-left { display: flex; align-items: center; gap: 12px; }
+.cc-header-icon {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: rgba(255,255,255,.2);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.cc-title { margin: 0; font-size: 16px; font-weight: 700; color: #fff; }
+.cc-sub { margin: 2px 0 0; font-size: 12px; color: rgba(255,255,255,.8); }
+.cc-close-btn {
+  background: rgba(255,255,255,.15); border: none; border-radius: 8px;
+  width: 32px; height: 32px; cursor: pointer; color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s;
+}
+.cc-close-btn:hover { background: rgba(255,255,255,.25); }
+
+/* ── Body ── */
+.cc-body {
+  flex: 1; overflow-y: auto; padding: 20px;
+  display: flex; flex-direction: column; gap: 14px;
+}
+
+/* ── Section labels ── */
+.cc-section-label {
+  font-size: 11px; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--text-muted, #94a3b8);
+  margin-bottom: -6px; margin-top: 4px;
+}
+.cc-section-label:first-child { margin-top: 0; }
+
+/* ── Row ── */
+.cc-row { display: flex; gap: 12px; }
+.cc-field { display: flex; flex-direction: column; gap: 5px; }
+.cc-field--half { flex: 1; }
+
+/* ── Labels & inputs ── */
+.cc-label { font-size: 12.5px; font-weight: 600; color: var(--text-primary, #1e293b); }
+.cc-req { color: #ef4444; margin-left: 2px; }
+.cc-opt { font-weight: 400; color: var(--text-muted, #94a3b8); font-size: 11px; }
+
+.cc-input, .cc-textarea, .cc-select {
+  padding: 9px 12px; border-radius: 8px;
+  border: 1.5px solid var(--border-soft, #e2e8f0);
+  background: var(--bg-input, #f8fafc);
+  font-size: 13.5px; color: var(--text-primary, #1e293b);
+  font-family: inherit; outline: none; width: 100%;
+  transition: border-color .15s, box-shadow .15s;
+  box-sizing: border-box;
+}
+.cc-input:focus, .cc-textarea:focus, .cc-select:focus {
+  border-color: #185a9d;
+  box-shadow: 0 0 0 3px rgba(24,90,157,.1);
+}
+.cc-textarea { resize: vertical; min-height: 72px; }
+.cc-select { cursor: pointer; }
+
+.cc-input-wrap { position: relative; }
+.cc-input-icon {
+  position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+  color: var(--text-muted, #94a3b8); pointer-events: none;
+}
+.cc-input--icon { padding-left: 34px; }
+
+.cc-field-hint { font-size: 11px; color: var(--text-muted, #94a3b8); text-align: right; }
+.cc-error { font-size: 11.5px; color: #ef4444; }
+.cc-server-error {
+  font-size: 13px; color: #ef4444;
+  background: rgba(239,68,68,.06); border-radius: 8px;
+  padding: 10px 14px; border: 1px solid rgba(239,68,68,.2); margin: 0;
+}
+
+/* ── CTA presets ── */
+.cc-cta-presets { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.cc-preset-chip {
+  padding: 4px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 500;
+  border: 1.5px solid var(--border-soft, #e2e8f0);
+  background: var(--bg-card, #fff); color: var(--text-secondary, #475569);
+  cursor: pointer; transition: all .15s;
+}
+.cc-preset-chip:hover { border-color: #185a9d; color: #185a9d; }
+.cc-preset-chip--on { border-color: #185a9d; background: rgba(24,90,157,.08); color: #185a9d; font-weight: 600; }
+
+/* ── Disclaimer ── */
+.cc-disclaimer {
+  display: flex; align-items: flex-start; gap: 8px;
+  font-size: 12px; color: var(--text-muted, #64748b);
+  background: var(--bg-subtle, #f8fafc); border-radius: 8px;
+  padding: 10px 12px; border: 1px solid var(--border-soft, #e2e8f0);
+}
+.cc-disclaimer svg { flex-shrink: 0; margin-top: 1px; }
+
+/* ── Actions ── */
+.cc-actions {
+  display: flex; gap: 10px; justify-content: flex-end;
+  padding-top: 4px;
+}
+.cc-cancel-btn {
+  padding: 9px 18px; border-radius: 8px; font-size: 13.5px; font-weight: 600;
+  border: 1.5px solid var(--border-soft, #e2e8f0);
+  background: transparent; color: var(--text-secondary, #475569); cursor: pointer;
+  transition: all .15s;
+}
+.cc-cancel-btn:hover { border-color: #94a3b8; }
+.cc-primary-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 9px 20px; border-radius: 8px; font-size: 13.5px; font-weight: 700;
+  background: linear-gradient(135deg, #185a9d, #43cea2);
+  color: #fff; border: none; cursor: pointer;
+  transition: opacity .15s, transform .1s;
+  box-shadow: 0 4px 14px rgba(24,90,157,.3);
+}
+.cc-primary-btn:hover:not(:disabled) { opacity: .9; }
+.cc-primary-btn:active:not(:disabled) { transform: scale(.98); }
+.cc-primary-btn:disabled { opacity: .5; cursor: not-allowed; }
+.cc-spin {
+  width: 14px; height: 14px; border-radius: 50%;
+  border: 2px solid rgba(255,255,255,.4); border-top-color: #fff;
+  animation: cc-spin .7s linear infinite;
+}
+@keyframes cc-spin { to { transform: rotate(360deg); } }
+
+/* ── Success ── */
+.cc-success {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 14px;
+  padding: 40px 24px; text-align: center;
+}
+.cc-success-icon {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: rgba(34,197,94,.1);
+  display: flex; align-items: center; justify-content: center;
+}
+.cc-success-title { margin: 0; font-size: 20px; font-weight: 700; }
+.cc-success-msg { margin: 0; font-size: 14px; color: var(--text-secondary, #475569); max-width: 380px; line-height: 1.6; }
+
+/* ── Mobile ── */
+@media (max-width: 640px) {
+  .cc-sheet { border-radius: 16px 16px 0 0; margin: auto 0 0; max-height: 92dvh; }
+  .cc-row { flex-direction: column; }
+}

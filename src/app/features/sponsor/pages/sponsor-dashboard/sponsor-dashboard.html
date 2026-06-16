@@ -8,17 +8,17 @@
     </div>
     <div class="sp-header-actions">
       <button class="sp-btn-write" (click)="showCreateModal.set(true)" type="button">
-        <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
-          <path d="M2 13h3l8-8-3-3L2 10v3z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <path d="M15 15l-2 5L9 9l11 4-5 2z"/>
         </svg>
-        Write Blog
+        New Campaign
       </button>
       <button class="sp-btn-short" (click)="showShortsModal.set(true)" type="button">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
           <path d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.9L15 14v-4z"/>
           <rect x="3" y="6" width="12" height="12" rx="2"/>
         </svg>
-        Upload Short
+        Video Ad
       </button>
       <a class="sp-home-link" routerLink="/">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
@@ -45,7 +45,7 @@
   <!-- ── Summary stat cards ── -->
   @if (isLoading()) {
     <div class="sp-skeletons">
-      @for (i of [1,2,3,4]; track i) {
+      @for (i of [1,2,3,4,5]; track i) {
         <div class="sp-skeleton-card"></div>
       }
     </div>
@@ -60,20 +60,7 @@
         <div class="sp-stat-body">
           <span class="sp-stat-label">Total Campaigns</span>
           <span class="sp-stat-value">{{ totalStats()!.total }}</span>
-          <span class="sp-stat-chip" style="color:#185a9d;background:rgba(24,90,157,.08)">Blogs + Shorts</span>
-        </div>
-      </div>
-
-      <div class="sp-stat-card">
-        <div class="sp-stat-icon" style="background:rgba(22,163,74,.12)">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-5"/>
-          </svg>
-        </div>
-        <div class="sp-stat-body">
-          <span class="sp-stat-label">Active Now</span>
-          <span class="sp-stat-value" style="color:#16a34a">{{ totalStats()!.active }}</span>
-          <span class="sp-stat-chip" style="color:#16a34a;background:rgba(22,163,74,.08)">Live</span>
+          <span class="sp-stat-chip" style="color:#185a9d;background:rgba(24,90,157,.08)">{{ totalStats()!.active }} Active</span>
         </div>
       </div>
 
@@ -87,6 +74,19 @@
           <span class="sp-stat-label">Total Views</span>
           <span class="sp-stat-value" style="color:#43cea2">{{ formatCount(totalStats()!.totalViews) }}</span>
           <span class="sp-stat-chip" style="color:#43cea2;background:rgba(67,206,162,.08)">Impressions</span>
+        </div>
+      </div>
+
+      <div class="sp-stat-card">
+        <div class="sp-stat-icon" style="background:rgba(99,102,241,.12)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 15l-2 5L9 9l11 4-5 2z"/>
+          </svg>
+        </div>
+        <div class="sp-stat-body">
+          <span class="sp-stat-label">Total Link Clicks</span>
+          <span class="sp-stat-value" style="color:#6366f1">{{ formatCount(totalStats()!.totalClicks) }}</span>
+          <span class="sp-stat-chip" style="color:#6366f1;background:rgba(99,102,241,.08)">CTA Clicks</span>
         </div>
       </div>
 
@@ -112,7 +112,7 @@
         <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
         <polyline points="14 2 14 8 20 8"/>
       </svg>
-      Sponsored Blogs
+      Article Campaigns
       @if (blogStats()?.total) {
         <span class="sp-tab-count">{{ blogStats()!.total }}</span>
       }
@@ -122,10 +122,20 @@
         <path d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.9L15 14v-4z"/>
         <rect x="3" y="6" width="12" height="12" rx="2"/>
       </svg>
-      Sponsored Shorts
+      Video Campaigns
       @if (shortStats()?.total) {
         <span class="sp-tab-count">{{ shortStats()!.total }}</span>
       }
+    </button>
+
+    <!-- Export button aligned right -->
+    <div class="sp-tab-spacer"></div>
+    <button class="sp-export-btn" type="button" (click)="exportCsv(activeTab())"
+            title="Export analytics as CSV">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+      Export CSV
     </button>
   </div>
 
@@ -139,8 +149,8 @@
           <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
           <polyline points="14 2 14 8 20 8"/>
         </svg>
-        <p>No blogs yet</p>
-        <span class="sp-sub">Write your first blog using the button above</span>
+        <p>No article campaigns yet</p>
+        <span class="sp-sub">Click <strong>New Campaign</strong> above to submit your first ad</span>
       </div>
     } @else {
       <div class="sp-card">
@@ -148,10 +158,13 @@
           <table class="sp-table">
             <thead>
               <tr>
-                <th>Blog</th>
-                <th>Published</th>
-                <th>Sponsored</th>
-                <th>Performance</th>
+                <th>Campaign</th>
+                <th>Status</th>
+                <th>Views</th>
+                <th>Clicks</th>
+                <th>CTR</th>
+                <th>Last Click</th>
+                <th>Started</th>
                 <th>Expiry</th>
               </tr>
             </thead>
@@ -167,31 +180,67 @@
                       }
                       <div class="sp-content-info">
                         <span class="sp-content-title">{{ b.title }}</span>
-                        <span class="sp-content-meta">{{ (b.categories ?? [])[0] }}</span>
+                        <span class="sp-content-meta">
+                          {{ (b.categories ?? [])[0] }}
+                          @if (b.sponsorPriority) {
+                            · <span [style.color]="priorityColor(b.sponsorPriority)">{{ priorityLabel(b.sponsorPriority) }}</span>
+                          }
+                        </span>
                       </div>
                     </a>
                   </td>
-                  <td data-label="Published">
-                    <span class="sp-status" [class.sp-status--active]="b.status === 'published'" [class.sp-status--pending]="b.status === 'draft'">
-                      {{ b.status === 'published' ? '🟢 Live' : '📝 Draft' }}
-                    </span>
-                  </td>
-                  <td data-label="Sponsored">
+                  <td data-label="Status">
                     @if (b.isSponsored) {
                       <span class="sp-status sp-status--active">⭐ Sponsored</span>
                     } @else {
-                      <span class="sp-status">— Not yet</span>
+                      <span class="sp-status sp-status--pending">📝 Pending</span>
+                    }
+                    @if (b.status === 'published') {
+                      <span class="sp-status sp-status--active" style="margin-top:4px">🟢 Live</span>
                     }
                   </td>
-                  <td data-label="Performance">
+                  <td data-label="Views">
                     <div class="sp-metrics">
                       <span>👁 {{ formatCount(b.views) }}</span>
                       <span>❤️ {{ formatCount(b.likesCount) }}</span>
-                      <span>💬 {{ formatCount(b.commentsCount) }}</span>
                     </div>
                   </td>
-                  <td data-label="Expiry" class="sp-td-date">
-                    {{ b.sponsoredUntil ? formatDate(b.sponsoredUntil) : '—' }}
+                  <td data-label="Clicks">
+                    @if (b.clickAnalytics) {
+                      <div class="sp-metrics">
+                        <span>🖱 {{ formatCount(b.clickAnalytics.totalClicks) }}</span>
+                        <span class="sp-unique">{{ formatCount(b.clickAnalytics.uniqueClicks) }} uniq</span>
+                      </div>
+                    } @else {
+                      <span class="sp-na">—</span>
+                    }
+                  </td>
+                  <td data-label="CTR">
+                    @if (b.clickAnalytics) {
+                      <span class="sp-ctr" [style.color]="ctrColor(b.clickAnalytics.ctr)">
+                        {{ b.clickAnalytics.ctr.toFixed(1) }}%
+                      </span>
+                    } @else {
+                      <span class="sp-na">—</span>
+                    }
+                  </td>
+                  <td data-label="Last Click">
+                    @if (b.clickAnalytics?.lastClickAt) {
+                      <span class="sp-last-click">{{ formatDate(b.clickAnalytics!.lastClickAt!) }}</span>
+                    } @else {
+                      <span class="sp-na">No clicks yet</span>
+                    }
+                  </td>
+                  <td data-label="Started" class="sp-td-date">
+                    {{ formatDate(b.createdAt) }}
+                  </td>
+                  <td data-label="Expiry">
+                    <span class="sp-days-left" [style.color]="daysLeftColor(b)">
+                      {{ daysLeftLabel(b) }}
+                    </span>
+                    @if (b.sponsoredUntil) {
+                      <span class="sp-expiry-date">{{ formatDate(b.sponsoredUntil) }}</span>
+                    }
                   </td>
                 </tr>
               }
@@ -212,8 +261,8 @@
           <path d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.9L15 14v-4z"/>
           <rect x="3" y="6" width="12" height="12" rx="2"/>
         </svg>
-        <p>No shorts yet</p>
-        <span class="sp-sub">Upload your first short using the button above</span>
+        <p>No video campaigns yet</p>
+        <span class="sp-sub">Click <strong>Video Ad</strong> above to submit your first sponsored short</span>
       </div>
     } @else {
       <div class="sp-card">
@@ -222,9 +271,12 @@
             <thead>
               <tr>
                 <th>Short</th>
-                <th>Review</th>
-                <th>Sponsored</th>
-                <th>Performance</th>
+                <th>Status</th>
+                <th>Views</th>
+                <th>Clicks</th>
+                <th>CTR</th>
+                <th>Last Click</th>
+                <th>Campaign</th>
                 <th>Expiry</th>
               </tr>
             </thead>
@@ -246,29 +298,58 @@
                       </div>
                     </div>
                   </td>
-                  <td data-label="Review">
+                  <td data-label="Status">
                     @if (s.status === 'pending') {
                       <span class="sp-status sp-status--pending">⏳ Under Review</span>
                     } @else {
                       <span class="sp-status sp-status--active">✅ Approved</span>
                     }
-                  </td>
-                  <td data-label="Sponsored">
                     @if (s.isSponsored) {
-                      <span class="sp-status sp-status--active">⭐ Sponsored</span>
-                    } @else {
-                      <span class="sp-status">— Not yet</span>
+                      <span class="sp-status sp-status--active" style="margin-top:4px">⭐ Sponsored</span>
                     }
                   </td>
-                  <td data-label="Performance">
+                  <td data-label="Views">
                     <div class="sp-metrics">
                       <span>👁 {{ formatCount(s.views) }}</span>
                       <span>❤️ {{ formatCount(s.likesCount) }}</span>
-                      <span>💬 {{ formatCount(s.commentsCount) }}</span>
                     </div>
                   </td>
-                  <td data-label="Expiry" class="sp-td-date">
-                    {{ s.sponsoredUntil ? formatDate(s.sponsoredUntil) : '—' }}
+                  <td data-label="Clicks">
+                    @if (s.clickAnalytics) {
+                      <div class="sp-metrics">
+                        <span>🖱 {{ formatCount(s.clickAnalytics.totalClicks) }}</span>
+                        <span class="sp-unique">{{ formatCount(s.clickAnalytics.uniqueClicks) }} uniq</span>
+                      </div>
+                    } @else {
+                      <span class="sp-na">—</span>
+                    }
+                  </td>
+                  <td data-label="CTR">
+                    @if (s.clickAnalytics) {
+                      <span class="sp-ctr" [style.color]="ctrColor(s.clickAnalytics.ctr)">
+                        {{ s.clickAnalytics.ctr.toFixed(1) }}%
+                      </span>
+                    } @else {
+                      <span class="sp-na">—</span>
+                    }
+                  </td>
+                  <td data-label="Last Click">
+                    @if (s.clickAnalytics?.lastClickAt) {
+                      <span class="sp-last-click">{{ formatDate(s.clickAnalytics!.lastClickAt!) }}</span>
+                    } @else {
+                      <span class="sp-na">No clicks yet</span>
+                    }
+                  </td>
+                  <td data-label="Started" class="sp-td-date">
+                    {{ formatDate(s.createdAt) }}
+                  </td>
+                  <td data-label="Expiry">
+                    <span class="sp-days-left" [style.color]="daysLeftColor(s)">
+                      {{ daysLeftLabel(s) }}
+                    </span>
+                    @if (s.sponsoredUntil) {
+                      <span class="sp-expiry-date">{{ formatDate(s.sponsoredUntil) }}</span>
+                    }
                   </td>
                 </tr>
               }
@@ -283,10 +364,10 @@
 </div>
 
 @if (showCreateModal()) {
-  <app-create-blog
+  <app-create-campaign
     (close)="showCreateModal.set(false)"
-    (postCreated)="showCreateModal.set(false)">
-  </app-create-blog>
+    (launched)="showCreateModal.set(false)">
+  </app-create-campaign>
 }
 
 @if (showShortsModal()) {

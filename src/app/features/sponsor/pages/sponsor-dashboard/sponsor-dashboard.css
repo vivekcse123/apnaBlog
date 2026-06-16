@@ -1,3 +1,21 @@
+/* ── New analytics elements ── */
+.sp-tab-spacer    { flex: 1; }
+.sp-export-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--surface); color: var(--text-secondary); font-size: .8rem;
+  font-weight: 500; cursor: pointer; transition: background .15s, color .15s;
+  white-space: nowrap;
+}
+.sp-export-btn:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+.sp-ctr { font-weight: 700; font-size: .88rem; }
+.sp-na  { color: var(--text-muted); font-size: .8rem; }
+.sp-unique { font-size: .75rem; color: var(--text-muted); }
+.sp-days-left { display: block; font-size: .82rem; font-weight: 600; }
+.sp-expiry-date { display: block; font-size: .72rem; color: var(--text-muted); margin-top: 2px; }
+.sp-last-click { font-size: .8rem; color: var(--text-secondary); }
+
 /* ── Page shell ── */
 .sp-page {
   width: 92%;
