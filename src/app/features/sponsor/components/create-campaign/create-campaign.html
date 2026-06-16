@@ -75,7 +75,7 @@
       <div class="cc-field">
         <label class="cc-label">What are you promoting? <span class="cc-req">*</span></label>
         <textarea class="cc-textarea" formControlName="pitch"
-                  placeholder="Describe your product, offer, or service in 1–3 sentences. This appears as your ad description." rows="3" maxlength="280"></textarea>
+                  placeholder="Describe your product, offer, or service in 1–3 sentences. This appears as your ad description." rows="2" maxlength="280"></textarea>
         <div class="cc-field-hint">{{ form.get('pitch')?.value?.length ?? 0 }}/280</div>
         @if (form.get('pitch')?.invalid && form.get('pitch')?.touched) {
           <small class="cc-error">Please describe your campaign (min 30 characters)</small>
@@ -121,8 +121,8 @@
 
       <!-- Disclaimer -->
       <div class="cc-disclaimer">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        All campaigns are reviewed before going live. Your ad will display a <strong>Sponsored</strong> badge and will be clearly separated from editorial content.
+        <svg class="cc-disclaimer-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span>All campaigns are reviewed before going live. Your ad will display a <strong>Sponsored</strong> badge and will be clearly separated from editorial content.</span>
       </div>
 
       @if (errorMsg()) {
