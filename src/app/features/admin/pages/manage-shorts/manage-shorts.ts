@@ -52,11 +52,12 @@ export class ManageShorts implements OnInit {
   togglingId = signal<string | null>(null);
 
   // ── Edit modal ─────────────────────────────────────────────────────────────
-  editShort    = signal<VideoShort | null>(null);
-  editTitle    = '';
-  editCaption  = '';
-  editCategory = '';
-  isSaving     = signal(false);
+  editShort          = signal<VideoShort | null>(null);
+  editTitle          = '';
+  editCaption        = '';
+  editCategory       = '';
+  editLinkedPostSlug = '';
+  isSaving           = signal(false);
 
   private search$ = new Subject<string>();
 
@@ -179,9 +180,10 @@ export class ManageShorts implements OnInit {
 
   openEdit(s: VideoShort): void {
     this.editShort.set(s);
-    this.editTitle    = s.title;
-    this.editCaption  = s.caption ?? '';
-    this.editCategory = s.category;
+    this.editTitle          = s.title;
+    this.editCaption        = s.caption ?? '';
+    this.editCategory       = s.category;
+    this.editLinkedPostSlug = s.linkedPostSlug ?? '';
   }
 
   closeEdit(): void { this.editShort.set(null); }
@@ -192,9 +194,10 @@ export class ManageShorts implements OnInit {
     if (!this.editTitle.trim()) { this.toast.show('Title is required.', 'error'); return; }
     this.isSaving.set(true);
     this.service.updateShort(s._id, {
-      title:    this.editTitle.trim(),
-      caption:  this.editCaption.trim() || undefined,
-      category: this.editCategory,
+      title:          this.editTitle.trim(),
+      caption:        this.editCaption.trim() || undefined,
+      category:       this.editCategory,
+      linkedPostSlug: this.editLinkedPostSlug.trim() || undefined,
     }).subscribe({
       next: res => {
         this.shorts.update(list => list.map(x => x._id === s._id ? { ...x, ...res.data } : x));

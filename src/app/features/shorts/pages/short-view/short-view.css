@@ -216,6 +216,28 @@
   min-height: 100px;
 }
 
+.sv-read-full-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  max-width: 420px;
+  margin: 20px auto 0;
+  padding: 14px 20px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #1e40af, #2563eb);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+  text-align: center;
+  box-shadow: 0 4px 16px rgba(37,99,235,.35);
+  transition: transform .15s, box-shadow .15s;
+}
+.sv-read-full-btn:active { transform: scale(.98); box-shadow: 0 2px 8px rgba(37,99,235,.25); }
+.sv-read-full-icon { font-size: 18px; }
+.sv-read-full-arrow { flex-shrink: 0; }
+
 .sv-feed-btn {
   display: block;
   max-width: 420px;

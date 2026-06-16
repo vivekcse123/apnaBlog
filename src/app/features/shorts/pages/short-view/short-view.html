@@ -96,6 +96,15 @@
         </div>
       }
 
+      <!-- ── Linked article CTA ── -->
+      @if (s.linkedPostSlug) {
+        <a class="sv-read-full-btn" [routerLink]="['/blog', s.linkedPostSlug]">
+          <span class="sv-read-full-icon">📖</span>
+          Read Full Guide
+          <svg class="sv-read-full-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
+      }
+
       <!-- ── CTA to open in feed ── -->
       <a class="sv-feed-btn" [routerLink]="['/shorts']" [fragment]="s._id">
         Watch more Shorts ↗

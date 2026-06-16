@@ -24,6 +24,7 @@ export interface CreateShortPayload {
   youtubeId?:   string;
   thumbnailUrl?: string;
   duration?:    number;
+  linkedPostSlug?:        string;
   isSponsored?:           boolean;
   sponsoredDays?:         number;
   sponsoredExpiryAction?: 'delete' | 'keep';
@@ -175,7 +176,7 @@ export class ShortsService {
     );
   }
 
-  updateShort(id: string, data: { title: string; caption?: string; category: string }): Observable<{ status: number; data: VideoShort }> {
+  updateShort(id: string, data: { title: string; caption?: string; category: string; linkedPostSlug?: string }): Observable<{ status: number; data: VideoShort }> {
     return this.http.patch<{ status: number; data: VideoShort }>(`${this.endpoint}/${id}`, data);
   }
 

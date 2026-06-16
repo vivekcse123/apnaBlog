@@ -304,6 +304,14 @@
             </a>
           }
 
+          <!-- Read full article CTA -->
+          @if (short.linkedPostSlug) {
+            <a class="sf-read-full-btn" [routerLink]="['/blog', short.linkedPostSlug]" (click)="$event.stopPropagation()">
+              Read Full Guide
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </a>
+          }
+
           <!-- Liked by -->
           @if (short.likesCount > 0) {
             <button class="sf-liked-by" (click)="openLikes(short, $event)">

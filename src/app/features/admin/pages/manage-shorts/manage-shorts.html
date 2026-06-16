@@ -529,6 +529,13 @@
             }
           </select>
         </div>
+        <div class="ms-edit-field">
+          <label>Linked Article Slug <span class="ms-opt">(optional)</span></label>
+          <input id="edit-linked-slug" name="edit-linked-slug" type="text" class="ms-edit-input"
+                 [(ngModel)]="editLinkedPostSlug"
+                 placeholder="e.g. angular-interview-questions-guide" maxlength="120" />
+          <small class="ms-edit-hint">Adds a "Read Full Guide →" button on this short</small>
+        </div>
       </div>
       <div class="ms-modal-actions">
         <button class="ms-modal-cancel" [disabled]="isSaving()" (click)="closeEdit()">Cancel</button>

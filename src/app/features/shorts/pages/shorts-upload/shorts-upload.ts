@@ -76,9 +76,10 @@ export class ShortsUpload {
   ];
 
   form = this.fb.group({
-    title:   ['', [Validators.required, Validators.minLength(3), Validators.maxLength(80)]],
-    caption: ['', Validators.maxLength(200)],
-    category:['', Validators.required],
+    title:          ['', [Validators.required, Validators.minLength(3), Validators.maxLength(80)]],
+    caption:        ['', Validators.maxLength(200)],
+    category:       ['', Validators.required],
+    linkedPostSlug: ['', Validators.maxLength(120)],
   });
 
   // ── File pick ─────────────────────────────────────────────────────────────
@@ -338,16 +339,17 @@ export class ShortsUpload {
     if (this.form.invalid || this.isSubmitting()) return;
     if (!this.uploadedUrl()) { this.errorMsg.set('Video not yet uploaded.'); return; }
 
-    const { title, caption, category } = this.form.value;
+    const { title, caption, category, linkedPostSlug } = this.form.value;
 
     const payload: CreateShortPayload = {
-      title:        title!,
-      caption:      caption ?? undefined,
-      category:     category!,
-      videoType:    'upload',
-      videoUrl:     this.uploadedUrl(),
-      thumbnailUrl: this.thumbUrl() || undefined,
-      duration:     this.uploadedDuration() ?? undefined,
+      title:          title!,
+      caption:        caption ?? undefined,
+      category:       category!,
+      videoType:      'upload',
+      videoUrl:       this.uploadedUrl(),
+      thumbnailUrl:   this.thumbUrl() || undefined,
+      duration:       this.uploadedDuration() ?? undefined,
+      linkedPostSlug: linkedPostSlug?.trim() || undefined,
     };
 
     this.isSubmitting.set(true);

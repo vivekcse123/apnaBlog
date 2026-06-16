@@ -34,6 +34,7 @@ export interface VideoShort {
   user: { _id: string; name: string; avatar?: string; role?: string };
   createdAt: Date;
   status:                 'published' | 'pending';
+  linkedPostSlug?:        string | null;
   isSponsored?:           boolean;
   sponsoredUntil?:        string | null;
   sponsoredExpiryAction?: 'delete' | 'keep' | null;

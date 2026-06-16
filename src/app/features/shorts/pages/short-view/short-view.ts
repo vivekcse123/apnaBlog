@@ -95,9 +95,11 @@ export class ShortView implements OnInit, AfterViewInit {
       ?? (s.youtubeId ? `https://img.youtube.com/vi/${s.youtubeId}/mqdefault.jpg` : '');
     const url = `https://apnainsights.com/shorts/${s._id}`;
 
+    // Shorts without a caption have only a title — thin content that shouldn't be indexed.
+    const hasContent = s.caption && s.caption.trim().split(/\s+/).filter(Boolean).length >= 10;
     this.titleSvc.setTitle(title);
     this.meta.updateTag({ name: 'description',         content: description });
-    this.meta.updateTag({ name: 'robots',              content: 'index, follow' });
+    this.meta.updateTag({ name: 'robots',              content: hasContent ? 'index, follow' : 'noindex, follow' });
     this.meta.updateTag({ property: 'og:title',        content: title });
     this.meta.updateTag({ property: 'og:description',  content: description });
     this.meta.updateTag({ property: 'og:url',          content: url });

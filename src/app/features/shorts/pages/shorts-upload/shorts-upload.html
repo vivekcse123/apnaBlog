@@ -282,6 +282,16 @@
         }
       </div>
 
+      <!-- Linked article (optional) -->
+      <div class="up-field">
+        <label class="up-label">
+          Link to Full Article <span class="up-opt">optional</span>
+        </label>
+        <input type="text" class="up-input" formControlName="linkedPostSlug"
+               placeholder="e.g. angular-interview-questions-guide" maxlength="120" />
+        <div class="up-field-hint">Enter the article's URL slug — adds a "Read Full Guide →" button on your short</div>
+      </div>
+
       @if (errorMsg()) { <p class="up-error">{{ errorMsg() }}</p> }
 
       <button type="submit" class="up-primary-btn up-submit-btn"
