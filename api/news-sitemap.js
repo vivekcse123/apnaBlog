@@ -30,9 +30,16 @@ export default async function handler(req, res) {
     // the whole sitemap being rejected by Google News.
     const NEWS_CATS = new Set(['News', 'Sports', 'Business', 'Entertainment', 'Health', 'Science', 'Technology']);
 
+    // Exclude non-English posts — submitting Hindi/regional posts as language:en
+    // causes Google News language mismatch and risks the entire sitemap being flagged.
+    const DEVANAGARI = /[ऀ-ॿ]/;
+    const REGIONAL   = /[஀-௿ఀ-౿ഀ-ൿಀ-೿]/;
+
     const recentPosts = posts.filter(p =>
       p.status === 'published' &&
       p.title &&
+      !DEVANAGARI.test(p.title) &&
+      !REGIONAL.test(p.title) &&
       new Date(p.createdAt).getTime() >= threeDaysAgo &&
       p.categories?.some(c => NEWS_CATS.has(c))
     );
@@ -58,7 +65,7 @@ export default async function handler(req, res) {
       </news:publication>
       <news:publication_date>${date}</news:publication_date>
       <news:title>${escape(post.title)}</news:title>
-      <news:genres>Blog, UserGenerated</news:genres>${keywords ? `
+      <news:genres>Blog</news:genres>${keywords ? `
       <news:keywords>${escape(keywords)}</news:keywords>` : ''}
     </news:news>
   </url>`;

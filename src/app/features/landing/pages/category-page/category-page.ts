@@ -138,6 +138,7 @@ export class CategoryPage implements OnInit, OnDestroy {
     return this.allPosts()
       .filter(p =>
         (p.status === 'published') &&
+        !p.isSponsored &&
         p.categories?.some(c => c.toLowerCase() === name) &&
         this._hasQualityDescription(p.description)
       )
@@ -250,7 +251,7 @@ export class CategoryPage implements OnInit, OnDestroy {
   private setMeta(name: string): void {
     const url   = `${environment.siteUrl}/category/${name.toLowerCase()}`;
     const info  = CATEGORY_DESCRIPTIONS[name];
-    const desc  = info?.description ?? `Read the latest ${name} stories, blogs, and insights from real writers on ApnaInsights. Community-driven content on ${name}.`;
+    const desc  = info?.description ?? `Read the latest ${name} guides and insights from verified contributors on ApnaInsights. Practical knowledge on ${name}.`;
     const intro = info?.intro ?? '';
 
     this.categoryIntro.set(intro);

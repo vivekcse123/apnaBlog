@@ -517,6 +517,37 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  // ── Sponsor CTA click tracking ────────────────────────────────────────────
+  trackSponsorClick(postId: string, url: string): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    const payload = JSON.stringify({
+      postId,
+      url,
+      referrer:    this.document.referrer || '',
+      deviceType:  /Mobi|Android/i.test(navigator.userAgent) ? 'mobile' : 'desktop',
+      visitorId:   this._getVisitorId(),
+    });
+    // sendBeacon is fire-and-forget — guaranteed delivery even as the page navigates away.
+    // Falls back to a silent fetch on unsupported browsers.
+    const endpoint = `${this.apiBase}/sponsorship/track-click`;
+    if (navigator.sendBeacon) {
+      navigator.sendBeacon(endpoint, new Blob([payload], { type: 'application/json' }));
+    } else {
+      fetch(endpoint, { method: 'POST', body: payload, headers: { 'Content-Type': 'application/json' }, keepalive: true }).catch(() => {});
+    }
+  }
+
+  private _getVisitorId(): string {
+    try {
+      let vid = localStorage.getItem('_apna_vid');
+      if (!vid) {
+        vid = Math.random().toString(36).slice(2) + Date.now().toString(36);
+        localStorage.setItem('_apna_vid', vid);
+      }
+      return vid;
+    } catch { return 'anon'; }
+  }
+
   // ── Computed helpers ──────────────────────────────────────────────────────
   isPostOwner = computed(() => {
     const postData = this.post();
@@ -645,10 +676,9 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
         next: res => {
           const currentId = this.post()?._id;
           const posts = (res.data ?? []).filter(
-            p => p._id !== currentId && (p.status === 'published' || p.status === 'draft')
+            p => p._id !== currentId && p.status === 'published'
           );
           this.allAuthorPostsData.set(posts);
-          this.authorTotalPosts.set(posts.length + 1);
           this.authorPostsLoading.set(false);
         },
         error: () => this.authorPostsLoading.set(false),
@@ -922,6 +952,12 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
           // without a second round-trip (eliminates the "loading flash" on refresh).
           if (!isBrowser) {
             this.transferState.set(POST_STATE_KEY, postData);
+          }
+
+          // Sponsored posts have a dedicated campaign page — not a blog article
+          if (postData.isSponsored) {
+            this.router.navigate(['/campaign', postId], { replaceUrl: true });
+            return;
           }
 
           this._applyPost(postData);
@@ -1276,7 +1312,6 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
     this.allAuthorPostsData.set(authorPosts);
-    this.authorTotalPosts.set(authorPosts.length + 1);
 
     if (!currentPost.categories?.length) { this.relatedPosts.set([]); return; }
 
@@ -1286,6 +1321,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
       .filter(p =>
         p._id !== currentPost._id &&
         p.status === 'published' &&
+        !p.isSponsored &&
         Array.isArray(p.categories) &&
         p.categories.some(c => catsLower.includes(c.toLowerCase()))
       )
@@ -1299,9 +1335,9 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
 
     this.relatedPosts.set(related.slice(0, 4));
 
-    // Trending — top 5 published posts by views, excluding current
+    // Trending — top 5 editorial posts by views, excluding current and sponsored
     const trending = allPosts
-      .filter(p => p._id !== currentPost._id && p.status === 'published')
+      .filter(p => p._id !== currentPost._id && p.status === 'published' && !p.isSponsored)
       .sort((a, b) => (b.views ?? 0) - (a.views ?? 0))
       .slice(0, 5);
     this.trendingPosts.set(trending);
@@ -1579,7 +1615,11 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     // News articles get max-snippet for Top Stories eligibility
     const NEWS_CATS_META = new Set(['News','Sports','Business','Entertainment','Health','Science','Technology']);
     const isNewsMeta = post.categories?.some(c => NEWS_CATS_META.has(c));
-    const robotsValue = (post.status === 'published' && !isThinPost)
+    // Sponsored posts are paid native advertising — must not be indexed as editorial content.
+    // AdSense policy and Google's quality guidelines require paid content to be excluded
+    // from organic indexing to avoid misleading users and crawlers.
+    const isSponsored = !!post.isSponsored;
+    const robotsValue = (post.status === 'published' && !isThinPost && !isSponsored)
       ? `index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1${isNewsMeta ? ', max-image-preview:large' : ''}`
       : 'noindex, nofollow';
 
@@ -1645,7 +1685,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
         this.document.head?.appendChild(hreflang);
       }
       hreflang.setAttribute('rel', 'alternate');
-      hreflang.setAttribute('hreflang', 'en-IN');
+      hreflang.setAttribute('hreflang', lang);
       hreflang.setAttribute('href', canonicalUrl);
     } catch (_) {}
 
@@ -2344,6 +2384,8 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
         next: (res) => {
           this.authorFollowersCount.set(res.followersCount ?? 0);
           this.isFollowingAuthor.set(res.isFollowing ?? false);
+          const totalBlogs = (res as any).totalBlogs ?? 0;
+          if (totalBlogs > 0) this.authorTotalPosts.set(totalBlogs);
         },
         error: () => { /* non-critical */ },
       });

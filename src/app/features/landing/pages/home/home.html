@@ -229,8 +229,8 @@
 
   <!-- ══ HERO SECTION ══════════════════════════════════════════════════════ -->
   <section class="v2-hero" itemscope itemtype="https://schema.org/Blog" aria-labelledby="hero-h1">
-    <meta itemprop="name" content="ApnaInsights — Community Stories" />
-    <meta itemprop="description" content="Discover real stories from real people." />
+    <meta itemprop="name" content="ApnaInsights — India's Practical Knowledge Platform" />
+    <meta itemprop="description" content="Expert guides on Technology, Career, Health & Business from verified contributors across India." />
     <link itemprop="url" href="https://apnainsights.com" />
 
     <!-- Background elements -->
@@ -244,16 +244,16 @@
       <div class="v2-hero-left">
         <div class="v2-hero-eyebrow" aria-hidden="true">
           <span class="v2-hero-eyebrow-dot"></span>
-          Built in India · Open to Everyone
+          Practical Knowledge for Everyday Life
         </div>
 
         <h1 class="v2-hero-h1" id="hero-h1">
-          Discover Real Stories<br>
-          <span class="v2-hero-accent">By Real People</span>
+          India's Practical<br>
+          <span class="v2-hero-accent">Knowledge Platform</span>
         </h1>
 
         <p class="v2-hero-desc">
-          Explore authentic stories across <strong>14+ topics</strong> - written by real people.
+          Expert guides on <strong>Technology, Career, Health &amp; Business</strong> - written by verified contributors and reviewed before publishing.
         </p>
 
         <!-- Topic categories -->
@@ -1056,7 +1056,8 @@
                   <h4 class="feat-item-title">{{ blog.title }}</h4>
                   <p class="feat-item-desc">{{ blog.description }}</p>
                   @if (blog.sponsorCtaText && blog.sponsorCtaUrl) {
-                    <a class="feat-cta-btn" [href]="blog.sponsorCtaUrl" target="_blank" rel="noopener sponsored" (click)="$event.stopPropagation()">
+                    <a class="feat-cta-btn" [href]="blog.sponsorCtaUrl" target="_blank" rel="noopener sponsored"
+                       (click)="$event.stopPropagation(); trackSponsorClick(blog._id, blog.sponsorCtaUrl!)">
                       {{ blog.sponsorCtaText }}
                       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
                     </a>
@@ -1438,24 +1439,24 @@
         <div class="v2-sb-community-header">
           <span class="v2-sb-community-icon" aria-hidden="true">🌟</span>
           <div>
-            <strong>Join Our Growing Community</strong>
-            <span>Writers &amp; readers everywhere</span>
+            <strong>Contribute to ApnaInsights</strong>
+            <span>Share expertise. Reach real readers.</span>
           </div>
         </div>
         <div class="v2-sb-community-stats">
           <div class="v2-sb-community-stat">
             @if (communityMembersReady()) { <strong>{{ communityMembersCount() }}+</strong> }
             @else { <strong>—</strong> }
-            <span>Active Writers</span>
+            <span>Contributors</span>
           </div>
           <div class="v2-sb-community-stat">
-            @if (storiesReady()) { <strong>{{ publishedCount() }}</strong> }
+            @if (storiesReady()) { <strong>{{ totalViewCount() }}</strong> }
             @else { <strong>—</strong> }
-            <span>Stories</span>
+            <span>Total Reads</span>
           </div>
         </div>
-        <a class="v2-sb-community-btn" [routerLink]="writeRoute" aria-label="Start writing for free">
-          Start Writing Free
+        <a class="v2-sb-community-btn" [routerLink]="writeRoute" aria-label="Write for ApnaInsights">
+          Write for Us
         </a>
       </div>
 
@@ -1477,14 +1478,14 @@
       <!-- About section -->
       <div class="v2-sb-about">
         <h2 class="v2-sb-about-title">About ApnaInsights</h2>
-        <p class="v2-sb-about-text">A free community blogging platform. Read stories on
+        <p class="v2-sb-about-text">ApnaInsights publishes editor-reviewed guides and insights on
           <a routerLink="/category/technology">Technology</a>,
           <a routerLink="/category/health">Health</a>,
-          <a routerLink="/category/village">Village Life</a>,
-          <a routerLink="/category/sports">Sports</a> and
-          <a routerLink="/category/business">Business</a> — written by real people.
+          <a routerLink="/category/business">Business</a>,
+          <a routerLink="/category/sports">Sports</a> and more —
+          written by verified contributors across India.
         </p>
-        <a class="v2-sb-about-link" routerLink="/about">Learn more →</a>
+        <a class="v2-sb-about-link" routerLink="/editorial-policy">Editorial Standards →</a>
       </div>
 
     </aside><!-- /v2-sidebar -->
@@ -1724,13 +1725,12 @@
     <div class="v2-footer-bottom-inner">
       <p class="v2-footer-copy">
         © 2026 ApnaInsights. All rights reserved.
-        @if (storiesReady()) { · {{ publishedCount() }} stories published }
         &nbsp;·&nbsp; Made with ❤️ in India
       </p>
       <div class="v2-footer-bottom-links">
         <a class="v2-footer-bottom-link" routerLink="/privacy-policy">Privacy</a>
         <a class="v2-footer-bottom-link" routerLink="/terms">Terms</a>
-        <a class="v2-footer-bottom-link" routerLink="/about">Sitemap</a>
+        <a class="v2-footer-bottom-link" href="/sitemap.xml" target="_blank" rel="noopener">Sitemap</a>
       </div>
     </div>
   </div>

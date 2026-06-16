@@ -79,6 +79,7 @@ export interface Post {
   sponsorPriority?:       number;
   sponsorCtaText?:        string | null;
   sponsorCtaUrl?:         string | null;
+  sponsorBrand?:          string | null;
 
   // Community
   hotScore?:          number;

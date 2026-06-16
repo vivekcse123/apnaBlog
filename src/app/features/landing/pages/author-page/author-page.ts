@@ -54,6 +54,7 @@ export class AuthorPage implements OnInit, OnDestroy {
   totalViewsFromApi  = signal(0);
   totalLikesFromApi  = signal(0);
   shortsCountFromApi = signal(0);
+  totalBlogsFromApi  = signal(0);
   topPosts           = signal<Post[]>([]);
 
   isLoggedIn   = computed(() => this.auth.isAuthorized());
@@ -65,7 +66,7 @@ export class AuthorPage implements OnInit, OnDestroy {
 
   // Same threshold as the robots tag in loadPosts() — don't show an ad on a
   // page that's mostly empty (AdSense low-value-content / ad-density risk).
-  isThinPage = computed(() => !this.isLoading() && this.posts().length < 3);
+  isThinPage = computed(() => !this.isLoading() && this.posts().length < 5);
 
   get authorName(): string    { return (this.author() as any)?.name     ?? 'Anonymous'; }
   get authorInitial(): string { return this.authorName.charAt(0).toUpperCase(); }
@@ -122,6 +123,7 @@ export class AuthorPage implements OnInit, OnDestroy {
             this.totalViewsFromApi.set((res as any).totalViews ?? 0);
             this.totalLikesFromApi.set((res as any).totalLikes ?? 0);
             this.shortsCountFromApi.set((res as any).shortsCount ?? 0);
+            this.totalBlogsFromApi.set((res as any).totalBlogs ?? 0);
             this.topPosts.set((res as any).topPosts ?? []);
             // Show the profile immediately — don't wait for posts/shorts to load
             this.isLoading.set(false);
@@ -158,7 +160,7 @@ export class AuthorPage implements OnInit, OnDestroy {
           const published = (res.data ?? []).filter((p: Post) => p.status === 'published' || p.status === 'draft');
           this.posts.set(published);
           this.injectAuthorItemList(published);
-          const robotsValue = published.length >= 3 ? 'index, follow' : 'noindex, follow';
+          const robotsValue = published.length >= 5 ? 'index, follow' : 'noindex, follow';
           this.meta.updateTag({ name: 'robots', content: robotsValue });
         },
         error: () => {},
@@ -216,7 +218,7 @@ export class AuthorPage implements OnInit, OnDestroy {
 
   private setMeta(user: User): void {
     const name = (user as any).name ?? 'Author';
-    const bio  = (user as any).bio  ?? `Read all blogs by ${name} on ApnaInsights.`;
+    const bio  = (user as any).bio  ?? `${name} is a contributor on ApnaInsights, sharing expert guides and insights across topics like technology, lifestyle, health, and more. Explore their published articles below.`;
     const url  = `${environment.siteUrl}/author/${(user as any)._id}`;
 
     const hasAvatar = !!(user as any).avatar;

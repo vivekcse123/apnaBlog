@@ -72,7 +72,7 @@ export class About implements OnInit, OnDestroy {
   faqs: FAQ[] = [
     {
       q: 'What is ApnaInsights?',
-      a: 'ApnaInsights is India\'s community-first blogging platform where real people share real experiences. Writers publish stories across 14 categories including technology, lifestyle, health, business, education, sports, village life and more. The platform is free to read and free to write — join our growing community today.'
+      a: 'ApnaInsights is India\'s practical knowledge platform where knowledgeable contributors share expert guides. Writers publish across 14 categories including technology, lifestyle, health, business, education, sports, career and more. The platform is free to read and free to write — join our growing community today.'
     },
     {
       q: 'Is ApnaInsights free to use?',
@@ -125,10 +125,10 @@ export class About implements OnInit, OnDestroy {
 
   private setMetaTags(): void {
 
-    this.title.setTitle('About ApnaInsights | Community Blogging Platform Built for India');
+    this.title.setTitle('About ApnaInsights | India\'s Practical Knowledge Platform');
 
-    this.meta.updateTag({ name: 'description', content: 'ApnaInsights is India\'s community-first blogging platform. Publish stories across 14 categories — technology, lifestyle, health, business, village life and more. Free to write, free to read. Join our growing community of writers.' });
-    this.meta.updateTag({ name: 'keywords', content: 'ApnaInsights, Indian blogging platform, write blogs online India, community blogging, publish stories India, blog writing platform, free blogging India, blog platform Telugu, Hindi blog platform' });
+    this.meta.updateTag({ name: 'description', content: 'ApnaInsights is India\'s practical knowledge platform. Discover expert guides across 14 categories — technology, lifestyle, health, business, career and more. Free to write, free to read.' });
+    this.meta.updateTag({ name: 'keywords', content: 'ApnaInsights, Indian knowledge platform, write guides online India, practical knowledge India, publish articles India, expert guides platform, free writing India, knowledge platform India' });
     this.meta.updateTag({ name: 'robots', content: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' });
     this.meta.updateTag({ name: 'author', content: 'Vivek Verma, ApnaInsights' });
     this.meta.updateTag({ name: 'language', content: 'English' });
@@ -136,19 +136,19 @@ export class About implements OnInit, OnDestroy {
     this.meta.updateTag({ name: 'geo.country', content: 'India' });
 
     this.meta.updateTag({ property: 'og:type', content: 'website' });
-    this.meta.updateTag({ property: 'og:title', content: 'About ApnaInsights | Community Blogging Platform Built for India' });
-    this.meta.updateTag({ property: 'og:description', content: 'ApnaInsights is India\'s community-first blogging platform where real people share real experiences across 14 topics. Free to read, free to write.' });
+    this.meta.updateTag({ property: 'og:title', content: 'About ApnaInsights | India\'s Practical Knowledge Platform' });
+    this.meta.updateTag({ property: 'og:description', content: 'ApnaInsights is India\'s practical knowledge platform — expert guides across 14 topics. Free to read, free to write.' });
     this.meta.updateTag({ property: 'og:url', content: 'https://apnainsights.com/about' });
     this.meta.updateTag({ property: 'og:site_name', content: 'ApnaInsights' });
     this.meta.updateTag({ property: 'og:image', content: 'https://apnainsights.com/og-image.png' });
     this.meta.updateTag({ property: 'og:image:width', content: '1200' });
     this.meta.updateTag({ property: 'og:image:height', content: '630' });
-    this.meta.updateTag({ property: 'og:image:alt', content: 'ApnaInsights - Community Blogging Platform for India' });
+    this.meta.updateTag({ property: 'og:image:alt', content: 'ApnaInsights - India\'s Practical Knowledge Platform' });
     this.meta.updateTag({ property: 'og:locale', content: 'en_IN' });
 
     this.meta.updateTag({ name: 'twitter:card', content: 'summary_large_image' });
-    this.meta.updateTag({ name: 'twitter:title', content: 'About ApnaInsights | Community Blogging Platform' });
-    this.meta.updateTag({ name: 'twitter:description', content: 'India\'s community-first blogging platform. Write, share, and connect across 14 topics. Free to join.' });
+    this.meta.updateTag({ name: 'twitter:title', content: 'About ApnaInsights | India\'s Practical Knowledge Platform' });
+    this.meta.updateTag({ name: 'twitter:description', content: 'India\'s practical knowledge platform. Write expert guides and connect across 14 topics. Free to join.' });
     this.meta.updateTag({ name: 'twitter:image', content: 'https://apnainsights.com/og-image.png' });
     this.meta.updateTag({ name: 'twitter:site', content: '@apnainsights' });
     this.meta.updateTag({ name: 'twitter:creator', content: '@apnainsights' });
@@ -182,7 +182,7 @@ export class About implements OnInit, OnDestroy {
               width: 1024,
               height: 1024
             },
-            description: 'ApnaInsights is India\'s community-first blogging platform where real people share real experiences across 14 topics including technology, lifestyle, health, village life and more.',
+            description: 'ApnaInsights is India\'s practical knowledge platform where contributors share expert guides across 14 topics including technology, lifestyle, health, career, business and more.',
             foundingDate: '2024',
             foundingLocation: { '@type': 'Place', addressCountry: 'IN' },
             founders: [
@@ -212,8 +212,8 @@ export class About implements OnInit, OnDestroy {
             '@type': 'WebPage',
             '@id': 'https://apnainsights.com/about#webpage',
             url: 'https://apnainsights.com/about',
-            name: 'About ApnaInsights | Community Blogging Platform Built for India',
-            description: 'Learn about ApnaInsights, India\'s community-first blogging platform. Meet the team, discover our mission, and find out how we empower writers across India.',
+            name: 'About ApnaInsights | India\'s Practical Knowledge Platform',
+            description: 'Learn about ApnaInsights, India\'s practical knowledge platform. Meet the team, discover our mission, and find out how we empower contributors across India.',
             inLanguage: 'en-IN',
             isPartOf: { '@id': 'https://apnainsights.com/#website' },
             about: { '@id': 'https://apnainsights.com/#organization' },

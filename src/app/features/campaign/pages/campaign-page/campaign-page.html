@@ -1,0 +1,168 @@
+<div class="cp-page">
+
+  <!-- ── Loading ── -->
+  @if (isLoading()) {
+    <div class="cp-loading">
+      <div class="cp-loading-inner">
+        <div class="cp-skel cp-skel--banner"></div>
+        <div class="cp-skel cp-skel--brand"></div>
+        <div class="cp-skel cp-skel--h1"></div>
+        <div class="cp-skel cp-skel--desc"></div>
+        <div class="cp-skel cp-skel--cta"></div>
+      </div>
+    </div>
+  }
+
+  <!-- ── Error ── -->
+  @else if (loadError()) {
+    <div class="cp-error">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      <h2>Campaign not found</h2>
+      <p>This campaign may have ended or the link is invalid.</p>
+      <a routerLink="/" class="cp-back-btn">← Back to ApnaInsights</a>
+    </div>
+  }
+
+  <!-- ── Campaign ── -->
+  @else if (post()) {
+
+    <!-- Sponsored header bar -->
+    <div class="cp-ad-bar">
+      <span class="cp-ad-pill">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+        </svg>
+        Sponsored Content
+      </span>
+      <a routerLink="/" class="cp-site-link">
+        ApnaInsights
+      </a>
+    </div>
+
+    <!-- Hero card -->
+    <div class="cp-hero-wrap">
+      <div class="cp-hero">
+
+        <!-- Brand identity row -->
+        <div class="cp-brand-row">
+          <div class="cp-brand-avatar">{{ brandInitial(post()!.sponsorBrand) }}</div>
+          <div class="cp-brand-info">
+            <span class="cp-brand-label">Sponsored by</span>
+            <span class="cp-brand-name">{{ post()!.sponsorBrand || 'Brand' }}</span>
+          </div>
+          @if (post()!.categories[0]) {
+            <span class="cp-brand-cat">{{ post()!.categories[0] }}</span>
+          }
+        </div>
+
+        <!-- Featured image (if available) -->
+        @if (post()!.featuredImage) {
+          <div class="cp-featured-img">
+            <img [src]="post()!.featuredImage" [alt]="post()!.title" loading="eager" />
+          </div>
+        }
+
+        <!-- Campaign headline -->
+        <h1 class="cp-headline">{{ post()!.title }}</h1>
+
+        <!-- Campaign pitch -->
+        @if (post()!.description) {
+          <p class="cp-pitch">{{ post()!.description }}</p>
+        }
+
+        <!-- Primary CTA -->
+        @if (post()!.sponsorCtaUrl) {
+          <button
+            class="cp-cta-btn"
+            type="button"
+            (click)="trackAndVisit(post()!._id, post()!.sponsorCtaUrl!)">
+            {{ post()!.sponsorCtaText || 'Visit Website' }}
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
+              <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+            </svg>
+          </button>
+          <p class="cp-cta-note">You'll be taken to {{ post()!.sponsorBrand || 'the advertiser' }}'s website</p>
+        }
+
+        <!-- Campaign meta -->
+        <div class="cp-meta-bar">
+          <span>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+            </svg>
+            {{ formatViews(post()!.views) }} views
+          </span>
+          <span class="cp-meta-sep">·</span>
+          <span>Campaign since {{ formatDate(post()!.createdAt) }}</span>
+          @if (post()!.sponsoredUntil) {
+            <span class="cp-meta-sep">·</span>
+            <span>Active until {{ formatDate(post()!.sponsoredUntil) }}</span>
+          }
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Campaign details body (from post content) -->
+    @if (post()!.content) {
+      <div class="cp-details-wrap">
+        <div class="cp-details">
+          <h2 class="cp-details-heading">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>
+            </svg>
+            Campaign Details
+          </h2>
+          <div class="cp-content" [innerHTML]="safeContent()"></div>
+        </div>
+
+        <!-- Repeat CTA inside body -->
+        @if (post()!.sponsorCtaUrl) {
+          <div class="cp-inline-cta">
+            <button
+              class="cp-cta-btn cp-cta-btn--outline"
+              type="button"
+              (click)="trackAndVisit(post()!._id, post()!.sponsorCtaUrl!)">
+              {{ post()!.sponsorCtaText || 'Visit Website' }}
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+              </svg>
+            </button>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Disclosure notice -->
+    <div class="cp-disclosure-wrap">
+      <div class="cp-disclosure">
+        <svg class="cp-disclosure-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <div class="cp-disclosure-text">
+          <strong>Advertising Disclosure</strong>
+          <p>This is paid promotional content created by <strong>{{ post()!.sponsorBrand || 'the advertiser' }}</strong>. The ApnaInsights editorial team did not create, review, or endorse this content. Always do your own research before purchasing any product or service.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="cp-footer">
+      <a routerLink="/" class="cp-footer-back">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+        </svg>
+        Back to ApnaInsights
+      </a>
+      <span class="cp-footer-sep">·</span>
+      <a routerLink="/advertise" class="cp-footer-link">Advertise with us</a>
+    </div>
+
+  }
+
+</div>

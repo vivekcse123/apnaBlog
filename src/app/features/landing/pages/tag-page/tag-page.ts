@@ -153,7 +153,7 @@ export class TagPage implements OnInit, OnDestroy {
 
     const tag     = this.tagSlug();
     const display = tag.charAt(0).toUpperCase() + tag.slice(1);
-    const desc    = `Read the latest #${display} stories on ApnaInsights — ${topCategory} community blogs from real Indian writers.`;
+    const desc    = `Read the latest #${display} stories on ApnaInsights — ${topCategory} guides and insights from Indian contributors.`;
 
     this.meta.updateTag({ name: 'description',        content: desc });
     this.meta.updateTag({ property: 'og:description', content: desc });
@@ -163,7 +163,7 @@ export class TagPage implements OnInit, OnDestroy {
     const display = tag.charAt(0).toUpperCase() + tag.slice(1);
     const url     = `${environment.siteUrl}/tag/${tag.toLowerCase()}`;
 
-    const desc = `Read the latest stories tagged #${display} on ApnaInsights — community blogs written by real people.`;
+    const desc = `Read the latest stories tagged #${display} on ApnaInsights — guides and insights written by real contributors.`;
     this.titleSvc.setTitle(`#${display} Stories | ApnaInsights`);
     this.meta.updateTag({ name: 'description',        content: desc });
     // Fail safe to noindex until _updateRobotsForPostCount() confirms the tag
@@ -191,7 +191,7 @@ export class TagPage implements OnInit, OnDestroy {
           '@id':      `${url}#webpage`,
           url,
           name:       `#${display} Stories`,
-          description: `Read the latest stories tagged #${display} on ApnaInsights — community blogs from real writers.`,
+          description: `Read the latest stories tagged #${display} on ApnaInsights — guides and insights from verified contributors.`,
           inLanguage: 'en-IN',
           isPartOf:   { '@id': `${environment.siteUrl}/#website` },
           publisher:  { '@id': `${environment.siteUrl}/#organization` },

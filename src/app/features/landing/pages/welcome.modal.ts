@@ -39,7 +39,7 @@ interface Feature {
         <div class="wm-body" (click)="$event.stopPropagation()">
 
           <h2 id="wm-title" class="wm-title">Welcome to ApnaInsights</h2>
-          <p class="wm-sub">Your community hub for real stories from real people.</p>
+          <p class="wm-sub">India's practical knowledge platform — expert guides, real insights.</p>
 
           <ul class="wm-features" role="list">
             @for (f of features; track f.label) {

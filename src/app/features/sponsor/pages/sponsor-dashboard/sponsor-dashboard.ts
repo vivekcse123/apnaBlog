@@ -2,7 +2,7 @@ import {
   ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal, PLATFORM_ID
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { RouterLink, ActivatedRoute } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { catchError, of } from 'rxjs';
@@ -61,7 +61,6 @@ interface ReportStats {
   styleUrl:    './sponsor-dashboard.css',
 })
 export class SponsorDashboard implements OnInit {
-  private route      = inject(ActivatedRoute);
   private http       = inject(HttpClient);
   private auth       = inject(Auth);
   private destroyRef = inject(DestroyRef);
@@ -71,7 +70,6 @@ export class SponsorDashboard implements OnInit {
   private postApi   = `${environment.apiPostEndpoint.replace(/\/+$/, '')}/sponsor-report`;
   private shortsApi = `${environment.apiShortsEndpoint.replace(/\/+$/, '')}/sponsor-report`;
 
-  userId          = signal('');
   activeTab       = signal<'blogs' | 'shorts'>('blogs');
   showCreateModal = signal(false);
   showShortsModal = signal(false);
@@ -99,8 +97,6 @@ export class SponsorDashboard implements OnInit {
   isLoading = computed(() => this.blogsLoading() || this.shortsLoading());
 
   ngOnInit(): void {
-    const id = this.route.snapshot.params['id'];
-    this.userId.set(id);
     this.loadBlogs();
     this.loadShorts();
   }
@@ -138,6 +134,8 @@ export class SponsorDashboard implements OnInit {
     if (p === 2) return '#f59e0b';
     return '#22c55e';
   }
+
+  ctrBarWidth(ctr: number): number { return Math.min(ctr * 10, 100); }
 
   ctrColor(ctr: number): string {
     if (ctr >= 3)  return '#16a34a';

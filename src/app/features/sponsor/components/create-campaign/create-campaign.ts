@@ -70,6 +70,7 @@ ${v.notes ? `<h2>Additional Information</h2><p>${v.notes}</p>` : ''}
       status:         'pending',
       sponsorCtaUrl:  v.destinationUrl ?? null,
       sponsorCtaText: v.ctaText ?? null,
+      sponsorBrand:   v.brandName ?? null,
     } as any).subscribe({
       next: () => {
         this.isSubmitting.set(false);

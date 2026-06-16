@@ -26,7 +26,7 @@ export default async function handler(req, res) {
     }
 
     const published = allPosts
-      .filter(p => p.status === 'published' && p.title)
+      .filter(p => p.status === 'published' && p.title && !p.isSponsored)
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
       .slice(0, 50);
 

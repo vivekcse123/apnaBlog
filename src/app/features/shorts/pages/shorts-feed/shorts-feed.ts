@@ -163,7 +163,7 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     this.titleSvc.setTitle('Shorts — Quick Videos & Reels | ApnaInsights');
     const desc = 'Watch short videos across News, Sports, Technology, Entertainment and more on ApnaInsights Shorts.';
     this.meta.updateTag({ name: 'description',        content: desc });
-    this.meta.updateTag({ name: 'robots',             content: 'index, follow' });
+    this.meta.updateTag({ name: 'robots',             content: 'noindex, follow' });
     this.meta.updateTag({ property: 'og:title',       content: 'ApnaInsights Shorts' });
     this.meta.updateTag({ property: 'og:description', content: desc });
     this.meta.updateTag({ property: 'og:url',         content: 'https://apnainsights.com/shorts' });

@@ -87,7 +87,7 @@ export class Advertise implements OnInit {
 
   private setMeta(): void {
     this.titleSvc.setTitle('Advertise with ApnaInsights | Reach India\'s Digital Audience');
-    this.meta.updateTag({ name: 'description', content: 'Partner with ApnaInsights — India\'s community blogging platform. Advertise via sponsored shorts, blog features, and newsletter placements. Reach engaged readers across 14 categories including Technology, Health, Sports and more.' });
+    this.meta.updateTag({ name: 'description', content: 'Partner with ApnaInsights — India\'s practical knowledge platform. Advertise via sponsored shorts, blog features, and newsletter placements. Reach engaged readers across 14 categories including Technology, Health, Sports and more.' });
     this.meta.updateTag({ name: 'keywords', content: 'advertise on ApnaInsights, sponsored content India, blog advertising India, digital advertising India, sponsored shorts, content marketing India' });
     this.meta.updateTag({ name: 'robots', content: 'index, follow' });
     this.meta.updateTag({ property: 'og:type',        content: 'website' });

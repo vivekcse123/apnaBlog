@@ -123,6 +123,11 @@ export const routes: Routes = [
         }
     },
     {
+        path: 'campaign/:id',
+        loadComponent: () => import('./features/campaign/pages/campaign-page/campaign-page').then(m => m.CampaignPage),
+        title: 'Sponsored | ApnaInsights'
+    },
+    {
         path: 'auth',
         component: AuthLayout,
         title: 'Sign In | ApnaInsights',

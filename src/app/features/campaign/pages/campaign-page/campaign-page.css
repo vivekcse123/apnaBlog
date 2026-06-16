@@ -1,0 +1,380 @@
+/* ════════════════════════════════════════════
+   CAMPAIGN PAGE  — Dedicated Promotional Layout
+   ════════════════════════════════════════════ */
+
+.cp-page {
+  min-height: 100vh;
+  background: #f8fafc;
+  font-family: inherit;
+}
+
+/* ── Sponsored header bar ── */
+.cp-ad-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 24px;
+  background: #f59e0b;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.cp-ad-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: .75rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+.cp-site-link {
+  font-size: .8rem;
+  font-weight: 700;
+  color: rgba(255,255,255,.9);
+  text-decoration: none;
+  letter-spacing: .02em;
+}
+.cp-site-link:hover { color: #fff; }
+
+/* ── Hero card ── */
+.cp-hero-wrap {
+  max-width: 760px;
+  margin: 32px auto;
+  padding: 0 20px;
+}
+
+.cp-hero {
+  background: #fff;
+  border-radius: 20px;
+  padding: 36px 40px 32px;
+  box-shadow: 0 4px 32px rgba(0,0,0,.08), 0 1px 4px rgba(0,0,0,.04);
+  border: 1px solid #e8eef5;
+}
+
+/* ── Brand row ── */
+.cp-brand-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.cp-brand-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #185a9d, #43cea2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 1.4rem;
+  font-weight: 800;
+  flex-shrink: 0;
+  box-shadow: 0 4px 14px rgba(24,90,157,.25);
+}
+
+.cp-brand-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.cp-brand-label {
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: #f59e0b;
+}
+.cp-brand-name {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.cp-brand-cat {
+  margin-left: auto;
+  font-size: .72rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 20px;
+  background: #f1f5f9;
+  color: #475569;
+}
+
+/* ── Featured image ── */
+.cp-featured-img {
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 24px;
+  max-height: 320px;
+}
+.cp-featured-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* ── Headline ── */
+.cp-headline {
+  font-size: 2rem;
+  font-weight: 900;
+  line-height: 1.2;
+  color: #0f172a;
+  margin: 0 0 14px;
+  letter-spacing: -.02em;
+}
+
+/* ── Pitch ── */
+.cp-pitch {
+  font-size: 1rem;
+  line-height: 1.65;
+  color: #475569;
+  margin: 0 0 28px;
+}
+
+/* ── CTA button ── */
+.cp-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  justify-content: center;
+  padding: 15px 28px;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 800;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(135deg, #185a9d, #2563eb);
+  color: #fff;
+  box-shadow: 0 6px 24px rgba(24,90,157,.35);
+  transition: transform .15s, box-shadow .15s, opacity .15s;
+  letter-spacing: .01em;
+}
+.cp-cta-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 32px rgba(24,90,157,.4); }
+.cp-cta-btn:active { transform: scale(.98); }
+
+.cp-cta-btn--outline {
+  background: transparent;
+  border: 2px solid #185a9d;
+  color: #185a9d;
+  box-shadow: none;
+  width: auto;
+  padding: 11px 24px;
+}
+.cp-cta-btn--outline:hover { background: rgba(24,90,157,.06); box-shadow: none; transform: none; }
+
+.cp-cta-note {
+  margin: 8px 0 0;
+  font-size: .72rem;
+  color: #94a3b8;
+  text-align: center;
+}
+
+/* ── Meta bar ── */
+.cp-meta-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #f1f5f9;
+  font-size: .78rem;
+  color: #94a3b8;
+}
+.cp-meta-bar svg { vertical-align: middle; margin-right: 3px; }
+.cp-meta-sep { color: #cbd5e1; }
+
+/* ── Campaign details ── */
+.cp-details-wrap {
+  max-width: 760px;
+  margin: 0 auto 24px;
+  padding: 0 20px;
+}
+
+.cp-details {
+  background: #fff;
+  border-radius: 16px;
+  padding: 32px 40px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.04);
+  border: 1px solid #e8eef5;
+}
+
+.cp-details-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: .8rem;
+  font-weight: 700;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  margin: 0 0 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+/* Override blog heading gradient styles so content is always readable */
+.cp-content { font-size: .95rem; line-height: 1.75; color: #334155; }
+.cp-content h1,
+.cp-content h2,
+.cp-content h3,
+.cp-content h4 {
+  color: #0f172a !important;
+  background: none !important;
+  -webkit-background-clip: unset !important;
+  background-clip: unset !important;
+  -webkit-text-fill-color: #0f172a !important;
+  margin: 24px 0 10px;
+}
+.cp-content h2 { font-size: 1.1rem; font-weight: 700; }
+.cp-content h3 { font-size: 1rem;   font-weight: 700; }
+.cp-content p  { margin: 0 0 14px; }
+.cp-content ul,
+.cp-content ol { margin: 0 0 14px; padding-left: 20px; }
+.cp-content li { margin-bottom: 6px; }
+
+.cp-inline-cta {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #f1f5f9;
+}
+
+/* ── Disclosure ── */
+.cp-disclosure-wrap {
+  max-width: 760px;
+  margin: 0 auto 32px;
+  padding: 0 20px;
+}
+
+.cp-disclosure {
+  display: flex;
+  gap: 14px;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 12px;
+  padding: 18px 20px;
+}
+
+.cp-disclosure-icon {
+  flex-shrink: 0;
+  color: #b45309;
+  margin-top: 2px;
+}
+
+.cp-disclosure-text {
+  flex: 1;
+  font-size: .82rem;
+  line-height: 1.6;
+  color: #78350f;
+}
+.cp-disclosure-text strong { display: block; margin-bottom: 4px; font-size: .85rem; }
+.cp-disclosure-text p { margin: 0; }
+
+/* ── Footer ── */
+.cp-footer {
+  max-width: 760px;
+  margin: 0 auto 48px;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cp-footer-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: .85rem;
+  font-weight: 600;
+  color: #185a9d;
+  text-decoration: none;
+}
+.cp-footer-back:hover { text-decoration: underline; }
+
+.cp-footer-sep { color: #cbd5e1; }
+
+.cp-footer-link {
+  font-size: .85rem;
+  color: #64748b;
+  text-decoration: none;
+}
+.cp-footer-link:hover { color: #185a9d; }
+
+/* ── Loading skeleton ── */
+.cp-loading {
+  max-width: 760px;
+  margin: 32px auto;
+  padding: 0 20px;
+}
+.cp-loading-inner {
+  background: #fff;
+  border-radius: 20px;
+  padding: 36px 40px;
+  border: 1px solid #e8eef5;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.cp-skel {
+  border-radius: 8px;
+  background: linear-gradient(90deg, #f1f5f9 25%, #e8eef5 50%, #f1f5f9 75%);
+  background-size: 400% 100%;
+  animation: cp-shimmer 1.4s ease-in-out infinite;
+}
+.cp-skel--banner { height: 44px; border-radius: 12px; }
+.cp-skel--brand  { height: 52px; width: 200px; }
+.cp-skel--h1     { height: 56px; border-radius: 10px; }
+.cp-skel--desc   { height: 72px; }
+.cp-skel--cta    { height: 54px; border-radius: 12px; }
+
+@keyframes cp-shimmer {
+  0%   { background-position: 100% 50%; }
+  100% { background-position:   0% 50%; }
+}
+
+/* ── Error ── */
+.cp-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  min-height: 60vh;
+  padding: 40px 20px;
+  text-align: center;
+}
+.cp-error h2 { font-size: 1.4rem; font-weight: 700; color: #0f172a; margin: 0; }
+.cp-error p  { color: #64748b; margin: 0; }
+.cp-back-btn {
+  margin-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  background: #185a9d;
+  color: #fff;
+  font-size: .875rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .cp-ad-bar { padding: 8px 16px; }
+  .cp-hero-wrap, .cp-details-wrap, .cp-disclosure-wrap, .cp-footer { padding: 0 14px; }
+  .cp-hero-wrap { margin-top: 20px; }
+  .cp-hero { padding: 24px 20px; }
+  .cp-details { padding: 24px 20px; }
+  .cp-headline { font-size: 1.5rem; }
+  .cp-brand-cat { margin-left: 0; }
+}

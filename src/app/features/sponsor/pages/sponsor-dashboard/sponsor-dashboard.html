@@ -1,364 +1,408 @@
 <div class="sp-page">
 
-  <!-- ── Header ── -->
-  <div class="sp-header">
-    <div>
-      <h2 class="sp-title">Sponsor Dashboard</h2>
-      <p class="sp-sub">Welcome back, <strong>{{ userName.split(' ')[0] || 'Sponsor' }}</strong> · Track your sponsored content</p>
+  <!-- ══════════ HERO BANNER ══════════ -->
+  <div class="sp-hero">
+    <div class="sp-hero-inner">
+      <div class="sp-hero-brand">
+        <div class="sp-hero-logo">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round">
+            <path d="M15 15l-2 5L9 9l11 4-5 2z"/>
+          </svg>
+        </div>
+        <div>
+          <p class="sp-hero-name">ApnaInsights Ads</p>
+          <h1 class="sp-hero-title">Sponsor Dashboard</h1>
+        </div>
+      </div>
+      <div class="sp-hero-actions">
+        <button class="sp-btn-campaign" (click)="showCreateModal.set(true)" type="button">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          New Campaign
+        </button>
+        <button class="sp-btn-video" (click)="showShortsModal.set(true)" type="button">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.9L15 14v-4z"/>
+            <rect x="3" y="6" width="12" height="12" rx="2"/>
+          </svg>
+          Video Ad
+        </button>
+        <a class="sp-home-link" routerLink="/">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+          Home
+        </a>
+        <button class="sp-btn-logout" (click)="logout()" type="button">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+          Logout
+        </button>
+      </div>
     </div>
-    <div class="sp-header-actions">
-      <button class="sp-btn-write" (click)="showCreateModal.set(true)" type="button">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-          <path d="M15 15l-2 5L9 9l11 4-5 2z"/>
-        </svg>
-        New Campaign
-      </button>
-      <button class="sp-btn-short" (click)="showShortsModal.set(true)" type="button">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <path d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.9L15 14v-4z"/>
-          <rect x="3" y="6" width="12" height="12" rx="2"/>
-        </svg>
-        Video Ad
-      </button>
-      <a class="sp-home-link" routerLink="/">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
-        </svg>
-        Home
-      </a>
-      <a class="sp-home-link" [routerLink]="['/user', userId(), 'settings']">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="3"/>
-          <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
-        </svg>
-        Settings
-      </a>
-      <button class="sp-btn-logout" (click)="logout()" type="button">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
-        </svg>
-        Logout
-      </button>
+    <div class="sp-hero-welcome">
+      <p class="sp-welcome-text">Welcome back, <strong>{{ userName.split(' ')[0] || 'Sponsor' }}</strong> · Track your active campaigns and analytics</p>
     </div>
   </div>
 
-  <!-- ── Summary stat cards ── -->
-  @if (isLoading()) {
-    <div class="sp-skeletons">
-      @for (i of [1,2,3,4,5]; track i) {
-        <div class="sp-skeleton-card"></div>
-      }
-    </div>
-  } @else if (totalStats()) {
-    <div class="sp-stats-bar">
-      <div class="sp-stat-card">
-        <div class="sp-stat-icon" style="background:rgba(24,90,157,.12)">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#185a9d" stroke-width="2" stroke-linecap="round">
-            <rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/>
-          </svg>
-        </div>
-        <div class="sp-stat-body">
+  <!-- ══════════ BODY ══════════ -->
+  <div class="sp-body">
+
+    <!-- ── Stat cards ── -->
+    @if (isLoading()) {
+      <div class="sp-skeletons">
+        @for (i of [1,2,3,4]; track i) { <div class="sp-skeleton-card"></div> }
+      </div>
+    } @else if (totalStats()) {
+      <div class="sp-stats-bar">
+
+        <div class="sp-stat-card">
+          <div class="sp-stat-icon" style="background:rgba(24,90,157,.1)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#185a9d" stroke-width="2" stroke-linecap="round">
+              <rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/>
+            </svg>
+          </div>
           <span class="sp-stat-label">Total Campaigns</span>
           <span class="sp-stat-value">{{ totalStats()!.total }}</span>
           <span class="sp-stat-chip" style="color:#185a9d;background:rgba(24,90,157,.08)">{{ totalStats()!.active }} Active</span>
         </div>
-      </div>
 
-      <div class="sp-stat-card">
-        <div class="sp-stat-icon" style="background:rgba(67,206,162,.12)">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#43cea2" stroke-width="2" stroke-linecap="round">
-            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
-          </svg>
+        <div class="sp-stat-card">
+          <div class="sp-stat-icon" style="background:rgba(6,182,212,.1)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2" stroke-linecap="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+            </svg>
+          </div>
+          <span class="sp-stat-label">Total Impressions</span>
+          <span class="sp-stat-value" style="color:#06b6d4">{{ formatCount(totalStats()!.totalViews) }}</span>
+          <span class="sp-stat-chip" style="color:#06b6d4;background:rgba(6,182,212,.08)">Views</span>
         </div>
-        <div class="sp-stat-body">
-          <span class="sp-stat-label">Total Views</span>
-          <span class="sp-stat-value" style="color:#43cea2">{{ formatCount(totalStats()!.totalViews) }}</span>
-          <span class="sp-stat-chip" style="color:#43cea2;background:rgba(67,206,162,.08)">Impressions</span>
-        </div>
-      </div>
 
-      <div class="sp-stat-card">
-        <div class="sp-stat-icon" style="background:rgba(99,102,241,.12)">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M15 15l-2 5L9 9l11 4-5 2z"/>
-          </svg>
-        </div>
-        <div class="sp-stat-body">
-          <span class="sp-stat-label">Total Link Clicks</span>
+        <div class="sp-stat-card">
+          <div class="sp-stat-icon" style="background:rgba(99,102,241,.1)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M15 15l-2 5L9 9l11 4-5 2z"/>
+            </svg>
+          </div>
+          <span class="sp-stat-label">Link Clicks</span>
           <span class="sp-stat-value" style="color:#6366f1">{{ formatCount(totalStats()!.totalClicks) }}</span>
           <span class="sp-stat-chip" style="color:#6366f1;background:rgba(99,102,241,.08)">CTA Clicks</span>
         </div>
-      </div>
 
-      <div class="sp-stat-card">
-        <div class="sp-stat-icon" style="background:rgba(239,68,68,.12)">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
-          </svg>
-        </div>
-        <div class="sp-stat-body">
-          <span class="sp-stat-label">Total Likes</span>
+        <div class="sp-stat-card">
+          <div class="sp-stat-icon" style="background:rgba(239,68,68,.1)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
+            </svg>
+          </div>
+          <span class="sp-stat-label">Engagement</span>
           <span class="sp-stat-value" style="color:#ef4444">{{ formatCount(totalStats()!.totalLikes) }}</span>
-          <span class="sp-stat-chip" style="color:#ef4444;background:rgba(239,68,68,.08)">Engagement</span>
+          <span class="sp-stat-chip" style="color:#ef4444;background:rgba(239,68,68,.08)">Likes</span>
         </div>
-      </div>
-    </div>
-  }
 
-  <!-- ── Tab switcher ── -->
-  <div class="sp-tabs">
-    <button class="sp-tab" [class.sp-tab--active]="activeTab() === 'blogs'" (click)="activeTab.set('blogs')">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-        <polyline points="14 2 14 8 20 8"/>
-      </svg>
-      Article Campaigns
-      @if (blogStats()?.total) {
-        <span class="sp-tab-count">{{ blogStats()!.total }}</span>
-      }
-    </button>
-    <button class="sp-tab" [class.sp-tab--active]="activeTab() === 'shorts'" (click)="activeTab.set('shorts')">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-        <path d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.9L15 14v-4z"/>
-        <rect x="3" y="6" width="12" height="12" rx="2"/>
-      </svg>
-      Video Campaigns
-      @if (shortStats()?.total) {
-        <span class="sp-tab-count">{{ shortStats()!.total }}</span>
-      }
-    </button>
-
-    <!-- Export button aligned right -->
-    <div class="sp-tab-spacer"></div>
-    <button class="sp-export-btn" type="button" (click)="exportCsv(activeTab())"
-            title="Export analytics as CSV">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-      </svg>
-      Export CSV
-    </button>
-  </div>
-
-  <!-- ══════════ BLOGS TAB ══════════ -->
-  @if (activeTab() === 'blogs') {
-    @if (blogsLoading()) {
-      <div class="sp-skeletons"><div class="sp-skeleton-row"></div><div class="sp-skeleton-row"></div></div>
-    } @else if (blogs().length === 0) {
-      <div class="sp-empty">
-        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--border-strong)" stroke-width="1.5" stroke-linecap="round">
-          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-          <polyline points="14 2 14 8 20 8"/>
-        </svg>
-        <p>No article campaigns yet</p>
-        <span class="sp-sub">Click <strong>New Campaign</strong> above to submit your first ad</span>
-      </div>
-    } @else {
-      <div class="sp-card">
-        <div class="sp-table-wrap">
-          <table class="sp-table">
-            <thead>
-              <tr>
-                <th>Campaign</th>
-                <th>Status</th>
-                <th>Views</th>
-                <th>Clicks</th>
-                <th>CTR</th>
-                <th>Last Click</th>
-                <th>Started</th>
-                <th>Expiry</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (b of blogs(); track b._id) {
-                <tr>
-                  <td class="sp-td-content">
-                    <a [routerLink]="['/blog', b._id]" class="sp-content-link">
-                      @if (b.featuredImage) {
-                        <img [src]="b.featuredImage" [alt]="b.title" class="sp-thumb" loading="lazy" />
-                      } @else {
-                        <div class="sp-thumb sp-thumb--placeholder">{{ b.title.charAt(0).toUpperCase() }}</div>
-                      }
-                      <div class="sp-content-info">
-                        <span class="sp-content-title">{{ b.title }}</span>
-                        <span class="sp-content-meta">
-                          {{ (b.categories ?? [])[0] }}
-                          @if (b.sponsorPriority) {
-                            · <span [style.color]="priorityColor(b.sponsorPriority)">{{ priorityLabel(b.sponsorPriority) }}</span>
-                          }
-                        </span>
-                      </div>
-                    </a>
-                  </td>
-                  <td data-label="Status">
-                    @if (b.isSponsored) {
-                      <span class="sp-status sp-status--active">⭐ Sponsored</span>
-                    } @else {
-                      <span class="sp-status sp-status--pending">📝 Pending</span>
-                    }
-                    @if (b.status === 'published') {
-                      <span class="sp-status sp-status--active" style="margin-top:4px">🟢 Live</span>
-                    }
-                  </td>
-                  <td data-label="Views">
-                    <div class="sp-metrics">
-                      <span>👁 {{ formatCount(b.views) }}</span>
-                      <span>❤️ {{ formatCount(b.likesCount) }}</span>
-                    </div>
-                  </td>
-                  <td data-label="Clicks">
-                    @if (b.clickAnalytics) {
-                      <div class="sp-metrics">
-                        <span>🖱 {{ formatCount(b.clickAnalytics.totalClicks) }}</span>
-                        <span class="sp-unique">{{ formatCount(b.clickAnalytics.uniqueClicks) }} uniq</span>
-                      </div>
-                    } @else {
-                      <span class="sp-na">—</span>
-                    }
-                  </td>
-                  <td data-label="CTR">
-                    @if (b.clickAnalytics) {
-                      <span class="sp-ctr" [style.color]="ctrColor(b.clickAnalytics.ctr)">
-                        {{ b.clickAnalytics.ctr.toFixed(1) }}%
-                      </span>
-                    } @else {
-                      <span class="sp-na">—</span>
-                    }
-                  </td>
-                  <td data-label="Last Click">
-                    @if (b.clickAnalytics?.lastClickAt) {
-                      <span class="sp-last-click">{{ formatDate(b.clickAnalytics!.lastClickAt!) }}</span>
-                    } @else {
-                      <span class="sp-na">No clicks yet</span>
-                    }
-                  </td>
-                  <td data-label="Started" class="sp-td-date">
-                    {{ formatDate(b.createdAt) }}
-                  </td>
-                  <td data-label="Expiry">
-                    <span class="sp-days-left" [style.color]="daysLeftColor(b)">
-                      {{ daysLeftLabel(b) }}
-                    </span>
-                    @if (b.sponsoredUntil) {
-                      <span class="sp-expiry-date">{{ formatDate(b.sponsoredUntil) }}</span>
-                    }
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
       </div>
     }
-  }
 
-  <!-- ══════════ SHORTS TAB ══════════ -->
-  @if (activeTab() === 'shorts') {
-    @if (shortsLoading()) {
-      <div class="sp-skeletons"><div class="sp-skeleton-row"></div><div class="sp-skeleton-row"></div></div>
-    } @else if (shorts().length === 0) {
-      <div class="sp-empty">
-        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--border-strong)" stroke-width="1.5" stroke-linecap="round">
+    <!-- ── Tabs ── -->
+    <div class="sp-tabs">
+      <button class="sp-tab" [class.sp-tab--active]="activeTab() === 'blogs'" (click)="activeTab.set('blogs')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>
+        </svg>
+        Article Campaigns
+        @if (blogStats()?.total) {
+          <span class="sp-tab-count">{{ blogStats()!.total }}</span>
+        }
+      </button>
+      <button class="sp-tab" [class.sp-tab--active]="activeTab() === 'shorts'" (click)="activeTab.set('shorts')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
           <path d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.9L15 14v-4z"/>
           <rect x="3" y="6" width="12" height="12" rx="2"/>
         </svg>
-        <p>No video campaigns yet</p>
-        <span class="sp-sub">Click <strong>Video Ad</strong> above to submit your first sponsored short</span>
-      </div>
-    } @else {
-      <div class="sp-card">
-        <div class="sp-table-wrap">
-          <table class="sp-table">
-            <thead>
-              <tr>
-                <th>Short</th>
-                <th>Status</th>
-                <th>Views</th>
-                <th>Clicks</th>
-                <th>CTR</th>
-                <th>Last Click</th>
-                <th>Campaign</th>
-                <th>Expiry</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (s of shorts(); track s._id) {
-                <tr>
-                  <td class="sp-td-content">
-                    <div class="sp-content-link">
-                      @if (s.thumbnailUrl) {
-                        <img [src]="s.thumbnailUrl" [alt]="s.title" class="sp-thumb" loading="lazy" />
-                      } @else {
-                        <div class="sp-thumb sp-thumb--placeholder sp-thumb--dark">
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.5"><path d="M8 5v14l11-7z"/></svg>
-                        </div>
-                      }
-                      <div class="sp-content-info">
-                        <span class="sp-content-title">{{ s.title }}</span>
-                        <span class="sp-content-meta">{{ s.category }}</span>
-                      </div>
-                    </div>
-                  </td>
-                  <td data-label="Status">
-                    @if (s.status === 'pending') {
-                      <span class="sp-status sp-status--pending">⏳ Under Review</span>
-                    } @else {
-                      <span class="sp-status sp-status--active">✅ Approved</span>
-                    }
-                    @if (s.isSponsored) {
-                      <span class="sp-status sp-status--active" style="margin-top:4px">⭐ Sponsored</span>
-                    }
-                  </td>
-                  <td data-label="Views">
-                    <div class="sp-metrics">
-                      <span>👁 {{ formatCount(s.views) }}</span>
-                      <span>❤️ {{ formatCount(s.likesCount) }}</span>
-                    </div>
-                  </td>
-                  <td data-label="Clicks">
-                    @if (s.clickAnalytics) {
-                      <div class="sp-metrics">
-                        <span>🖱 {{ formatCount(s.clickAnalytics.totalClicks) }}</span>
-                        <span class="sp-unique">{{ formatCount(s.clickAnalytics.uniqueClicks) }} uniq</span>
-                      </div>
-                    } @else {
-                      <span class="sp-na">—</span>
-                    }
-                  </td>
-                  <td data-label="CTR">
-                    @if (s.clickAnalytics) {
-                      <span class="sp-ctr" [style.color]="ctrColor(s.clickAnalytics.ctr)">
-                        {{ s.clickAnalytics.ctr.toFixed(1) }}%
-                      </span>
-                    } @else {
-                      <span class="sp-na">—</span>
-                    }
-                  </td>
-                  <td data-label="Last Click">
-                    @if (s.clickAnalytics?.lastClickAt) {
-                      <span class="sp-last-click">{{ formatDate(s.clickAnalytics!.lastClickAt!) }}</span>
-                    } @else {
-                      <span class="sp-na">No clicks yet</span>
-                    }
-                  </td>
-                  <td data-label="Started" class="sp-td-date">
-                    {{ formatDate(s.createdAt) }}
-                  </td>
-                  <td data-label="Expiry">
-                    <span class="sp-days-left" [style.color]="daysLeftColor(s)">
-                      {{ daysLeftLabel(s) }}
-                    </span>
-                    @if (s.sponsoredUntil) {
-                      <span class="sp-expiry-date">{{ formatDate(s.sponsoredUntil) }}</span>
-                    }
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
+        Video Campaigns
+        @if (shortStats()?.total) {
+          <span class="sp-tab-count">{{ shortStats()!.total }}</span>
+        }
+      </button>
+      <div class="sp-tab-spacer"></div>
+      <button class="sp-export-btn" type="button" (click)="exportCsv(activeTab())" title="Export analytics as CSV">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Export CSV
+      </button>
+    </div>
+
+    <!-- ══════════ ARTICLE CAMPAIGNS TAB ══════════ -->
+    @if (activeTab() === 'blogs') {
+      @if (blogsLoading()) {
+        <div class="sp-card sp-skeleton-rows">
+          @for (i of [1,2,3]; track i) { <div class="sp-skeleton-row"></div> }
         </div>
-      </div>
+      } @else if (blogs().length === 0) {
+        <div class="sp-card">
+          <div class="sp-empty">
+            <div class="sp-empty-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#185a9d" stroke-width="1.5" stroke-linecap="round">
+                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>
+              </svg>
+            </div>
+            <p>No article campaigns yet</p>
+            <span class="sp-sub">Click <strong>New Campaign</strong> above to submit your first ad</span>
+          </div>
+        </div>
+      } @else {
+        <div class="sp-card">
+          <div class="sp-clist">
+
+            <!-- Header -->
+            <div class="sp-clist-hdr">
+              <span>Campaign</span>
+              <span>Status</span>
+              <span>Impressions</span>
+              <span>Clicks</span>
+              <span>CTR</span>
+              <span>Timeline</span>
+            </div>
+
+            <!-- Rows -->
+            @for (b of blogs(); track b._id) {
+              <div class="sp-crow">
+
+                <!-- Campaign info -->
+                <div class="sp-crow-campaign">
+                  <a [routerLink]="['/campaign', b._id]" class="sp-crow-link">
+                    @if (b.featuredImage) {
+                      <img [src]="b.featuredImage" [alt]="b.title" class="sp-crow-thumb" loading="lazy" />
+                    } @else {
+                      <div class="sp-crow-thumb sp-crow-thumb--letter">{{ b.title.charAt(0).toUpperCase() }}</div>
+                    }
+                    <div class="sp-crow-info">
+                      <span class="sp-crow-title">{{ b.title }}</span>
+                      <div class="sp-crow-tags">
+                        @if ((b.categories ?? [])[0]) {
+                          <span class="sp-crow-cat">{{ (b.categories ?? [])[0] }}</span>
+                        }
+                        @if (b.sponsorPriority) {
+                          <span class="sp-crow-priority"
+                            [style.color]="priorityColor(b.sponsorPriority)"
+                            [style.background]="priorityColor(b.sponsorPriority) + '22'">
+                            {{ priorityLabel(b.sponsorPriority) }}
+                          </span>
+                        }
+                      </div>
+                    </div>
+                  </a>
+                </div>
+
+                <!-- Status -->
+                <div class="sp-crow-status">
+                  @if (b.isSponsored) {
+                    <div class="sp-crow-badge sp-crow-badge--live">
+                      <span class="sp-crow-dot"></span>Live
+                    </div>
+                    <span class="sp-crow-sponsored">★ Sponsored</span>
+                  } @else {
+                    <div class="sp-crow-badge sp-crow-badge--review">
+                      <span class="sp-crow-dot"></span>Under Review
+                    </div>
+                  }
+                </div>
+
+                <!-- Impressions -->
+                <div class="sp-crow-cell">
+                  <span class="sp-crow-primary">{{ formatCount(b.views) }}</span>
+                  <span class="sp-crow-secondary">views</span>
+                  <span class="sp-crow-tertiary">{{ formatCount(b.likesCount) }} likes</span>
+                </div>
+
+                <!-- Clicks -->
+                <div class="sp-crow-cell">
+                  @if (b.clickAnalytics) {
+                    <span class="sp-crow-primary">{{ formatCount(b.clickAnalytics.totalClicks) }}</span>
+                    <span class="sp-crow-secondary">clicks</span>
+                    <span class="sp-crow-tertiary">{{ formatCount(b.clickAnalytics.uniqueClicks) }} unique</span>
+                  } @else {
+                    <span class="sp-crow-primary sp-crow-na">—</span>
+                    <span class="sp-crow-secondary">no clicks yet</span>
+                  }
+                </div>
+
+                <!-- CTR -->
+                <div class="sp-crow-ctr">
+                  @if (b.clickAnalytics) {
+                    <span class="sp-crow-ctr-val" [style.color]="ctrColor(b.clickAnalytics.ctr)">
+                      {{ b.clickAnalytics.ctr.toFixed(1) }}%
+                    </span>
+                    <div class="sp-crow-ctr-track">
+                      <div class="sp-crow-ctr-fill"
+                           [style.width.%]="ctrBarWidth(b.clickAnalytics.ctr)"
+                           [style.background]="ctrColor(b.clickAnalytics.ctr)">
+                      </div>
+                    </div>
+                  } @else {
+                    <span class="sp-crow-na">—</span>
+                  }
+                </div>
+
+                <!-- Timeline -->
+                <div class="sp-crow-timeline">
+                  <span class="sp-crow-days" [style.color]="daysLeftColor(b)">{{ daysLeftLabel(b) }}</span>
+                  @if (b.sponsoredUntil) {
+                    <span class="sp-crow-tl-sub">ends {{ formatDate(b.sponsoredUntil) }}</span>
+                  } @else {
+                    <span class="sp-crow-tl-sub">since {{ formatDate(b.createdAt) }}</span>
+                  }
+                </div>
+
+              </div>
+            }
+
+          </div>
+        </div>
+      }
     }
-  }
+
+    <!-- ══════════ VIDEO CAMPAIGNS TAB ══════════ -->
+    @if (activeTab() === 'shorts') {
+      @if (shortsLoading()) {
+        <div class="sp-card sp-skeleton-rows">
+          @for (i of [1,2,3]; track i) { <div class="sp-skeleton-row"></div> }
+        </div>
+      } @else if (shorts().length === 0) {
+        <div class="sp-card">
+          <div class="sp-empty">
+            <div class="sp-empty-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="1.5" stroke-linecap="round">
+                <path d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.9L15 14v-4z"/>
+                <rect x="3" y="6" width="12" height="12" rx="2"/>
+              </svg>
+            </div>
+            <p>No video campaigns yet</p>
+            <span class="sp-sub">Click <strong>Video Ad</strong> above to submit your first sponsored short</span>
+          </div>
+        </div>
+      } @else {
+        <div class="sp-card">
+          <div class="sp-clist">
+
+            <!-- Header -->
+            <div class="sp-clist-hdr">
+              <span>Campaign</span>
+              <span>Status</span>
+              <span>Impressions</span>
+              <span>Clicks</span>
+              <span>CTR</span>
+              <span>Timeline</span>
+            </div>
+
+            <!-- Rows -->
+            @for (s of shorts(); track s._id) {
+              <div class="sp-crow">
+
+                <!-- Campaign info -->
+                <div class="sp-crow-campaign">
+                  <div class="sp-crow-link sp-crow-link--static">
+                    @if (s.thumbnailUrl) {
+                      <img [src]="s.thumbnailUrl" [alt]="s.title" class="sp-crow-thumb sp-crow-thumb--video" loading="lazy" />
+                    } @else {
+                      <div class="sp-crow-thumb sp-crow-thumb--dark">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="1.5" stroke-linecap="round">
+                          <path d="M8 5v14l11-7z"/>
+                        </svg>
+                      </div>
+                    }
+                    <div class="sp-crow-info">
+                      <span class="sp-crow-title">{{ s.title }}</span>
+                      <div class="sp-crow-tags">
+                        <span class="sp-crow-cat">{{ s.category }}</span>
+                        <span class="sp-crow-cat sp-crow-cat--video">
+                          <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                            <path d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.9L15 14v-4z"/>
+                            <rect x="3" y="6" width="12" height="12" rx="2"/>
+                          </svg>
+                          Short
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Status -->
+                <div class="sp-crow-status">
+                  @if (s.status === 'pending') {
+                    <div class="sp-crow-badge sp-crow-badge--review">
+                      <span class="sp-crow-dot"></span>Under Review
+                    </div>
+                  } @else if (s.isSponsored) {
+                    <div class="sp-crow-badge sp-crow-badge--live">
+                      <span class="sp-crow-dot"></span>Live
+                    </div>
+                    <span class="sp-crow-sponsored">★ Sponsored</span>
+                  } @else {
+                    <div class="sp-crow-badge sp-crow-badge--approved">
+                      <span class="sp-crow-dot"></span>Approved
+                    </div>
+                  }
+                </div>
+
+                <!-- Impressions -->
+                <div class="sp-crow-cell">
+                  <span class="sp-crow-primary">{{ formatCount(s.views) }}</span>
+                  <span class="sp-crow-secondary">views</span>
+                  <span class="sp-crow-tertiary">{{ formatCount(s.likesCount) }} likes</span>
+                </div>
+
+                <!-- Clicks -->
+                <div class="sp-crow-cell">
+                  @if (s.clickAnalytics) {
+                    <span class="sp-crow-primary">{{ formatCount(s.clickAnalytics.totalClicks) }}</span>
+                    <span class="sp-crow-secondary">clicks</span>
+                    <span class="sp-crow-tertiary">{{ formatCount(s.clickAnalytics.uniqueClicks) }} unique</span>
+                  } @else {
+                    <span class="sp-crow-primary sp-crow-na">—</span>
+                    <span class="sp-crow-secondary">no clicks yet</span>
+                  }
+                </div>
+
+                <!-- CTR -->
+                <div class="sp-crow-ctr">
+                  @if (s.clickAnalytics) {
+                    <span class="sp-crow-ctr-val" [style.color]="ctrColor(s.clickAnalytics.ctr)">
+                      {{ s.clickAnalytics.ctr.toFixed(1) }}%
+                    </span>
+                    <div class="sp-crow-ctr-track">
+                      <div class="sp-crow-ctr-fill"
+                           [style.width.%]="ctrBarWidth(s.clickAnalytics.ctr)"
+                           [style.background]="ctrColor(s.clickAnalytics.ctr)">
+                      </div>
+                    </div>
+                  } @else {
+                    <span class="sp-crow-na">—</span>
+                  }
+                </div>
+
+                <!-- Timeline -->
+                <div class="sp-crow-timeline">
+                  <span class="sp-crow-days" [style.color]="daysLeftColor(s)">{{ daysLeftLabel(s) }}</span>
+                  @if (s.sponsoredUntil) {
+                    <span class="sp-crow-tl-sub">ends {{ formatDate(s.sponsoredUntil) }}</span>
+                  } @else {
+                    <span class="sp-crow-tl-sub">since {{ formatDate(s.createdAt) }}</span>
+                  }
+                </div>
+
+              </div>
+            }
+
+          </div>
+        </div>
+      }
+    }
+
+  </div><!-- /sp-body -->
 
   <app-mobile-bottom-nav></app-mobile-bottom-nav>
 </div>

@@ -99,8 +99,16 @@ export default async function handler(req, res) {
       { url: '/category/village',       changefreq: 'weekly', priority: 0.6, lastmod: new Date().toISOString() },
     ];
 
-    // Dynamic blog routes — published posts only
-    const publishedPosts = allPosts.filter(post => post.status === 'published' && post.title);
+    // Dynamic blog routes — published posts with enough description to indicate substantive content.
+    // Posts with fewer than 15 description words are likely thin/stub articles that will be noindexed
+    // by the page itself, so submitting them here creates a sitemap/robots conflict.
+    const hasSubstantiveDesc = (post) => {
+      const desc = (post.description ?? '').trim();
+      return desc.split(/\s+/).filter(Boolean).length >= 15;
+    };
+    const publishedPosts = allPosts.filter(post =>
+      post.status === 'published' && post.title && hasSubstantiveDesc(post)
+    );
 
     // Collect unique tags and author post counts
     const tagCounts = new Map();
@@ -121,9 +129,9 @@ export default async function handler(req, res) {
       .map(([tag]) => ({ url: `/tag/${encodeURIComponent(tag)}`, changefreq: 'weekly', priority: 0.6 }));
 
     // Use MongoDB _id for author URLs — author-page.ts fetches by getUserById(id).
-    // Threshold must match author-page.ts's noindex cutoff (>= 3 published posts).
+    // Threshold must match author-page.ts's noindex cutoff (>= 5 published posts).
     const authorLinks = [...authorCounts.entries()]
-      .filter(([, count]) => count >= 3)
+      .filter(([, count]) => count >= 5)
       .map(([id]) => ({ url: `/author/${id}`, changefreq: 'weekly', priority: 0.6 }));
 
     const postLinks = publishedPosts.map(post => {

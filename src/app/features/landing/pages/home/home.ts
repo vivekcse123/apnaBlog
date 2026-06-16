@@ -252,24 +252,20 @@ export class Home implements OnInit, OnDestroy {
   // like/comment/view) so the list shifts day to day as engagement changes,
   // instead of being pinned to all-time likesCount. Falls back to likesCount
   // for posts whose hotScore hasn't been computed yet (score === 0/undefined).
+  // Editorial-only posts — sponsored content has its own dedicated section
+  // and must not appear in editorial feeds (Trending, Hot, Latest, Filtered).
+  private editorialPosts = computed(() => this.allPosts().filter(p => !p.isSponsored));
+
   private byLikes = computed(() => {
-    const all = this.allPosts();
+    const all = this.editorialPosts();
     const score = (p: PostWithTs) => (p.hotScore || p.likesCount);
-    const sponsored = all.filter(p => p.isSponsored).sort((a, b) => score(b) - score(a));
-    const regular   = all.filter(p => !p.isSponsored).sort((a, b) => score(b) - score(a));
-    return [...sponsored, ...regular];
+    return [...all].sort((a, b) => score(b) - score(a));
   });
   private byViews = computed(() => {
-    const all = this.allPosts();
-    const sponsored = all.filter(p => p.isSponsored).sort((a, b) => b.views - a.views);
-    const regular   = all.filter(p => !p.isSponsored).sort((a, b) => b.views - a.views);
-    return [...sponsored, ...regular];
+    return [...this.editorialPosts()].sort((a, b) => b.views - a.views);
   });
   private byDate = computed(() => {
-    const all = this.allPosts();
-    const sponsored = all.filter(p => p.isSponsored).sort((a, b) => b._ts - a._ts);
-    const regular   = all.filter(p => !p.isSponsored).sort((a, b) => b._ts - a._ts);
-    return [...sponsored, ...regular];
+    return [...this.editorialPosts()].sort((a, b) => b._ts - a._ts);
   });
 
   trendingPosts = computed(() => {
@@ -285,9 +281,9 @@ export class Home implements OnInit, OnDestroy {
     return this.byDate().slice(start, start + PAGE_SIZE);
   });
 
-  trendingPageCount = computed(() => Math.max(1, Math.ceil(this.allPosts().length / PAGE_SIZE)));
-  hotPageCount      = computed(() => Math.max(1, Math.ceil(this.allPosts().length / PAGE_SIZE)));
-  latestPageCount   = computed(() => Math.max(1, Math.ceil(this.allPosts().length / PAGE_SIZE)));
+  trendingPageCount = computed(() => Math.max(1, Math.ceil(this.editorialPosts().length / PAGE_SIZE)));
+  hotPageCount      = computed(() => Math.max(1, Math.ceil(this.editorialPosts().length / PAGE_SIZE)));
+  latestPageCount   = computed(() => Math.max(1, Math.ceil(this.editorialPosts().length / PAGE_SIZE)));
 
   filteredPageCount    = computed(() => Math.max(1, Math.ceil(this.filteredPosts().length / PAGE_SIZE)));
   visibleFilteredPosts = computed(() => this.filteredPosts().slice(0, this.filteredVisibleCount()));
@@ -301,10 +297,10 @@ export class Home implements OnInit, OnDestroy {
     const rt   = this.selectedReadingTime();
     const q    = this.searchQuery().trim().toLowerCase();
     const sort = this.selectedSort();
-    // Use full pool (all published posts) when available so filters show all matches,
-    // not just the 20 currently loaded for display
+    // Use full pool (editorial posts only — sponsored excluded from all filtered views)
     const pool = this._fullPostPool();
-    let posts: PostWithTs[] = pool.length > 0 ? pool : this.allPosts().filter(p => p.status === 'published');
+    let posts: PostWithTs[] = (pool.length > 0 ? pool : this.allPosts().filter(p => p.status === 'published'))
+      .filter(p => !p.isSponsored);
 
     if (cat) posts = posts.filter(p => p.categories.includes(cat));
     if (tag) posts = posts.filter(p => p.tags?.includes(tag));
@@ -427,6 +423,13 @@ export class Home implements OnInit, OnDestroy {
   // True once stats-fetch has returned accurate data
   storiesReady   = computed(() => this.serverTotal() > 0);
   totalReadsReady = computed(() => this._maxSeenViews() > 0);
+
+  totalViewCount = computed(() => {
+    const v = this._maxSeenViews();
+    if (v >= 1_000_000) return (v / 1_000_000).toFixed(1) + 'M+';
+    if (v >= 1_000)     return (v / 1_000).toFixed(1) + 'K+';
+    return v > 0 ? String(v) + '+' : '—';
+  });
 
   /** Unique author count — used as a proxy for community members */
   communityMembersCount = computed(() => {
@@ -724,6 +727,29 @@ export class Home implements OnInit, OnDestroy {
       });
   }
 
+  trackSponsorClick(postId: string, url: string): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    const payload = JSON.stringify({
+      postId,
+      url,
+      referrer:   this.document.referrer || '',
+      deviceType: /Mobi|Android/i.test(navigator.userAgent) ? 'mobile' : 'desktop',
+      visitorId:  (() => {
+        try {
+          let vid = localStorage.getItem('_apna_vid');
+          if (!vid) { vid = Math.random().toString(36).slice(2) + Date.now().toString(36); localStorage.setItem('_apna_vid', vid); }
+          return vid;
+        } catch { return 'anon'; }
+      })(),
+    });
+    const endpoint = `${environment.apiUrl}/sponsorship/track-click`;
+    if (navigator.sendBeacon) {
+      navigator.sendBeacon(endpoint, new Blob([payload], { type: 'application/json' }));
+    } else {
+      fetch(endpoint, { method: 'POST', body: payload, headers: { 'Content-Type': 'application/json' }, keepalive: true }).catch(() => {});
+    }
+  }
+
   /**
    * Always runs on every page load to populate _fullPostPool (needed for accurate
    * category/tag/search filtering). Paginates through ALL server pages (100/page).
@@ -940,24 +966,24 @@ export class Home implements OnInit, OnDestroy {
     const site = environment.siteUrl;
     const og   = environment.ogImage;
     // Kept under ~50 chars so it doesn't get truncated in Google search results.
-    this.titleService.setTitle('ApnaInsights — Community Stories from India');
-    this.meta.updateTag({ name: 'description',    content: 'Discover real stories from real people across India. Blogs on Tech, Health, Business, Lifestyle, Village Life & more. Free community blogging platform.' });
-    this.meta.updateTag({ name: 'keywords',       content: 'Indian blog platform, community stories India, read blogs India, write blogs free, trending stories, technology blog India, village life stories, health stories India, ApnaInsights' });
+    this.titleService.setTitle('ApnaInsights — Practical Knowledge for Everyday Life');
+    this.meta.updateTag({ name: 'description',    content: 'Practical knowledge for everyday life — expert guides on Technology, Career, Health & Business written by verified contributors across India.' });
+    this.meta.updateTag({ name: 'keywords',       content: 'practical knowledge India, technology guides India, career tips India, health advice India, business insights, ApnaInsights, everyday life guides' });
     this.meta.updateTag({ name: 'robots',         content: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' });
-    this.meta.updateTag({ name: 'author',         content: 'ApnaInsights Community' });
+    this.meta.updateTag({ name: 'author',         content: 'ApnaInsights Editorial Team' });
     this.meta.updateTag({ property: 'og:type',         content: 'website' });
-    this.meta.updateTag({ property: 'og:title',        content: 'ApnaInsights — Community Stories from India' });
-    this.meta.updateTag({ property: 'og:description',  content: 'Discover real stories from real people across India. Blogs on Technology, Lifestyle, Health, Business, Village Life and more. Free to read, free to write.' });
+    this.meta.updateTag({ property: 'og:title',        content: 'ApnaInsights — Practical Knowledge for Everyday Life' });
+    this.meta.updateTag({ property: 'og:description',  content: 'Practical knowledge for everyday life — expert guides on Technology, Career, Health & Business written by verified contributors across India.' });
     this.meta.updateTag({ property: 'og:url',          content: `${site}/` });
     this.meta.updateTag({ property: 'og:site_name',    content: 'ApnaInsights' });
     this.meta.updateTag({ property: 'og:image',        content: og });
     this.meta.updateTag({ property: 'og:image:width',  content: '1200' });
     this.meta.updateTag({ property: 'og:image:height', content: '630' });
-    this.meta.updateTag({ property: 'og:image:alt',    content: 'ApnaInsights — Community Stories from India' });
+    this.meta.updateTag({ property: 'og:image:alt',    content: 'ApnaInsights — Practical Knowledge for Everyday Life' });
     this.meta.updateTag({ property: 'og:locale',       content: 'en_IN' });
     this.meta.updateTag({ name: 'twitter:card',        content: 'summary_large_image' });
-    this.meta.updateTag({ name: 'twitter:title',       content: 'ApnaInsights — Community Stories from India' });
-    this.meta.updateTag({ name: 'twitter:description', content: 'Real stories from real people. Blogs on technology, lifestyle, health, village life and more. Free community platform.' });
+    this.meta.updateTag({ name: 'twitter:title',       content: 'ApnaInsights — Practical Knowledge for Everyday Life' });
+    this.meta.updateTag({ name: 'twitter:description', content: 'Practical knowledge for everyday life. Expert guides on Technology, Career, Health & Business from verified contributors across India.' });
     this.meta.updateTag({ name: 'twitter:image',       content: og });
     this.meta.updateTag({ name: 'twitter:site',        content: '@apnainsights' });
 
@@ -978,15 +1004,56 @@ export class Home implements OnInit, OnDestroy {
       {
         '@context': 'https://schema.org',
         '@graph': [
+          // WebSite — MUST be defined on the homepage for Google's site name feature.
+          // Google uses this name field to display "ApnaInsights" next to the logo in
+          // search results instead of falling back to the domain "apnainsights.com".
+          {
+            '@type':     'WebSite',
+            '@id':       `${site}/#website`,
+            url:         `${site}/`,
+            name:        'ApnaInsights',
+            description: 'India\'s practical knowledge platform — expert-reviewed guides on Technology, Career, Health & Business.',
+            publisher:   { '@id': `${site}/#organization` },
+            potentialAction: {
+              '@type':       'SearchAction',
+              target:        { '@type': 'EntryPoint', urlTemplate: `${site}/search?q={search_term_string}` },
+              'query-input': 'required name=search_term_string',
+            },
+          },
+          // Organization — defines the publisher entity referenced by every page's schema.
+          {
+            '@type':         'Organization',
+            '@id':           `${site}/#organization`,
+            name:            'ApnaInsights',
+            alternateName:   'Apna Insights',
+            url:             site,
+            logo: {
+              '@type':      'ImageObject',
+              '@id':        `${site}/#logo`,
+              url:          `${site}/logo.png`,
+              contentUrl:   `${site}/logo.png`,
+              width:        1024,
+              height:       1024,
+              caption:      'ApnaInsights',
+            },
+            image:       { '@id': `${site}/#logo` },
+            description: 'ApnaInsights is India\'s practical knowledge platform publishing expert-reviewed guides on Technology, Career, Health and Business — written by verified contributors.',
+            foundingDate: '2024',
+            sameAs: [
+              'https://twitter.com/apnainsights',
+              'https://linkedin.com/company/apnainsights',
+              'https://instagram.com/apnainsights_',
+            ],
+          },
           {
             '@type':       'CollectionPage',
             '@id':         `${site}/#homepage`,
             url:           `${site}/`,
-            name:          'ApnaInsights — Community Stories from India',
-            description:   'Browse trending, most-viewed, and latest community blogs from writers across India.',
+            name:          'ApnaInsights — Practical Guides on Tech, Career & Life',
+            description:   'Browse expert-reviewed guides on Technology, Career, Health & Business — trusted insights from verified contributors across India.',
             inLanguage:    'en-IN',
             isPartOf:      { '@id': `${site}/#website` },
-            about:         { '@type': 'Thing', name: 'Community Blogging India' },
+            about:         { '@type': 'Thing', name: 'Practical Knowledge Platform India' },
             publisher:     { '@id': `${site}/#organization` },
             primaryImageOfPage: {
               '@type': 'ImageObject',
@@ -1012,7 +1079,7 @@ export class Home implements OnInit, OnDestroy {
             name:    'Is ApnaInsights free to use?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text:    'Yes, ApnaInsights is completely free — free to read all stories and free to write and publish your own blogs. No subscription or payment is required.',
+              text:    'Yes, ApnaInsights is completely free — free to read all guides and articles and free to write and publish your own. No subscription or payment is required.',
             },
           },
           {
@@ -1020,7 +1087,7 @@ export class Home implements OnInit, OnDestroy {
             name:    'Who can write on ApnaInsights?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text:    'Anyone can write on ApnaInsights! Create a free account and start sharing your stories on topics like Technology, Health, Lifestyle, Village Life, Sports, Business, and more.',
+              text:    'Anyone can write on ApnaInsights! Create a free account and start sharing your expertise and insights on topics like Technology, Health, Lifestyle, Career, Sports, Business, and more.',
             },
           },
           {
@@ -1028,15 +1095,15 @@ export class Home implements OnInit, OnDestroy {
             name:    'What topics can I read about on ApnaInsights?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text:    'ApnaInsights covers a wide range of topics including Technology, Health, Sports, Business, Entertainment, Education, Lifestyle, Village Life, Social Issues, Cooking, Exercise, and more — all written by real people from across India.',
+              text:    'ApnaInsights covers a wide range of topics including Technology, Health, Sports, Business, Entertainment, Education, Lifestyle, Career, Social Issues, Cooking, Exercise, and more — all written by verified contributors from across India.',
             },
           },
           {
             '@type': 'Question',
-            name:    'Can I read blogs in Hindi or other Indian languages?',
+            name:    'Can I read articles in Hindi or other Indian languages?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text:    'Yes! ApnaInsights supports reading any blog in Hindi, Marathi, Tamil, Telugu, Malayalam, and Kannada using the built-in translation feature on every blog post.',
+              text:    'Yes! ApnaInsights supports reading any article in Hindi, Marathi, Tamil, Telugu, Malayalam, and Kannada using the built-in translation feature on every post.',
             },
           },
           {
@@ -1044,7 +1111,7 @@ export class Home implements OnInit, OnDestroy {
             name:    'How do I get started on ApnaInsights?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text:    'Simply visit apnainsights.com, create a free account using your email or Google account, and you can immediately start reading or writing blogs. No setup or payment needed.',
+              text:    'Simply visit apnainsights.com, create a free account using your email or Google account, and you can immediately start reading or writing articles and guides. No setup or payment needed.',
             },
           },
           {
@@ -1087,7 +1154,7 @@ export class Home implements OnInit, OnDestroy {
       '@context': 'https://schema.org',
       '@type':    'ItemList',
       name:       'Trending Stories on ApnaInsights',
-      description: 'The most-liked community blog posts on ApnaInsights right now.',
+      description: 'The most-liked knowledge guides and stories on ApnaInsights right now.',
       url:        `${site}/`,
       numberOfItems: top5.length,
       itemListElement: top5.map((p: any, i: number) => ({
@@ -1530,6 +1597,11 @@ export class Home implements OnInit, OnDestroy {
     if (isPlatformBrowser(this.platformId)) {
       const post = this.allPosts().find(p => p._id === id || (p as any).slug === id);
       if (post) {
+        // Sponsored posts go to the dedicated campaign page, not the blog article
+        if ((post as any).isSponsored) {
+          this.router.navigate(['/campaign', post._id]);
+          return;
+        }
         this.readingHistory.add(post);
         const newIds = new Set(this.readHistoryIds());
         newIds.add(post._id);

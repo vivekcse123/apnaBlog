@@ -26,12 +26,12 @@ export class Terms implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.title.setTitle('Terms of Service | ApnaInsights');
-    this.meta.updateTag({ name: 'description', content: 'Read the ApnaInsights Terms of Service. By using apnainsights.com you agree to these terms governing your use of our community blogging platform.' });
+    this.meta.updateTag({ name: 'description', content: 'Read the ApnaInsights Terms of Service. By using apnainsights.com you agree to these terms governing your use of our knowledge platform.' });
     this.meta.updateTag({ name: 'robots', content: 'index, follow' });
 
     this.meta.updateTag({ property: 'og:type', content: 'website' });
     this.meta.updateTag({ property: 'og:title', content: 'Terms of Service | ApnaInsights' });
-    this.meta.updateTag({ property: 'og:description', content: 'ApnaInsights Terms of Service — rules and guidelines for using our community blogging platform.' });
+    this.meta.updateTag({ property: 'og:description', content: 'ApnaInsights Terms of Service — rules and guidelines for using our knowledge platform.' });
     this.meta.updateTag({ property: 'og:url', content: environment.siteUrl + '/terms' });
 
     let canonical = this.document.querySelector('link[rel="canonical"]') as HTMLLinkElement;

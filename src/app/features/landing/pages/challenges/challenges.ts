@@ -109,7 +109,7 @@ export class ChallengesPage implements OnInit {
 
     this.titleSvc.setTitle('Writing Challenges | ApnaInsights');
     this.meta.updateTag({ name: 'description',        content: desc });
-    this.meta.updateTag({ name: 'robots',             content: 'index, follow' });
+    this.meta.updateTag({ name: 'robots',             content: 'noindex, follow' });
     this.meta.updateTag({ property: 'og:title',       content: 'Writing Challenges | ApnaInsights' });
     this.meta.updateTag({ property: 'og:description', content: desc });
     this.meta.updateTag({ property: 'og:url',         content: url });
