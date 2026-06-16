@@ -451,8 +451,8 @@
 
     </header>
 
-    <!-- AdSense — top of article (below meta/lang bar, above content) -->
-    @if (!isThinPost()) {
+    <!-- AdSense — top of article (600+ words only) -->
+    @if (!isThinPost() && !isShortPost()) {
       <div class="ad-unit-wrap ad-unit-wrap--top">
         <ins class="adsbygoogle"
           style="display:block"
@@ -553,8 +553,8 @@
            (click)="onContentClick($event)"></div>
     }
 
-    <!-- AdSense — mid-content unit -->
-    @if (!isThinPost()) {
+    <!-- AdSense — mid-content unit (900+ words only) -->
+    @if (!isThinPost() && !isMediumPost()) {
       <div class="ad-unit-wrap ad-unit-wrap--mid">
         <ins class="adsbygoogle"
           style="display:block"
@@ -647,9 +647,13 @@
             <span class="wom-badge" [title]="'Writer of the Month — ' + (authorWOM?.challengeTitle || '')">👑 Writer of the Month</span>
           }
         </a>
-        <p class="author-card-bio">
-          {{ authorBio || 'Writer on ApnaInsights.' }}
-        </p>
+        @if (authorBio) {
+          <p class="author-card-bio">{{ authorBio }}</p>
+        } @else {
+          <p class="author-card-bio author-card-bio--empty">
+            <a [routerLink]="['/author', authorId()]">View full profile</a>
+          </p>
+        }
       </div>
       <div class="author-card-right">
         <div class="author-card-stat">

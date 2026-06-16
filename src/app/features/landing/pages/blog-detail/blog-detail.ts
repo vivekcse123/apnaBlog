@@ -304,12 +304,26 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   contentWordCount = signal(0);
   showToc          = signal(false);
 
-  // Hide ads on posts with < 300 words — ad-to-content ratio signals AdSense reviewers
+  // Hide all ads on posts with < 300 words
   isThinPost = computed(() => {
     const p = this.post();
     if (!p) return true;
     if (p.postType === 'mcq') return (p.mcqQuestions?.length ?? 0) < 3;
     return this.contentWordCount() < 300;
+  });
+
+  // Graduated ad logic — limits ad units on shorter articles to protect ad-to-content ratio
+  // 300–599 words: bottom ad only; 600–899 words: top + bottom; 900+ words: all three
+  isShortPost = computed(() => {
+    const p = this.post();
+    if (!p || p.postType === 'mcq') return false;
+    return this.contentWordCount() < 600;
+  });
+
+  isMediumPost = computed(() => {
+    const p = this.post();
+    if (!p || p.postType === 'mcq') return false;
+    return this.contentWordCount() < 900;
   });
 
   minutesLeft = computed(() => {
@@ -1541,6 +1555,8 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   private updateMetaTags(post: Post): void {
     const canonicalUrl = `${environment.siteUrl}/blog/${post.slug || post._id}`;
     const isMcq        = post.postType === 'mcq';
+    const lang         = this._detectLanguage(post);
+    const ogLocale     = lang === 'en-IN' ? 'en_IN' : lang.replace('-', '_');
     const rawDesc      = post.description || post.title;
     const fullDesc     = isMcq
       ? `${rawDesc} — Test your knowledge with this ${post.mcqQuestions?.length ?? 0}-question MCQ quiz.`
@@ -1553,12 +1569,12 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     this.titleService.setTitle(`${post.title}${titleSuffix} | ApnaInsights`);
 
     // Pending and draft posts must not be indexed.
-    // Thin posts (< 200 words) get noindex so they don't drag down site quality
+    // Thin posts (< 500 words) get noindex so they don't drag down site quality
     // for AdSense review — they stay accessible to users but Google won't index them.
     const plainTextForCount = (post.content ?? '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
     const wordCount         = plainTextForCount.split(/\s+/).filter(Boolean).length;
     this.contentWordCount.set(wordCount);
-    const isThinPost        = !isMcq && wordCount < 200;
+    const isThinPost        = !isMcq && wordCount < 500;
 
     // News articles get max-snippet for Top Stories eligibility
     const NEWS_CATS_META = new Set(['News','Sports','Business','Entertainment','Health','Science','Technology']);
@@ -1581,7 +1597,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     this.setMeta('property', 'og:description',           desc);
     this.setMeta('property', 'og:type',                  'article');
     this.setMeta('property', 'og:url',                   canonicalUrl);
-    this.setMeta('property', 'og:locale',                'en_IN');
+    this.setMeta('property', 'og:locale',                ogLocale);
     this.setMeta('property', 'og:image',                 image);
     this.setMeta('property', 'og:image:alt',             post.title);
     this.setMeta('property', 'og:image:width',           '1200');
@@ -1651,6 +1667,16 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     this.injectArticleSchema(post);
   }
 
+  private _detectLanguage(post: Post): string {
+    const sample = `${post.title ?? ''} ${post.description ?? ''}`;
+    if (/[ऀ-ॿ]/.test(sample)) return 'hi';   // Devanagari — Hindi / Marathi
+    if (/[஀-௿]/.test(sample)) return 'ta';   // Tamil
+    if (/[ఀ-౿]/.test(sample)) return 'te';   // Telugu
+    if (/[ഀ-ൿ]/.test(sample)) return 'ml';   // Malayalam
+    if (/[ಀ-೿]/.test(sample)) return 'kn';   // Kannada
+    return 'en-IN';
+  }
+
   private injectArticleSchema(post: Post): void {
     try {
       const site       = environment.siteUrl;
@@ -1659,6 +1685,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
       const authorId   = (post.user as any)?._id;
       const isMcq      = post.postType === 'mcq';
       const image      = post.featuredImage || environment.ogImage;
+      const lang       = this._detectLanguage(post);
 
       // ── Breadcrumb ───────────────────────────────────────────────────────
       const breadcrumbItems: any[] = [
@@ -1691,7 +1718,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
         url:              postUrl,
         headline:         post.title.substring(0, 110),   // Google max: 110 chars
         description:      this.truncateDesc(post.description || post.title, 155),
-        inLanguage:       'en-IN',
+        inLanguage:       lang,
         isAccessibleForFree: true,
         image: {
           '@type':   'ImageObject',
@@ -1802,7 +1829,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
             breadcrumb:       { '@id': `${postUrl}#breadcrumb` },
             datePublished:    new Date(post.createdAt).toISOString(),
             dateModified:     new Date(post.updatedAt ?? post.createdAt).toISOString(),
-            inLanguage:       'en-IN',
+            inLanguage:       lang,
           },
           ...(post.faqs?.length ? [{
             '@type': 'FAQPage',

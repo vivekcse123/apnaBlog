@@ -176,6 +176,21 @@
           </div>
         }
 
+        <!-- FAQ section — shown in read view for blog posts -->
+        @if (post()?.postType !== 'mcq' && post()?.faqs?.length) {
+          <div class="detail-block full">
+            <span class="detail-label">FAQs ({{ post()!.faqs!.length }})</span>
+            <div class="faq-view-list">
+              @for (faq of post()!.faqs!; track faq._id ?? $index; let fi = $index) {
+                <div class="faq-view-item">
+                  <p class="faq-view-q"><span class="faq-view-num">Q{{ fi + 1 }}</span> {{ faq.question }}</p>
+                  <p class="faq-view-a">{{ faq.answer }}</p>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
         <div class="detail-row">
           <div class="detail-block">
             <span class="detail-label">Categories</span>
@@ -741,6 +756,57 @@
             }
           </div>
           } <!-- end @if postType !== mcq -->
+
+          <!-- ── FAQ Editor (blog posts only) ── -->
+          @if (post()?.postType !== 'mcq') {
+            <div class="edit-field full">
+              <div class="form-section-label">
+                <span class="form-section-icon">💬</span> FAQs
+                <span class="field-hint-text">3–5 questions improve AdSense readiness &amp; Google rich results</span>
+              </div>
+
+              @if (faqs().length === 0) {
+                <div class="faq-empty-state">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                  </svg>
+                  <p>No FAQs yet — add 3 to 5 to boost content depth and AdSense quality signals.</p>
+                </div>
+              }
+
+              @for (f of faqs(); track trackByIdx($index); let fi = $index) {
+                <div class="mcq-editor-card">
+                  <div class="mcq-editor-header">
+                    <span class="mcq-editor-num">FAQ {{ fi + 1 }}</span>
+                    <button type="button" class="mcq-remove-btn" (click)="removeFaq(fi)" title="Remove FAQ">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                      </svg>
+                    </button>
+                  </div>
+                  <textarea class="mcq-editor-input mcq-editor-question"
+                    rows="2"
+                    placeholder="Question…"
+                    [value]="f.question"
+                    (input)="updateFaqQuestion(fi, $any($event.target).value)"></textarea>
+                  <textarea class="mcq-editor-input mcq-editor-exp"
+                    rows="3"
+                    placeholder="Answer…"
+                    [value]="f.answer"
+                    (input)="updateFaqAnswer(fi, $any($event.target).value)"></textarea>
+                </div>
+              }
+
+              @if (faqs().length < 10) {
+                <button type="button" class="mcq-add-q-btn" (click)="addFaq()">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                  </svg>
+                  Add FAQ
+                </button>
+              }
+            </div>
+          }
 
           <!-- Categories -->
           <div class="edit-field full">

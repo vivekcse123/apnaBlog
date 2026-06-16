@@ -8,7 +8,7 @@ import { Subject, takeUntil, finalize } from 'rxjs';
 import { PostService }    from '../../features/post/services/post-service';
 import { UploadService }  from '../../features/post/services/upload-service';
 import { Auth }           from '../../core/services/auth';
-import { Post, McqQuestion } from '../../core/models/post.model';
+import { Post, McqQuestion, FaqItem } from '../../core/models/post.model';
 import { ToastService }   from '../../core/services/toast.service';
 import { TaxonomyService } from '../../core/services/taxonomy.service';
 import { sanitizeHtml } from '../utils/sanitize-html';
@@ -99,6 +99,25 @@ export class ViewPost implements OnInit, OnDestroy {
 
   // MCQ questions state (used when editing an MCQ-type post)
   mcqQuestions = signal<McqQuestion[]>([]);
+
+  // FAQ state (used when editing a blog post)
+  faqs = signal<FaqItem[]>([]);
+
+  addFaq(): void {
+    this.faqs.update(items => [...items, { question: '', answer: '' }]);
+  }
+
+  removeFaq(index: number): void {
+    this.faqs.update(items => items.filter((_, i) => i !== index));
+  }
+
+  updateFaqQuestion(index: number, value: string): void {
+    this.faqs.update(items => items.map((f, i) => i === index ? { ...f, question: value } : f));
+  }
+
+  updateFaqAnswer(index: number, value: string): void {
+    this.faqs.update(items => items.map((f, i) => i === index ? { ...f, answer: value } : f));
+  }
 
   // Table insertion / deletion
   showTablePicker = signal(false);
@@ -288,6 +307,11 @@ export class ViewPost implements OnInit, OnDestroy {
       );
     }
 
+    // Deep-clone FAQs for editing (blog posts only)
+    if (!isMcq) {
+      this.faqs.set((p?.faqs ?? []).map(f => ({ ...f })));
+    }
+
     this.editForm = this.fb.group({
       title:         [p?.title         || '', [Validators.required, Validators.minLength(5), Validators.maxLength(100)]],
       description:   [p?.description   || '', [Validators.required, Validators.minLength(10)]],
@@ -338,6 +362,7 @@ export class ViewPost implements OnInit, OnDestroy {
     this.activeFormats.set(new Set());
     this.activeBlock.set('');
     this.imageGallery.set([]);
+    this.faqs.set([]);
     this.cropQueue = [];
     this.closeCropper();
     this.editForm.reset();
@@ -765,6 +790,9 @@ export class ViewPost implements OnInit, OnDestroy {
     if (this.post()?.postType === 'mcq') {
       payload.mcqQuestions = this.mcqQuestions();
       delete payload.content;   // MCQ posts have no rich-text content
+    } else {
+      // For blog posts: include FAQs (only non-empty entries)
+      payload.faqs = this.faqs().filter(f => f.question.trim() && f.answer.trim());
     }
 
     this.postService.updatePost(this.post()?._id ?? '', payload)
