@@ -6,6 +6,7 @@
   min-height: 100vh;
   background: #f8fafc;
   font-family: inherit;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 /* ── Sponsored header bar ── */
@@ -13,7 +14,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 24px;
+  padding: max(10px, env(safe-area-inset-top, 10px)) 24px 10px;
   background: #f59e0b;
   position: sticky;
   top: 0;
@@ -370,11 +371,18 @@
 
 /* ── Responsive ── */
 @media (max-width: 640px) {
-  .cp-ad-bar { padding: 8px 16px; }
+  /* safe-area already handled by the base rule; keep item padding small */
+  .cp-ad-bar { padding-left: 16px; padding-right: 16px; padding-bottom: 8px; }
   .cp-hero-wrap, .cp-details-wrap, .cp-disclosure-wrap, .cp-footer { padding: 0 14px; }
-  .cp-hero-wrap { margin-top: 20px; }
-  .cp-hero { padding: 24px 20px; }
-  .cp-details { padding: 24px 20px; }
-  .cp-headline { font-size: 1.5rem; }
+  .cp-hero-wrap { margin-top: 16px; margin-bottom: 16px; }
+  .cp-hero { padding: 20px 16px 18px; border-radius: 14px; }
+  .cp-details { padding: 20px 16px; border-radius: 12px; }
+  .cp-headline { font-size: 1.35rem; }
+  .cp-pitch { font-size: .93rem; }
   .cp-brand-cat { margin-left: 0; }
+  .cp-featured-img { max-height: 200px; border-radius: 10px; }
+  .cp-cta-btn { padding: 13px 20px; font-size: .93rem; }
+  .cp-brand-avatar { width: 44px; height: 44px; font-size: 1.2rem; border-radius: 12px; }
+  .cp-disclosure { padding: 14px 16px; gap: 10px; }
+  .cp-footer { margin-bottom: 24px; }
 }
