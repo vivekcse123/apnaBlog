@@ -83,7 +83,7 @@ export class SearchPage implements OnInit {
   }
 
   ngOnInit(): void {
-    this.titleSvc.setTitle('Search Stories — ApnaInsights');
+    this.titleSvc.setTitle('Search Guides & Articles — ApnaInsights');
     setTimeout(() => this.pushAds(), 500);
     this.meta.updateTag({ name: 'description', content: 'Search thousands of articles on ApnaInsights.' });
     // robots.txt no longer disallows /search — that previously blocked Google

@@ -255,13 +255,13 @@ export class CategoryPage implements OnInit, OnDestroy {
     const intro = info?.intro ?? '';
 
     this.categoryIntro.set(intro);
-    this.titleSvc.setTitle(`${name} Stories & Blogs | ApnaInsights`);
+    this.titleSvc.setTitle(`${name} Guides & Insights | ApnaInsights`);
     this.meta.updateTag({ name: 'description',        content: desc });
     // Fail safe to noindex until applyRobotsForCount() confirms the category
     // has enough posts — avoids a crawler ever seeing `index` on an
     // empty/thin category page (soft-404 risk).
     this.meta.updateTag({ name: 'robots',             content: 'noindex, follow' });
-    this.meta.updateTag({ property: 'og:title',       content: `${name} Stories & Blogs | ApnaInsights` });
+    this.meta.updateTag({ property: 'og:title',       content: `${name} Guides & Insights | ApnaInsights` });
     this.meta.updateTag({ property: 'og:description', content: desc });
     this.meta.updateTag({ property: 'og:url',         content: url });
     this.meta.updateTag({ property: 'og:type',        content: 'website' });
@@ -282,7 +282,7 @@ export class CategoryPage implements OnInit, OnDestroy {
           '@type':       'CollectionPage',
           '@id':         `${url}#webpage`,
           url,
-          name:          `${name} Stories & Blogs`,
+          name:          `${name} Guides & Insights`,
           description:   desc,
           inLanguage:    'en-IN',
           isPartOf:      { '@id': `${environment.siteUrl}/#website` },

@@ -69,9 +69,9 @@ export default async function handler(req, res) {
   xmlns:content="http://purl.org/rss/1.0/modules/content/"
   xmlns:dc="http://purl.org/dc/elements/1.1/">
   <channel>
-    <title>ApnaInsights — Real Stories, Real Voices</title>
+    <title>ApnaInsights — Practical Knowledge for Everyday Life</title>
     <link>https://apnainsights.com</link>
-    <description>India's community blogging platform — real stories on technology, lifestyle, health, business, education and more.</description>
+    <description>India's practical knowledge platform — expert guides on Technology, Career, Health, Business, Lifestyle and more.</description>
     <language>en-IN</language>
     <copyright>© ${new Date().getFullYear()} ApnaInsights</copyright>
     <managingEditor>supports@apnainsights.com (ApnaInsights)</managingEditor>
