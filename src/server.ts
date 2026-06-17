@@ -212,7 +212,7 @@ app.get(['/rss.xml', '/feed', '/feed.xml'], async (_req: Request, res: Response)
       return `<item><title>${esc(p.title)}</title><link>${url}</link><guid isPermaLink="true">${url}</guid><description>${desc}</description><pubDate>${date}</pubDate>${cats}${img}</item>`;
     }).join('');
 
-    const xml = `<?xml version="1.0" encoding="UTF-8"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>ApnaInsights — Real Stories, Real Voices</title><link>${SITE_ORIGIN}</link><description>India's community blogging platform.</description><language>en-IN</language><lastBuildDate>${new Date().toUTCString()}</lastBuildDate><ttl>60</ttl><atom:link href="${SITE_ORIGIN}/rss.xml" rel="self" type="application/rss+xml"/>${items}</channel></rss>`;
+    const xml = `<?xml version="1.0" encoding="UTF-8"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>ApnaInsights — Practical Knowledge for Everyday Life</title><link>${SITE_ORIGIN}</link><description>India's practical knowledge platform — expert guides on Technology, Career, Health and Business.</description><language>en-IN</language><lastBuildDate>${new Date().toUTCString()}</lastBuildDate><ttl>60</ttl><atom:link href="${SITE_ORIGIN}/rss.xml" rel="self" type="application/rss+xml"/>${items}</channel></rss>`;
 
     rssCache = xml; rssCachedAt = Date.now();
     res.setHeader('Content-Type', 'application/rss+xml; charset=utf-8');

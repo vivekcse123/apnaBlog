@@ -80,7 +80,7 @@ export class About implements OnInit, OnDestroy {
     },
     {
       q: 'How do I start writing on ApnaInsights?',
-      a: 'Simply sign up for a free account, then click "Write a Story" to access our rich blog editor. You can publish across 14 categories: Update, News, Sports, Technology, Lifestyle, Education, Health, Business, Entertainment, Social, Village, Cooking, Quotes and Exercise.'
+      a: 'Simply sign up for a free account and click "Start Writing" to access our blog editor. Submit your guide or article across 14 topics: Technology, Health, Business, Lifestyle, Education, Sports, Entertainment, Cooking, Village, Social, Quotes, Exercise, News and Update.'
     },
     {
       q: 'Who founded ApnaInsights?',

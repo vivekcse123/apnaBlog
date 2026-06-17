@@ -72,8 +72,8 @@ const CATEGORY_DESCRIPTIONS: Record<string, { description: string; intro: string
     intro:       'Gym routines, yoga guides, running diaries, and personal fitness transformations from people who chose to make health a priority.'
   },
   'Social':        {
-    description: 'Social issues, community stories, cultural observations, human interest pieces, and important conversations about modern Indian society on ApnaInsights.',
-    intro:       'Social issues, community voices, cultural observations, and human interest stories that spark the conversations modern India needs to have.'
+    description: 'Social issues, cultural observations, human interest pieces, and important conversations about modern Indian society on ApnaInsights.',
+    intro:       'Social issues, community voices, cultural observations, and human interest insights that spark the conversations modern India needs to have.'
   },
   'Quotes':        {
     description: 'Inspiring quotes, motivational sayings, life wisdom, and thought-provoking words with context and reflection from writers across India on ApnaInsights.',
