@@ -60,6 +60,17 @@ const isKnownClientRoute = (pathname: string): boolean => {
   return KNOWN_PREFIX_SEGMENTS.has(path.split('/')[0]);
 };
 
+// Permanent slug redirects — old URL → new URL (HTTP 301 for SEO link equity transfer)
+const SLUG_REDIRECTS: Record<string, string> = {
+  'congress-wins-only-21-seats-in-assam-and-bengal-20-are-muslim-candidates':
+    'congress-2026-assembly-election-results-assam-west-bengal-analysis',
+};
+app.get('/blog/:slug', (req: Request, res: Response, next: NextFunction) => {
+  const target = SLUG_REDIRECTS[req.params['slug'] as string];
+  if (target) return res.redirect(301, `/blog/${target}`);
+  next();
+});
+
 // Dynamic sitemap — fetches all published posts and emits sitemap.xml.
 // Cached for 1 hour so the API isn't hit on every Googlebot request.
 const SITE_ORIGIN = 'https://apnainsights.com';

@@ -244,7 +244,10 @@ export class CategoryPage implements OnInit, OnDestroy {
   // to provide value to a visitor — indexing them works against us.
   private applyRobotsForCount(): void {
     const count = this.posts().length;
-    const robots = count >= 5 ? 'index, follow' : 'noindex, follow';
+    // Quotes pages are thin by nature (quote compilations add little unique value)
+    // Always keep noindex regardless of post count.
+    const isLowValue = this.categoryName() === 'Quotes';
+    const robots = (!isLowValue && count >= 5) ? 'index, follow' : 'noindex, follow';
     this.meta.updateTag({ name: 'robots', content: robots });
   }
 

@@ -326,6 +326,11 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     return this.contentWordCount() < 900;
   });
 
+  isHealthPost = computed(() => {
+    const cats = this.post()?.categories ?? [];
+    return cats.some(c => c === 'Health' || c === 'Exercise');
+  });
+
   minutesLeft = computed(() => {
     const pct   = this.readingProgress();
     const total = this.readingTime();
