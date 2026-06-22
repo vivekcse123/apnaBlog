@@ -1,8 +1,54 @@
+<!-- Schema: Organization + WebSite + SearchAction -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://apnainsights.com/#organization",
+      "name": "ApnaInsights",
+      "url": "https://apnainsights.com",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://apnainsights.com/logo-96.png",
+        "width": 96,
+        "height": 96
+      },
+      "description": "India's Practical Career and Tech Knowledge Platform. Guides on Technology, Careers, AI, Business, and Digital Skills written by verified Indian professionals.",
+      "foundingLocation": "Hyderabad, India",
+      "email": "hello@apnainsights.com",
+      "sameAs": [
+        "https://x.com/apnainsights_",
+        "https://www.instagram.com/apnainsights_/",
+        "https://linkedin.com/company/apnainsights",
+        "https://www.youtube.com/@apnaInsights46"
+      ]
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://apnainsights.com/#website",
+      "url": "https://apnainsights.com",
+      "name": "ApnaInsights",
+      "description": "Practical guides on Technology, Careers, and Digital Skills for Indian professionals.",
+      "publisher": { "@id": "https://apnainsights.com/#organization" },
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://apnainsights.com/search?q={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      }
+    }
+  ]
+}
+</script>
+
 @if (standalone) {
 
 <header class="header" role="banner">
   <div class="header-left">
-    <a class="app-logo" routerLink="/" aria-label="ApnaInsights — Go to homepage">
+    <a class="app-logo" routerLink="/" aria-label="ApnaInsights - Go to homepage">
       <img class="app-logo-img" src="/logo-96.png" alt="" width="30" height="30" loading="eager" />
       <span class="app-logo-text">ApnaInsights</span>
     </a>
@@ -16,7 +62,10 @@
       <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
       Shorts
     </a>
-    <a class="nav-link nav-link--challenge" routerLink="/challenges" aria-label="Writing Challenges">🏆 Challenges</a>
+    <a class="nav-link nav-link--challenge" routerLink="/challenges" aria-label="Writing Challenges">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg>
+      Challenges
+    </a>
     <a class="nav-link" routerLink="/topics" aria-label="Browse topics">Topics</a>
 
     <div class="nav-more-wrap" (click)="$event.stopPropagation()">
@@ -57,7 +106,7 @@
 
     @if (isLoggedIn) {
       <a class="hdr-avatar desktop-only" [routerLink]="dashboardRoute"
-         [attr.aria-label]="'Dashboard — ' + loggedInFirstName" [title]="loggedInFirstName">
+         [attr.aria-label]="'Dashboard - ' + loggedInFirstName" [title]="loggedInFirstName">
         @if (loggedInAvatar) {
           <img [src]="loggedInAvatar" [alt]="loggedInFirstName" width="32" height="32" />
         } @else {
@@ -137,11 +186,11 @@
   <div class="drawer-divider"></div>
   <span class="drawer-section-label">Explore</span>
   <a class="drawer-link drawer-link--challenge" routerLink="/challenges" (click)="menuOpen.set(false)">
-    <span class="drawer-link-icon drawer-link-icon--gold">🏆</span>
+    <span class="drawer-link-icon drawer-link-icon--gold"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg></span>
     Writing Challenges
     @if (activeChallenge()) {
       @if (activeChallenge()!.winnersDeclared) {
-        <span class="drawer-challenge-pill">Winners 🏆</span>
+        <span class="drawer-challenge-pill">Winners</span>
       } @else {
         <span class="drawer-challenge-pill">{{ challengeDaysLeft(activeChallenge()!.endDate) }}d left</span>
       }
@@ -196,15 +245,15 @@
 <nav class="mob-tabs" aria-label="Feed tabs">
   <button class="mob-tab" [class.mob-tab--active]="mobileTab() === 'for-you'"
           (click)="setMobileTab('for-you')" [attr.aria-pressed]="mobileTab() === 'for-you'">
-    <span class="mob-tab-icon" aria-hidden="true">🎯</span><span class="mob-tab-text">For You</span>
+    <span class="mob-tab-icon" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span><span class="mob-tab-text">For You</span>
   </button>
   <button class="mob-tab" [class.mob-tab--active]="mobileTab() === 'trending'"
           (click)="setMobileTab('trending')" [attr.aria-pressed]="mobileTab() === 'trending'">
-    <span class="mob-tab-icon" aria-hidden="true">🔥</span><span class="mob-tab-text">Trending</span>
+    <span class="mob-tab-icon" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></span><span class="mob-tab-text">Trending</span>
   </button>
   <button class="mob-tab" [class.mob-tab--active]="mobileTab() === 'latest'"
           (click)="setMobileTab('latest')" [attr.aria-pressed]="mobileTab() === 'latest'">
-    <span class="mob-tab-icon" aria-hidden="true">✨</span><span class="mob-tab-text">Latest</span>
+    <span class="mob-tab-icon" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span><span class="mob-tab-text">Latest</span>
   </button>
 </nav>
 
@@ -228,9 +277,9 @@
       [class.has-install-strip]="!isAppInstalled() && !installStripDismissed()">
 
   <!-- ══ HERO SECTION ══════════════════════════════════════════════════════ -->
-  <section class="v2-hero" itemscope itemtype="https://schema.org/Blog" aria-labelledby="hero-h1">
-    <meta itemprop="name" content="ApnaInsights — India's Practical Knowledge Platform" />
-    <meta itemprop="description" content="Expert guides on Technology, Career, Health & Business from verified contributors across India." />
+  <section class="v2-hero" itemscope itemtype="https://schema.org/WebSite" aria-labelledby="hero-h1">
+    <meta itemprop="name" content="ApnaInsights - India's Career & Tech Knowledge Platform" />
+    <meta itemprop="description" content="Practical guides on Technology, Careers, and Digital Skills - written by verified Indian professionals." />
     <link itemprop="url" href="https://apnainsights.com" />
 
     <!-- Background elements -->
@@ -244,23 +293,23 @@
       <div class="v2-hero-left">
         <div class="v2-hero-eyebrow" aria-hidden="true">
           <span class="v2-hero-eyebrow-dot"></span>
-          Practical Knowledge for Everyday Life
+          India's Career & Tech Knowledge Platform
         </div>
 
         <h1 class="v2-hero-h1" id="hero-h1">
-          India's Practical<br>
-          <span class="v2-hero-accent">Knowledge Platform</span>
+          Grow your career with<br>
+          <span class="v2-hero-accent">real knowledge built for India</span>
         </h1>
 
         <p class="v2-hero-desc">
-          Expert guides on <strong>Technology, Career, Health &amp; Business</strong> - written by verified contributors and reviewed before publishing.
+          Practical guides on <strong>Technology, Careers, and Digital Skills</strong> - written by working professionals who've actually done it, not AI.
         </p>
 
-        <!-- Topic categories -->
-        <nav class="v2-hero-categories" aria-label="Browse stories by category">
+        <!-- Topic categories (3 pillars + sub-topics) -->
+        <nav class="v2-hero-categories" aria-label="Browse by topic">
           <a class="v2-hero-cat v2-hero-cat--all" routerLink="/" routerLinkActive="v2-hero-cat--active" [routerLinkActiveOptions]="{ exact: true }">
             <span class="v2-hero-cat-icon" aria-hidden="true">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
             </span>
             <span class="v2-hero-cat-label">All</span>
           </a>
@@ -270,21 +319,21 @@
             </span>
             <span class="v2-hero-cat-label">Technology</span>
           </a>
-          <a class="v2-hero-cat v2-hero-cat--health" routerLink="/category/health">
+          <a class="v2-hero-cat v2-hero-cat--career" routerLink="/category/career">
             <span class="v2-hero-cat-icon" aria-hidden="true">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
             </span>
-            <span class="v2-hero-cat-label">Health</span>
+            <span class="v2-hero-cat-label">Career</span>
           </a>
-          <a class="v2-hero-cat v2-hero-cat--sports" routerLink="/category/sports">
+          <a class="v2-hero-cat v2-hero-cat--ai" routerLink="/category/ai">
             <span class="v2-hero-cat-icon" aria-hidden="true">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
             </span>
-            <span class="v2-hero-cat-label">Sports</span>
+            <span class="v2-hero-cat-label">AI</span>
           </a>
           <a class="v2-hero-cat v2-hero-cat--business" routerLink="/category/business">
             <span class="v2-hero-cat-icon" aria-hidden="true">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
             </span>
             <span class="v2-hero-cat-label">Business</span>
           </a>
@@ -294,221 +343,198 @@
             </span>
             <span class="v2-hero-cat-label">Lifestyle</span>
           </a>
-          <a class="v2-hero-cat v2-hero-cat--more" routerLink="/topics" aria-label="More topics">
+          <a class="v2-hero-cat v2-hero-cat--more" routerLink="/topics" aria-label="Browse all topics">
             <span class="v2-hero-cat-icon" aria-hidden="true">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
             </span>
             <span class="v2-hero-cat-label">More</span>
           </a>
         </nav>
 
-        <!-- Value highlights -->
+        <!-- Trust signals -->
         <div class="v2-hero-highlights" role="list" aria-label="Why ApnaInsights">
           <div class="v2-hero-highlight" role="listitem">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
-            100% Free, Always
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Written by verified professionals
           </div>
           <div class="v2-hero-highlight" role="listitem">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
-            14+ Topics to Explore
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+            Tech, Careers & Productivity - India focused
           </div>
           <div class="v2-hero-highlight" role="listitem">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l8 4v5c0 5-3.5 9-8 11-4.5-2-8-6-8-11V6l8-4z"/></svg>
-            No Spam, Ever
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Free forever - no paywall, no spam
           </div>
         </div>
 
-        <!-- CTA row -->
+        <!-- CTA row — reader first, writer third -->
         <div class="v2-hero-cta">
-          <a class="v2-hero-write-btn" [routerLink]="writeRoute" aria-label="Start writing for free">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-            Start Writing Free
+          <a class="v2-hero-explore-btn" routerLink="/topics" aria-label="Browse all articles">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Explore Articles
           </a>
-          @if (!isAppInstalled()) {
-            <button class="v2-hero-install-btn" (click)="triggerInstall()" aria-label="Install app">
-              📱 Get the App
-            </button>
-          }
+          <a class="v2-hero-trending-btn" routerLink="/search" [queryParams]="{q:'trending'}" aria-label="See trending topics">
+            Trending now
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </a>
         </div>
+        <p class="v2-hero-write-nudge">
+          <a [routerLink]="writeRoute" class="v2-hero-write-link">Share your expertise - write for free</a>
+        </p>
       </div>
 
       <!-- Right illustration -->
       <div class="v2-hero-right" aria-hidden="true">
         <div class="v2-hero-illustration">
-          <!-- India landscape SVG illustration -->
-          <svg class="v2-india-svg" viewBox="0 0 540 440" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="India landscape illustration">
-            <defs>
-              <linearGradient id="skyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" style="stop-color:#FFF7ED;stop-opacity:1" />
-                <stop offset="60%" style="stop-color:#FEF3C7;stop-opacity:1" />
-                <stop offset="100%" style="stop-color:#FDE68A;stop-opacity:1" />
-              </linearGradient>
-              <linearGradient id="waterGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" style="stop-color:#BFDBFE;stop-opacity:0.8" />
-                <stop offset="100%" style="stop-color:#93C5FD;stop-opacity:0.5" />
-              </linearGradient>
-              <radialGradient id="sunGrad" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" style="stop-color:#FCD34D;stop-opacity:1" />
-                <stop offset="70%" style="stop-color:#FBBF24;stop-opacity:1" />
-                <stop offset="100%" style="stop-color:#F59E0B;stop-opacity:0.8" />
-              </radialGradient>
-              <filter id="glow">
-                <feGaussianBlur stdDeviation="8" result="coloredBlur"/>
-                <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
-              </filter>
-            </defs>
+          <svg class="v2-india-svg" viewBox="0 0 560 420" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ApnaInsights - read and write stories">
 
-            <!-- Sky -->
-            <rect width="540" height="440" fill="url(#skyGrad)" rx="20"/>
+            <!-- Background -->
+            <rect width="560" height="420" fill="#F0FDF9" rx="20"/>
 
-            <!-- Sun glow -->
-            <circle cx="410" cy="95" r="70" fill="#FCD34D" opacity="0.15" filter="url(#glow)"/>
-            <!-- Sun -->
-            <circle cx="410" cy="95" r="48" fill="url(#sunGrad)" opacity="0.95"/>
-            <!-- Sun rays -->
-            <g stroke="#FBBF24" stroke-width="2" opacity="0.5">
-              <line x1="410" y1="30" x2="410" y2="16"/>
-              <line x1="410" y1="160" x2="410" y2="174"/>
-              <line x1="346" y1="95" x2="332" y2="95"/>
-              <line x1="474" y1="95" x2="488" y2="95"/>
-              <line x1="364" y1="49" x2="355" y2="40"/>
-              <line x1="456" y1="141" x2="465" y2="150"/>
-              <line x1="456" y1="49" x2="465" y2="40"/>
-              <line x1="364" y1="141" x2="355" y2="150"/>
+            <!-- Subtle dot grid -->
+            <pattern id="dotgrid" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+              <circle cx="2" cy="2" r="1.2" fill="#43cea2" opacity="0.15"/>
+            </pattern>
+            <rect width="560" height="420" fill="url(#dotgrid)" rx="20"/>
+
+            <!-- Soft glow corners -->
+            <circle cx="500" cy="50" r="90" fill="#43cea2" opacity="0.06"/>
+            <circle cx="60" cy="380" r="80" fill="#43cea2" opacity="0.05"/>
+
+            <!-- ── MAIN BLOG POST CARD ── -->
+            <g transform="translate(90, 50)">
+              <rect x="3" y="3" width="360" height="230" rx="16" fill="#000" opacity="0.05"/>
+              <rect width="360" height="230" rx="16" fill="#fff" stroke="#E2E8F0" stroke-width="1.5"/>
+
+              <!-- Cover image area -->
+              <rect width="360" height="96" rx="16" fill="#ECFDF5"/>
+              <rect y="80" width="360" height="16" fill="#ECFDF5"/>
+
+              <!-- Decorative cover lines (simulates a real cover photo) -->
+              <rect x="20" y="18" width="200" height="9" rx="4" fill="#43cea2" opacity="0.20"/>
+              <rect x="20" y="34" width="280" height="9" rx="4" fill="#43cea2" opacity="0.13"/>
+              <rect x="20" y="50" width="240" height="9" rx="4" fill="#43cea2" opacity="0.09"/>
+              <rect x="20" y="66" width="160" height="9" rx="4" fill="#43cea2" opacity="0.06"/>
+
+              <!-- Category tag -->
+              <rect x="20" y="108" width="70" height="20" rx="10" fill="#ECFDF5"/>
+              <text x="55" y="122" text-anchor="middle" font-size="10" fill="#059669" font-family="system-ui,sans-serif" font-weight="700">Technology</text>
+
+              <!-- Post title (two solid lines = headline) -->
+              <rect x="20" y="136" width="315" height="12" rx="5" fill="#1e293b" opacity="0.88"/>
+              <rect x="20" y="154" width="250" height="12" rx="5" fill="#1e293b" opacity="0.60"/>
+
+              <!-- Short description (three faint lines) -->
+              <rect x="20" y="178" width="310" height="7" rx="3.5" fill="#94a3b8" opacity="0.55"/>
+              <rect x="20" y="191" width="270" height="7" rx="3.5" fill="#94a3b8" opacity="0.45"/>
+              <rect x="20" y="204" width="200" height="7" rx="3.5" fill="#94a3b8" opacity="0.35"/>
+
+              <!-- Read time + author row -->
+              <circle cx="30" cy="222" r="7" fill="#ECFDF5"/>
+              <rect x="42" y="217" width="60" height="6" rx="3" fill="#94a3b8" opacity="0.45"/>
+              <rect x="108" y="217" width="40" height="6" rx="3" fill="#94a3b8" opacity="0.30"/>
             </g>
 
-            <!-- Birds -->
-            <g stroke="#92400E" stroke-width="1.5" fill="none" opacity="0.6">
-              <path d="M60 70 Q65 65 70 70"/>
-              <path d="M78 62 Q83 57 88 62"/>
-              <path d="M95 74 Q100 69 105 74"/>
-              <path d="M150 50 Q155 45 160 50"/>
-              <path d="M168 58 Q173 53 178 58"/>
+            <!-- ── AUTHOR CARD (top left, overlapping) ── -->
+            <g transform="translate(16, 78)">
+              <rect width="158" height="48" rx="13" fill="#fff" stroke="#E2E8F0" stroke-width="1.2"/>
+              <!-- Avatar -->
+              <circle cx="24" cy="24" r="15" fill="#ECFDF5"/>
+              <circle cx="24" cy="19" r="5.5" fill="#43cea2"/>
+              <path d="M13 35 Q13 29 24 29 Q35 29 35 35" fill="#43cea2"/>
+              <!-- Verified badge -->
+              <circle cx="38" cy="12" r="8" fill="#43cea2"/>
+              <polyline points="35,12 37.5,14.5 41,9.5" stroke="#fff" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+              <!-- Text -->
+              <text x="50" y="18" font-size="10" fill="#1e293b" font-family="system-ui,sans-serif" font-weight="700">Verified writer</text>
+              <rect x="50" y="24" width="78" height="6" rx="3" fill="#94a3b8" opacity="0.45"/>
+              <rect x="50" y="34" width="52" height="5" rx="2.5" fill="#94a3b8" opacity="0.30"/>
             </g>
 
-            <!-- Distant hills -->
-            <path d="M0 280 Q80 230 160 260 Q240 230 320 250 Q400 220 480 240 Q520 230 540 235 L540 440 L0 440 Z" fill="#D1FAE5" opacity="0.4"/>
+            <!-- ── STATS PANEL (right side) ── -->
+            <g transform="translate(462, 108)">
+              <rect width="88" height="120" rx="14" fill="#fff" stroke="#E2E8F0" stroke-width="1.2"/>
 
-            <!-- Ground -->
-            <rect x="0" y="310" width="540" height="130" fill="#ECFDF5" rx="0"/>
+              <!-- Views -->
+              <text x="44" y="22" text-anchor="middle" font-size="9" fill="#94a3b8" font-family="system-ui,sans-serif" font-weight="600">Views</text>
+              <text x="44" y="40" text-anchor="middle" font-size="17" fill="#1e293b" font-family="system-ui,sans-serif" font-weight="800">8.4K</text>
+              <rect x="12" y="47" width="64" height="1" fill="#E2E8F0"/>
 
-            <!-- Trees left -->
-            <g fill="#065F46">
-              <ellipse cx="30" cy="295" rx="18" ry="22" opacity="0.8"/>
-              <rect x="27" y="295" width="6" height="18" opacity="0.7"/>
-              <ellipse cx="65" cy="285" rx="22" ry="26" opacity="0.9"/>
-              <rect x="62" y="285" width="7" height="20" opacity="0.7"/>
+              <!-- Likes -->
+              <text x="44" y="62" text-anchor="middle" font-size="9" fill="#94a3b8" font-family="system-ui,sans-serif" font-weight="600">Likes</text>
+              <text x="44" y="80" text-anchor="middle" font-size="17" fill="#1e293b" font-family="system-ui,sans-serif" font-weight="800">312</text>
+              <rect x="12" y="87" width="64" height="1" fill="#E2E8F0"/>
+
+              <!-- Comments -->
+              <text x="44" y="101" text-anchor="middle" font-size="9" fill="#94a3b8" font-family="system-ui,sans-serif" font-weight="600">Comments</text>
+              <text x="44" y="116" text-anchor="middle" font-size="15" fill="#43cea2" font-family="system-ui,sans-serif" font-weight="800">48</text>
             </g>
 
-            <!-- Trees right -->
-            <g fill="#065F46">
-              <ellipse cx="490" cy="290" rx="20" ry="24" opacity="0.8"/>
-              <rect x="487" y="290" width="6" height="20" opacity="0.7"/>
-              <ellipse cx="520" cy="285" rx="16" ry="20" opacity="0.7"/>
-              <rect x="517" y="285" width="6" height="16" opacity="0.7"/>
+            <!-- ── TRENDING BADGE (top of card, right side) ── -->
+            <g transform="translate(368, 52)">
+              <rect width="120" height="30" rx="15" fill="#43cea2"/>
+              <polyline points="15,20 15,13 21,13" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/>
+              <line x1="11" y1="21" x2="21" y2="11" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+              <text x="32" y="20" font-size="11" fill="#fff" font-family="system-ui,sans-serif" font-weight="700">Trending now</text>
             </g>
 
-            <!-- Taj Mahal (center-left) -->
-            <g fill="#FEF9EE" stroke="#D97706" stroke-width="0.8" opacity="0.95">
-              <!-- Base platform -->
-              <rect x="80" y="288" width="160" height="22" rx="2"/>
-              <!-- Main body -->
-              <rect x="100" y="250" width="120" height="42" rx="2"/>
-              <!-- Side minarets -->
-              <rect x="83" y="252" width="14" height="36" rx="3"/>
-              <ellipse cx="90" cy="252" rx="7" ry="4"/>
-              <ellipse cx="90" cy="250" rx="3" ry="5"/>
-              <rect x="223" y="252" width="14" height="36" rx="3"/>
-              <ellipse cx="230" cy="252" rx="7" ry="4"/>
-              <ellipse cx="230" cy="250" rx="3" ry="5"/>
-              <!-- Main arch -->
-              <path d="M120 292 L120 268 Q160 245 200 268 L200 292 Z" fill="#FDE68A" stroke="#D97706" stroke-width="1"/>
-              <!-- Dome -->
-              <ellipse cx="160" cy="248" rx="28" ry="10" fill="#FEF9EE"/>
-              <path d="M132 248 Q160 215 188 248 Z" fill="#FEF9EE"/>
-              <!-- Finial -->
-              <line x1="160" y1="215" x2="160" y2="206" stroke="#D97706" stroke-width="1.5"/>
-              <ellipse cx="160" cy="206" rx="3" ry="4" fill="#D97706"/>
-              <!-- Decorative windows -->
-              <ellipse cx="145" cy="268" rx="7" ry="9" fill="#FDE68A"/>
-              <ellipse cx="175" cy="268" rx="7" ry="9" fill="#FDE68A"/>
-              <!-- Small domes on sides -->
-              <ellipse cx="90" cy="252" rx="6" ry="4"/>
-              <ellipse cx="230" cy="252" rx="6" ry="4"/>
+            <!-- ── JUST PUBLISHED TOAST ── -->
+            <g transform="translate(376, 90)">
+              <rect width="130" height="38" rx="12" fill="#fff" stroke="#E2E8F0" stroke-width="1.2"/>
+              <circle cx="19" cy="19" r="7" fill="#22c55e"/>
+              <circle cx="19" cy="19" r="3.5" fill="#fff"/>
+              <text x="34" y="14" font-size="10" fill="#1e293b" font-family="system-ui,sans-serif" font-weight="700">Just published</text>
+              <rect x="34" y="21" width="80" height="7" rx="3.5" fill="#94a3b8" opacity="0.40"/>
             </g>
 
-            <!-- India Gate (right) -->
-            <g fill="#FEF3C7" stroke="#92400E" stroke-width="0.8" opacity="0.9">
-              <!-- Base -->
-              <rect x="360" y="286" width="100" height="20" rx="1"/>
-              <!-- Pillars -->
-              <rect x="368" y="248" width="16" height="40"/>
-              <rect x="476" y="248" width="16" height="40"/>
-              <!-- Arch -->
-              <path d="M384 248 Q460 210 476 248" fill="none" stroke="#92400E" stroke-width="2"/>
-              <!-- Top block -->
-              <rect x="355" y="235" width="150" height="18" rx="2"/>
-              <!-- Keystone -->
-              <rect x="415" y="220" width="30" height="18" rx="1"/>
-              <ellipse cx="430" cy="220" rx="15" ry="6"/>
-              <!-- Road through arch -->
-              <rect x="420" y="266" width="20" height="20" fill="#FDE68A"/>
+            <!-- ── TOPICS ROW (bottom strip) ── -->
+            <g transform="translate(90, 300)">
+              <rect width="360" height="52" rx="13" fill="#fff" stroke="#E2E8F0" stroke-width="1.2"/>
+              <text x="16" y="16" font-size="9" fill="#94a3b8" font-family="system-ui,sans-serif" font-weight="600">What do you want to read today?</text>
+
+              <rect x="12" y="22" width="60" height="20" rx="10" fill="#F0FDF9" stroke="#43cea2" stroke-width="1"/>
+              <text x="42" y="36" text-anchor="middle" font-size="10" fill="#059669" font-family="system-ui,sans-serif" font-weight="600">Technology</text>
+
+              <rect x="78" y="22" width="46" height="20" rx="10" fill="#F0FDF9" stroke="#43cea2" stroke-width="1"/>
+              <text x="101" y="36" text-anchor="middle" font-size="10" fill="#059669" font-family="system-ui,sans-serif" font-weight="600">Health</text>
+
+              <rect x="130" y="22" width="56" height="20" rx="10" fill="#F0FDF9" stroke="#43cea2" stroke-width="1"/>
+              <text x="158" y="36" text-anchor="middle" font-size="10" fill="#059669" font-family="system-ui,sans-serif" font-weight="600">Business</text>
+
+              <rect x="192" y="22" width="52" height="20" rx="10" fill="#F0FDF9" stroke="#43cea2" stroke-width="1"/>
+              <text x="218" y="36" text-anchor="middle" font-size="10" fill="#059669" font-family="system-ui,sans-serif" font-weight="600">Lifestyle</text>
+
+              <rect x="250" y="22" width="44" height="20" rx="10" fill="#F0FDF9" stroke="#43cea2" stroke-width="1"/>
+              <text x="272" y="36" text-anchor="middle" font-size="10" fill="#059669" font-family="system-ui,sans-serif" font-weight="600">Career</text>
+
+              <rect x="300" y="22" width="48" height="20" rx="10" fill="#ECFDF5" stroke="#43cea2" stroke-width="1"/>
+              <text x="324" y="36" text-anchor="middle" font-size="10" fill="#059669" font-family="system-ui,sans-serif" font-weight="600">+12 more</text>
             </g>
 
-            <!-- Water/River reflection -->
-            <ellipse cx="270" cy="370" rx="210" ry="32" fill="url(#waterGrad)" opacity="0.6"/>
-
-            <!-- Water ripples -->
-            <g stroke="#93C5FD" stroke-width="1" fill="none" opacity="0.5">
-              <path d="M120 365 Q160 360 200 365"/>
-              <path d="M240 372 Q280 367 320 372"/>
-              <path d="M350 365 Q390 360 430 365"/>
+            <!-- ── READERS THIS WEEK (bottom left) ── -->
+            <g transform="translate(14, 272)">
+              <rect width="70" height="108" rx="13" fill="#fff" stroke="#E2E8F0" stroke-width="1.2"/>
+              <text x="35" y="18" text-anchor="middle" font-size="9" fill="#94a3b8" font-family="system-ui,sans-serif" font-weight="600">Readers</text>
+              <!-- Bar chart rising = growing readership -->
+              <rect x="8"  y="84" width="10" height="15" rx="3" fill="#43cea2" opacity="0.25"/>
+              <rect x="21" y="70" width="10" height="29" rx="3" fill="#43cea2" opacity="0.45"/>
+              <rect x="34" y="56" width="10" height="43" rx="3" fill="#43cea2" opacity="0.65"/>
+              <rect x="47" y="42" width="10" height="57" rx="3" fill="#43cea2"/>
+              <text x="35" y="38" text-anchor="middle" font-size="11" fill="#43cea2" font-family="system-ui,sans-serif" font-weight="800">+38%</text>
             </g>
 
-            <!-- Boat on water -->
-            <g fill="#92400E" opacity="0.7">
-              <path d="M225 360 Q255 352 285 360 L280 368 L230 368 Z"/>
-              <line x1="255" y1="352" x2="255" y2="338" stroke="#92400E" stroke-width="2"/>
-              <path d="M255 338 L275 348 L255 352 Z" fill="#F97316" opacity="0.8"/>
+            <!-- ── NEW COMMENT TOAST (bottom right) ── -->
+            <g transform="translate(462, 244)">
+              <rect width="88" height="66" rx="13" fill="#fff" stroke="#E2E8F0" stroke-width="1.2"/>
+              <!-- Chat icon -->
+              <rect x="8" y="8" width="22" height="18" rx="5" fill="#ECFDF5" stroke="#43cea2" stroke-width="1.2"/>
+              <path d="M12 26 L12 31 L19 26 Z" fill="#ECFDF5" stroke="#43cea2" stroke-width="1"/>
+              <text x="36" y="17" font-size="8.5" fill="#1e293b" font-family="system-ui,sans-serif" font-weight="700">New comment</text>
+              <rect x="36" y="22" width="42" height="5.5" rx="2.5" fill="#94a3b8" opacity="0.40"/>
+              <rect x="36" y="31" width="32" height="5.5" rx="2.5" fill="#94a3b8" opacity="0.28"/>
+              <text x="44" y="56" text-anchor="middle" font-size="11" fill="#43cea2" font-family="system-ui,sans-serif" font-weight="800">48 replies</text>
             </g>
 
-            <!-- Floating story card 1 -->
-            <g transform="translate(10, 140)">
-              <rect width="130" height="56" rx="12" fill="white" opacity="0.95" filter="url(#glow)"/>
-              <rect width="130" height="56" rx="12" fill="none" stroke="#E2E8F0" stroke-width="1"/>
-              <rect x="10" y="10" width="36" height="36" rx="8" fill="#EFF6FF"/>
-              <text x="28" y="33" text-anchor="middle" font-size="18">📖</text>
-              <rect x="54" y="14" width="62" height="7" rx="3" fill="#CBD5E1" opacity="0.8"/>
-              <rect x="54" y="25" width="48" height="5" rx="2.5" fill="#E2E8F0" opacity="0.8"/>
-              <rect x="54" y="34" width="55" height="5" rx="2.5" fill="#E2E8F0" opacity="0.6"/>
-            </g>
-
-            <!-- Floating story card 2 -->
-            <g transform="translate(395, 155)">
-              <rect width="120" height="52" rx="12" fill="white" opacity="0.92" filter="url(#glow)"/>
-              <rect width="120" height="52" rx="12" fill="none" stroke="#E2E8F0" stroke-width="1"/>
-              <circle cx="26" cy="26" r="16" fill="#ECFDF5"/>
-              <text x="26" y="31" text-anchor="middle" font-size="16">❤️</text>
-              <rect x="50" y="13" width="56" height="7" rx="3" fill="#CBD5E1" opacity="0.8"/>
-              <rect x="50" y="24" width="42" height="5" rx="2.5" fill="#E2E8F0" opacity="0.8"/>
-              <rect x="50" y="33" width="50" height="5" rx="2.5" fill="#E2E8F0" opacity="0.6"/>
-            </g>
-
-            <!-- Floating likes badge -->
-            <g transform="translate(340, 250)">
-              <rect width="88" height="32" rx="16" fill="white" opacity="0.96"/>
-              <rect width="88" height="32" rx="16" fill="none" stroke="#FCA5A5" stroke-width="1"/>
-              <text x="12" y="21" font-size="14">❤️</text>
-              <text x="32" y="21" font-size="11" fill="#374151" font-family="system-ui, sans-serif" font-weight="600">1.2K likes</text>
-            </g>
-
-            <!-- Floating pen badge -->
-            <g transform="translate(90, 210)">
-              <rect width="96" height="32" rx="16" fill="white" opacity="0.96"/>
-              <rect width="96" height="32" rx="16" fill="none" stroke="#A5B4FC" stroke-width="1"/>
-              <text x="12" y="21" font-size="14">✍️</text>
-              <text x="32" y="21" font-size="11" fill="#374151" font-family="system-ui, sans-serif" font-weight="600">New story!</text>
-            </g>
           </svg>
         </div>
       </div>
@@ -547,7 +573,7 @@
         </button>
       </form>
 
-      <!-- Trending searches — always-visible chip row, mobile only -->
+      <!-- Trending searches - always-visible chip row, mobile only -->
       @if (heroDropdownTags().length > 0) {
         <div class="v2-hero-trending-chips" aria-label="Trending searches">
           @for (tag of heroDropdownTags().slice(0, 8); track tag) {
@@ -565,7 +591,7 @@
           <!-- Quick actions -->
           <div class="v2-mega-dd-quick">
             @if (heroDropdownTrending().length > 0) {
-              <button type="button" class="v2-mega-dd-chip" (click)="scrollDropdownTo('v2-mega-dd-trending')">🔥 Trending Today</button>
+              <button type="button" class="v2-mega-dd-chip" (click)="scrollDropdownTo('v2-mega-dd-trending')">Trending Today</button>
             }
             @if (recentSearches().length > 0) {
               <button type="button" class="v2-mega-dd-chip" (click)="scrollDropdownTo('v2-mega-dd-recent')">🕒 Recent Searches</button>
@@ -633,9 +659,9 @@
                       </span>
                       <span class="v2-mega-dd-item-body">
                         <span class="v2-mega-dd-item-title">{{ blog.title }}</span>
-                        <span class="v2-mega-dd-item-meta">👁 {{ blog.views | formatCount }} views</span>
+                        <span class="v2-mega-dd-item-meta">{{ blog.views | formatCount }} views</span>
                       </span>
-                      <span class="v2-mega-dd-badge">🔥 Trending</span>
+                      <span class="v2-mega-dd-badge">Trending</span>
                     </a>
                   }
                 </div>
@@ -709,7 +735,7 @@
   <!-- ══ ACTIVE CHALLENGE BANNER ══════════════════════════════════════════ -->
   @if (activeChallenge()) {
     <a class="challenge-strip" routerLink="/challenges" aria-label="View writing challenge">
-      <span class="challenge-strip__trophy">🏆</span>
+      <span class="challenge-strip__trophy"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg></span>
       <div class="challenge-strip__body">
         <span class="challenge-strip__label">{{ activeChallenge()!.winnersDeclared ? 'Winners Announced' : 'Active Challenge' }}</span>
         <span class="challenge-strip__title">{{ activeChallenge()!.title }}</span>
@@ -734,7 +760,7 @@
     <section class="winners-section" aria-labelledby="winners-heading">
       <div class="winners-inner">
         <div class="winners-heading-row">
-          <h2 class="winners-heading" id="winners-heading">🏆 Challenge Winners</h2>
+          <h2 class="winners-heading" id="winners-heading">Challenge Winners</h2>
           <span class="winners-challenge-name">{{ featuredWinners()[0]?.challengeId?.title }}</span>
         </div>
         <div class="winners-grid">
@@ -759,7 +785,7 @@
                         <span class="winner-card__wom-badge">👑 WOM</span>
                       }
                     </span>
-                    <span class="winner-card__stats">❤️ {{ post.likesCount }} · 👁 {{ post.views }}</span>
+                    <span class="winner-card__stats">{{ post.likesCount }} likes · {{ post.views }} views</span>
                   </div>
                 </div>
               </div>
@@ -776,7 +802,7 @@
     <div class="v2-trending-inner">
       <div class="v2-section-header">
         <div class="v2-section-header-left">
-          <span class="v2-section-fire" aria-hidden="true">🔥</span>
+          
           <h2 class="v2-section-title" id="trending-today-heading">Trending Today</h2>
         </div>
         <a class="v2-section-viewall" routerLink="/search" [queryParams]="{q:'trending'}" aria-label="View all trending">
@@ -827,7 +853,7 @@
                 <div class="v2-trending-card-meta">
                   <span>⏱ {{ getReadingTime(blog) }} min read</span>
                   <span class="v2-trending-meta-sep" aria-hidden="true">·</span>
-                  <span>👁 {{ blog.views | formatCount }} views</span>
+                  <span>{{ blog.views | formatCount }} views</span>
                 </div>
               </div>
             </article>
@@ -849,7 +875,7 @@
         <div class="filter-inner">
           <div class="filter-inner-scroll">
             <div class="search-wrap">
-              <span class="search-icon" aria-hidden="true">🔍</span>
+              <svg class="search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
               <input #searchInput type="text" class="search-box" placeholder="Search stories…"
                      aria-label="Search guides and articles" autocomplete="off"
                      (input)="onSearchInput($any($event.target).value)"
@@ -888,7 +914,7 @@
                       aria-label="Filter by reading time" [ngModel]="selectedReadingTime()"
                       (ngModelChange)="onTimeSelectChange($event)">
                 <option value="">⏱ Any Length</option>
-                <option value="quick">⚡ Quick &lt;5 min</option>
+                <option value="quick">Quick &lt;5 min</option>
                 <option value="medium">📖 Medium 5–9 min</option>
                 <option value="long">📚 Long 10+ min</option>
               </select>
@@ -896,9 +922,9 @@
                       aria-label="Sort stories by" [ngModel]="selectedSort()"
                       (ngModelChange)="onSortChange($event)">
                 <option value="newest">↕ Newest</option>
-                <option value="liked">❤️ Most Liked</option>
-                <option value="viewed">👁 Most Viewed</option>
-                <option value="comments">💬 Most Comments</option>
+                <option value="liked">Most Liked</option>
+                <option value="viewed">Most Viewed</option>
+                <option value="comments">Most Comments</option>
               </select>
             </div>
           </div>
@@ -1014,7 +1040,7 @@
               }
             } @else if (filteredPosts().length === 0) {
               <div class="no-results" role="status">
-                <span class="no-results-icon" aria-hidden="true">🔍</span>
+                <svg class="no-results-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                 <span>No stories match your filters.</span>
                 <button class="clear-filter-btn"
                         (click)="clearAllFilters()"
@@ -1128,7 +1154,7 @@
           <section class="section section--pers" aria-labelledby="rec-heading">
             <div class="section-header">
               <span class="section-pill rec" aria-hidden="true">FOR YOU</span>
-              <h2 class="section-title" id="rec-heading">✨ Recommended for You</h2>
+              <h2 class="section-title" id="rec-heading">Recommended for You</h2>
             </div>
             <p class="rec-subtitle">Based on your reading interests</p>
             <div class="blog-grid">
@@ -1150,7 +1176,7 @@
       <section class="section mob-tab-section mob-tab-section--trending" aria-labelledby="trending-heading">
         <div class="section-header">
           <span class="section-pill trending" aria-hidden="true">HOT</span>
-          <h2 class="section-title" id="trending-heading">🔥 Trending Today</h2>
+          <h2 class="section-title" id="trending-heading">Trending Today</h2>
           <nav class="pagination-btns" aria-label="Trending pagination">
             <button class="page-btn" [disabled]="trendingPage() === 0" (click)="prevPage(trendingPage)" aria-label="Previous">‹</button>
             <span class="page-info">{{ trendingPage() + 1 }} / {{ trendingPageCount() }}</span>
@@ -1172,7 +1198,7 @@
       <section class="section mob-tab-section mob-tab-section--most-viewed" aria-labelledby="hot-heading">
         <div class="section-header">
           <span class="section-pill hot" aria-hidden="true">VIEWS</span>
-          <h2 class="section-title" id="hot-heading">👁 Most Viewed</h2>
+          <h2 class="section-title" id="hot-heading">Most Viewed</h2>
           <nav class="pagination-btns" aria-label="Most viewed pagination">
             <button class="page-btn" [disabled]="hotPage() === 0" (click)="prevPage(hotPage)" aria-label="Previous">‹</button>
             <span class="page-info">{{ hotPage() + 1 }} / {{ hotPageCount() }}</span>
@@ -1200,7 +1226,7 @@
       <section class="section mob-tab-section mob-tab-section--latest" aria-labelledby="latest-heading">
         <div class="section-header">
           <span class="section-pill new" aria-hidden="true">NEW</span>
-          <h2 class="section-title" id="latest-heading">✨ Latest Stories</h2>
+          <h2 class="section-title" id="latest-heading">Latest Stories</h2>
           <nav class="pagination-btns" aria-label="Latest stories pagination">
             <button class="page-btn" [disabled]="latestPage() === 0" (click)="prevPage(latestPage)" aria-label="Previous">‹</button>
             <span class="page-info">
@@ -1257,7 +1283,7 @@
                 @if (blog.isSponsored) {
                   <span class="card-badge card-badge--sp">★ Sponsored</span>
                 } @else if (isTrending(blog._id)) {
-                  <span class="card-badge card-badge--hot">🔥 Trending</span>
+                  <span class="card-badge card-badge--hot">Trending</span>
                 } @else if (isNew(blog)) {
                   <span class="card-badge card-badge--new">NEW</span>
                 }
@@ -1312,16 +1338,16 @@
             <div class="card-stats">
               <button class="stat-btn like-btn" [class.liked]="isLiked(blog._id)"
                       (click)="toggleLike(blog, $event)"
-                      [attr.aria-label]="(isLiked(blog._id) ? 'Unlike' : 'Like') + ' — ' + blog.likesCount + ' likes'">
-                <span class="stat-icon" aria-hidden="true">{{ isLiked(blog._id) ? '❤️' : '♡' }}</span>
+                      [attr.aria-label]="(isLiked(blog._id) ? 'Unlike' : 'Like') + ' - ' + blog.likesCount + ' likes'">
+                <svg class="stat-icon stat-icon--heart" width="14" height="14" viewBox="0 0 24 24" [attr.fill]="isLiked(blog._id) ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                 <span class="stat-count" aria-hidden="true">{{ blog.likesCount }}</span>
               </button>
               <span class="stat-display" role="group" [attr.aria-label]="blog.commentsCount + ' comments'">
-                <span class="stat-icon" aria-hidden="true">💬</span>
+                <svg class="stat-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                 <span class="stat-count" aria-hidden="true">{{ blog.commentsCount }}</span>
               </span>
               <span class="stat-display" role="group" [attr.aria-label]="(blog.views | formatCount) + ' views'">
-                <span class="stat-icon" aria-hidden="true">👁</span>
+                <svg class="stat-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                 <span class="stat-count" aria-hidden="true">{{ blog.views | formatCount }}</span>
               </span>
             </div>
@@ -1395,7 +1421,7 @@
       <!-- Active Challenge -->
       @if (activeChallenge()) {
         <a class="v2-sb-challenge" routerLink="/challenges" aria-label="View the writing challenge">
-          <div class="v2-sb-challenge-label">{{ activeChallenge()!.winnersDeclared ? '🏆 Winners Announced' : '🏆 Active Challenge' }}</div>
+          <div class="v2-sb-challenge-label">{{ activeChallenge()!.winnersDeclared ? 'Winners Announced' : 'Active Challenge' }}</div>
           <div class="v2-sb-challenge-title">{{ activeChallenge()!.title }}</div>
           @if (activeChallenge()!.prize) {
             <div class="v2-sb-challenge-prize">🏅 {{ activeChallenge()!.prize }}</div>
@@ -1437,7 +1463,7 @@
       <!-- Community stats card -->
       <div class="v2-sb-community">
         <div class="v2-sb-community-header">
-          <span class="v2-sb-community-icon" aria-hidden="true">🌟</span>
+          <span class="v2-sb-community-icon" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span>
           <div>
             <strong>Contribute to ApnaInsights</strong>
             <span>Share expertise. Reach real readers.</span>
@@ -1446,12 +1472,12 @@
         <div class="v2-sb-community-stats">
           <div class="v2-sb-community-stat">
             @if (communityMembersReady()) { <strong>{{ communityMembersCount() }}+</strong> }
-            @else { <strong>—</strong> }
+            @else { <strong>-</strong> }
             <span>Contributors</span>
           </div>
           <div class="v2-sb-community-stat">
             @if (storiesReady()) { <strong>{{ totalViewCount() }}</strong> }
-            @else { <strong>—</strong> }
+            @else { <strong>-</strong> }
             <span>Total Reads</span>
           </div>
         </div>
@@ -1465,7 +1491,7 @@
         <div class="sb-install-cta" (click)="triggerInstall()" role="button" tabindex="0"
              (keydown.enter)="triggerInstall()" aria-label="Install ApnaInsights app">
           <div class="sb-install-cta__left">
-            <span class="sb-install-cta__icon" aria-hidden="true">📱</span>
+            <svg class="sb-install-cta__icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
             <div>
               <strong>Get the App</strong>
               <span>Faster · Offline · Free</span>
@@ -1482,7 +1508,7 @@
           <a routerLink="/category/technology">Technology</a>,
           <a routerLink="/category/health">Health</a>,
           <a routerLink="/category/business">Business</a>,
-          <a routerLink="/category/sports">Sports</a> and more —
+          <a routerLink="/category/sports">Sports</a> and more -
           written by verified contributors across India.
         </p>
         <a class="v2-sb-about-link" routerLink="/editorial-policy">Editorial Standards →</a>
@@ -1506,42 +1532,42 @@
       </div>
       <div class="v2-topics-grid">
         <a class="v2-topic-card" routerLink="/category/technology" aria-label="Technology stories">
-          <span class="v2-topic-card-emoji" aria-hidden="true">💻</span>
+          <svg class="v2-topic-card-emoji" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
           <span class="v2-topic-card-name">Technology</span>
           @if (getCatCount('Technology') > 0) { <span class="v2-topic-card-count">{{ getCatCount('Technology') }} Stories</span> }
         </a>
-        <a class="v2-topic-card" routerLink="/category/health" aria-label="Health stories">
-          <span class="v2-topic-card-emoji" aria-hidden="true">❤️</span>
-          <span class="v2-topic-card-name">Health</span>
-          @if (getCatCount('Health') > 0) { <span class="v2-topic-card-count">{{ getCatCount('Health') }} Stories</span> }
+        <a class="v2-topic-card" routerLink="/category/career" aria-label="Career stories">
+          <svg class="v2-topic-card-emoji" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
+          <span class="v2-topic-card-name">Career</span>
+          @if (getCatCount('Career') > 0) { <span class="v2-topic-card-count">{{ getCatCount('Career') }} Stories</span> }
         </a>
-        <a class="v2-topic-card" routerLink="/category/sports" aria-label="Sports stories">
-          <span class="v2-topic-card-emoji" aria-hidden="true">🏏</span>
-          <span class="v2-topic-card-name">Sports</span>
-          @if (getCatCount('Sports') > 0) { <span class="v2-topic-card-count">{{ getCatCount('Sports') }} Stories</span> }
+        <a class="v2-topic-card" routerLink="/category/ai" aria-label="AI stories">
+          <svg class="v2-topic-card-emoji" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          <span class="v2-topic-card-name">AI</span>
+          @if (getCatCount('AI') > 0) { <span class="v2-topic-card-count">{{ getCatCount('AI') }} Stories</span> }
         </a>
         <a class="v2-topic-card" routerLink="/category/business" aria-label="Business stories">
-          <span class="v2-topic-card-emoji" aria-hidden="true">💼</span>
+          <svg class="v2-topic-card-emoji" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
           <span class="v2-topic-card-name">Business</span>
           @if (getCatCount('Business') > 0) { <span class="v2-topic-card-count">{{ getCatCount('Business') }} Stories</span> }
         </a>
-        <a class="v2-topic-card" routerLink="/category/lifestyle" aria-label="Lifestyle stories">
-          <span class="v2-topic-card-emoji" aria-hidden="true">🌿</span>
-          <span class="v2-topic-card-name">Lifestyle</span>
-          @if (getCatCount('Lifestyle') > 0) { <span class="v2-topic-card-count">{{ getCatCount('Lifestyle') }} Stories</span> }
+        <a class="v2-topic-card" routerLink="/category/productivity" aria-label="Productivity stories">
+          <svg class="v2-topic-card-emoji" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span class="v2-topic-card-name">Productivity</span>
+          @if (getCatCount('Productivity') > 0) { <span class="v2-topic-card-count">{{ getCatCount('Productivity') }} Stories</span> }
         </a>
         <a class="v2-topic-card" routerLink="/category/education" aria-label="Education stories">
-          <span class="v2-topic-card-emoji" aria-hidden="true">📚</span>
+          <svg class="v2-topic-card-emoji" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
           <span class="v2-topic-card-name">Education</span>
           @if (getCatCount('Education') > 0) { <span class="v2-topic-card-count">{{ getCatCount('Education') }} Stories</span> }
         </a>
-        <a class="v2-topic-card" routerLink="/category/news" aria-label="News stories">
-          <span class="v2-topic-card-emoji" aria-hidden="true">📰</span>
-          <span class="v2-topic-card-name">News</span>
-          @if (getCatCount('News') > 0) { <span class="v2-topic-card-count">{{ getCatCount('News') }} Stories</span> }
+        <a class="v2-topic-card" routerLink="/category/finance" aria-label="Finance stories">
+          <svg class="v2-topic-card-emoji" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          <span class="v2-topic-card-name">Finance</span>
+          @if (getCatCount('Finance') > 0) { <span class="v2-topic-card-count">{{ getCatCount('Finance') }} Stories</span> }
         </a>
-        <a class="v2-topic-card v2-topic-card--more" routerLink="/topics" aria-label="More topics">
-          <span class="v2-topic-card-emoji" aria-hidden="true">⊞</span>
+        <a class="v2-topic-card v2-topic-card--more" routerLink="/topics" aria-label="All topics">
+          <svg class="v2-topic-card-emoji" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg>
           <span class="v2-topic-card-name">More</span>
           <span class="v2-topic-card-count">View all</span>
         </a>
@@ -1584,7 +1610,7 @@
   @if (!pushService.subscribed()) {
     <div class="push-banner">
       <div class="push-banner-left">
-        <div class="push-banner-icon">🔔</div>
+        <div class="push-banner-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
         <div>
           <strong>Get notified instantly</strong>
           <p>Enable push notifications to know when new stories are published.</p>
@@ -1610,8 +1636,8 @@
   </div>
   <div class="v2-newsletter-inner">
     <div class="v2-newsletter-text">
-      <h2 id="newsletter-heading" class="v2-newsletter-title">Never miss a story that inspires you.</h2>
-      <p class="v2-newsletter-sub">Get the week's best stories on tech, lifestyle, business & more — straight to your inbox. No spam, ever.</p>
+      <h2 id="newsletter-heading" class="v2-newsletter-title">3 career & tech reads, every Tuesday.</h2>
+      <p class="v2-newsletter-sub">Practical guides on jobs, tech skills, and tools Indian professionals actually use. No fluff, no news, no spam.</p>
     </div>
     @if (subscribeSuccess()) {
       <div class="newsletter-success" role="alert">
@@ -1654,7 +1680,7 @@
         <img class="app-logo-img" src="/logo-96.png" alt="" width="28" height="28" loading="lazy" />
         <span class="app-logo-text">ApnaInsights</span>
       </a>
-      <p class="v2-footer-tagline">Born in India. Real stories for everyone.</p>
+      <p class="v2-footer-tagline">Real knowledge. Real careers. Built for India.</p>
       <div class="v2-footer-social" aria-label="Social media links">
         <a class="v2-footer-social-link" href="https://x.com/apnainsights_" target="_blank" rel="noopener" aria-label="Follow on X (Twitter)">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.74l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
@@ -1675,29 +1701,28 @@
     <div class="v2-footer-col">
       <h3 class="v2-footer-col-heading">Explore</h3>
       <nav class="v2-footer-links" aria-label="Explore navigation">
-        <a class="v2-footer-link" routerLink="/topics">All Stories</a>
-        <a class="v2-footer-link" routerLink="/search" [queryParams]="{q:'trending'}">Trending</a>
-        <a class="v2-footer-link" routerLink="/shorts">Shorts</a>
-        <a class="v2-footer-link" routerLink="/challenges">Challenges</a>
-        <a class="v2-footer-link" routerLink="/bookmarks">My Bookmarks</a>
+        <a class="v2-footer-link" routerLink="/topics">All Articles</a>
+        <a class="v2-footer-link" routerLink="/search" [queryParams]="{q:'trending'}">Trending Now</a>
         <a class="v2-footer-link" routerLink="/category/technology">Technology</a>
-        <a class="v2-footer-link" routerLink="/category/health">Health</a>
-        <a class="v2-footer-link" routerLink="/category/sports">Sports</a>
+        <a class="v2-footer-link" routerLink="/category/career">Career</a>
+        <a class="v2-footer-link" routerLink="/category/ai">AI</a>
+        <a class="v2-footer-link" routerLink="/category/business">Business</a>
+        <a class="v2-footer-link" routerLink="/category/finance">Finance</a>
+        <a class="v2-footer-link" routerLink="/challenges">Challenges</a>
       </nav>
     </div>
 
     <!-- Resources column -->
     <div class="v2-footer-col">
-      <h3 class="v2-footer-col-heading">Resources</h3>
+      <h3 class="v2-footer-col-heading">For Professionals</h3>
       <nav class="v2-footer-links" aria-label="Resources navigation">
+        <a class="v2-footer-link" routerLink="/search" [queryParams]="{q:'interview'}">Interview Prep</a>
+        <a class="v2-footer-link" routerLink="/search" [queryParams]="{q:'resume'}">Resume Guides</a>
+        <a class="v2-footer-link" routerLink="/search" [queryParams]="{q:'salary'}">Salary Guides</a>
+        <a class="v2-footer-link" routerLink="/search" [queryParams]="{q:'python'}">Learn Python</a>
+        <a class="v2-footer-link" routerLink="/search" [queryParams]="{q:'ai tools'}">AI for Work</a>
         <a class="v2-footer-link" routerLink="/auth/register">Write for Us</a>
         <a class="v2-footer-link" routerLink="/advertise">Advertise</a>
-        <a class="v2-footer-link" routerLink="/about">Guidelines</a>
-        <a class="v2-footer-link" routerLink="/about">Help Center</a>
-        <a class="v2-footer-link" routerLink="/about">Contact Us</a>
-        <a class="v2-footer-link" routerLink="/category/village">Village Life</a>
-        <a class="v2-footer-link" routerLink="/category/business">Business</a>
-        <a class="v2-footer-link" routerLink="/category/education">Education</a>
       </nav>
     </div>
 
@@ -1798,11 +1823,11 @@
     <ul class="im-features">
       <li>
         <span class="im-feature-icon im-feature-icon--green"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg></span>
-        Works offline — read without internet
+        Works offline - read without internet
       </li>
       <li>
         <span class="im-feature-icon im-feature-icon--blue"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span>
-        Lightning fast — no Play Store needed
+        Lightning fast - no Play Store needed
       </li>
       <li>
         <span class="im-feature-icon im-feature-icon--purple"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></span>

@@ -12,7 +12,7 @@ export class BookmarkService {
   private auth = inject(Auth);
   private endpoint = environment.apiUserEndpoint;
 
-  /** Signal of bookmarked post IDs — source of truth for all UI. */
+  /** Signal of bookmarked post IDs - source of truth for all UI. */
   bookmarkedIds = signal<Set<string>>(this._readLocal());
 
   // ── Initialisation ────────────────────────────────────────────────────────

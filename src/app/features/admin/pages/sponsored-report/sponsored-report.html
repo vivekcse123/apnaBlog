@@ -335,11 +335,11 @@
                           @else { 🔵 No Expiry }
                         </span>
                       </td>
-                      <td data-label="Expiry Date" class="ms-td-date">{{ s.sponsoredUntil ? formatDate(s.sponsoredUntil) : '—' }}</td>
+                      <td data-label="Expiry Date" class="ms-td-date">{{ s.sponsoredUntil ? formatDate(s.sponsoredUntil) : '-' }}</td>
                       <td data-label="On Expiry">
                         @if (s.sponsoredExpiryAction === 'delete') { <span class="sp-expiry-badge sp-expiry-badge--delete">Delete</span> }
                         @else if (s.sponsoredExpiryAction === 'keep') { <span class="sp-expiry-badge sp-expiry-badge--keep">Keep</span> }
-                        @else { <span class="ms-td-date">—</span> }
+                        @else { <span class="ms-td-date">-</span> }
                       </td>
                     </tr>
                   }
@@ -533,11 +533,11 @@
                           @else { 🔵 No Expiry }
                         </span>
                       </td>
-                      <td data-label="Expiry Date" class="ms-td-date">{{ b.sponsoredUntil ? formatDate(b.sponsoredUntil) : '—' }}</td>
+                      <td data-label="Expiry Date" class="ms-td-date">{{ b.sponsoredUntil ? formatDate(b.sponsoredUntil) : '-' }}</td>
                       <td data-label="On Expiry">
                         @if (b.sponsoredExpiryAction === 'delete') { <span class="sp-expiry-badge sp-expiry-badge--delete">Delete</span> }
                         @else if (b.sponsoredExpiryAction === 'keep') { <span class="sp-expiry-badge sp-expiry-badge--keep">Keep</span> }
-                        @else { <span class="ms-td-date">—</span> }
+                        @else { <span class="ms-td-date">-</span> }
                       </td>
                     </tr>
                   }

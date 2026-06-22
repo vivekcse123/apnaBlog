@@ -29,10 +29,10 @@ export const appConfig: ApplicationConfig = {
     ),
     provideClientHydration(
       withEventReplay(),
-      // Post-list requests (getAllPost/getStatsPage/getAllPublished — all hit
+      // Post-list requests (getAllPost/getStatsPage/getAllPublished - all hit
       // `/post?page=...&limit=...`) would otherwise be serialized in full,
       // including every post's HTML content, into an inline <script> for
-      // hydration — bloating prerendered pages by hundreds of KB to ~1.4MB.
+      // hydration - bloating prerendered pages by hundreds of KB to ~1.4MB.
       // Excluding them from the transfer cache keeps SSR rendering (and SEO
       // content) intact; the browser just re-fetches the list on hydration.
       // Single-post requests (getPostById, etc.) don't match and stay cached.

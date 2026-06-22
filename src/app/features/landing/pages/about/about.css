@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════
-   about.css — ApnaInsights About Page (SEO Enhanced)
+   about.css - ApnaInsights About Page (SEO Enhanced)
    ═══════════════════════════════════════════ */
 
 .about-page {
@@ -24,10 +24,7 @@
 
 /* ═══ SHARED UTILITIES ═══ */
 .gradient-text {
-  background: linear-gradient(135deg, #43cea2, #185a9d);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--accent-text);
 }
 
 .section-inner {
@@ -55,9 +52,9 @@
 }
 
 .section-title {
-  font-family: 'Playfair Display', serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: clamp(28px, 4vw, 42px);
-  font-weight: 700;
+  font-weight: 800;
   color: var(--text-primary);
   line-height: 1.2;
   letter-spacing: -0.5px;
@@ -158,7 +155,7 @@
 }
 .nav-login-btn:hover { background: var(--bg-surface-alt); }
 .nav-cta-btn {
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
   border: none; color: #fff; font-size: 13px; font-weight: 600;
   padding: 8px 18px; border-radius: 8px; cursor: pointer; transition: opacity .15s;
 }
@@ -241,9 +238,9 @@
 }
 
 .hero-title {
-  font-family: 'Playfair Display', serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: clamp(36px, 5vw, 58px);
-  font-weight: 700;
+  font-weight: 800;
   color: var(--text-primary);
   line-height: 1.15;
   letter-spacing: -0.5px;
@@ -271,7 +268,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
   border: none;
   color: #ffffff;
   border-radius: 10px;
@@ -339,10 +336,7 @@
 .stat-num {
   font-size: 28px;
   font-weight: 700;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--accent-text);
   line-height: 1;
 }
 .stat-num--loading {
@@ -397,6 +391,9 @@
 }
 
 .trust-cat {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-size: 13px;
   font-weight: 500;
   color: var(--text-secondary);
@@ -442,7 +439,7 @@
   position: absolute;
   top: 0; left: 0;
   width: 100%; height: 3px;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
 }
 
 .mission-card:hover {
@@ -501,7 +498,7 @@
   position: absolute;
   bottom: 0; right: 0;
   width: 120px; height: 120px;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
   opacity: 0.04;
   border-radius: 50%;
   transform: translate(30%, 30%);
@@ -520,7 +517,7 @@
 
 .avatar {
   border-radius: 50%;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -534,7 +531,7 @@
 .avatar-lg { width: 72px; height: 72px; font-size: 22px; }
 
 .avatar-alt {
-  background: linear-gradient(135deg, #185a9d, #43cea2);
+  background: var(--accent);
   box-shadow: 0 0 0 3px color-mix(in srgb, #185a9d 30%, transparent);
 }
 
@@ -544,20 +541,20 @@
   font-weight: 700;
   padding: 5px 14px;
   border-radius: 99px;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
   color: #ffffff;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
-.badge-alt { background: linear-gradient(135deg, #185a9d, #43cea2); }
+.badge-alt { background: var(--accent); }
 
 .team-info { display: flex; flex-direction: column; gap: 12px; }
 
 .team-name {
-  font-family: 'Playfair Display', serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 24px;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--text-primary);
   line-height: 1.2;
 }
@@ -660,7 +657,7 @@
     0 12px 40px rgba(67, 206, 162, 0.2);
 }
 
-.avatar-inspiration { background: linear-gradient(135deg, #43cea2, #185a9d); }
+.avatar-inspiration { background: var(--accent); }
 
 .inspiration-badge {
   display: flex;
@@ -672,7 +669,7 @@
   text-transform: uppercase;
   padding: 8px 18px;
   border-radius: 99px;
-  background: linear-gradient(135deg, rgba(67, 206, 162, 0.15), rgba(24, 90, 157, 0.15));
+  background: var(--accent-subtle);
   border: 1.5px solid color-mix(in srgb, #43cea2 30%, transparent);
   color: var(--accent-text);
 }
@@ -690,9 +687,9 @@
 }
 
 .inspiration-name {
-  font-family: 'Playfair Display', serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 32px;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--text-primary);
   line-height: 1.2;
   letter-spacing: -0.5px;
@@ -756,7 +753,7 @@
 .inspiration-quote {
   margin-top: 12px;
   padding: 24px 28px;
-  background: linear-gradient(135deg, rgba(67, 206, 162, 0.08), rgba(24, 90, 157, 0.08));
+  background: var(--accent-subtle);
   border-left: 4px solid #43cea2;
   border-radius: 12px;
   position: relative;
@@ -765,7 +762,7 @@
 .quote-icon { position: absolute; top: 16px; right: 20px; opacity: 0.15; color: #43cea2; }
 
 .inspiration-quote p {
-  font-family: 'Playfair Display', serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 17px;
   font-style: italic;
   color: var(--text-primary);
@@ -793,7 +790,7 @@
 
 .feature-item:hover { transform: translateY(-2px); border-color: var(--border-strong); }
 
-.feature-icon { font-size: 22px; flex-shrink: 0; line-height: 1; }
+.feature-icon { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; flex-shrink: 0; color: var(--accent-text); background: var(--accent-subtle); border-radius: 8px; }
 
 .feature-item h3 { font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px; }
 
@@ -843,7 +840,7 @@
   position: absolute;
   top: 0; left: 0;
   width: 100%; height: 3px;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
 }
 
 .testimonial-card:hover {
@@ -876,7 +873,7 @@
 .testimonial-avatar {
   width: 40px; height: 40px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -921,7 +918,7 @@
 }
 
 .carousel-dot.active {
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
   width: 24px;
   border-radius: 4px;
   transform: none;
@@ -952,7 +949,7 @@
   position: absolute;
   bottom: 0; left: 0;
   width: 100%; height: 3px;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
   transform: scaleX(0);
   transition: transform 0.3s ease;
 }
@@ -1068,7 +1065,7 @@
   position: absolute;
   top: 0; left: 0;
   width: 100%; height: 4px;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
 }
 
 .contact-info-item { display: flex; align-items: center; gap: 16px; }
@@ -1127,7 +1124,7 @@ a.contact-info-value:hover { color: var(--accent-text); }
 }
 
 .social-btn:hover {
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
   border-color: transparent;
   color: #ffffff;
   transform: translateY(-2px);
@@ -1152,7 +1149,7 @@ a.contact-info-value:hover { color: var(--accent-text); }
   position: absolute;
   top: 0; left: 0;
   width: 100%; height: 4px;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
 }
 
 .contact-form { display: flex; flex-direction: column; gap: 20px; }
@@ -1205,7 +1202,7 @@ a.contact-info-value:hover { color: var(--accent-text); }
   gap: 8px;
   width: 100%;
   padding: 13px 24px;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
   border: none;
   border-radius: 10px;
   color: #ffffff;
@@ -1262,9 +1259,9 @@ a.contact-info-value:hover { color: var(--accent-text); }
 }
 
 .form-success h3 {
-  font-family: 'Playfair Display', serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 24px;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--text-primary);
 }
 
@@ -1294,20 +1291,14 @@ a.contact-info-value:hover { color: var(--accent-text); }
 
 .logo-hex {
   font-size: 1.5rem;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--accent-text);
 }
 
 .logo-text {
-  font-family: 'Playfair Display', serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 22px;
-  font-weight: 700;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  font-weight: 800;
+  color: var(--accent-text);
 }
 
 .footer-tagline { font-size: 15px; color: var(--text-secondary); font-style: italic; }
@@ -1353,13 +1344,10 @@ a.contact-info-value:hover { color: var(--accent-text); }
 }
 
 .app-logo-text {
-  font-family: 'Playfair Display', serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 20px;
-  font-weight: 700;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  font-weight: 800;
+  color: var(--accent-text);
   letter-spacing: 0.3px;
 }
 

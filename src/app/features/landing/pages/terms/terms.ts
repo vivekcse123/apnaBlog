@@ -31,7 +31,7 @@ export class Terms implements OnInit, OnDestroy {
 
     this.meta.updateTag({ property: 'og:type', content: 'website' });
     this.meta.updateTag({ property: 'og:title', content: 'Terms of Service | ApnaInsights' });
-    this.meta.updateTag({ property: 'og:description', content: 'ApnaInsights Terms of Service — rules and guidelines for using our knowledge platform.' });
+    this.meta.updateTag({ property: 'og:description', content: 'ApnaInsights Terms of Service - rules and guidelines for using our knowledge platform.' });
     this.meta.updateTag({ property: 'og:url', content: environment.siteUrl + '/terms' });
 
     let canonical = this.document.querySelector('link[rel="canonical"]') as HTMLLinkElement;

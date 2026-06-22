@@ -1,4 +1,4 @@
-/* Hidden on desktop — shown only on mobile */
+/* Hidden on desktop - shown only on mobile */
 :host {
   display: block;
   height: 0;
@@ -26,7 +26,7 @@
     padding-bottom: env(safe-area-inset-bottom, 0px);
     gap: 0;
     /* iOS PWA: force GPU compositing layer before first paint so position is
-       resolved immediately — prevents the nav from appearing above the screen
+       resolved immediately - prevents the nav from appearing above the screen
        bottom on initial load. */
     -webkit-transform: translateZ(0);
     transform: translateZ(0);
@@ -78,7 +78,7 @@
     width: 32px;
     height: 3px;
     border-radius: 0 0 4px 4px;
-    background: linear-gradient(90deg, #43cea2, #185a9d);
+    background: var(--accent);
     animation: navIndicatorSlide 0.2s ease;
   }
 
@@ -89,7 +89,7 @@
 
   /* ── Active pill bg around icon ── */
   .mob-nav-item--active .mob-nav-icon {
-    background: linear-gradient(135deg, rgba(67,206,162,0.14), rgba(24,90,157,0.10));
+    background: var(--accent-subtle);
     border-radius: 12px;
     padding: 5px 11px;
   }
@@ -126,7 +126,7 @@
     width: 26px;
     height: 26px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #43cea2, #185a9d);
+    background: var(--accent);
     color: #fff;
     font-size: 12px;
     font-weight: 700;
@@ -170,7 +170,7 @@
     width: 50px;
     height: 50px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #43cea2, #185a9d);
+    background: var(--accent);
     color: #fff;
     box-shadow: 0 2px 8px rgba(67, 206, 162, 0.25), 0 1px 3px rgba(0,0,0,0.1);
     transition: transform 0.15s, box-shadow 0.15s;
@@ -182,7 +182,7 @@
     box-shadow: 0 1px 4px rgba(67, 206, 162, 0.18);
   }
 
-  /* ══ Shorts item (public mode) — flat, same treatment as other items ══ */
+  /* ══ Shorts item (public mode) - flat, same treatment as other items ══ */
   .mob-nav-item--shorts {
     color: var(--text-tertiary, #9ca3af);
   }
@@ -201,13 +201,13 @@
     font-size: 10px;
   }
 
-  /* Shorts active state — mirrors .mob-nav-item--active */
+  /* Shorts active state - mirrors .mob-nav-item--active */
   .mob-nav-item--shorts-active {
     color: #43cea2;
   }
 
   .mob-nav-item--shorts-active .mob-nav-shorts-pill {
-    background: linear-gradient(135deg, rgba(67,206,162,0.14), rgba(24,90,157,0.10));
+    background: var(--accent-subtle);
     border-radius: 12px;
     padding: 5px 11px;
   }
@@ -226,7 +226,7 @@
     width: 32px;
     height: 3px;
     border-radius: 0 0 4px 4px;
-    background: linear-gradient(90deg, #43cea2, #185a9d);
+    background: var(--accent);
     animation: navIndicatorSlide 0.2s ease;
   }
 
@@ -238,6 +238,6 @@
   }
 
   [data-theme="dark"] .mob-nav-item--active .mob-nav-icon {
-    background: linear-gradient(135deg, rgba(67,206,162,0.18), rgba(24,90,157,0.15));
+    background: var(--accent-subtle);
   }
 }

@@ -1,5 +1,5 @@
 /* ════════════════════════════════════════════════
-   MANAGE BLOGS — ap-* design system
+   MANAGE BLOGS - ap-* design system
    ════════════════════════════════════════════════ */
 
 .ap-page {
@@ -29,7 +29,7 @@
 .ap-header-icon {
   width: 44px; height: 44px;
   border-radius: 12px;
-  background: linear-gradient(135deg, rgba(67,206,162,.15), rgba(24,90,157,.15));
+  background: var(--accent-subtle);
   border: 1px solid rgba(67,206,162,.2);
   display: flex; align-items: center; justify-content: center;
   color: #43cea2;
@@ -40,10 +40,7 @@
   font-size: 22px;
   font-weight: 800;
   letter-spacing: -.4px;
-  background: linear-gradient(135deg, var(--text-primary) 30%, #43cea2 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--text-primary);
   color: transparent;
 }
 .ap-subtitle {
@@ -112,7 +109,7 @@
 }
 .ap-btn:active { transform: scale(.96); }
 .ap-btn--primary {
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
   color: #fff;
   box-shadow: 0 2px 10px rgba(67,206,162,.3);
 }
@@ -127,7 +124,7 @@
 .ap-btn--danger:hover { opacity: .88; }
 .ap-btn--warn   { background: #d97706; color: #fff; }
 .ap-btn--warn:hover { opacity: .88; }
-.ap-btn--gold   { background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; }
+.ap-btn--gold   { background: #d97706; color: #fff; }
 .ap-btn--gold:hover { opacity: .88; }
 .ap-btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
 
@@ -159,12 +156,12 @@
 }
 .ap-stat:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,.08); }
 
-.ap-stat--total    ::before { background: linear-gradient(90deg,#43cea2,#185a9d); }
-.ap-stat--published::before { background: linear-gradient(90deg,#16a34a,#4ade80); }
-.ap-stat--pending  ::before { background: linear-gradient(90deg,#dc2626,#f87171); }
-.ap-stat--draft    ::before { background: linear-gradient(90deg,#b45309,#f59e0b); }
-.ap-stat--sponsored::before { background: linear-gradient(90deg,#f59e0b,#fbbf24); }
-.ap-stat--deletion ::before { background: linear-gradient(90deg,#dc2626,#ef4444); }
+.ap-stat--total    ::before { background: var(--accent); }
+.ap-stat--published::before { background: #16a34a; }
+.ap-stat--pending  ::before { background: #dc2626; }
+.ap-stat--draft    ::before { background: #d97706; }
+.ap-stat--sponsored::before { background: #f59e0b; }
+.ap-stat--deletion ::before { background: #dc2626; }
 
 .ap-stat-icon {
   width: 40px; height: 40px;
@@ -190,7 +187,7 @@
 .ap-stat--draft    .ap-stat-num { color: #b45309; }
 
 /* ── Toolbar ───────────────────────────────────── */
-/* Desktop: one single row — selects, chips, and result count together */
+/* Desktop: one single row - selects, chips, and result count together */
 .ap-toolbar {
   display: flex;
   align-items: center;
@@ -201,7 +198,7 @@
   display: contents; /* dissolves into toolbar flex, children become siblings */
 }
 .ap-filter-chips {
-  display: contents; /* same — chips join the toolbar row */
+  display: contents; /* same - chips join the toolbar row */
 }
 .ap-result-count {
   font-size: 12.5px;
@@ -249,7 +246,7 @@
 }
 .ap-chip:hover { border-color: #43cea2; color: #43cea2; }
 .ap-chip--on {
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
   border-color: transparent;
   color: #fff !important;
   box-shadow: 0 3px 12px rgba(67,206,162,.3);
@@ -503,7 +500,7 @@
 .ap-pg-btn:hover:not(:disabled) { background:var(--bg-hover); border-color:var(--border-strong); }
 .ap-pg-btn:disabled { opacity:.32; cursor:not-allowed; }
 .ap-pg-num.ap-pg-active {
-  background:linear-gradient(135deg,#43cea2,#185a9d);
+  background: var(--accent);
   border-color:transparent;
   color:#fff;
   cursor:default;
@@ -668,7 +665,7 @@
   .ap-stat-num  { font-size:22px; }
   .ap-stat-label{ font-size:11px; }
 
-  /* Toolbar / filters — stack vertically on mobile */
+  /* Toolbar / filters - stack vertically on mobile */
   .ap-toolbar { flex-direction:column; align-items:stretch; gap:8px; }
   /* Restore filter-selects as a 2-col grid (overrides desktop display:contents) */
   .ap-filter-selects {
@@ -717,7 +714,7 @@
     padding:10px 14px;
     border-bottom:1px solid var(--border);
     white-space:normal; font-size:13px;
-    /* flex inside block doesn't auto-fill — force full card width */
+    /* flex inside block doesn't auto-fill - force full card width */
     width:100%; box-sizing:border-box;
   }
   .ap-table td:last-child { border-bottom:none; }

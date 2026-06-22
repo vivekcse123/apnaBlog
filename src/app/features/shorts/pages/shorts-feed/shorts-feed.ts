@@ -160,7 +160,7 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private applyMeta(): void {
-    this.titleSvc.setTitle('Shorts — Quick Videos & Reels | ApnaInsights');
+    this.titleSvc.setTitle('Shorts - Quick Videos & Reels | ApnaInsights');
     const desc = 'Watch short videos across News, Sports, Technology, Entertainment and more on ApnaInsights Shorts.';
     this.meta.updateTag({ name: 'description',        content: desc });
     this.meta.updateTag({ name: 'robots',             content: 'noindex, follow' });
@@ -298,7 +298,7 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
         const vid = this.getVideoAt(this.activeIndex());
         if (vid && !this.isMuted()) vid.muted = false;
       }
-      // Do NOT pause here — the IntersectionObserver pauses cards that leave
+      // Do NOT pause here - the IntersectionObserver pauses cards that leave
       // the viewport, and autoPlayVideo handles resuming the new card.
       // Pausing all videos here causes a visible audio/video stutter on every swipe.
     }, { passive: true });
@@ -516,7 +516,7 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
           this.activeIndex.set(bestVisibleIdx);
           this.scheduleView(bestVisibleIdx);
           this.preloadAdjacent(bestVisibleIdx);
-          // Start playing as soon as the card is ≥80% visible — don't wait
+          // Start playing as soon as the card is ≥80% visible - don't wait
           // for the scroll-settle timer, which creates a noticeable delay.
           if (!this.manuallyPausedSet.has(bestVisibleIdx)) {
             this.autoPlayVideo(bestVisibleIdx);

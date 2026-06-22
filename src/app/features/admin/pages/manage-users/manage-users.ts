@@ -277,7 +277,7 @@ export class ManageUsers implements OnInit, OnDestroy {
   cancelDelete(): void { this.showDeleteConfirm.set(false); this.pendingDeleteUser.set(null); }
 
   timeAgo(date: any): string {
-    if (!date) return '—';
+    if (!date) return '-';
     const diff = Date.now() - new Date(date).getTime();
     const m = Math.floor(diff / 60000);
     if (m < 1)   return 'just now';

@@ -72,7 +72,7 @@ export class About implements OnInit, OnDestroy {
   faqs: FAQ[] = [
     {
       q: 'What is ApnaInsights?',
-      a: 'ApnaInsights is India\'s practical knowledge platform where knowledgeable contributors share expert guides. Writers publish across 14 categories including technology, lifestyle, health, business, education, sports, career and more. The platform is free to read and free to write — join our growing community today.'
+      a: 'ApnaInsights is India\'s practical knowledge platform where knowledgeable contributors share expert guides. Writers publish across 14 categories including technology, lifestyle, health, business, education, sports, career and more. The platform is free to read and free to write - join our growing community today.'
     },
     {
       q: 'Is ApnaInsights free to use?',
@@ -127,7 +127,7 @@ export class About implements OnInit, OnDestroy {
 
     this.title.setTitle('About ApnaInsights | India\'s Practical Knowledge Platform');
 
-    this.meta.updateTag({ name: 'description', content: 'ApnaInsights is India\'s practical knowledge platform. Discover expert guides across 14 categories — technology, lifestyle, health, business, career and more. Free to write, free to read.' });
+    this.meta.updateTag({ name: 'description', content: 'ApnaInsights is India\'s practical knowledge platform. Discover expert guides across 14 categories - technology, lifestyle, health, business, career and more. Free to write, free to read.' });
     this.meta.updateTag({ name: 'keywords', content: 'ApnaInsights, Indian knowledge platform, write guides online India, practical knowledge India, publish articles India, expert guides platform, free writing India, knowledge platform India' });
     this.meta.updateTag({ name: 'robots', content: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' });
     this.meta.updateTag({ name: 'author', content: 'Vivek Verma, ApnaInsights' });
@@ -137,7 +137,7 @@ export class About implements OnInit, OnDestroy {
 
     this.meta.updateTag({ property: 'og:type', content: 'website' });
     this.meta.updateTag({ property: 'og:title', content: 'About ApnaInsights | India\'s Practical Knowledge Platform' });
-    this.meta.updateTag({ property: 'og:description', content: 'ApnaInsights is India\'s practical knowledge platform — expert guides across 14 topics. Free to read, free to write.' });
+    this.meta.updateTag({ property: 'og:description', content: 'ApnaInsights is India\'s practical knowledge platform - expert guides across 14 topics. Free to read, free to write.' });
     this.meta.updateTag({ property: 'og:url', content: 'https://apnainsights.com/about' });
     this.meta.updateTag({ property: 'og:site_name', content: 'ApnaInsights' });
     this.meta.updateTag({ property: 'og:image', content: 'https://apnainsights.com/og-image.png' });

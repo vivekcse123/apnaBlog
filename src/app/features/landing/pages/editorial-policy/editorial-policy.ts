@@ -26,7 +26,7 @@ export class EditorialPolicy implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.title.setTitle('Editorial Policy | ApnaInsights');
-    this.meta.updateTag({ name: 'description', content: 'ApnaInsights Editorial Policy — learn how we review, moderate, and maintain quality standards for all content published on our knowledge platform.' });
+    this.meta.updateTag({ name: 'description', content: 'ApnaInsights Editorial Policy - learn how we review, moderate, and maintain quality standards for all content published on our knowledge platform.' });
     this.meta.updateTag({ name: 'robots', content: 'index, follow' });
 
     this.meta.updateTag({ property: 'og:type',        content: 'website' });

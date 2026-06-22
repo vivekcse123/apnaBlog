@@ -58,7 +58,7 @@ const COMMENT_PAGE_SIZE     = 5;
 const SESSION_COMMENT_LIMIT = 10;
 const AUTHOR_POSTS_PER_PAGE = 10;
 
-// Valid display statuses — 'pending' posts are only visible to their owner/admin
+// Valid display statuses - 'pending' posts are only visible to their owner/admin
 // via direct URL but we still render them (no 404); they just won't be indexed.
 const VISIBLE_STATUSES = new Set(['published', 'draft', 'pending']);
 
@@ -98,7 +98,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
 
   // ── Post state ────────────────────────────────────────────────────────────
   // Read TransferState once at construction so every signal that depends on the
-  // SSR post is pre-populated before Angular's first render pass — this keeps
+  // SSR post is pre-populated before Angular's first render pass - this keeps
   // safeContent() identical to what SSR rendered, so hydration reuses the
   // server DOM for .blog-content instead of re-rendering it.
   private readonly _initPost: Post | null = isPlatformBrowser(this.platformId)
@@ -107,7 +107,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
 
   // SSR renders .blog-content from heading-processed HTML (see _processHeadings).
   // TransferState only carries the raw post, so run the same pure/deterministic
-  // processing here too — otherwise the first client-side computation of
+  // processing here too - otherwise the first client-side computation of
   // safeContent() would differ from the SSR DOM (missing heading ids), causing
   // Angular to replace the whole .blog-content subtree right after hydration.
   private readonly _initProcessed = this._initPost
@@ -139,8 +139,8 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   });
 
   // Holds only the raw HTML string for the blog body. Kept separate from post()
-  // so that like/view/comment mutations — which replace the post signal with a
-  // new object but don't touch content — do NOT cause [innerHTML] to re-render
+  // so that like/view/comment mutations - which replace the post signal with a
+  // new object but don't touch content - do NOT cause [innerHTML] to re-render
   // and destroy the imperatively injected code-block wrappers.
   private readonly _contentHtml = signal<string>(this._initProcessed?.html ?? this._initPost?.content ?? '');
 
@@ -158,7 +158,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   activeLang  = signal<string | null>(null);
 
   // Cache SafeHtml so [innerHTML] doesn't re-render when the HTML string is identical.
-  // bypassSecurityTrustHtml creates a new object reference every call — without
+  // bypassSecurityTrustHtml creates a new object reference every call - without
   // caching, even a no-op signal update causes Angular to wipe and repaint the DOM.
   private _safeCache: SafeHtml | null = null;
   private _safeCacheKey = '';
@@ -195,7 +195,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     // ── Step 2: Always append original content after last media block ─────
     // Translation APIs frequently truncate long articles. Rather than guessing
     // if truncation occurred, we always append whatever original content follows
-    // the last image/figure — this ensures nothing is ever invisible.
+    // the last image/figure - this ensures nothing is ever invisible.
     let lastMediaEnd = -1;
     const scanRe = /<figure[\s\S]*?<\/figure>|<img[^>]+\/?>|<video[\s\S]*?<\/video>|<iframe[\s\S]*?<\/iframe>/gi;
     let m: RegExpExecArray | null;
@@ -213,7 +213,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
         if (!alreadyPresent) {
           content +=
             `<div class="translation-remainder">` +
-            `<p class="translation-remainder-note"><em>— Continued —</em></p>` +
+            `<p class="translation-remainder-note"><em>- Continued -</em></p>` +
             afterMedia +
             `</div>`;
         }
@@ -312,7 +312,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     return this.contentWordCount() < 300;
   });
 
-  // Graduated ad logic — limits ad units on shorter articles to protect ad-to-content ratio
+  // Graduated ad logic - limits ad units on shorter articles to protect ad-to-content ratio
   // 300–599 words: bottom ad only; 600–899 words: top + bottom; 900+ words: all three
   isShortPost = computed(() => {
     const p = this.post();
@@ -532,7 +532,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
       deviceType:  /Mobi|Android/i.test(navigator.userAgent) ? 'mobile' : 'desktop',
       visitorId:   this._getVisitorId(),
     });
-    // sendBeacon is fire-and-forget — guaranteed delivery even as the page navigates away.
+    // sendBeacon is fire-and-forget - guaranteed delivery even as the page navigates away.
     // Falls back to a silent fetch on unsupported browsers.
     const endpoint = `${this.apiBase}/sponsorship/track-click`;
     if (navigator.sendBeacon) {
@@ -595,13 +595,13 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
    *
    * Hindi and Marathi both use Devanagari, so we need a discriminator:
    *   ळ (U+0933) is very common in Marathi (काळ, वेळ, बोलणे…) but
-   *   virtually absent from modern standard Hindi — used as the tiebreaker.
+   *   virtually absent from modern standard Hindi - used as the tiebreaker.
    */
   private isOriginalInLang(lang: string): boolean {
     const text = (this.post()?.title ?? '') + ' ' + (this.post()?.description ?? '');
 
     const hasDevanagari  = /[ऀ-ॿ]/.test(text);
-    const hasMarathiChar = /ळ/.test(text); // ळ — Marathi discriminator
+    const hasMarathiChar = /ळ/.test(text); // ळ - Marathi discriminator
 
     switch (lang) {
       case 'en': {
@@ -631,7 +631,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     if (!p) return;
 
     // If the original post is already written in the requested language,
-    // always revert to original content — never send it through the translator
+    // always revert to original content - never send it through the translator
     // (wrong source lang would garble text and break HTML formatting).
     if (this.isOriginalInLang(lang)) {
       const wasShowingOriginal = this.translation() === null;
@@ -726,7 +726,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
         // ── Reset scroll position ─────────────────────────────────────────
         // Angular reuses this component instance when navigating between two
         // /blog/:id routes (e.g. clicking a related post), so the host's own
-        // scroll container retains its old scrollTop unless reset here —
+        // scroll container retains its old scrollTop unless reset here -
         // window.scrollTo (from withInMemoryScrolling) doesn't touch it.
         if (isPlatformBrowser(this.platformId)) {
           this.elementRef.nativeElement.scrollTo({ top: 0, behavior: 'instant' });
@@ -858,7 +858,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     if (!id) return;
     try {
       if (pct >= 90) {
-        // Fully read — clear any saved progress so card doesn't show "Continue"
+        // Fully read - clear any saved progress so card doesn't show "Continue"
         localStorage.removeItem(`apna_progress_${id}`);
       } else if (pct >= 5) {
         localStorage.setItem(`apna_progress_${id}`, String(Math.round(pct)));
@@ -913,7 +913,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     const isBrowser = isPlatformBrowser(this.platformId);
 
     // ── FIX: If TransferState already populated the post, skip the network
-    // request entirely — it was just made by SSR milliseconds ago.
+    // request entirely - it was just made by SSR milliseconds ago.
     if (isBrowser && this.post()) {
       // Still kick off background refreshables (comments, related, follow)
       // but the post content is already on screen, no loading state needed.
@@ -928,9 +928,9 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
       this._bootstrapPost(cached as unknown as Post);
     }
 
-    // On SSR: cap at 25 s — Vercel function maxDuration is 30 s, giving Render
+    // On SSR: cap at 25 s - Vercel function maxDuration is 30 s, giving Render
     // enough time to wake from a cold start before we give up.
-    // On browser: no timeout — let the user's connection decide.
+    // On browser: no timeout - let the user's connection decide.
     const request$ = isBrowser
       ? this.postService.getPostById(postId)
       : this.postService.getPostById(postId).pipe(timeout(25000));
@@ -959,7 +959,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
             this.transferState.set(POST_STATE_KEY, postData);
           }
 
-          // Sponsored posts have a dedicated campaign page — not a blog article
+          // Sponsored posts have a dedicated campaign page - not a blog article
           if (postData.isSponsored) {
             this.router.navigate(['/campaign', postId], { replaceUrl: true });
             return;
@@ -989,7 +989,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
               this.loadError.set(true);
             }
           }
-          // SSR timeout: leave isLoading=true — the server sends the spinner
+          // SSR timeout: leave isLoading=true - the server sends the spinner
           // HTML and the browser re-fetches cleanly on the client side.
         },
       });
@@ -1003,8 +1003,8 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
    *  • setInterval (carousel) → browser only (Zone.js hangs SSR).
    *  • setTimeout / DOM work → browser only.
    */
-  // Set full post data including content. Always go through here — never call
-  // this.post.set() directly with a full post object — so _contentHtml stays in sync.
+  // Set full post data including content. Always go through here - never call
+  // this.post.set() directly with a full post object - so _contentHtml stays in sync.
   private _applyPost(postData: Post): void {
     if (postData.content !== this._contentHtml()) {
       const { html, toc } = this._processHeadings(postData.content ?? '');
@@ -1016,7 +1016,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
 
   // Assigns stable `id="heading-N"` attributes to h2/h3/h4 tags directly in the
   // content HTML string (string-based, not DOM-based) so heading anchors are
-  // present in the SSR-rendered page — needed for Google "jump to section"
+  // present in the SSR-rendered page - needed for Google "jump to section"
   // sitelinks and for the ToC sidebar to render before hydration.
   private _processHeadings(html: string): { html: string; toc: TableOfContentsItem[] } {
     if (!html) return { html, toc: [] };
@@ -1273,7 +1273,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
-    // No cache (direct URL visit) — the /related endpoint now returns both
+    // No cache (direct URL visit) - the /related endpoint now returns both
     // same-category posts AND trending posts (up to 22 total) so both the
     // "Related Stories" and "Must Read / Trending" sections can be populated.
     this.postService.getRelatedPosts(currentPost._id)
@@ -1284,7 +1284,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
           if (posts.length) {
             this._processRelatedAndAuthor(currentPost, posts);
           } else {
-            // Absolute fallback — both sections stay empty, no error thrown
+            // Absolute fallback - both sections stay empty, no error thrown
             this.relatedPosts.set([]);
             this.trendingPosts.set([]);
           }
@@ -1340,7 +1340,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
 
     this.relatedPosts.set(related.slice(0, 4));
 
-    // Trending — top 5 editorial posts by views, excluding current and sponsored
+    // Trending - top 5 editorial posts by views, excluding current and sponsored
     const trending = allPosts
       .filter(p => p._id !== currentPost._id && p.status === 'published' && !p.isSponsored)
       .sort((a, b) => (b.views ?? 0) - (a.views ?? 0))
@@ -1362,7 +1362,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
 
   openCommentDrawer(): void {
     if (this.commentDrawerOpen()) {
-      // Already loaded — just scroll
+      // Already loaded - just scroll
       this.document.getElementById('discussion')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       return;
     }
@@ -1600,7 +1600,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     const ogLocale     = lang === 'en-IN' ? 'en_IN' : lang.replace('-', '_');
     const rawDesc      = post.description || post.title;
     const fullDesc     = isMcq
-      ? `${rawDesc} — Test your knowledge with this ${post.mcqQuestions?.length ?? 0}-question MCQ quiz.`
+      ? `${rawDesc} - Test your knowledge with this ${post.mcqQuestions?.length ?? 0}-question MCQ quiz.`
       : rawDesc;
     // Always truncate to 155 chars for the meta tag
     const desc         = this.truncateDesc(fullDesc, 155);
@@ -1611,7 +1611,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
 
     // Pending and draft posts must not be indexed.
     // Thin posts (< 500 words) get noindex so they don't drag down site quality
-    // for AdSense review — they stay accessible to users but Google won't index them.
+    // for AdSense review - they stay accessible to users but Google won't index them.
     const plainTextForCount = (post.content ?? '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
     const wordCount         = plainTextForCount.split(/\s+/).filter(Boolean).length;
     this.contentWordCount.set(wordCount);
@@ -1620,7 +1620,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     // News articles get max-snippet for Top Stories eligibility
     const NEWS_CATS_META = new Set(['News','Sports','Business','Entertainment','Health','Science','Technology']);
     const isNewsMeta = post.categories?.some(c => NEWS_CATS_META.has(c));
-    // Sponsored posts are paid native advertising — must not be indexed as editorial content.
+    // Sponsored posts are paid native advertising - must not be indexed as editorial content.
     // AdSense policy and Google's quality guidelines require paid content to be excluded
     // from organic indexing to avoid misleading users and crawlers.
     const isSponsored = !!post.isSponsored;
@@ -1628,7 +1628,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
       ? `index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1${isNewsMeta ? ', max-image-preview:large' : ''}`
       : 'noindex, nofollow';
 
-    // Keywords — MCQ gets quiz terms; regular posts get categories + tags
+    // Keywords - MCQ gets quiz terms; regular posts get categories + tags
     const keywords = isMcq
       ? [post.title, 'MCQ', 'quiz', 'multiple choice', ...(post.categories ?? []), ...(post.tags ?? [])].join(', ')
       : [...(post.categories ?? []), ...(post.tags ?? []), post.title].filter(Boolean).join(', ');
@@ -1671,7 +1671,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
       this.setMeta('property', 'article:author', (post.user as any).name);
     }
 
-    // Canonical — update in place, never append duplicates
+    // Canonical - update in place, never append duplicates
     try {
       let canonical = this.document.querySelector("link[rel='canonical']") as HTMLLinkElement | null;
       if (!canonical) {
@@ -1694,7 +1694,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
       hreflang.setAttribute('href', canonicalUrl);
     } catch (_) {}
 
-    // Preload featured image (browser only) — update in place
+    // Preload featured image (browser only) - update in place
     if (isPlatformBrowser(this.platformId) && post.featuredImage?.trim()) {
       try {
         let preload = this.document.querySelector("link[rel='preload'][as='image'][data-blog-preload]") as HTMLLinkElement | null;
@@ -1714,7 +1714,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
 
   private _detectLanguage(post: Post): string {
     const sample = `${post.title ?? ''} ${post.description ?? ''}`;
-    if (/[ऀ-ॿ]/.test(sample)) return 'hi';   // Devanagari — Hindi / Marathi
+    if (/[ऀ-ॿ]/.test(sample)) return 'hi';   // Devanagari - Hindi / Marathi
     if (/[஀-௿]/.test(sample)) return 'ta';   // Tamil
     if (/[ఀ-౿]/.test(sample)) return 'te';   // Telugu
     if (/[ഀ-ൿ]/.test(sample)) return 'ml';   // Malayalam
@@ -1750,7 +1750,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
       // ── Common article fields ─────────────────────────────────────────────
       const plainText    = (post.content ?? '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
       const wordCount    = plainText.split(/\s+/).filter(Boolean).length;
-      // articleBody: first ~500 chars of visible text — used for featured snippets
+      // articleBody: first ~500 chars of visible text - used for featured snippets
       const articleBody  = plainText.substring(0, 500) + (plainText.length > 500 ? '…' : '');
       const readTimeMins = Math.max(1, Math.ceil(wordCount / 200));
       const keywords     = [
@@ -1785,7 +1785,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
         mainEntityOfPage: { '@type': 'WebPage', '@id': postUrl },
         isPartOf:         { '@id': `${site}/#website` },
         ...(keywords ? { keywords } : {}),
-        // InteractionStatistic — helps Google show view/like counts in search
+        // InteractionStatistic - helps Google show view/like counts in search
         interactionStatistic: [
           {
             '@type':               'InteractionCounter',
@@ -1805,7 +1805,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
       const NEWS_CATS = new Set(['News','Sports','Business','Entertainment','Health','Science','Technology']);
       const isNews = !isMcq && post.categories?.some(c => NEWS_CATS.has(c));
 
-      // ── Main schema — Quiz / NewsArticle / BlogPosting ────────────────────
+      // ── Main schema - Quiz / NewsArticle / BlogPosting ────────────────────
       let mainSchema: any;
       if (isMcq && post.mcqQuestions?.length) {
         mainSchema = {
@@ -1826,7 +1826,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
           })),
         };
       } else if (isNews) {
-        // NewsArticle — required for Top Stories carousel eligibility
+        // NewsArticle - required for Top Stories carousel eligibility
         mainSchema = {
           '@type':        ['NewsArticle', 'Article'],  // dual type for max coverage
           ...commonFields,
@@ -1836,7 +1836,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
           timeRequired:   `PT${readTimeMins}M`,
           articleSection: post.categories?.[0] || undefined,
           genre:          'News',
-          // speakable — tells Google Assistant which parts to read aloud
+          // speakable - tells Google Assistant which parts to read aloud
           speakable: {
             '@type':   'SpeakableSpecification',
             cssSelector: ['h1', '.article-description', '.news-brief'],
@@ -1913,7 +1913,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     const newViews = post.views + 1;
     this.postService.addView(post._id).subscribe();
     this.post.set({ ...post, views: newViews });
-    // Keep PostCache in sync — home-page cards read from it on back-navigation
+    // Keep PostCache in sync - home-page cards read from it on back-navigation
     this.postCache.patchOne(post._id, { views: newViews });
   }
 
@@ -2053,7 +2053,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     const q = this.quotePopover();
     const p = this.post();
     if (!q || !p || !isPlatformBrowser(this.platformId)) return;
-    const tweet = `"${q.text}" — ${p.title} ${this.shareUrl()}`;
+    const tweet = `"${q.text}" - ${p.title} ${this.shareUrl()}`;
     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(tweet)}`, '_blank');
     this.quotePopover.set(null);
     window.getSelection()?.removeAllRanges();
@@ -2346,7 +2346,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     this.persistLikedIds(ids);
     this.post.set({ ...post, likesCount: Math.max(0, post.likesCount - 1) });
 
-    // Guests have no working anonymous "unlike" endpoint — keep this
+    // Guests have no working anonymous "unlike" endpoint - keep this
     // local-only so the tap doesn't get reverted by a failed request.
     if (!this.isLoggedIn) return;
 
@@ -2356,7 +2356,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private restoreReactions(): void {
-    // No longer uses localStorage — loads from backend after post loads
+    // No longer uses localStorage - loads from backend after post loads
   }
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -2547,7 +2547,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   onContentClick(event: MouseEvent): void {
     const target = event.target as HTMLElement;
 
-    // Picker handled by its own (click) + stopPropagation — ignore here
+    // Picker handled by its own (click) + stopPropagation - ignore here
     if (target.closest('.rp-picker')) return;
 
     // Close pickers on any prose click

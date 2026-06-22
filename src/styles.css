@@ -1,17 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&display=swap');
 @import './mobile-ui.css';
-
-/* Playfair Display's "&" is an ornate italic swash that looks out of place
-   next to the bold upright letters in blog/section titles — swap in a plain
-   serif ampersand for just that codepoint so titles read consistently. */
-@font-face {
-  font-family: 'Playfair Display';
-  font-style: normal;
-  font-weight: 700 900;
-  font-display: swap;
-  src: local('Georgia Bold'), local('Georgia'), local('Times New Roman Bold'), local('Times New Roman');
-  unicode-range: U+0026;
-}
 
 /* ── View Transitions (route cross-fade) ─────────────────────────────────────
    Angular's withViewTransitions() hooks into the browser View Transitions API.
@@ -379,10 +367,8 @@ app-promo-modal .modal .features li {
 }
 
 app-promo-modal .modal .brand {
-  -webkit-text-fill-color: transparent !important;
-  background: linear-gradient(90deg, #38bdf8, #818cf8);
-  -webkit-background-clip: text;
-  background-clip: text;
+  color: #38bdf8 !important;
+  -webkit-text-fill-color: unset !important;
 }
 
 app-promo-modal .modal .cta-btn {
@@ -404,7 +390,7 @@ html, body {
 .app-logo {
   display: inline-flex;
   align-items: center;
-  gap: 8px;                /* normal gap now — no tricks needed */
+  gap: 8px;                /* normal gap now - no tricks needed */
   text-decoration: none;
   cursor: pointer;
   flex-shrink: 0;
@@ -421,14 +407,11 @@ html, body {
 }
 
 .app-logo-text {
-  font-family: 'Playfair Display', serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 22px;
-  font-weight: 700;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  letter-spacing: 0.3px;
+  font-weight: 800;
+  color: var(--accent-text);
+  letter-spacing: -0.3px;
   white-space: nowrap;
   line-height: 1;
   margin: 0;
@@ -618,26 +601,18 @@ html, body {
    Applied globally so all admin/user panel stat-cards get the premium feel
    without duplicating per-component.                                          */
 [data-theme="dark"] .stat-card {
-  background: linear-gradient(135deg,
-    rgba(255,255,255,0.04) 0%,
-    rgba(255,255,255,0.02) 100%
-  );
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  background: rgba(255,255,255,0.03);
   border-color: rgba(255,255,255,0.08);
 }
 
 [data-theme="dark"] .stat-card:hover {
-  background: linear-gradient(135deg,
-    rgba(67,206,162,0.06) 0%,
-    rgba(24,90,157,0.06) 100%
-  );
-  border-color: rgba(67,206,162,0.2);
+  background: rgba(67,206,162,0.06);
+  border-color: rgba(67,206,162,0.18);
 }
 
 /* ── Prevent iOS Safari input zoom ───────────────────────────────────────────
    iOS zooms in on any input/textarea/select whose font-size < 16px.
-   Force 16px on mobile only — desktop keeps its designed size via the
+   Force 16px on mobile only - desktop keeps its designed size via the
    individual component stylesheets.                                          */
 @media (max-width: 768px) {
   input, textarea, select {
@@ -664,7 +639,7 @@ html { scroll-behavior: smooth; }
     min-width: 44px;
   }
 
-  /* Toggle/pill controls have fixed dimensions — exempt from the 44px rule */
+  /* Toggle/pill controls have fixed dimensions - exempt from the 44px rule */
   .toggle-switch, .theme-pill, .nav-item {
     min-height: unset !important;
     min-width: unset !important;
@@ -694,17 +669,17 @@ html { scroll-behavior: smooth; }
   background: var(--bg-surface);
 }
 
-/* Collapse AdSense global <ins> injected outside app-root — prevents body-level blank scroll space */
+/* Collapse AdSense global <ins> injected outside app-root - prevents body-level blank scroll space */
 body > ins.adsbygoogle { display: none !important; width: 0 !important; height: 0 !important; }
 
-/* Collapse unfilled AdSense slots — removes blank space when no ad is served */
+/* Collapse unfilled AdSense slots - removes blank space when no ad is served */
 ins.adsbygoogle[data-ad-status="unfilled"] {
   display: none !important;
   height: 0 !important;
 }
 
 /* In PWA standalone mode AdSense JS never runs, so uninitialized slots stay permanently blank.
-   Only collapse them there — never on the regular browser where AdSense is actively filling them. */
+   Only collapse them there - never on the regular browser where AdSense is actively filling them. */
 @media (display-mode: standalone) {
   ins.adsbygoogle:not([data-ad-status="filled"]):not([data-ad-status="unfilled"]) {
     display: none !important;
@@ -712,7 +687,7 @@ ins.adsbygoogle[data-ad-status="unfilled"] {
   }
 }
 
-/* iOS PWA standalone mode — ensure safe-area is always applied and prevent rubber-band artifacts */
+/* iOS PWA standalone mode - ensure safe-area is always applied and prevent rubber-band artifacts */
 @media (display-mode: standalone) {
   /* Force GPU layer on header for iOS compositing stability */
   .ch-topbar,
@@ -736,7 +711,7 @@ body > iframe[style*="display: none"] { width: 0 !important; height: 0 !importan
 /* ── Shared ad wrap (category, tag, author, search pages) ───────────────── */
 /* min-height reserves space for the typical responsive ad size up front, so
    the page doesn't shift when the ad fills in (CLS). Only collapse once
-   AdSense explicitly reports "unfilled" — never for the pre-JS/initial state. */
+   AdSense explicitly reports "unfilled" - never for the pre-JS/initial state. */
 .page-ad-wrap {
   width: 100%;
   max-width: 1200px;
@@ -751,7 +726,7 @@ body > iframe[style*="display: none"] { width: 0 !important; height: 0 !importan
   padding: 0;
   overflow: hidden;
 }
-/* Once the ad has actually rendered, let the wrap shrink to its real size —
+/* Once the ad has actually rendered, let the wrap shrink to its real size -
    the 100px placeholder shouldn't linger as extra white space below it. */
 .page-ad-wrap:has(ins.adsbygoogle[data-ad-status="filled"]) {
   min-height: 0;

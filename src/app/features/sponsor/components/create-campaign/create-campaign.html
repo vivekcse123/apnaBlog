@@ -11,7 +11,7 @@
       </div>
       <div>
         <h2 class="cc-title">Create Campaign</h2>
-        <p class="cc-sub">Submit your ad for review — live within 24h</p>
+        <p class="cc-sub">Submit your ad for review - live within 24h</p>
       </div>
     </div>
     <button class="cc-close-btn" (click)="close.emit()" aria-label="Close">
@@ -65,7 +65,7 @@
       <div class="cc-field">
         <label class="cc-label">Campaign Name <span class="cc-req">*</span></label>
         <input type="text" class="cc-input" formControlName="campaignName"
-               placeholder="e.g. 30% Off Resume Builder — Limited Offer" maxlength="120" />
+               placeholder="e.g. 30% Off Resume Builder - Limited Offer" maxlength="120" />
         <div class="cc-field-hint">{{ form.get('campaignName')?.value?.length ?? 0 }}/120</div>
         @if (form.get('campaignName')?.invalid && form.get('campaignName')?.touched) {
           <small class="cc-error">Campaign name must be 5–120 characters</small>

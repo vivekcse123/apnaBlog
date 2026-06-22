@@ -293,7 +293,7 @@
   margin-top: 8px;
   padding: 12px 28px;
   border-radius: 12px;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
   color: #fff;
   font-size: 14px;
   font-weight: 600;

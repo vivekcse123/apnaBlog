@@ -56,7 +56,7 @@
   font-size: 13px;
   font-weight: 600;
   color: #fff;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
   border: none;
   cursor: pointer;
   transition: opacity .15s;
@@ -148,7 +148,7 @@
   margin-top: 8px;
   padding: 9px 20px;
   border-radius: 8px;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
   color: #fff;
   font-size: 13px;
   font-weight: 600;
@@ -404,20 +404,17 @@
 }
 
 /* ══════════════════════════════════════════════════════
-   MODERN REDESIGN — My Shorts page
+   MODERN REDESIGN - My Shorts page
 ══════════════════════════════════════════════════════ */
 
 /* Gradient page title */
 .ms-title {
-  background: linear-gradient(135deg, var(--text-primary) 40%, #43cea2);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--text-primary);
   color: transparent;
   font-size: 22px;
 }
 
-/* Stat cards — top stripe + tinted bg + hover */
+/* Stat cards - top stripe + tinted bg + hover */
 .ms-stat-card {
   position: relative;
   overflow: hidden;
@@ -435,9 +432,9 @@
   height: 3px;
   border-radius: 3px 3px 0 0;
 }
-.ms-stat-card--total::before     { background: linear-gradient(90deg, #43cea2, #185a9d); }
-.ms-stat-card--published::before { background: linear-gradient(90deg, #0f7a5a, #43cea2); }
-.ms-stat-card--pending::before   { background: linear-gradient(90deg, #BA7517, #f59e0b); }
+.ms-stat-card--total::before     { background: var(--accent); }
+.ms-stat-card--published::before { background: var(--accent); }
+.ms-stat-card--pending::before   { background: #d97706; }
 
 .ms-stat-card--total     { background: color-mix(in srgb, #43cea2 5%, var(--bg-surface)); }
 .ms-stat-card--published { background: color-mix(in srgb, #22c55e 5%, var(--bg-surface)); }
@@ -450,15 +447,12 @@
 .ms-stat-card--published.active { border-color: #22c55e; box-shadow: 0 0 0 2px rgba(34,197,94,0.25); }
 .ms-stat-card--pending.active  { border-color: #f59e0b; box-shadow: 0 0 0 2px rgba(245,158,11,0.25); }
 
-/* Stat value — gradient text */
+/* Stat value - gradient text */
 .ms-stat-value {
   font-size: 22px;
   font-weight: 900;
   letter-spacing: -0.5px;
-  background: linear-gradient(135deg, var(--text-primary), #43cea2);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--text-primary);
 }
 
 /* Short item card hover */
@@ -471,13 +465,13 @@
   box-shadow: 0 6px 20px rgba(0,0,0,0.1);
 }
 
-/* Status pill — vivid gradients */
+/* Status pill - vivid gradients */
 .ms-status-pill--published {
-  background: linear-gradient(135deg, #0f7a5a, #43cea2);
+  background: var(--accent);
   color: #fff;
 }
 .ms-status-pill--pending {
-  background: linear-gradient(135deg, #BA7517, #f59e0b);
+  background: #d97706;
   color: #fff;
 }
 
@@ -501,7 +495,7 @@
 
 /* Empty state upload btn */
 .ms-empty-btn {
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
   color: #fff;
   border: none;
   border-radius: 10px;

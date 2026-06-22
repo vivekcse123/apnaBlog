@@ -60,12 +60,12 @@ export class TaxonomyService {
 
   private _inflight: Observable<void> | null = null;
 
-  /** Load categories & tags — deduplicated in-flight, cached. */
+  /** Load categories & tags - deduplicated in-flight, cached. */
   load(): Observable<void> {
     if (this.loaded()) return of(undefined);
     if (this._inflight) return this._inflight;
 
-    // Pipe the HTTP request directly — avoids new Observable wrapper that
+    // Pipe the HTTP request directly - avoids new Observable wrapper that
     // caused "next is not a function" in strict-mode RxJS subscriber types.
     this._inflight = this.http.get<TaxonomyResponse>(this.endpoint).pipe(
       catchError(() => of({ status: 200, data: [] as TaxonomyItem[] })),

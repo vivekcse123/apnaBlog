@@ -220,7 +220,7 @@ export class UserHome implements OnInit, AfterViewInit, OnDestroy {
       [...posts].sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     );
 
-    // Writing streak — count consecutive days with at least one post
+    // Writing streak - count consecutive days with at least one post
     const allDayTs = posts
       .map((p: any) => {
         const d = new Date(p.createdAt);

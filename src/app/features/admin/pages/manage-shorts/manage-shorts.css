@@ -34,7 +34,7 @@
   gap: 6px;
   padding: 8px 16px;
   border-radius: 8px;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
   color: #fff;
   font-size: 13px;
   font-weight: 600;
@@ -69,7 +69,7 @@
   position: absolute;
   top: 0; left: 0; right: 0;
   height: 3px;
-  background: linear-gradient(90deg, #43cea2, #185a9d);
+  background: var(--accent);
 }
 .stat-card:hover {
   transform: translateY(-2px);
@@ -162,7 +162,7 @@
   font-size: 13px;
 }
 .ms-table thead tr {
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
 }
 
 .ms-table th {
@@ -275,7 +275,7 @@
   margin-top: 3px;
   padding: 3px 8px;
   border-radius: 6px;
-  background: linear-gradient(135deg, rgba(139,92,246,.12), rgba(245,158,11,.1));
+  background: var(--bg-surface-alt);
   border: 1px solid rgba(139,92,246,.25);
   color: #7c3aed;
   font-size: 11px;
@@ -511,7 +511,7 @@
 .ms-pg-btn:hover:not(:disabled) { background: var(--bg-hover); border-color: var(--border-strong); }
 .ms-pg-btn:disabled { opacity: .35; cursor: not-allowed; }
 .ms-pg-btn.ms-pg-active {
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
   border-color: transparent;
   color: #fff;
   cursor: default;
@@ -588,7 +588,7 @@
   padding: 9px 20px;
   border-radius: 8px;
   border: none;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
   color: #fff;
   font-size: 13px;
   font-weight: 600;
@@ -690,7 +690,7 @@
 .sp-btn-cancel:disabled { opacity: .5; cursor: not-allowed; }
 .sp-btn-submit {
   flex: 1; padding: 8px; border-radius: 8px; border: none;
-  background: linear-gradient(135deg, #f59e0b, #d97706);
+  background: #d97706;
   color: #fff; font-size: 12px; font-weight: 600; font-family: 'DM Sans', sans-serif;
   cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
   transition: opacity .15s;
@@ -750,12 +750,12 @@
   white-space: nowrap;
 }
 .ms-today-btn--active {
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
   border-color: transparent;
   color: #fff;
 }
 .ms-sponsor-btn:not(.ms-today-btn--active):hover { border-color: #f59e0b; color: #f59e0b; }
-.ms-sponsor-btn.ms-today-btn--active { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.ms-sponsor-btn.ms-today-btn--active { background: #d97706; }
 .ms-sponsor-count {
   display: inline-flex; align-items: center; justify-content: center;
   min-width: 18px; height: 18px; padding: 0 4px;
@@ -780,7 +780,7 @@
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* ══════════════════════════════════════════════════════════════
-   MOBILE — card layout instead of horizontal-scroll table
+   MOBILE - card layout instead of horizontal-scroll table
    ══════════════════════════════════════════════════════════════ */
 @media (max-width: 768px) {
   .ms-page {

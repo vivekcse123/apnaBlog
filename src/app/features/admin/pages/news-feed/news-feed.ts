@@ -36,9 +36,9 @@ export class NewsFeed implements OnInit, OnDestroy {
   // ── Publish modal state ────────────────────────────────────────────────────
   activeItem    = signal<NewsItem | null>(null);
   editTitle     = signal('');
-  editSummary   = signal('');           // Part 1 — In Brief (~60 words)
-  keyPoints     = signal<string[]>(['', '', '']); // Part 2 — Key Points (bullets)
-  editBg        = signal('');           // Part 3 — Background / Context
+  editSummary   = signal('');           // Part 1 - In Brief (~60 words)
+  keyPoints     = signal<string[]>(['', '', '']); // Part 2 - Key Points (bullets)
+  editBg        = signal('');           // Part 3 - Background / Context
   editCategory  = signal('');
   isPublishing  = signal(false);
   publishedIds  = signal<Set<string>>(new Set());
@@ -189,7 +189,7 @@ ${keyPointsHtml}
 </p>
     `.trim();
 
-    // meta description must be ≤155 chars — truncate at word boundary
+    // meta description must be ≤155 chars - truncate at word boundary
     const metaDesc = summary.length <= 155
       ? summary
       : summary.substring(0, 152).replace(/\s+\S*$/, '') + '…';

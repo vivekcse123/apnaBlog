@@ -130,19 +130,19 @@
               <div class="info-grid">
                 <div class="info-item">
                   <label>Full Name</label>
-                  <span>{{ u.name || '—' }}</span>
+                  <span>{{ u.name || '-' }}</span>
                 </div>
                 <div class="info-item">
                   <label>Email Address</label>
-                  <span>{{ u.email || '—' }}</span>
+                  <span>{{ u.email || '-' }}</span>
                 </div>
                 <div class="info-item">
                   <label>Date of Birth</label>
-                  <span>{{ u.dob ? (u.dob | date:'MMM d, yyyy') : '—' }}</span>
+                  <span>{{ u.dob ? (u.dob | date:'MMM d, yyyy') : '-' }}</span>
                 </div>
                 <div class="info-item">
                   <label>Location</label>
-                  <span>{{ u.location || '—' }}</span>
+                  <span>{{ u.location || '-' }}</span>
                 </div>
                 <div class="info-item">
                   <label>Bio</label>
@@ -269,7 +269,7 @@
             </button>
           }
         </div>
-        <div class="info-note">◈ Your language preference is saved. Full translation support is coming soon — the UI currently displays in English.</div>
+        <div class="info-note">◈ Your language preference is saved. Full translation support is coming soon - the UI currently displays in English.</div>
       </div>
     }
 

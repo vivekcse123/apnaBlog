@@ -99,7 +99,7 @@ export class ThemeService implements OnDestroy {
   /**
    * Checks the hour every minute. When the hour crosses 18 (6 PM) it switches
    * to dark; when it crosses 6 (6 AM) it switches back to light.
-   * Called once — the timer persists for the lifetime of the service.
+   * Called once - the timer persists for the lifetime of the service.
    */
   private startAutoTheme(): void {
     if (!this.isBrowser || this.autoTimer !== null) return;

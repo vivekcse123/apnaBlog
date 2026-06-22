@@ -42,7 +42,7 @@
             <label class="mc-label">Category (optional)</label>
             <select class="mc-input" [(ngModel)]="form.category">
               @for (cat of categories; track cat) {
-                <option [value]="cat">{{ cat || '— Any category —' }}</option>
+                <option [value]="cat">{{ cat || '- Any category -' }}</option>
               }
             </select>
           </div>

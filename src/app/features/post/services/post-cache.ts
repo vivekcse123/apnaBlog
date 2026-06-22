@@ -19,7 +19,7 @@ function readStorage(): { posts: PostWithTs[]; ts: number } | null {
 
 @Injectable({ providedIn: 'root' })
 export class PostCache {
-  // Hydrate synchronously from localStorage — zero HTTP cost on reload
+  // Hydrate synchronously from localStorage - zero HTTP cost on reload
   private readonly _stored  = readStorage();
   private _posts    = signal<PostWithTs[]>(
     this._stored && Date.now() - this._stored.ts < TTL_MS ? this._stored.posts : []
@@ -35,7 +35,7 @@ export class PostCache {
     return posts;
   }
 
-  /** O(n) lookup by _id or slug — used by blog-detail for instant render. */
+  /** O(n) lookup by _id or slug - used by blog-detail for instant render. */
   getById(id: string): PostWithTs | null {
     const posts = this.get();
     return posts?.find(p => p._id === id || p.slug === id) ?? null;
@@ -72,8 +72,8 @@ export class PostCache {
   private _persist(posts: PostWithTs[]): void {
     try {
       if (typeof localStorage === 'undefined') return;
-      // Store only fields needed for instant render — keeps payload small
+      // Store only fields needed for instant render - keeps payload small
       localStorage.setItem(STORE_KEY, JSON.stringify({ posts, ts: this._cachedAt }));
-    } catch { /* quota exceeded — silently skip */ }
+    } catch { /* quota exceeded - silently skip */ }
   }
 }

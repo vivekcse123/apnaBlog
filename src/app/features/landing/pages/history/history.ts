@@ -26,7 +26,7 @@ export class HistoryPage implements OnInit {
   showClear = signal(false);
 
   ngOnInit(): void {
-    this.title.setTitle('Reading History — ApnaInsights');
+    this.title.setTitle('Reading History - ApnaInsights');
     this.meta.updateTag({ name: 'robots', content: 'noindex, nofollow' });
     this.meta.updateTag({ name: 'description', content: 'Your personal reading history on ApnaInsights.' });
 

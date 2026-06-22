@@ -90,7 +90,7 @@
 }
 
 .cookie-accept {
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
   border: none;
   color: #ffffff;
   box-shadow: 0 3px 12px rgba(67, 206, 162, 0.3);

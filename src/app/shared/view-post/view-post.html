@@ -148,7 +148,7 @@
           </div>
         }
 
-        <!-- MCQ Questions — shown only for MCQ-type posts -->
+        <!-- MCQ Questions - shown only for MCQ-type posts -->
         @if (post()?.postType === 'mcq' && post()?.mcqQuestions?.length) {
           <div class="detail-block full">
             <span class="detail-label">MCQ Questions ({{ post()!.mcqQuestions!.length }})</span>
@@ -176,7 +176,7 @@
           </div>
         }
 
-        <!-- FAQ section — shown in read view for blog posts -->
+        <!-- FAQ section - shown in read view for blog posts -->
         @if (post()?.postType !== 'mcq' && post()?.faqs?.length) {
           <div class="detail-block full">
             <span class="detail-label">FAQs ({{ post()!.faqs!.length }})</span>
@@ -343,7 +343,7 @@
                               (input)="updateMcqQuestion(qi, $any($event.target).value)"></textarea>
 
                     <!-- Options -->
-                    <div class="mcq-editor-options-label">Options <span class="mcq-hint">— click radio to set correct answer</span></div>
+                    <div class="mcq-editor-options-label">Options <span class="mcq-hint">- click radio to set correct answer</span></div>
                     <div class="mcq-editor-options">
                       @for (opt of q.options; track trackByIdx($index); let oi = $index) {
                         <div class="mcq-editor-option" [class.mcq-editor-option--correct]="oi === q.correctIndex">
@@ -444,19 +444,19 @@
                 <div class="toolbar-group">
                   <button type="button" class="tool-btn heading-btn"
                     [class.active]="activeBlock() === 'h1'"
-                    title="Heading 1 — Page title"
+                    title="Heading 1 - Page title"
                     (mousedown)="$event.preventDefault()" (click)="execFormatBlock('h1')">H1</button>
                   <button type="button" class="tool-btn heading-btn"
                     [class.active]="activeBlock() === 'h2'"
-                    title="Heading 2 — Section title"
+                    title="Heading 2 - Section title"
                     (mousedown)="$event.preventDefault()" (click)="execFormatBlock('h2')">H2</button>
                   <button type="button" class="tool-btn heading-btn"
                     [class.active]="activeBlock() === 'h3'"
-                    title="Heading 3 — Sub-section"
+                    title="Heading 3 - Sub-section"
                     (mousedown)="$event.preventDefault()" (click)="execFormatBlock('h3')">H3</button>
                   <button type="button" class="tool-btn heading-btn"
                     [class.active]="activeBlock() === 'h4'"
-                    title="Heading 4 — Minor heading"
+                    title="Heading 4 - Minor heading"
                     (mousedown)="$event.preventDefault()" (click)="execFormatBlock('h4')">H4</button>
                   <button type="button" class="tool-btn heading-btn"
                     [class.active]="activeBlock() === 'p'"
@@ -686,7 +686,7 @@
               @if (showInlineImgPicker()) {
                 <div class="inline-img-bar">
                   <div class="inline-img-fields">
-                    <input type="text" class="inline-img-input" placeholder="Alt text — describe the image (required for SEO)"
+                    <input type="text" class="inline-img-input" placeholder="Alt text - describe the image (required for SEO)"
                       [value]="inlineImgAlt()"
                       (input)="inlineImgAlt.set($any($event.target).value)" />
                     <input type="text" class="inline-img-input" placeholder="Caption (optional)"
@@ -770,7 +770,7 @@
                   <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
                   </svg>
-                  <p>No FAQs yet — add 3 to 5 to boost content depth and AdSense quality signals.</p>
+                  <p>No FAQs yet - add 3 to 5 to boost content depth and AdSense quality signals.</p>
                 </div>
               }
 

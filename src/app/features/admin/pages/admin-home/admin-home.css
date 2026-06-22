@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   Admin Home — Command Center
+   Admin Home - Command Center
    Follows the same design system as user-home.css
 ═══════════════════════════════════════════════════════════════ */
 
@@ -42,7 +42,7 @@
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 1px;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
   color: #fff;
   flex-shrink: 0;
 }
@@ -74,7 +74,7 @@
   gap: 7px;
   padding: 8px 18px;
   border-radius: 8px;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
   color: #fff;
   font-size: 13px;
   font-weight: 600;
@@ -98,7 +98,7 @@
 .date-pill {
   font-size: 12px;
   color: #fff;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
   padding: 7px 14px;
   border-radius: 8px;
   font-weight: 500;
@@ -316,11 +316,11 @@
   position: absolute;
   top: 0; left: 0; right: 0;
   height: 3px;
-  background: linear-gradient(90deg, #43cea2, #185a9d);
+  background: var(--accent);
 }
 
 .stat-card--alert::before {
-  background: linear-gradient(90deg, #dc2626, #991b1b);
+  background: #dc2626;
 }
 
 .stat-card:hover {
@@ -677,7 +677,7 @@
   font-size: 18px;
   font-weight: 700;
   color: #fff;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
   border-radius: 10px;
 }
 
@@ -819,10 +819,10 @@
   color: #fff;
 }
 
-.qa-icon--teal   { background: linear-gradient(135deg, #43cea2, #2da882); }
-.qa-icon--blue   { background: linear-gradient(135deg, #185a9d, #2178c4); }
-.qa-icon--purple { background: linear-gradient(135deg, #7F77DD, #5a52b8); }
-.qa-icon--amber  { background: linear-gradient(135deg, #BA7517, #d9930c); }
+.qa-icon--teal   { background: var(--accent); }
+.qa-icon--blue   { background: #185a9d; }
+.qa-icon--purple { background: #7c3aed; }
+.qa-icon--amber  { background: #d97706; }
 .qa-icon--gray   { background: var(--bg-base); color: var(--text-secondary); border: 1px solid var(--border); }
 
 .qa-label {
@@ -860,7 +860,7 @@
   font-size: 11px;
   font-weight: 700;
   color: #fff;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
   flex-shrink: 0;
 }
 
@@ -1030,7 +1030,7 @@
   font-size: 12px;
   font-weight: 700;
   color: #fff;
-  background: linear-gradient(135deg, #dc2626, #991b1b);
+  background: #dc2626;
   flex-shrink: 0;
 }
 
@@ -1214,7 +1214,7 @@
 }
 
 @media (max-width: 768px) {
-  /* Module strip — horizontal scroll row */
+  /* Module strip - horizontal scroll row */
   .mob-modules {
     display: flex;
     gap: 8px;

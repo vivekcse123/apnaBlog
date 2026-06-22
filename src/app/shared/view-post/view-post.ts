@@ -44,12 +44,12 @@ export class ViewPost implements OnInit, OnDestroy {
 
   isAdmin = computed(() => this.authService.getCurrentUser()?.role?.toLowerCase() === 'admin');
 
-  /** True when the post is pending/rejected AND the viewer is not admin — hides status controls */
+  /** True when the post is pending/rejected AND the viewer is not admin - hides status controls */
   isPendingForUser = computed(() =>
     (this.post()?.status === 'pending' || this.post()?.status === 'rejected') && !this.isAdmin()
   );
 
-  /** True when the post is rejected — shown to all viewers */
+  /** True when the post is rejected - shown to all viewers */
   isRejected = computed(() => this.post()?.status === 'rejected');
 
   postId        = input<string>('');
@@ -168,6 +168,7 @@ export class ViewPost implements OnInit, OnDestroy {
   private readonly FALLBACK_CATS = [
     'Update','News','Sports','Technology','Lifestyle','Education',
     'Health','Business','Entertainment','Social','Village','Cooking','Quotes','Exercise',
+    'Career','AI','Finance','Productivity',
   ];
   private readonly FALLBACK_TAGS = ['Trending','Motivation','Tips','News','Opinion','Guide','Update'];
 
@@ -207,7 +208,7 @@ export class ViewPost implements OnInit, OnDestroy {
 
     // ── Instant path: preloaded from list OR TTL cache ────────────────────────
     // postService.getPostById returns of() synchronously on a cache hit, so the
-    // subscribe next-callback fires before the next line — served is set before
+    // subscribe next-callback fires before the next line - served is set before
     // we check it below, skipping the skeleton entirely.
     const preload = this.preloadedPost();
     if (preload && preload._id === id) {
@@ -315,7 +316,7 @@ export class ViewPost implements OnInit, OnDestroy {
     this.editForm = this.fb.group({
       title:         [p?.title         || '', [Validators.required, Validators.minLength(5), Validators.maxLength(100)]],
       description:   [p?.description   || '', [Validators.required, Validators.minLength(10)]],
-      // MCQ posts store questions separately — content is not required for them.
+      // MCQ posts store questions separately - content is not required for them.
       // We only require non-empty content; minLength is intentionally removed from
       // the edit form because the validator counts raw HTML chars, not visible text,
       // which causes false positives (e.g. <p></p> passes minLength but backend
@@ -326,7 +327,7 @@ export class ViewPost implements OnInit, OnDestroy {
       featuredImage: [p?.featuredImage || ''],
       // Non-admins cannot change status while the post is pending
       status:        [p?.status || 'draft', this.isPendingForUser() ? [] : Validators.required],
-      // Slug — shown and editable only for admin/super_admin
+      // Slug - shown and editable only for admin/super_admin
       slug:          [p?.slug || '', [Validators.pattern(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)]],
     });
 
@@ -779,11 +780,11 @@ export class ViewPost implements OnInit, OnDestroy {
     const featuredImage = gallery[0]?.url ?? '';
     const images        = gallery.slice(1).map(img => img.url);
 
-    // Non-admins cannot set status via the edit form — status is controlled
+    // Non-admins cannot set status via the edit form - status is controlled
     // separately (resubmit button). Strip it to avoid a 403 from the backend.
     const payload: any = { ...this.editForm.value, featuredImage, images };
     if (this.isPendingForUser()) delete payload.status;
-    // Slug editing is admin-only — strip from payload for regular users
+    // Slug editing is admin-only - strip from payload for regular users
     if (!this.isAdmin()) delete payload.slug;
     // For MCQ posts: include questions and strip the content field so the
     // backend doesn't run its "content is required" validation on an empty string.

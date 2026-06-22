@@ -38,10 +38,10 @@ export class PostService {
   private endPoint = environment.apiPostEndpoint.replace(/\/+$/, '');
   private http     = inject(HttpClient);
 
-  // In-flight request deduplication — concurrent callers share one HTTP request
+  // In-flight request deduplication - concurrent callers share one HTTP request
   private readonly _inflight = new Map<string, Observable<any>>();
 
-  // Per-post TTL cache — makes every ViewPost re-open instant
+  // Per-post TTL cache - makes every ViewPost re-open instant
   private readonly _postCache = new Map<string, { res: apiResponse<Post>; ts: number }>();
   private readonly POST_TTL   = 5 * 60 * 1_000; // 5 min
 
@@ -72,7 +72,7 @@ export class PostService {
     );
   }
 
-  /** Single page fetch — caller paginates through all pages. */
+  /** Single page fetch - caller paginates through all pages. */
   getStatsPage(page: number): Observable<apiResponse<Post[]>> {
     return this.http.get<apiResponse<Post[]>>(`${this.endPoint}?page=${page}&limit=100`);
   }
@@ -96,7 +96,7 @@ export class PostService {
   }
 
   getPostById(id: string): Observable<apiResponse<Post>> {
-    // Serve from TTL cache — makes repeated ViewPost opens instant
+    // Serve from TTL cache - makes repeated ViewPost opens instant
     const hit = this._postCache.get(id);
     if (hit && Date.now() - hit.ts < this.POST_TTL) return of(hit.res);
 
@@ -124,7 +124,7 @@ export class PostService {
     );
   }
 
-  // ── Write (never deduped — each is a distinct mutation) ───────────────────
+  // ── Write (never deduped - each is a distinct mutation) ───────────────────
 
   createBlog(postData: CreatePostPayload): Observable<apiResponse<Post>> {
     return this.http.post<apiResponse<Post>>(`${this.endPoint}`, postData);

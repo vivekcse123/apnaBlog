@@ -142,7 +142,7 @@ export class AdminHome implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
-    // No cache — show loader and fetch fresh
+    // No cache - show loader and fetch fresh
     this.fetchFresh(true);
   }
 

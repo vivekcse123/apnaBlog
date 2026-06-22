@@ -153,7 +153,7 @@
             @for (s of subscribers(); track trackById($index, s)) {
               <tr [class.ms-row--pending]="s.status === 'unsubscribed'">
                 <td class="ms-td-email" data-label="Email">{{ s.email }}</td>
-                <td data-label="Name">{{ s.name || '—' }}</td>
+                <td data-label="Name">{{ s.name || '-' }}</td>
                 <td data-label="Status">
                   <span class="ms-status-badge"
                         [class.ms-status-badge--active]="s.status === 'active'"
@@ -250,7 +250,7 @@
         <!-- Story picker -->
         <div class="nl-field">
           <label>Pick Stories <span class="ms-req">*</span>
-            <span class="nl-optional">Select up to 6 — {{ nlSelectedIds().size }} selected</span>
+            <span class="nl-optional">Select up to 6 - {{ nlSelectedIds().size }} selected</span>
           </label>
 
           @if (nlLoadingPosts()) {

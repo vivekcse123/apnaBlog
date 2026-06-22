@@ -97,7 +97,7 @@ export class ManageFlags implements OnInit {
   }
 
   toggleExpand(group: GroupedFlags): void {
-    this.flags.update(f => f); // force signal tick — we mutate grouped directly below
+    this.flags.update(f => f); // force signal tick - we mutate grouped directly below
     group.expanded = !group.expanded;
     this.flags.update(f => [...f]); // nudge signal to re-render
   }

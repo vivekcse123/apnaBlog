@@ -16,7 +16,7 @@ import { Auth } from '../../../../core/services/auth';
 })
 export class ForgotPassword {
 
-  // ── Signals — matches login pattern ──
+  // ── Signals - matches login pattern ──
   isLoading    = signal(false);
   isSuccess    = signal(false);
   isSubmitted  = signal(false);

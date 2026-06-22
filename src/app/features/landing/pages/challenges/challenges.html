@@ -18,7 +18,7 @@
     </div>
   } @else if (challenges().length === 0) {
     <div class="ch-empty">
-      <span class="ch-empty__icon">🏆</span>
+      <span class="ch-empty__icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg></span>
       <p>No active challenges right now. Check back soon!</p>
       <a routerLink="/" class="ch-empty__btn">Browse Stories</a>
     </div>
@@ -56,7 +56,7 @@
 
             <div class="ch-detail__meta">
               @if (ch.winnersDeclared) {
-                <span>🏆 Winners announced</span>
+                <span>Winners announced</span>
               } @else {
                 <span>⏳ {{ daysLeft(ch.endDate) }} days left</span>
               }
@@ -66,7 +66,7 @@
             </div>
 
             @if (ch.winnersDeclared) {
-              <div class="ch-winners-banner">🏆 Winners have been announced for this challenge — see the leaderboard below.</div>
+              <div class="ch-winners-banner">Winners have been announced for this challenge - see the leaderboard below.</div>
             } @else if (isLoggedIn()) {
               <button class="ch-btn ch-btn--primary" (click)="openSubmitModal()">
                 ✍️ Submit Your Story
@@ -78,11 +78,11 @@
 
           <!-- Leaderboard -->
           <div class="ch-lb">
-            <h3 class="ch-lb__heading">🏆 Leaderboard</h3>
+            <h3 class="ch-lb__heading"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg> Leaderboard</h3>
             @if (lbLoading()) {
               <div class="ch-lb__loading">Loading entries…</div>
             } @else if (leaderboard().length === 0) {
-              <div class="ch-lb__empty">No submissions yet — be the first!</div>
+              <div class="ch-lb__empty">No submissions yet - be the first!</div>
             } @else {
               <ol class="ch-lb__list">
                 @for (post of leaderboard(); track post._id; let i = $index) {
@@ -102,13 +102,13 @@
                       <div class="ch-lb__author">
                         by {{ post.user?.name ?? 'Anonymous' }}
                         @if ((post.user?.karma ?? 0) > 0) {
-                          <span class="ch-karma">⚡ {{ post.user?.karma }}</span>
+                          <span class="ch-karma"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> {{ post.user?.karma }}</span>
                         }
                       </div>
                       <div class="ch-lb__stats">
-                        <span>❤️ {{ post.likesCount }}</span>
-                        <span>👁 {{ post.views }}</span>
-                        <span>💬 {{ post.commentsCount }}</span>
+                        <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> {{ post.likesCount }}</span>
+                        <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> {{ post.views }}</span>
+                        <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> {{ post.commentsCount }}</span>
                       </div>
                     </div>
                   </li>

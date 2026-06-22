@@ -165,13 +165,13 @@
              [style.width.%]="100 - endPct()">
         </div>
 
-        <!-- Selection bracket — visual only, no pointer events -->
+        <!-- Selection bracket - visual only, no pointer events -->
         <div class="up-trim-sel"
              [style.left.%]="startPct()"
              [style.width.%]="selWidthPct()">
         </div>
 
-        <!-- Left drag handle — sibling of sel, NOT a child, so pointer-events
+        <!-- Left drag handle - sibling of sel, NOT a child, so pointer-events
              inheritance from sel's pointer-events:none cannot affect it -->
         <div class="up-trim-hdl up-trim-hdl--l"
              [class.up-trim-hdl--active]="activeDragSide() === 'left'"
@@ -184,7 +184,7 @@
           <span class="up-trim-hdl-bar"></span>
         </div>
 
-        <!-- Right drag handle — same pattern -->
+        <!-- Right drag handle - same pattern -->
         <div class="up-trim-hdl up-trim-hdl--r"
              [class.up-trim-hdl--active]="activeDragSide() === 'right'"
              [style.left.%]="endPct()"
@@ -289,7 +289,7 @@
         </label>
         <input type="text" class="up-input" formControlName="linkedPostSlug"
                placeholder="e.g. angular-interview-questions-guide" maxlength="120" />
-        <div class="up-field-hint">Enter the article's URL slug — adds a "Read Full Guide →" button on your short</div>
+        <div class="up-field-hint">Enter the article's URL slug - adds a "Read Full Guide →" button on your short</div>
       </div>
 
       @if (errorMsg()) { <p class="up-error">{{ errorMsg() }}</p> }

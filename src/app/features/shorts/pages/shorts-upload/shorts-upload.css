@@ -78,7 +78,7 @@
 }
 .up-step--active {
   border-color: #43cea2;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
   color: #fff;
 }
 .up-step--done {
@@ -138,7 +138,7 @@
 .up-drop-icon {
   width: 64px; height: 64px;
   border-radius: 50%;
-  background: linear-gradient(135deg, rgba(67,206,162,.1), rgba(24,90,157,.1));
+  background: var(--accent-subtle);
   border: 1.5px solid rgba(67,206,162,.3);
   display: flex; align-items: center; justify-content: center;
   margin-bottom: 4px;
@@ -177,7 +177,7 @@
 .up-progress-fill {
   height: 100%;
   border-radius: 99px;
-  background: linear-gradient(90deg, #43cea2, #185a9d);
+  background: var(--accent);
   transition: width .25s ease;
 }
 
@@ -192,7 +192,7 @@
 .up-done-icon {
   width: 52px; height: 52px;
   border-radius: 50%;
-  background: linear-gradient(135deg, rgba(67,206,162,.15), rgba(24,90,157,.15));
+  background: var(--accent-subtle);
   border: 2px solid rgba(67,206,162,.4);
   display: flex; align-items: center; justify-content: center;
 }
@@ -288,7 +288,7 @@
 .up-trim-dur-badge {
   font-size: 12px; font-weight: 700;
   color: #fff;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
   padding: 4px 12px;
   border-radius: 99px;
 }
@@ -353,7 +353,7 @@
 .up-trim-dim--l { left: 0;  border-radius: 10px 0 0 10px; }
 .up-trim-dim--r { right: 0; border-radius: 0 10px 10px 0; }
 
-/* Selection bracket — pure visual overlay, no pointer events */
+/* Selection bracket - pure visual overlay, no pointer events */
 .up-trim-sel {
   position: absolute;
   top: -3px; bottom: -3px;
@@ -366,7 +366,7 @@
 
 /* ── Drag handles ── */
 /* Both handles are direct children of .up-trim-timeline (siblings of .up-trim-sel),
-   NOT children of it — so they are never affected by its pointer-events:none.
+   NOT children of it - so they are never affected by its pointer-events:none.
    Position is driven by [style.left.%] in the template.
    transform:translateX(-50%) centers each handle on its respective point. */
 .up-trim-hdl {
@@ -486,7 +486,7 @@
   transition: background .15s, border-color .15s, color .15s;
 }
 .up-cat-btn--on {
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
   border-color: transparent; color: #fff;
 }
 
@@ -494,7 +494,7 @@
 .up-primary-btn {
   display: flex; align-items: center; justify-content: center; gap: 8px;
   height: 50px; border-radius: 14px; border: none;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
   color: #fff; font-size: 15px; font-weight: 800; font-family: inherit;
   cursor: pointer; transition: opacity .15s, transform .1s; margin-top: 4px;
 }
@@ -538,7 +538,7 @@
 .up-review-icon {
   width: 68px; height: 68px;
   border-radius: 50%;
-  background: linear-gradient(135deg, rgba(67,206,162,.15), rgba(24,90,157,.1));
+  background: var(--accent-subtle);
   border: 2px solid rgba(67,206,162,.35);
   display: flex; align-items: center; justify-content: center;
   animation: up-pop .35s cubic-bezier(.34,1.56,.64,1);

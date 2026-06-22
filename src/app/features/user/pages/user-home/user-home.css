@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════
-   user-home.css — Social-app dashboard
+   user-home.css - Social-app dashboard
    ═══════════════════════════════════════════════════ */
 
 /* ── Container ── */
@@ -84,7 +84,7 @@
   gap: 7px;
   padding: 9px 20px;
   border-radius: 10px;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
   color: #fff;
   font-size: 13px;
   font-weight: 600;
@@ -104,7 +104,7 @@
 
 .btn-write:active { transform: scale(0.97); }
 
-/* Read Stories — mobile only, hidden on desktop */
+/* Read Stories - mobile only, hidden on desktop */
 .btn-read-stories {
   display: none;
   align-items: center;
@@ -226,7 +226,7 @@
   position: absolute;
   top: 0; left: 0; right: 0;
   height: 3px;
-  background: linear-gradient(90deg, #43cea2, #185a9d);
+  background: var(--accent);
   border-radius: 14px 14px 0 0;
 }
 
@@ -578,7 +578,7 @@
   width: 72px;
   height: 56px;
   border-radius: 10px;
-  background: linear-gradient(135deg, rgba(67,206,162,0.18), rgba(24,90,157,0.18));
+  background: var(--accent-subtle);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -900,7 +900,7 @@
   gap: 7px;
   padding: 9px 20px;
   border-radius: 10px;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
   color: #fff;
   font-size: 13px;
   font-weight: 600;
@@ -1069,7 +1069,7 @@
 .blog-modal-thumb-fallback {
   width: 64px; height: 48px;
   border-radius: 8px;
-  background: linear-gradient(135deg, rgba(67,206,162,0.15), rgba(24,90,157,0.15));
+  background: var(--accent-subtle);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1200,7 +1200,7 @@
 .follower-avatar {
   width: 44px; height: 44px;
   border-radius: 50%;
-  background: linear-gradient(135deg, rgba(67,206,162,0.15), rgba(24,90,157,0.15));
+  background: var(--accent-subtle);
   display: flex; align-items: center; justify-content: center;
   font-size: 18px; font-weight: 700; color: #185a9d;
   flex-shrink: 0; overflow: hidden;
@@ -1264,14 +1264,14 @@
 }
 
 /* ══════════════════════════════════════════
-   RESPONSIVE — Tablet 1280px
+   RESPONSIVE - Tablet 1280px
 ══════════════════════════════════════════ */
 @media (max-width: 1280px) {
   .stats-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
 /* ══════════════════════════════════════════
-   RESPONSIVE — Tablet 1100px
+   RESPONSIVE - Tablet 1100px
 ══════════════════════════════════════════ */
 @media (max-width: 1100px) {
   .dash          { padding: 24px 32px 40px; }
@@ -1282,7 +1282,7 @@
 }
 
 /* ══════════════════════════════════════════
-   RESPONSIVE — Tablet 900px
+   RESPONSIVE - Tablet 900px
 ══════════════════════════════════════════ */
 @media (max-width: 900px) {
   .sk-body         { grid-template-columns: 1fr; }
@@ -1311,7 +1311,7 @@
   .metric-label { font-size: 10px; }
   .metric-num   { font-size: 12px; min-width: 28px; }
 
-  /* "This Week" spans full width — make its grid 3-col */
+  /* "This Week" spans full width - make its grid 3-col */
   .dash-sidebar .sidebar-section:last-child .metrics-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 16px; }
   .dash-sidebar .sidebar-section:last-child .metric-row { border-bottom: 1px solid var(--border); }
 
@@ -1319,7 +1319,7 @@
 }
 
 /* ══════════════════════════════════════════
-   RESPONSIVE — Mobile 768px
+   RESPONSIVE - Mobile 768px
 ══════════════════════════════════════════ */
 @media (max-width: 768px) {
   .dash          { padding: 20px 16px 40px; gap: 20px; }
@@ -1365,7 +1365,7 @@
 }
 
 /* ══════════════════════════════════════════
-   RESPONSIVE — Mobile 560px
+   RESPONSIVE - Mobile 560px
 ══════════════════════════════════════════ */
 @media (max-width: 560px) {
   .btn-read-stories { display: inline-flex; }
@@ -1423,7 +1423,7 @@
 }
 
 /* ══════════════════════════════════════════
-   RESPONSIVE — Mobile 400px
+   RESPONSIVE - Mobile 400px
 ══════════════════════════════════════════ */
 @media (max-width: 400px) {
   .dash        { padding: 12px 12px 24px; }
@@ -1436,7 +1436,7 @@
   .metric-icon-wrap { width: 24px; height: 24px; }
 }
 
-/* Bottom nav clearance — prevents content hiding behind fixed mobile nav */
+/* Bottom nav clearance - prevents content hiding behind fixed mobile nav */
 @media (max-width: 768px) {
   .dash { padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
 }
@@ -1455,7 +1455,7 @@
 /* Cover strip */
 .social-cover-strip {
   height: 72px;
-  background: linear-gradient(135deg, #43cea2 0%, #185a9d 60%, #7F77DD 100%);
+  background: var(--accent);
   position: relative;
   overflow: hidden;
   display: flex;
@@ -1500,7 +1500,7 @@
   white-space: nowrap;
 }
 
-/* Profile body — 2-row stacked layout (Twitter/LinkedIn style) */
+/* Profile body - 2-row stacked layout (Twitter/LinkedIn style) */
 .social-profile-body {
   display: flex;
   flex-direction: column;
@@ -1530,7 +1530,7 @@
   min-width: 0;
 }
 
-/* Avatar — overlaps the cover strip */
+/* Avatar - overlaps the cover strip */
 .spb-avatar-wrap {
   position: relative;
   flex-shrink: 0;
@@ -1539,7 +1539,7 @@
 .spb-avatar {
   width: 68px; height: 68px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
   color: #fff;
   font-size: 24px; font-weight: 700;
   display: flex; align-items: center; justify-content: center;
@@ -1747,7 +1747,7 @@ button.sstat:hover { background: var(--accent-subtle); }
 .compose-avatar {
   width: 40px; height: 40px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
   color: #fff;
   font-size: 15px; font-weight: 700;
   display: flex; align-items: center; justify-content: center;
@@ -1776,7 +1776,7 @@ button.sstat:hover { background: var(--accent-subtle); }
   gap: 6px;
   padding: 7px 16px;
   border-radius: 8px;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
   color: #fff;
   border: none;
   font-size: 12px;
@@ -1796,20 +1796,20 @@ button.sstat:hover { background: var(--accent-subtle); }
 .section-hd--flush { margin-bottom: 14px; }
 
 /* ══════════════════════════════════════════════════════
-   STAT CARD — per-stat top-border accent
+   STAT CARD - per-stat top-border accent
 ══════════════════════════════════════════════════════ */
-.stat-card--blogs::before     { background: linear-gradient(90deg, #43cea2, #185a9d); }
-.stat-card--published::before { background: linear-gradient(90deg, #0f7a5a, #43cea2); }
-.stat-card--drafts::before    { background: linear-gradient(90deg, #BA7517, #f59e0b); }
-.stat-card--views::before     { background: linear-gradient(90deg, #7F77DD, #a78bfa); }
-.stat-card--likes::before     { background: linear-gradient(90deg, #ef4444, #f87171); }
-.stat-card--comments::before  { background: linear-gradient(90deg, #378ADD, #60a5fa); }
-.stat-card--top::before       { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
-.stat-card--avg::before       { background: linear-gradient(90deg, #22c55e, #4ade80); }
-.stat-card--followers::before { background: linear-gradient(90deg, #185a9d, #7F77DD); }
+.stat-card--blogs::before     { background: var(--accent); }
+.stat-card--published::before { background: var(--accent); }
+.stat-card--drafts::before    { background: #d97706; }
+.stat-card--views::before     { background: #8b5cf6; }
+.stat-card--likes::before     { background: #ef4444; }
+.stat-card--comments::before  { background: #5b8dee; }
+.stat-card--top::before       { background: #f59e0b; }
+.stat-card--avg::before       { background: #22c55e; }
+.stat-card--followers::before { background: var(--accent); }
 
 /* ══════════════════════════════════════════════════════
-   FEED CARD — social post style
+   FEED CARD - social post style
 ══════════════════════════════════════════════════════ */
 .feed-card { cursor: pointer; }
 
@@ -1841,7 +1841,7 @@ button.sstat:hover { background: var(--accent-subtle); }
    ACHIEVEMENTS SECTION
 ══════════════════════════════════════════════════════ */
 .achievements-progress-badge {
-  background: linear-gradient(135deg, rgba(67,206,162,0.15), rgba(24,90,157,0.1));
+  background: var(--accent-subtle);
   color: var(--accent-text);
   border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
 }
@@ -1857,7 +1857,7 @@ button.sstat:hover { background: var(--accent-subtle); }
 .achievements-fill {
   height: 100%;
   border-radius: 4px;
-  background: linear-gradient(90deg, #43cea2, #185a9d);
+  background: var(--accent);
   transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
   min-width: 4px;
 }
@@ -1942,7 +1942,7 @@ button.sstat:hover { background: var(--accent-subtle); }
 .badge-item--earned .badge-label { color: var(--text-secondary); }
 
 /* ══════════════════════════════════════════════════════
-   RESPONSIVE — social profile card
+   RESPONSIVE - social profile card
 ══════════════════════════════════════════════════════ */
 @media (max-width: 768px) {
   .social-cover-strip { height: 60px; }
@@ -1963,7 +1963,7 @@ button.sstat:hover { background: var(--accent-subtle); }
   .btn-write   { padding: 8px 14px; font-size: 12px; }
   .btn-edit-profile { padding: 7px 12px; font-size: 12px; }
 
-  /* Scrollable stats bar — polished */
+  /* Scrollable stats bar - polished */
   .social-stats-bar {
     overflow-x: auto;
     scrollbar-width: none;
@@ -2013,23 +2013,15 @@ button.sstat:hover { background: var(--accent-subtle); }
    MODERN REDESIGN v2
 ══════════════════════════════════════════════════════ */
 
-/* ── Cover strip: taller, richer gradient + decorative blobs ── */
+/* ── Cover strip ── */
 .social-cover-strip {
   height: 110px;
-  background: linear-gradient(135deg, #062e22 0%, #0e6645 20%, #43cea2 45%, #185a9d 70%, #7c3aed 100%);
+  background: var(--bg-surface-alt);
+  border-bottom: 1px solid var(--border);
 }
 
 .cover-pattern {
-  background-image:
-    radial-gradient(ellipse at 12% 70%, rgba(67,206,162,0.55) 0%, transparent 48%),
-    radial-gradient(ellipse at 88% 25%, rgba(124,58,237,0.45) 0%, transparent 45%),
-    radial-gradient(ellipse at 55% 110%, rgba(24,90,157,0.35) 0%, transparent 55%),
-    repeating-linear-gradient(
-      -48deg,
-      transparent 0px, transparent 22px,
-      rgba(255,255,255,0.03) 22px, rgba(255,255,255,0.03) 23px
-    );
-  background-size: auto;
+  background-image: none;
 }
 
 /* Shine streak across cover */
@@ -2054,7 +2046,7 @@ button.sstat:hover { background: var(--accent-subtle); }
 /* ── Avatar: gradient ring via wrapper padding trick ── */
 .spb-avatar-wrap {
   padding: 3px;
-  background: linear-gradient(135deg, #43cea2, #7c3aed, #185a9d);
+  background: var(--accent);
   border-radius: 50%;
 }
 
@@ -2085,11 +2077,7 @@ button.sstat:hover { background: var(--accent-subtle); }
   font-size: 20px;
   font-weight: 900;
   letter-spacing: -0.5px;
-  background: linear-gradient(135deg, var(--text-primary) 40%, color-mix(in srgb, #43cea2 60%, var(--text-primary)));
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
+  color: var(--text-primary);
 }
 
 .sstat-lbl {
@@ -2097,14 +2085,10 @@ button.sstat:hover { background: var(--accent-subtle); }
   letter-spacing: 0.06em;
 }
 
-/* ── Compose card: premium frosted look ── */
+/* ── Compose card ── */
 .compose-card {
-  background: linear-gradient(
-    135deg,
-    color-mix(in srgb, #43cea2 4%, var(--bg-surface)) 0%,
-    var(--bg-surface) 100%
-  );
-  border: 1px solid color-mix(in srgb, #43cea2 18%, var(--border));
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
   border-radius: 16px;
 }
 
@@ -2171,10 +2155,7 @@ button.sstat:hover { background: var(--accent-subtle); }
 
 /* ── Section headers: accent gradient text for title ── */
 .section-hd-title {
-  background: linear-gradient(135deg, var(--text-primary) 55%, color-mix(in srgb, #43cea2 65%, var(--text-primary)));
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--text-primary);
   color: transparent;
 }
 
@@ -2194,10 +2175,7 @@ button.sstat:hover { background: var(--accent-subtle); }
 }
 
 [data-theme="dark"] .sstat-val {
-  background: linear-gradient(135deg, #fff 40%, #43cea2);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #fff;
 }
 
 /* ── Mobile overrides ── */
@@ -2260,18 +2238,12 @@ button.sstat:hover { background: var(--accent-subtle); }
 }
 
 .sstat--clickable:hover .sstat-val {
-  background: linear-gradient(135deg, #43cea2, #185a9d);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--accent-text);
 }
 
 /* Shorts stat: teal-purple accent */
 .sstat--shorts .sstat-lbl {
-  background: linear-gradient(90deg, #43cea2, #7c3aed);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--accent-text);
   font-weight: 700;
 }
 

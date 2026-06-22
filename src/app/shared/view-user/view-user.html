@@ -97,21 +97,21 @@
               <div class="details-grid">
                 <div class="detail-item">
                   <span>Company</span>
-                  <p>{{ user()?.companyName || '—' }}</p>
+                  <p>{{ user()?.companyName || '-' }}</p>
                 </div>
                 <div class="detail-item">
                   <span>Phone</span>
-                  <p>{{ user()?.phone || '—' }}</p>
+                  <p>{{ user()?.phone || '-' }}</p>
                 </div>
                 <div class="detail-item">
                   <span>Website</span>
                   @if (user()?.website) {
                     <a [href]="user()!.website" target="_blank" rel="noopener" class="sponsor-link">{{ user()!.website }}</a>
-                  } @else { <p>—</p> }
+                  } @else { <p>-</p> }
                 </div>
                 <div class="detail-item">
                   <span>Industry</span>
-                  <p>{{ user()?.industry || '—' }}</p>
+                  <p>{{ user()?.industry || '-' }}</p>
                 </div>
               </div>
             </div>

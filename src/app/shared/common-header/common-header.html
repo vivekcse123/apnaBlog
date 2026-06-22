@@ -100,7 +100,7 @@
     </div>
   }
 
-  <!-- Users — admin/super_admin only -->
+  <!-- Users - admin/super_admin only -->
   @if (userSuggestions.length > 0) {
     <div class="ch-sugg-section">
       <div class="ch-sugg-heading-row">
@@ -185,18 +185,18 @@
 <!-- ══ Top bar ══ -->
 <div class="ch-topbar">
 
-  <!-- Hamburger — mobile only -->
+  <!-- Hamburger - mobile only -->
   <button class="ch-hamburger" (click)="menuToggle.emit()" aria-label="Toggle sidebar">
     <span></span><span></span><span></span>
   </button>
 
-  <!-- Mobile logo — visible only on mobile when hamburger is hidden -->
+  <!-- Mobile logo - visible only on mobile when hamburger is hidden -->
   <a class="ch-mob-logo" routerLink="/" aria-label="ApnaInsights home">
     <img src="/logo-96.png" alt="" width="28" height="28" class="ch-mob-logo-img" />
     <span class="ch-mob-logo-text">ApnaInsights</span>
   </a>
 
-  <!-- Global Search — desktop inline -->
+  <!-- Global Search - desktop inline -->
   <div class="ch-search" #searchBar>
     <svg class="ch-search-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
       <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
@@ -228,7 +228,7 @@
   <!-- Right actions -->
   <div class="ch-actions">
 
-    <!-- Search toggle — mobile only, opens panel below header -->
+    <!-- Search toggle - mobile only, opens panel below header -->
     <button class="ch-icon-btn ch-search-toggle"
             (click)="toggleSearchPanel($event)"
             [class.ch-search-toggle--active]="searchPanelOpen"
@@ -244,7 +244,7 @@
       }
     </button>
 
-    <!-- Dark / Light toggle — desktop only (hidden on mobile via CSS) -->
+    <!-- Dark / Light toggle - desktop only (hidden on mobile via CSS) -->
     <button class="ch-icon-btn ch-theme-btn"
             (click)="themeService.toggleTheme()"
             [attr.aria-label]="themeService.theme() === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'">
@@ -282,7 +282,7 @@
 
 </div>
 
-<!-- ══ Mobile search panel — slides down below topbar ══ -->
+<!-- ══ Mobile search panel - slides down below topbar ══ -->
 <div class="ch-search-panel" [class.ch-search-panel--open]="searchPanelOpen">
   <div class="ch-panel-bar">
     <svg class="ch-search-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
