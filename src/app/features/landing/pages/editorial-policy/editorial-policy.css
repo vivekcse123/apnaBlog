@@ -21,7 +21,7 @@
   position: absolute;
   bottom: 0; left: 0;
   width: 100%; height: 3px;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
 }
 
 .policy-nav-inner {
@@ -67,13 +67,10 @@
 .nav-logo-img { border-radius: 6px; object-fit: contain; }
 
 .nav-logo-text {
-  font-family: 'Playfair Display', serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 20px;
-  font-weight: 700;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  font-weight: 800;
+  color: var(--accent-text);
 }
 
 /* BREADCRUMB */
@@ -137,9 +134,9 @@
 }
 
 .policy-title {
-  font-family: 'Playfair Display', serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: clamp(32px, 5vw, 48px);
-  font-weight: 700;
+  font-weight: 800;
   color: var(--text-primary);
   line-height: 1.2;
   letter-spacing: -0.5px;
@@ -240,9 +237,9 @@
 .policy-section:last-child { border-bottom: none; }
 
 .policy-section h2 {
-  font-family: 'Playfair Display', serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 22px;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--text-primary);
   margin-bottom: 16px;
   scroll-margin-top: 80px;

@@ -26,7 +26,7 @@ export class ManageShorts implements OnInit {
   // ── Table state ────────────────────────────────────────────────────────────
   shorts      = signal<VideoShort[]>([]);
   isLoading   = signal(true);
-  totalCount  = signal(0);   // filtered count — used for pagination display only
+  totalCount  = signal(0);   // filtered count - used for pagination display only
   currentPage = signal(1);
   totalPages  = signal(1);
   readonly LIMIT = 10;
@@ -36,7 +36,7 @@ export class ManageShorts implements OnInit {
   selectedStatus   = signal('');
   filterSponsored  = signal(false);
 
-  // ── Global stats — reflect actual DB counts regardless of table filters ────
+  // ── Global stats - reflect actual DB counts regardless of table filters ────
   // Loaded fresh on init and after every mutation (create / edit / delete / status).
   globalTotal   = signal(0);   // all shorts in DB
   globalLive    = signal(0);   // published shorts
@@ -94,7 +94,7 @@ export class ManageShorts implements OnInit {
   }
 
   // ── Stats ──────────────────────────────────────────────────────────────────
-  // Four parallel limit:1 requests — each returns only the `total` field we need.
+  // Four parallel limit:1 requests - each returns only the `total` field we need.
   // Refreshed after every mutation so the stats bar is always in sync.
 
   loadGlobalStats(): void {

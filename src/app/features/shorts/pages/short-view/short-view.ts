@@ -50,7 +50,7 @@ export class ShortView implements OnInit, AfterViewInit {
 
   private applyNotFoundMeta(): void {
     this.titleSvc.setTitle('Short Not Found | ApnaInsights');
-    this.meta.updateTag({ name: 'description', content: 'This short video could not be found — it may have been removed.' });
+    this.meta.updateTag({ name: 'description', content: 'This short video could not be found - it may have been removed.' });
     this.meta.updateTag({ name: 'robots', content: 'noindex, follow' });
   }
 
@@ -69,7 +69,7 @@ export class ShortView implements OnInit, AfterViewInit {
     );
   }
 
-  // mqdefault — raw video frame, no YouTube Shorts red-icon overlay
+  // mqdefault - raw video frame, no YouTube Shorts red-icon overlay
   cleanThumbnail(youtubeId: string): string {
     return `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg`;
   }
@@ -87,15 +87,15 @@ export class ShortView implements OnInit, AfterViewInit {
   }
 
   private applyMeta(s: VideoShort): void {
-    const title       = `${s.title} — ${s.category} Short | ApnaInsights`;
+    const title       = `${s.title} - ${s.category} Short | ApnaInsights`;
     const description = s.caption
       ? s.caption.slice(0, 155)
-      : `Watch "${s.title}" on ApnaInsights Shorts — ${s.category} videos.`;
+      : `Watch "${s.title}" on ApnaInsights Shorts - ${s.category} videos.`;
     const thumb = s.thumbnailUrl
       ?? (s.youtubeId ? `https://img.youtube.com/vi/${s.youtubeId}/mqdefault.jpg` : '');
     const url = `https://apnainsights.com/shorts/${s._id}`;
 
-    // Shorts without a caption have only a title — thin content that shouldn't be indexed.
+    // Shorts without a caption have only a title - thin content that shouldn't be indexed.
     const hasContent = s.caption && s.caption.trim().split(/\s+/).filter(Boolean).length >= 10;
     this.titleSvc.setTitle(title);
     this.meta.updateTag({ name: 'description',         content: description });

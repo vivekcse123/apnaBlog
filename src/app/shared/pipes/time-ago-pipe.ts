@@ -15,7 +15,7 @@ export class TimeAgoPipe implements PipeTransform {
     if (seconds < 86400)            return `${Math.floor(seconds / 3600)} hr ago`;
     if (seconds < 7 * 86400)        return `${Math.floor(seconds / 86400)} days ago`;
 
-    // Older than 7 days — show absolute date (better for credibility)
+    // Older than 7 days - show absolute date (better for credibility)
     return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
   }
 }

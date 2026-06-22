@@ -32,7 +32,7 @@ export class NewsFeedService {
   readonly CATEGORIES = ['All', 'News', 'Sports', 'Technology', 'Business', 'Entertainment', 'Health', 'Science'];
 
   // Fetch from backend (which caches & serves from MongoDB).
-  // Does NOT catch errors here — let the component handle them for proper UI feedback.
+  // Does NOT catch errors here - let the component handle them for proper UI feedback.
   fetchByCategory(category: string, page = 1): Observable<NewsItem[]> {
     const params: any = { category, page, limit: 30, hidePublished: 'true' };
     return this.http.get<any>(this.API, { params }).pipe(

@@ -45,7 +45,7 @@ export class BookmarksPage implements OnInit {
   localCount = computed(() => this.bookmarkService.bookmarkedIds().size);
 
   ngOnInit(): void {
-    this.titleSvc.setTitle('My Bookmarks — ApnaInsights');
+    this.titleSvc.setTitle('My Bookmarks - ApnaInsights');
     this.meta.updateTag({ name: 'robots', content: 'noindex, nofollow' });
     this.meta.updateTag({ name: 'description', content: 'Your saved articles on ApnaInsights.' });
 
@@ -55,7 +55,7 @@ export class BookmarksPage implements OnInit {
     if (userId) {
       this.loadFromServer(userId);
     } else {
-      // Guest — show localStorage count only (can't show posts without API)
+      // Guest - show localStorage count only (can't show posts without API)
       this.isLoaded.set(true);
     }
   }

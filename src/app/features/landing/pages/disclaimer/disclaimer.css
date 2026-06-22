@@ -16,7 +16,7 @@
 .policy-nav::after {
   content: ''; position: absolute; bottom: 0; left: 0;
   width: 100%; height: 3px;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
 }
 .policy-nav-inner {
   width: 92%; max-width: 1200px; margin: 0 auto;
@@ -34,9 +34,8 @@
 .nav-logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
 .nav-logo-img { border-radius: 6px; object-fit: contain; }
 .nav-logo-text {
-  font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  font-family: 'DM Sans', sans-serif; font-size: 20px; font-weight: 800;
+  color: var(--accent-text);
 }
 
 /* BREADCRUMB */
@@ -54,8 +53,8 @@
 }
 .policy-header { margin-bottom: 40px; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
 .policy-title {
-  font-family: 'Playfair Display', serif;
-  font-size: clamp(28px, 5vw, 42px); font-weight: 700;
+  font-family: 'DM Sans', sans-serif;
+  font-size: clamp(28px, 5vw, 42px); font-weight: 800;
   color: var(--text-primary); line-height: 1.2; letter-spacing: -0.5px; margin-bottom: 10px;
 }
 .policy-subtitle { font-size: 14px; color: var(--text-muted); }
@@ -63,7 +62,7 @@
 .policy-section { padding: 28px 0; border-bottom: 1px solid var(--border); }
 .policy-section:last-child { border-bottom: none; }
 .policy-section h2 {
-  font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700;
+  font-family: 'DM Sans', sans-serif; font-size: 20px; font-weight: 800;
   color: var(--text-primary); margin-bottom: 14px; scroll-margin-top: 80px;
 }
 .policy-section p { font-size: 15px; color: var(--text-secondary); line-height: 1.8; margin-bottom: 12px; }
@@ -79,10 +78,9 @@
 }
 .footer-logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
 .footer-logo span {
-  font-family: 'Playfair Display', serif;
-  font-size: 15px; font-weight: 700;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px; font-weight: 800;
+  color: var(--accent-text);
 }
 .footer-links { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .footer-links a { font-size: 13px; color: var(--text-muted); text-decoration: none; transition: color 0.2s; }

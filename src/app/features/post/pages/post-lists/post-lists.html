@@ -123,7 +123,7 @@
         }
       </span>
     </div>
-    <!-- Chip filters row — scrollable on mobile -->
+    <!-- Chip filters row - scrollable on mobile -->
     <div class="ap-filter-chips">
       <button class="ap-chip" [class.ap-chip--on]="showTodayOnly()" (click)="toggleTodayFilter()">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
@@ -193,7 +193,7 @@
               <tr class="ap-row">
 
                 <td class="col-title ap-td-title">
-                  <div class="ap-post-title">{{ blog.title || '—' }}</div>
+                  <div class="ap-post-title">{{ blog.title || '-' }}</div>
                   @if (blog.description) {
                     <div class="ap-post-sub">{{ blog.description }}</div>
                   }
@@ -220,7 +220,7 @@
                       <span class="ap-cat-pill">{{ cat }}</span>
                     }
                   } @else {
-                    <span class="ap-dash">—</span>
+                    <span class="ap-dash">-</span>
                   }
                 </td>
 
@@ -241,7 +241,7 @@
                       <span class="ap-sched-time">{{ blog.scheduledAt | date:'d MMM, h:mm a' }}</span>
                     }
                   } @else {
-                    <span class="ap-dash">—</span>
+                    <span class="ap-dash">-</span>
                   }
                 </td>
 
@@ -260,7 +260,7 @@
                 </td>
 
                 <td data-label="Created" class="ap-td-date">
-                  {{ blog.createdAt ? (blog.createdAt | date:'MMM d, y') : '—' }}
+                  {{ blog.createdAt ? (blog.createdAt | date:'MMM d, y') : '-' }}
                 </td>
 
                 <td data-label="Updated" class="ap-td-date">
@@ -268,7 +268,7 @@
                     <span>{{ blog.updatedAt | date:'MMM d, y' }}</span>
                     <span class="ap-ago">{{ timeAgo(blog.updatedAt) }}</span>
                   } @else {
-                    <span class="ap-dash">—</span>
+                    <span class="ap-dash">-</span>
                   }
                 </td>
 
@@ -291,7 +291,7 @@
                         }
                       }
                       @if (blog.deleteRequested) {
-                        <button class="ap-action ap-action--approve" (click)="openApproveDelete(blog._id, blog.title, blog.deleteRequestReason || '')" [title]="'Approve — ' + (blog.deleteRequestReason || 'no reason')">
+                        <button class="ap-action ap-action--approve" (click)="openApproveDelete(blog._id, blog.title, blog.deleteRequestReason || '')" [title]="'Approve - ' + (blog.deleteRequestReason || 'no reason')">
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
                         </button>
                         <button class="ap-action ap-action--reject" (click)="openRejectDelete(blog._id, blog.title)" title="Reject deletion">
@@ -546,7 +546,7 @@
         <select class="ap-sp-select" style="width:100%;margin-bottom:8px"
                 [ngModel]="selectedUserId()"
                 (ngModelChange)="selectedUserId.set($event)">
-          <option value="">— Select an author —</option>
+          <option value="">- Select an author -</option>
           @for (u of allUsers(); track u._id) {
             <option [value]="u._id">{{ u.name }} ({{ u.role }})</option>
           }

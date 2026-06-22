@@ -19,13 +19,12 @@
 .cat-nav::after {
   content: ''; position: absolute; bottom: 0; left: 0;
   width: 100%; height: 3px;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
 }
 .cat-nav-logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
 .cat-nav-name {
-  font-family: 'Playfair Display', serif; font-weight: 700; font-size: 18px;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  font-family: 'DM Sans', sans-serif; font-weight: 800; font-size: 18px;
+  color: var(--accent-text);
 }
 .cat-nav-right {
   display: flex;
@@ -134,7 +133,7 @@
 }
 
 .cat-switch-item.active {
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
   border-color: transparent;
   color: #fff;
   cursor: default;
@@ -155,10 +154,9 @@
   padding: 48px 5% 40px; text-align: center;
 }
 .cat-title {
-  font-family: 'Playfair Display', serif;
-  font-size: clamp(28px, 5vw, 44px); font-weight: 700;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  font-family: 'DM Sans', sans-serif;
+  font-size: clamp(28px, 5vw, 44px); font-weight: 800;
+  color: var(--accent-text);
   margin-bottom: 10px;
 }
 .cat-hero-emoji { display: block; font-size: 2.8rem; margin-bottom: 10px; line-height: 1; }
@@ -197,7 +195,7 @@
 .cat-card-no-img {
   width: 100%; height: 100%;
   display: flex; align-items: center; justify-content: center;
-  background: linear-gradient(135deg, #43cea2 0%, #185a9d 100%);
+  background: var(--accent);
 }
 .cat-card-letter { font-size: 48px; font-weight: 700; color: #fff; opacity: 0.7; }
 
@@ -248,7 +246,7 @@
 .cat-empty h2 { font-size: 22px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; }
 .cat-empty p { font-size: 15px; color: var(--text-secondary); margin-bottom: 24px; }
 .cat-empty-btn {
-  display: inline-block; background: linear-gradient(135deg, #43cea2, #185a9d);
+  display: inline-block; background: var(--accent);
   color: #fff; font-weight: 600; font-size: 14px; padding: 12px 28px;
   border-radius: 30px; text-decoration: none; transition: opacity 0.2s;
 }
@@ -269,10 +267,9 @@
 .cat-footer-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
 .cat-footer-logo { display: flex; align-items: center; gap: 6px; text-decoration: none; }
 .cat-footer-logo span {
-  font-family: 'Playfair Display', serif;
-  font-size: 15px; font-weight: 700;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px; font-weight: 800;
+  color: var(--accent-text);
 }
 .cat-footer-links { display: flex; align-items: center; gap: 8px; }
 .cat-footer-links a { font-size: 13px; color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
@@ -308,7 +305,7 @@
     white-space: nowrap;
   }
 
-  /* Fixed to viewport — never causes horizontal overflow or page shift */
+  /* Fixed to viewport - never causes horizontal overflow or page shift */
   .cat-switch-dropdown {
     position: fixed !important;
     top: 66px !important;

@@ -9,7 +9,7 @@
         @if (isAdmin()) {
           Fill in the details to publish a new post
         } @else {
-          Fill in the details — your post will be reviewed before going live
+          Fill in the details - your post will be reviewed before going live
         }
       </p>
     </div>
@@ -129,19 +129,19 @@
 
           <div class="toolbar-group">
             <button type="button" class="tool-btn heading-btn" [class.active]="activeBlock() === 'h1'"
-              title="Heading 1 — Page title (use once)"
+              title="Heading 1 - Page title (use once)"
               (mousedown)="$event.preventDefault()" (click)="formatBlock('h1')">H1</button>
             <button type="button" class="tool-btn heading-btn" [class.active]="activeBlock() === 'h2'"
-              title="Heading 2 — Section title"
+              title="Heading 2 - Section title"
               (mousedown)="$event.preventDefault()" (click)="formatBlock('h2')">H2</button>
             <button type="button" class="tool-btn heading-btn" [class.active]="activeBlock() === 'h3'"
-              title="Heading 3 — Sub-section"
+              title="Heading 3 - Sub-section"
               (mousedown)="$event.preventDefault()" (click)="formatBlock('h3')">H3</button>
             <button type="button" class="tool-btn heading-btn" [class.active]="activeBlock() === 'h4'"
-              title="Heading 4 — Minor heading"
+              title="Heading 4 - Minor heading"
               (mousedown)="$event.preventDefault()" (click)="formatBlock('h4')">H4</button>
             <button type="button" class="tool-btn heading-btn" [class.active]="activeBlock() === 'p'"
-              title="Paragraph — Body text"
+              title="Paragraph - Body text"
               (mousedown)="$event.preventDefault()" (click)="formatBlock('p')">P</button>
           </div>
 
@@ -364,7 +364,7 @@
         @if (showInlineImgPicker()) {
           <div class="inline-img-bar">
             <div class="inline-img-fields">
-              <input type="text" class="inline-img-input" placeholder="Alt text — describe the image (required for SEO)"
+              <input type="text" class="inline-img-input" placeholder="Alt text - describe the image (required for SEO)"
                 [value]="inlineImgAlt()"
                 (input)="inlineImgAlt.set($any($event.target).value)" />
               <input type="text" class="inline-img-input" placeholder="Caption (optional)"
@@ -451,7 +451,7 @@
         @if (createBlogForm.get('content')?.errors?.['minWords']) {
           <small class="error editor-field-error">
             Content must be at least 150 words to maintain quality standards.
-            You have {{ wordCount() }} word{{ wordCount() === 1 ? '' : 's' }} — {{ 150 - wordCount() }} more needed.
+            You have {{ wordCount() }} word{{ wordCount() === 1 ? '' : 's' }} - {{ 150 - wordCount() }} more needed.
           </small>
         }
       }
@@ -508,7 +508,7 @@
 
             <div class="mcq-explanation-row">
               <input type="text" class="mcq-explanation-input"
-                placeholder="Explanation (optional) — shown after user answers"
+                placeholder="Explanation (optional) - shown after user answers"
                 [value]="q.explanation"
                 (input)="updateMcqExplanation(qi, $any($event.target).value)" />
             </div>
@@ -528,7 +528,7 @@
       <div class="form-field mcq-builder">
         <div class="form-section-label">
           <span class="form-section-icon">💬</span> FAQs (optional)
-          <span class="field-hint-text">Add common reader questions — shown at the end of the article and eligible for Google's FAQ rich results</span>
+          <span class="field-hint-text">Add common reader questions - shown at the end of the article and eligible for Google's FAQ rich results</span>
         </div>
 
         @if (faqs().length === 0) {

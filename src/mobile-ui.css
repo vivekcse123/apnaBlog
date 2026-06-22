@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════════════════════
-   APNAINSIGHTS — MOBILE UI KIT  (mobile-ui.css)
+   APNAINSIGHTS - MOBILE UI KIT  (mobile-ui.css)
    Complete component library for all screens.
    Import in styles.css: @import './mobile-ui.css';
    ══════════════════════════════════════════════════════════════ */
@@ -702,9 +702,9 @@
   min-height: 4px;
   transition: height 0.6s var(--mob-spring);
 }
-.mb-bar--teal { background: linear-gradient(180deg, #43cea2, #2ea88a); }
-.mb-bar--blue { background: linear-gradient(180deg, #5b8dee, #185a9d); }
-.mb-bar--amber { background: linear-gradient(180deg, #fbbf24, #d97706); }
+.mb-bar--teal { background: var(--accent); }
+.mb-bar--blue { background: #5b8dee; }
+.mb-bar--amber { background: #f59e0b; }
 .mb-bar-label { font-size: 10px; color: var(--text-muted,#9ca3af); font-weight: 500; }
 
 /* Donut chart (CSS only) */

@@ -1,5 +1,5 @@
 /* ════════════════════════════════════════════════
-   NEWS FEED — admin panel, mobile-first
+   NEWS FEED - admin panel, mobile-first
    ════════════════════════════════════════════════ */
 
 .nf-page {
@@ -24,7 +24,7 @@
 .nf-header-icon {
   width: 42px; height: 42px;
   border-radius: 12px;
-  background: linear-gradient(135deg, rgba(67,206,162,.15), rgba(24,90,157,.12));
+  background: var(--accent-subtle);
   border: 1px solid rgba(67,206,162,.2);
   display: flex; align-items: center; justify-content: center;
   color: #43cea2; flex-shrink: 0;
@@ -32,9 +32,7 @@
 .nf-title {
   margin: 0 0 2px;
   font-size: 20px; font-weight: 800; letter-spacing: -.4px;
-  background: linear-gradient(135deg, var(--text-primary) 30%, #43cea2 100%);
-  -webkit-background-clip: text; background-clip: text;
-  -webkit-text-fill-color: transparent; color: transparent;
+  color: var(--text-primary);
 }
 .nf-subtitle { margin: 0; font-size: 12px; color: var(--text-muted); }
 
@@ -144,7 +142,7 @@
 .nf-card-img-wrap {
   position: relative;
   height: 170px;
-  background: linear-gradient(135deg, #1a1a2e, #0f3460);
+  background: var(--bg-surface-alt);
   overflow: hidden;
   flex-shrink: 0;
 }
@@ -221,7 +219,7 @@
 
 .nf-btn--publish {
   flex: 1; justify-content: center;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
   color: #fff; box-shadow: 0 2px 10px rgba(67,206,162,.28);
 }
 .nf-btn--publish:hover:not(:disabled) { opacity: .9; }
@@ -379,7 +377,7 @@
 .nf-btn--draft:hover:not(:disabled) { border-color: var(--text-secondary); }
 .nf-btn--go {
   justify-content: center;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
   color: #fff; height: 44px; font-size: 13.5px;
   box-shadow: 0 3px 14px rgba(67,206,162,.35);
 }
@@ -457,7 +455,7 @@
 .nf-part-badge {
   width: 22px; height: 22px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
   color: #fff;
   font-size: 11px; font-weight: 800;
   display: flex; align-items: center; justify-content: center;

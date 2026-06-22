@@ -87,7 +87,7 @@ export class MyShorts implements OnInit {
 
   onUploadClose(): void {
     this.showUpload.set(false);
-    // Always reload — handles both the non-admin "review → Done" path
+    // Always reload - handles both the non-admin "review → Done" path
     // (where `created` is never emitted) and the admin direct-publish path.
     this.load(1);
   }

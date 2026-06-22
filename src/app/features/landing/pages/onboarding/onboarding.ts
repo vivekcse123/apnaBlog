@@ -50,7 +50,7 @@ export class Onboarding implements OnInit {
       id: 1,
       emoji: '🌏',
       title: 'Every Topic Under the Sun',
-      subtitle: 'Technology, Health, Village Life, Sports, Cooking — stories that match your world.',
+      subtitle: 'Technology, Health, Village Life, Sports, Cooking - stories that match your world.',
       accent: '#5b8dee',
       bg: 'linear-gradient(160deg, #0c1a3a 0%, #1a2d6e 100%)',
       features: ['14 unique categories', 'Personalized for you', 'Smart recommendations'],

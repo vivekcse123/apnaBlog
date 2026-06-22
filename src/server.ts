@@ -37,7 +37,7 @@ const isLoopback = (host: string) =>
   host === '::1';
 
 // ── Known client-rendered routes ──────────────────────────────────────────────
-// Angular SSR returns `null` for any route resolving to RenderMode.Client —
+// Angular SSR returns `null` for any route resolving to RenderMode.Client -
 // this includes both legitimate client-only pages (auth, dashboards, splash)
 // AND the catch-all `**` PageNotFound route. Without distinguishing them,
 // truly-missing URLs get served with HTTP 200 (a "soft 404"), which hurts SEO.
@@ -60,7 +60,7 @@ const isKnownClientRoute = (pathname: string): boolean => {
   return KNOWN_PREFIX_SEGMENTS.has(path.split('/')[0]);
 };
 
-// Permanent slug redirects — old URL → new URL (HTTP 301 for SEO link equity transfer)
+// Permanent slug redirects - old URL → new URL (HTTP 301 for SEO link equity transfer)
 const SLUG_REDIRECTS: Record<string, string> = {
   'congress-wins-only-21-seats-in-assam-and-bengal-20-are-muslim-candidates':
     'congress-2026-assembly-election-results-assam-west-bengal-analysis',
@@ -71,7 +71,7 @@ app.get('/blog/:slug', (req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
-// Dynamic sitemap — fetches all published posts and emits sitemap.xml.
+// Dynamic sitemap - fetches all published posts and emits sitemap.xml.
 // Cached for 1 hour so the API isn't hit on every Googlebot request.
 const SITE_ORIGIN = 'https://apnainsights.com';
 let sitemapCache: Buffer | null = null;
@@ -92,7 +92,7 @@ const STATIC_PAGES = [
   { url: '/terms',          changefreq: 'yearly',   priority: 0.3 },
   { url: '/disclaimer',        changefreq: 'yearly',   priority: 0.3 },
   { url: '/editorial-policy', changefreq: 'yearly',   priority: 0.5 },
-  // Category landing pages — one per topic
+  // Category landing pages - one per topic
   ...ALL_CATEGORIES.map(cat => ({
     url:        `/category/${cat.toLowerCase()}`,
     changefreq: 'daily' as const,
@@ -108,7 +108,7 @@ app.get('/sitemap.xml', async (_req: Request, res: Response) => {
       return res.send(sitemapCache);
     }
 
-    // Fetch all posts and shorts in parallel — paginate until exhausted
+    // Fetch all posts and shorts in parallel - paginate until exhausted
     const fetchAll = async <T>(baseUrl: string): Promise<T[]> => {
       const items: T[] = [];
       let pg = 1;
@@ -137,7 +137,7 @@ app.get('/sitemap.xml', async (_req: Request, res: Response) => {
 
     // Collect unique tags and author IDs from posts
     const tagCounts = new Map<string, number>();
-    const authorIds = new Set<string>(); // use _id directly — route is /author/:id
+    const authorIds = new Set<string>(); // use _id directly - route is /author/:id
     for (const p of posts) {
       for (const tag of (p.tags ?? [])) {
         tagCounts.set(tag, (tagCounts.get(tag) ?? 0) + 1);
@@ -166,7 +166,7 @@ app.get('/sitemap.xml', async (_req: Request, res: Response) => {
         changefreq: 'weekly' as const,
         priority:   0.8,
       })),
-      // Individual short pages — crawlable by Google, eligible for AdSense
+      // Individual short pages - crawlable by Google, eligible for AdSense
       // Sponsored shorts excluded (paid content, not for indexing)
       ...shorts.filter(s => !s.isSponsored).map(s => ({
         url:        `/shorts/${s._id}`,
@@ -223,7 +223,7 @@ app.get(['/rss.xml', '/feed', '/feed.xml'], async (_req: Request, res: Response)
       return `<item><title>${esc(p.title)}</title><link>${url}</link><guid isPermaLink="true">${url}</guid><description>${desc}</description><pubDate>${date}</pubDate>${cats}${img}</item>`;
     }).join('');
 
-    const xml = `<?xml version="1.0" encoding="UTF-8"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>ApnaInsights — Practical Knowledge for Everyday Life</title><link>${SITE_ORIGIN}</link><description>India's practical knowledge platform — expert guides on Technology, Career, Health and Business.</description><language>en-IN</language><lastBuildDate>${new Date().toUTCString()}</lastBuildDate><ttl>60</ttl><atom:link href="${SITE_ORIGIN}/rss.xml" rel="self" type="application/rss+xml"/>${items}</channel></rss>`;
+    const xml = `<?xml version="1.0" encoding="UTF-8"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>ApnaInsights - Practical Knowledge for Everyday Life</title><link>${SITE_ORIGIN}</link><description>India's practical knowledge platform - expert guides on Technology, Career, Health and Business.</description><language>en-IN</language><lastBuildDate>${new Date().toUTCString()}</lastBuildDate><ttl>60</ttl><atom:link href="${SITE_ORIGIN}/rss.xml" rel="self" type="application/rss+xml"/>${items}</channel></rss>`;
 
     rssCache = xml; rssCachedAt = Date.now();
     res.setHeader('Content-Type', 'application/rss+xml; charset=utf-8');
@@ -277,7 +277,7 @@ const API_BASE = process.env['API_URL'] ?? 'https://apnablogserver.onrender.com/
 
 app.get('/blog/:id', async (req: Request, res: Response, next: NextFunction) => {
   const id = String(req.params['id'] ?? '');
-  if (!OBJECT_ID_RE.test(id)) return next(); // already a slug — let SSR handle it
+  if (!OBJECT_ID_RE.test(id)) return next(); // already a slug - let SSR handle it
 
   try {
     const apiRes = await fetch(`${API_BASE}/post/${id}`, {
@@ -292,7 +292,7 @@ app.get('/blog/:id', async (req: Request, res: Response, next: NextFunction) => 
       return res.redirect(301, `/blog/${slug}`);
     }
   } catch {
-    // API down or timeout — fall through to SSR so the page still loads
+    // API down or timeout - fall through to SSR so the page still loads
   }
   return next();
 });
@@ -339,7 +339,7 @@ app.use((req, res, next) => {
     .handle(req)
     .then((response) => {
       if (!response) {
-        // RenderMode.Client route — Angular returns null, serve the SPA shell.
+        // RenderMode.Client route - Angular returns null, serve the SPA shell.
         // Unknown URLs (the `**` PageNotFound route) get a real 404 status.
         if (!isKnownClientRoute(req.path)) {
           return res.status(404).sendFile(join(browserDistFolder, 'index.html'));
@@ -352,7 +352,7 @@ app.use((req, res, next) => {
       //  • Bots/crawlers (Googlebot, AdSense) get a 503 + Retry-After so they
       //    retry later rather than caching an empty page as "low value content".
       //  • Real browsers get the client shell so Angular can bootstrap and
-      //    fetch the data itself — user experience is preserved.
+      //    fetch the data itself - user experience is preserved.
       if (response.status >= 500) {
         console.warn(`SSR returned ${response.status} for ${req.url}`);
         const ua = (req.headers['user-agent'] ?? '').toLowerCase();
@@ -360,7 +360,7 @@ app.use((req, res, next) => {
         if (isBot) {
           res.setHeader('Retry-After', '60');
           res.status(503).send(
-            '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>ApnaInsights — Service Temporarily Unavailable</title></head>' +
+            '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>ApnaInsights - Service Temporarily Unavailable</title></head>' +
             '<body><h1>503 Service Temporarily Unavailable</h1><p>ApnaInsights is starting up. Please try again in a moment.</p></body></html>'
           );
           return;
@@ -385,7 +385,7 @@ app.use((err: unknown, req: Request, res: Response, _next: NextFunction) => {
   if (isBot) {
     res.setHeader('Retry-After', '60');
     res.status(503).send(
-      '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>ApnaInsights — Service Temporarily Unavailable</title></head>' +
+      '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>ApnaInsights - Service Temporarily Unavailable</title></head>' +
       '<body><h1>503 Service Temporarily Unavailable</h1><p>ApnaInsights is starting up. Please try again in a moment.</p></body></html>'
     );
     return;
@@ -405,7 +405,7 @@ if (isMainModule(import.meta.url) || process.env['pm_id']) {
     }
   });
   // NOTE: Do NOT add a setInterval keepalive here.
-  // On Vercel (serverless), this function process is killed after each request —
+  // On Vercel (serverless), this function process is killed after each request -
   // any interval set here never fires. Use an external uptime monitor (e.g.
   // UptimeRobot free tier) to ping the Render backend every 5 minutes instead.
 }

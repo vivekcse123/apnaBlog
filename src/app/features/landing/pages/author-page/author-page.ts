@@ -64,7 +64,7 @@ export class AuthorPage implements OnInit, OnDestroy {
   totalViews = computed(() => this.totalViewsFromApi() || this.posts().reduce((s, p) => s + (p.views ?? 0), 0));
   totalLikes = computed(() => this.totalLikesFromApi() || this.posts().reduce((s, p) => s + (p.likesCount ?? 0), 0));
 
-  // Same threshold as the robots tag in loadPosts() — don't show an ad on a
+  // Same threshold as the robots tag in loadPosts() - don't show an ad on a
   // page that's mostly empty (AdSense low-value-content / ad-density risk).
   isThinPage = computed(() => !this.isLoading() && this.posts().length < 5);
 
@@ -78,7 +78,7 @@ export class AuthorPage implements OnInit, OnDestroy {
   currentYear = new Date().getFullYear();
   protected readonly Math = Math;
 
-  // Tracks which .adsbygoogle <ins> elements have already been pushed —
+  // Tracks which .adsbygoogle <ins> elements have already been pushed -
   // avoids re-pushing an already-initialised <ins> ("already have ads in
   // them") if pushAds() is ever called more than once.
   private pushedAds = new WeakSet<Element>();
@@ -125,7 +125,7 @@ export class AuthorPage implements OnInit, OnDestroy {
             this.shortsCountFromApi.set((res as any).shortsCount ?? 0);
             this.totalBlogsFromApi.set((res as any).totalBlogs ?? 0);
             this.topPosts.set((res as any).topPosts ?? []);
-            // Show the profile immediately — don't wait for posts/shorts to load
+            // Show the profile immediately - don't wait for posts/shorts to load
             this.isLoading.set(false);
             this.setMeta(user);
             this.loadPosts(id);
@@ -226,13 +226,13 @@ export class AuthorPage implements OnInit, OnDestroy {
     const imgWidth  = hasAvatar ? '400'  : '1200';
     const imgHeight = hasAvatar ? '400'  : '630';
 
-    this.titleSvc.setTitle(`${name} — Author | ApnaInsights`);
+    this.titleSvc.setTitle(`${name} - Author | ApnaInsights`);
     this.meta.updateTag({ name: 'description',          content: bio });
     // Fail safe to noindex until loadPosts() confirms the author has enough
-    // published posts — avoids a crawler ever seeing `index` on an
+    // published posts - avoids a crawler ever seeing `index` on an
     // empty/thin author page (soft-404 risk).
     this.meta.updateTag({ name: 'robots',               content: 'noindex, follow' });
-    this.meta.updateTag({ property: 'og:title',         content: `${name} — Author | ApnaInsights` });
+    this.meta.updateTag({ property: 'og:title',         content: `${name} - Author | ApnaInsights` });
     this.meta.updateTag({ property: 'og:description',   content: bio });
     this.meta.updateTag({ property: 'og:url',           content: url });
     this.meta.updateTag({ property: 'og:type',          content: 'profile' });
@@ -240,11 +240,11 @@ export class AuthorPage implements OnInit, OnDestroy {
     this.meta.updateTag({ property: 'og:image:width',   content: imgWidth });
     this.meta.updateTag({ property: 'og:image:height',  content: imgHeight });
     this.meta.updateTag({ name: 'twitter:card',         content: 'summary' });
-    this.meta.updateTag({ name: 'twitter:title',        content: `${name} — Author | ApnaInsights` });
+    this.meta.updateTag({ name: 'twitter:title',        content: `${name} - Author | ApnaInsights` });
     this.meta.updateTag({ name: 'twitter:description',  content: bio });
     this.meta.updateTag({ name: 'twitter:image',        content: avatar });
 
-    // Person + BreadcrumbList structured data — @graph format
+    // Person + BreadcrumbList structured data - @graph format
     const graph = {
       '@context': 'https://schema.org',
       '@graph': [
@@ -266,7 +266,7 @@ export class AuthorPage implements OnInit, OnDestroy {
           '@type': 'ProfilePage',
           '@id':   `${url}#webpage`,
           url,
-          name:    `${name} — Author | ApnaInsights`,
+          name:    `${name} - Author | ApnaInsights`,
           isPartOf: { '@id': `${environment.siteUrl}/#website` },
           about:   { '@id': url },
           dateModified: new Date().toISOString(),

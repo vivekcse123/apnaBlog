@@ -31,7 +31,7 @@ export class PrivacyPolicy implements OnInit, OnDestroy {
 
     this.meta.updateTag({ property: 'og:type', content: 'website' });
     this.meta.updateTag({ property: 'og:title', content: 'Privacy Policy | ApnaInsights' });
-    this.meta.updateTag({ property: 'og:description', content: 'ApnaInsights Privacy Policy — how we handle your data and use of third-party advertising.' });
+    this.meta.updateTag({ property: 'og:description', content: 'ApnaInsights Privacy Policy - how we handle your data and use of third-party advertising.' });
     this.meta.updateTag({ property: 'og:url', content: environment.siteUrl + '/privacy-policy' });
 
     let canonical = this.document.querySelector('link[rel="canonical"]') as HTMLLinkElement;

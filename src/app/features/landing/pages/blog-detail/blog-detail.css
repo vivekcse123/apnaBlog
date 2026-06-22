@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════════════════════
-   blog-detail.css  —  ApnaInsights reading experience
-   Mobile: fixed bottom-nav (64px) — same as all other pages
+   blog-detail.css  -  ApnaInsights reading experience
+   Mobile: fixed bottom-nav (64px) - same as all other pages
 ═══════════════════════════════════════════════════════════ */
 
 /* ── Base ── */
@@ -40,7 +40,7 @@
   position: absolute;
   bottom: 0; left: 0;
   width: 100%; height: 2px;
-  background: linear-gradient(90deg, #43cea2, #185a9d, #43cea2);
+  background: var(--accent);
   background-size: 200%;
   animation: hdr-border 4s linear infinite;
 }
@@ -181,7 +181,7 @@
   transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
 .cat-dropdown-item:hover { background: rgba(67,206,162,0.12); border-color: #43cea2; color: #1d9e78; }
-.cat-dropdown-item.active { background: linear-gradient(135deg,#43cea2,#185a9d); border-color: transparent; color: #fff; }
+.cat-dropdown-item.active { background: var(--accent); border-color: transparent; color: #fff; }
 
 /* ══════════════════════════════════════════
    READING PROGRESS BAR
@@ -189,7 +189,7 @@
 .reading-progress-bar {
   position: fixed; top: 0; left: 0;
   height: 3px; z-index: 1001;
-  background: linear-gradient(90deg, #43cea2, #185a9d);
+  background: var(--accent);
   transition: width 0.15s linear;
   pointer-events: none;
 }
@@ -205,7 +205,7 @@
 .loading-dots { display: flex; gap: 6px; }
 .loading-dots span {
   width: 8px; height: 8px; border-radius: 50%;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
   animation: bounce 1.2s ease infinite;
 }
 .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
@@ -226,7 +226,7 @@
 .error-retry-btn {
   padding: 10px 24px; border-radius: 8px; font-size: 14px; font-weight: 600;
   cursor: pointer; border: none;
-  background: linear-gradient(135deg, #43cea2, #185a9d); color: #fff;
+  background: var(--accent); color: #fff;
   transition: opacity 0.2s;
 }
 .error-retry-btn:hover { opacity: 0.85; }
@@ -256,8 +256,8 @@
   transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s;
 }
 .float-btn:hover { transform: scale(1.1); box-shadow: 0 6px 20px rgba(67,206,162,0.25); border-color: var(--accent); }
-.float-btn.active { background: linear-gradient(135deg,#43cea2,#185a9d); border-color: transparent; }
-.float-btn.bookmarked { background: linear-gradient(135deg,#f59e0b,#f97316); border-color: transparent; }
+.float-btn.active { background: var(--accent); border-color: transparent; }
+.float-btn.bookmarked { background: #f59e0b; border-color: transparent; }
 .float-icon { font-size: 19px; line-height: 1; color: var(--text-primary); }
 .float-icon--svg { display: block; }
 .float-btn.active .float-icon,
@@ -303,7 +303,7 @@
   transition: background 0.15s;
 }
 .share-option:hover { background: var(--bg-surface-alt, var(--bg-base)); }
-.share-option-icon { font-size: 19px; }
+.share-option-icon { display: flex; align-items: center; justify-content: center; width: 20px; height: 20px; color: var(--text-secondary); }
 
 /* ══════════════════════════════════════════
    TABLE OF CONTENTS SIDEBAR
@@ -444,12 +444,12 @@
   cursor: pointer;
   transition: background 0.2s, color 0.2s;
 }
-.category-pill:hover { background: linear-gradient(135deg,#43cea2,#185a9d); color: #fff; border-color: transparent; }
+.category-pill:hover { background: var(--accent); color: #fff; border-color: transparent; }
 [data-theme="dark"] .category-pill { color: var(--accent-text); }
 
 .winner-rank-badge {
   display: inline-flex; align-items: center;
-  background: linear-gradient(135deg, rgba(246,201,14,.18), rgba(246,201,14,.08));
+  background: var(--bg-surface-alt);
   border: 1px solid rgba(246,201,14,.35); color: #f6c90e;
   border-radius: 20px; padding: 5px 14px; font-size: 13px; font-weight: 800;
   margin-bottom: 10px; letter-spacing: .3px;
@@ -498,7 +498,7 @@
 .author-chip:hover { border-color: #43cea2; background: var(--accent-subtle); }
 .author-avatar-sm {
   width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
-  background: linear-gradient(135deg,#43cea2,#185a9d);
+  background: var(--accent);
   color: #fff; font-size: 13px; font-weight: 700;
   display: flex; align-items: center; justify-content: center;
   overflow: hidden;
@@ -531,8 +531,8 @@
 }
 .meta-item.meta-comments-link { cursor: pointer; transition: color 0.15s; }
 .meta-item.meta-comments-link:hover { color: var(--accent-text); }
-.meta-icon { font-size: 14px; }
-.meta-updated { color: #43cea2; }
+.meta-icon { display: inline-flex; align-items: center; flex-shrink: 0; }
+.meta-updated { color: var(--accent-text); }
 
 /* Font size controls */
 .font-size-btns {
@@ -549,7 +549,7 @@
 .fs-btn:last-child { border-right: none; }
 .fs-btn--lg { font-size: 14px; }
 .fs-btn:hover { background: var(--bg-surface-alt, var(--bg-base)); color: var(--text-primary); }
-.fs-btn.fs-active { background: linear-gradient(135deg,#43cea2,#185a9d); color: #fff; }
+.fs-btn.fs-active { background: var(--accent); color: #fff; }
 
 /* Like button */
 /* ── Like reaction wrapper ── */
@@ -559,12 +559,12 @@
   align-items: center;
 }
 
-/* ── Emoji picker — floats above the button ── */
+/* ── Emoji picker - floats above the button ── */
 .like-emoji-picker {
   position: absolute;
   bottom: calc(100% + 8px);
   left: 50%;
-  /* `translate` is a separate CSS property from `transform` — it carries the
+  /* `translate` is a separate CSS property from `transform` - it carries the
      centering + on-screen correction (--picker-shift, computed in JS so the
      picker never overflows the viewport edge), while `transform` below is
      left free for the picker-pop animation's scale/translateY. This also
@@ -667,7 +667,7 @@
 }
 
 /* Language bar */
-/* No border-top here — .blog-meta's border-bottom directly above already
+/* No border-top here - .blog-meta's border-bottom directly above already
    acts as the divider; adding another would draw two lines back-to-back. */
 .lang-bar {
   display: flex; align-items: center; flex-wrap: wrap;
@@ -688,8 +688,8 @@
 .lang-translating { font-size: 12px; color: var(--text-muted); font-style: italic; }
 
 /* ── Ad units ── */
-/* While adsbygoogle.js is initializing a slot — well before data-ad-status
-   settles to "filled" or "unfilled" — it can inject an iframe with an opaque
+/* While adsbygoogle.js is initializing a slot - well before data-ad-status
+   settles to "filled" or "unfilled" - it can inject an iframe with an opaque
    white background sized by "auto"/full-width-responsive, producing a large
    blank white box. Collapse the wrap by default and only let it grow once a
    fill is confirmed, so that loading and permanently-unfilled slots both stay
@@ -699,7 +699,7 @@
 .ad-unit-wrap:has(ins.adsbygoogle[data-ad-status="filled"]) { max-height: none; min-height: 100px; }
 
 /* Extra space + divider below the mid-content ad so it isn't flush against
-   the clickable category/tag badges (reduces accidental-click risk) — only
+   the clickable category/tag badges (reduces accidental-click risk) - only
    once the ad has actually rendered. */
 .ad-unit-wrap--mid:has(ins.adsbygoogle[data-ad-status="filled"]) { margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
 
@@ -754,7 +754,7 @@
 .blog-content ::ng-deep strong { font-weight: 700; }
 .blog-content ::ng-deep em     { font-style: italic; }
 .blog-content ::ng-deep hr { border: none; border-top: 1px solid var(--border); margin: 2em 0; }
-/* Table scroll wrapper — injected by wrapTables() so mobile can scroll */
+/* Table scroll wrapper - injected by wrapTables() so mobile can scroll */
 .blog-content ::ng-deep .bd-table-wrap {
   width: 100%;
   overflow-x: auto;
@@ -794,7 +794,7 @@
 .blog-content ::ng-deep tbody tr:hover td {
   background: color-mix(in srgb, var(--accent,#43cea2) 5%, var(--bg-surface));
 }
-/* First column (rank / index) — slightly muted */
+/* First column (rank / index) - slightly muted */
 .blog-content ::ng-deep td:first-child {
   color: var(--text-muted);
   font-weight: 600;
@@ -891,7 +891,7 @@
   font-size: 20px; font-weight: 700; color: var(--text-primary);
   margin: 0 0 16px; display: flex; align-items: center; gap: 8px;
 }
-.faq-icon { font-size: 18px; }
+.faq-icon { display: inline-flex; align-items: center; flex-shrink: 0; color: var(--accent-text); }
 .faq-item {
   border: 1px solid var(--border);
   border-radius: 10px;
@@ -924,7 +924,7 @@
   display: flex; flex-direction: column; align-items: flex-start; gap: 8px;
   padding: 18px 20px; margin: 24px 0;
   border-radius: 12px;
-  background: linear-gradient(135deg, rgba(245,158,11,0.06), rgba(217,119,6,0.04));
+  background: var(--bg-surface-alt);
   border: 1.5px solid rgba(245,158,11,0.3);
 }
 .sponsor-cta-label {
@@ -936,7 +936,7 @@
 .sponsor-cta-btn {
   display: inline-flex; align-items: center; gap: 6px;
   padding: 8px 18px; border-radius: 8px;
-  background: linear-gradient(135deg,#f59e0b,#d97706); color: #fff;
+  background: #d97706; color: #fff;
   font-size: 13px; font-weight: 600; text-decoration: none;
   transition: opacity 0.15s;
 }
@@ -954,7 +954,7 @@
 }
 .author-card-avatar {
   width: 64px; height: 64px; border-radius: 50%; flex-shrink: 0;
-  background: linear-gradient(135deg,#43cea2,#185a9d);
+  background: var(--accent);
   color: #fff; font-size: 22px; font-weight: 700;
   display: flex; align-items: center; justify-content: center;
   cursor: pointer; border: none; overflow: hidden;
@@ -994,7 +994,7 @@
   transition: background 0.2s, color 0.2s;
 }
 .author-card-follow-btn:hover:not(:disabled) { background: rgba(67,206,162,0.1); }
-.author-card-follow-btn.following { background: linear-gradient(135deg,#43cea2,#185a9d); border-color: transparent; color: #fff; }
+.author-card-follow-btn.following { background: var(--accent); border-color: transparent; color: #fff; }
 .author-card-follow-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
 /* ══════════════════════════════════════════
@@ -1044,7 +1044,7 @@
 .shorts-rec-pill {
   display: inline-flex; align-items: center; gap: 5px;
   padding: 3px 10px; border-radius: 4px;
-  background: linear-gradient(135deg,#43cea2,#185a9d); color: #fff;
+  background: var(--accent); color: #fff;
   font-size: 10px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
   width: fit-content;
 }
@@ -1103,7 +1103,7 @@
 .related-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.1); transform: translateY(-2px); }
 .related-img { width: 100%; height: 160px; object-fit: cover; display: block; }
 .related-no-img {
-  height: 160px; background: linear-gradient(135deg, var(--accent-subtle), rgba(24,90,157,0.1));
+  height: 160px; background: var(--accent-subtle);
   display: flex; align-items: center; justify-content: center;
 }
 .related-letter { font-size: 48px; font-weight: 700; color: var(--accent-text); opacity: 0.4; }
@@ -1131,7 +1131,7 @@
 .disc-count {
   display: inline-flex; align-items: center; justify-content: center;
   min-width: 22px; height: 22px; padding: 0 7px; border-radius: 99px;
-  background: linear-gradient(135deg,#43cea2,#185a9d); color: #fff;
+  background: var(--accent); color: #fff;
   font-size: 12px; font-weight: 700;
 }
 .disc-load-btn {
@@ -1154,7 +1154,7 @@
 .disc-compose:focus-within { border-color: #43cea2; }
 .disc-compose-avatar {
   width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
-  background: linear-gradient(135deg,#43cea2,#185a9d);
+  background: var(--accent);
   color: #fff; font-size: 14px; font-weight: 700;
   display: flex; align-items: center; justify-content: center;
 }
@@ -1180,7 +1180,7 @@
 .disc-post-btn {
   display: flex; align-items: center; gap: 6px;
   padding: 7px 18px; border-radius: 8px;
-  background: linear-gradient(135deg,#43cea2,#185a9d); color: #fff;
+  background: var(--accent); color: #fff;
   border: none; font-size: 13px; font-weight: 700;
   font-family: inherit; cursor: pointer;
   transition: opacity 0.2s;
@@ -1199,7 +1199,7 @@
 .disc-comment:last-child { border-bottom: none; }
 .disc-avatar {
   width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
-  background: linear-gradient(135deg,#43cea2,#185a9d);
+  background: var(--accent);
   color: #fff; font-size: 14px; font-weight: 700;
   display: flex; align-items: center; justify-content: center;
 }
@@ -1273,7 +1273,7 @@
 .blog-detail-footer::before {
   content: '';
   position: absolute; top: -2px; left: 0; right: 0; height: 2px;
-  background: linear-gradient(90deg, #43cea2, #185a9d);
+  background: var(--accent);
 }
 .blog-detail-footer-inner {
   max-width: 1200px; margin: 0 auto;
@@ -1284,8 +1284,7 @@
   display: flex; align-items: center; gap: 8px;
   text-decoration: none;
   font-size: 18px; font-weight: 700;
-  background: linear-gradient(135deg,#43cea2,#185a9d);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  color: var(--accent-text);
 }
 .bdf-logo img { border-radius: 6px; }
 .bdf-links { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center; }
@@ -1300,7 +1299,7 @@
 .bd-scroll-top-fab {
   position: fixed; left: 24px; bottom: 32px; z-index: 900;
   width: 44px; height: 44px; border-radius: 50%;
-  border: none; background: linear-gradient(135deg,#43cea2,#185a9d);
+  border: none; background: var(--accent);
   color: #fff; font-size: 18px; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   box-shadow: 0 4px 14px rgba(67,206,162,0.35);
@@ -1365,7 +1364,7 @@
 .apm-hero { display: flex; align-items: center; gap: 14px; padding: 4px 20px 18px; }
 .apm-avatar {
   width: 64px; height: 64px; border-radius: 50%; flex-shrink: 0;
-  background: linear-gradient(135deg,#43cea2,#185a9d);
+  background: var(--accent);
   color: #fff; font-size: 26px; font-weight: 700;
   display: flex; align-items: center; justify-content: center; overflow: hidden;
   box-shadow: 0 4px 12px rgba(67,206,162,0.25);
@@ -1392,7 +1391,7 @@
   transition: background 0.2s;
 }
 .follow-btn:hover:not(:disabled) { background: rgba(67,206,162,0.1); }
-.follow-btn.following { background: linear-gradient(135deg,#43cea2,#185a9d); border-color: transparent; color: #fff; }
+.follow-btn.following { background: var(--accent); border-color: transparent; color: #fff; }
 .follow-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 .apm-info { padding: 0 20px 8px; display: flex; flex-direction: column; gap: 12px; }
 .apm-row { display: flex; gap: 12px; align-items: flex-start; }
@@ -1403,7 +1402,7 @@
 .apm-actions { padding: 12px 20px 24px; display: flex; flex-direction: column; gap: 8px; }
 .apm-view-btn {
   width: 100%; padding: 11px; border-radius: 10px;
-  background: linear-gradient(135deg,#43cea2,#185a9d); color: #fff;
+  background: var(--accent); color: #fff;
   border: none; font-size: 14px; font-weight: 600;
   font-family: inherit; cursor: pointer; transition: opacity 0.2s;
 }
@@ -1437,7 +1436,7 @@
 .apos-header-left { display: flex; align-items: center; gap: 12px; }
 .apos-header-avatar {
   width: 44px; height: 44px; border-radius: 50%; overflow: hidden; flex-shrink: 0;
-  background: linear-gradient(135deg,#43cea2,#185a9d);
+  background: var(--accent);
   color: #fff; font-size: 18px; font-weight: 700;
   display: flex; align-items: center; justify-content: center;
 }
@@ -1460,7 +1459,7 @@
 .apos-thumb-fallback {
   width: 100%; height: 100%;
   display: flex; align-items: center; justify-content: center;
-  background: linear-gradient(135deg, var(--accent-subtle), rgba(24,90,157,0.1));
+  background: var(--accent-subtle);
   font-size: 20px; font-weight: 700; color: var(--accent-text); opacity: 0.5;
 }
 .apos-item-body { flex: 1; min-width: 0; }
@@ -1583,7 +1582,7 @@
 }
 
 /* ══════════════════════════════════════════
-   RESPONSIVE — TABLET  ≤ 1024px
+   RESPONSIVE - TABLET  ≤ 1024px
 ══════════════════════════════════════════ */
 @media (max-width: 1024px) {
   .blog-detail-container { max-width: 100%; padding: 24px 5% 0; }
@@ -1593,7 +1592,7 @@
 }
 
 /* ══════════════════════════════════════════
-   RESPONSIVE — MOBILE  ≤ 768px
+   RESPONSIVE - MOBILE  ≤ 768px
    Fixed bar: bottom-nav 64px
 ══════════════════════════════════════════ */
 @media (max-width: 768px) {
@@ -1615,7 +1614,7 @@
   .blog-detail-container { padding: 16px 14px 0; }
   .discussion-section    { margin: 20px 14px 0; padding: 16px; }
 
-  /* Full-bleed featured image — 100vw avoids sub-pixel overflow from calc(100% + 28px) */
+  /* Full-bleed featured image - 100vw avoids sub-pixel overflow from calc(100% + 28px) */
   .featured-image-wrap {
     border-radius: 0;
     width: 100vw;
@@ -1660,7 +1659,7 @@
   .blog-detail-footer::before { display: none; }
   .blog-detail-footer-inner { align-items: flex-start; text-align: left; gap: 10px; }
   .bdf-links { gap: 8px; }
-  /* Reset global 44px touch-target rule on footer text links — matches home page behaviour */
+  /* Reset global 44px touch-target rule on footer text links - matches home page behaviour */
   .bdf-link, .bdf-logo { min-height: unset; min-width: unset; }
 
   /* Modals as bottom sheets */
@@ -1963,7 +1962,7 @@
    Extra polish layered on top of existing ≤768px breakpoint
 ══════════════════════════════════════════ */
 
-/* Mobile bottom action bar — hidden on desktop */
+/* Mobile bottom action bar - hidden on desktop */
 .mob-article-bar { display: none; }
 
 /* ── Mobile like emoji picker ── */
@@ -2005,14 +2004,14 @@
   .mob-art-btn--liked { color: #ef4444; }
   .mob-art-btn--bookmarked { color: var(--accent-text); }
 
-  /* Show the per-emoji breakdown on mobile too — wraps onto its own row */
+  /* Show the per-emoji breakdown on mobile too - wraps onto its own row */
   .meta-right { flex-wrap: wrap; }
   .emoji-count-strip { display: flex; width: 100%; margin-top: 6px; }
 
-  /* Hide desktop emoji picker popup on mobile — mob-like-picker-wrap handles it */
+  /* Hide desktop emoji picker popup on mobile - mob-like-picker-wrap handles it */
   .like-emoji-picker { display: none !important; }
 
-  /* Transparent backdrop — catches tap-outside to close */
+  /* Transparent backdrop - catches tap-outside to close */
   .mob-like-backdrop {
     position: fixed;
     inset: 0;
@@ -2020,7 +2019,7 @@
     background: transparent;
   }
 
-  /* Picker wrap — fixed over the whole viewport so the picker appears
+  /* Picker wrap - fixed over the whole viewport so the picker appears
      centered on screen no matter which like button (top of article or
      bottom action bar) opened it. */
   .mob-like-picker-wrap {
@@ -2095,7 +2094,7 @@
   /* ── 2. Hide font-size buttons (clutter on small screens) ── */
   .font-size-btns { display: none; }
 
-  /* ── 3. Language bar — horizontal scroll instead of wrapping ── */
+  /* ── 3. Language bar - horizontal scroll instead of wrapping ── */
   .lang-bar {
     flex-wrap: nowrap;
     overflow-x: auto;
@@ -2106,31 +2105,31 @@
   .lang-bar::-webkit-scrollbar { display: none; }
   .lang-btn { flex-shrink: 0; }
 
-  /* ── 4. Meta stats — tighter gap, hide rarely-useful updated date ── */
+  /* ── 4. Meta stats - tighter gap, hide rarely-useful updated date ── */
   .meta-stats { gap: 10px; }
   .meta-updated { display: none; }
 
-  /* ── 5. Article container — extra bottom padding to clear mob-article-bar ── */
+  /* ── 5. Article container - extra bottom padding to clear mob-article-bar ── */
   .blog-detail-container { padding-bottom: 60px; }
 
-  /* ── 6. Scroll-to-top FAB — lift above mob-article-bar ── */
+  /* ── 6. Scroll-to-top FAB - lift above mob-article-bar ── */
   .bd-scroll-top-fab {
     bottom: calc(64px + 52px + 8px + env(safe-area-inset-bottom, 0px));
   }
 
-  /* ── 7. Footer — account for mob-article-bar height ── */
+  /* ── 7. Footer - account for mob-article-bar height ── */
   .blog-detail-footer {
     padding-bottom: calc(52px + 78px + env(safe-area-inset-bottom, 0px));
   }
 
-  /* ── 8. Discussion compose — more compact on mobile ── */
+  /* ── 8. Discussion compose - more compact on mobile ── */
   .disc-compose { padding: 10px 12px; gap: 10px; }
   .disc-compose-avatar { width: 30px; height: 30px; font-size: 12px; flex-shrink: 0; }
 
-  /* ── 9. Trending items — tighter ── */
+  /* ── 9. Trending items - tighter ── */
   .trending-item { padding: 10px 8px; gap: 12px; }
 
-  /* ── 10. Category pills — smaller on mobile ── */
+  /* ── 10. Category pills - smaller on mobile ── */
   .category-pill { font-size: 10px; padding: 3px 8px; }
 }
 

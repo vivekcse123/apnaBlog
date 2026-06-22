@@ -4,7 +4,7 @@ import { Pipe, PipeTransform } from '@angular/core';
  * CloudinaryResizePipe
  *
  * Uploaded post images are stored with a baked-in `w_800,h_500,c_limit,q_auto,f_auto`
- * transform — sized for a full-width content image. Thumbnails and cards rendered
+ * transform - sized for a full-width content image. Thumbnails and cards rendered
  * much smaller (e.g. 110x82 in a feed) were downloading that same 800x500 image,
  * wasting bandwidth and hurting LCP, especially on mobile.
  *

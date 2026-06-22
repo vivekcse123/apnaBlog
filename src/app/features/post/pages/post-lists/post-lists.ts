@@ -113,7 +113,7 @@ export class PostLists implements OnInit, OnDestroy {
   sponsorCount = computed(() => this.allBlogs().filter(p => p.isSponsored).length);
 
   timeAgo(date: any): string {
-    if (!date) return '—';
+    if (!date) return '-';
     const diff = Date.now() - new Date(date).getTime();
     const m = Math.floor(diff / 60000);
     if (m < 1)   return 'just now';
@@ -380,7 +380,7 @@ private _fetchUserPosts(uid: string, showLoader = false): void {
         this.allBlogs.update(blogs =>
           blogs.map(b => b._id === id ? { ...b, deleteRequested: false, deleteRequestReason: null } : b)
         );
-        // Patch cache in-place — no full refetch needed
+        // Patch cache in-place - no full refetch needed
         const cached = this.dashboardCache.getAdminPosts();
         if (cached) {
           this.dashboardCache.setAdminPosts(

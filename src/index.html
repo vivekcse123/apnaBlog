@@ -2,7 +2,7 @@
 <html lang="en-IN" data-theme="light">
 <head>
   <script>
-    // Apply theme before Angular boots — prevents flash of wrong theme
+    // Apply theme before Angular boots - prevents flash of wrong theme
     (function () {
       try {
         var h = new Date().getHours();
@@ -12,7 +12,7 @@
       } catch (e) { /* SSR / private browsing */ }
     })();
 
-    // Capture beforeinstallprompt immediately — fires before Angular boots
+    // Capture beforeinstallprompt immediately - fires before Angular boots
     window.addEventListener('beforeinstallprompt', function(e) {
       e.preventDefault();
       window.__pwaPrompt = e;
@@ -28,7 +28,7 @@
     // iOS PWA: env(safe-area-inset-bottom) returns 0 on first paint due to a WebKit
     // timing bug. We pre-set --safe-area-bottom to 34px synchronously (before the
     // browser renders a single pixel) so the bottom nav is always correctly sized on
-    // the very first frame — including after login redirects that trigger a full reload.
+    // the very first frame - including after login redirects that trigger a full reload.
     // The polling block below then measures the exact value and overrides if needed.
     (function () {
       if (!window.navigator.standalone) return;
@@ -58,7 +58,7 @@
       // visual viewport, leaving the bottom nav floating above the real
       // bottom edge with a gap beneath it. Navigating to another route later
       // forces Angular to relayout the page, which happens to make WebKit
-      // re-derive the correct viewport — fixing it from then on. This nudges
+      // re-derive the correct viewport - fixing it from then on. This nudges
       // the same recalculation immediately on first paint by forcing two
       // reflows (grow 1px, then shrink back) within consecutive frames, so
       // it's visually imperceptible.
@@ -98,7 +98,7 @@
   </script>
   <meta name="google-adsense-account" content="ca-pub-6477809641944524">
   <meta charset="utf-8">
-  <title>ApnaInsights — Practical Knowledge for Everyday Life</title>
+  <title>ApnaInsights - Practical Knowledge for Everyday Life</title>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 
@@ -127,14 +127,14 @@
   <link rel="sitemap" type="application/xml"             href="/sitemap.xml">
 
   <!-- canonical is set per-page by each component's setMetaTags() -->
-  <!-- hreflang: single English-India edition — tells Google which region this content targets -->
+  <!-- hreflang: single English-India edition - tells Google which region this content targets -->
   <link rel="alternate" hreflang="en-IN" href="https://apnainsights.com/">
   <link rel="alternate" hreflang="x-default" href="https://apnainsights.com/">
   <link rel="alternate" type="application/rss+xml" title="ApnaInsights RSS Feed" href="https://apnainsights.com/rss.xml">
   <!-- Preconnect to Google ad servers for faster ad load -->
   <link rel="preconnect" href="https://pagead2.googlesyndication.com" crossorigin>
 
-  <meta name="description" content="Practical knowledge for everyday life — expert guides on Technology, Career, Health &amp; Business written by verified contributors across India.">
+  <meta name="description" content="Practical knowledge for everyday life - expert guides on Technology, Career, Health &amp; Business written by verified contributors across India.">
   <meta name="keywords"    content="India knowledge platform, practical knowledge India, technology guides, career advice, health tips, business insights, ApnaInsights">
   <meta name="author"      content="ApnaInsights">
   <meta name="robots"      content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
@@ -143,20 +143,20 @@
   <meta property="og:url"          content="https://apnainsights.com/">
   <meta property="og:site_name"    content="ApnaInsights">
   <meta property="og:locale"       content="en_IN">
-  <meta property="og:title"        content="ApnaInsights — Practical Knowledge for Everyday Life">
-  <meta property="og:description"  content="Practical knowledge for everyday life — expert guides on Technology, Career, Health &amp; Business written by verified contributors across India.">
+  <meta property="og:title"        content="ApnaInsights - Practical Knowledge for Everyday Life">
+  <meta property="og:description"  content="Practical knowledge for everyday life - expert guides on Technology, Career, Health &amp; Business written by verified contributors across India.">
   <meta property="og:image"        content="https://apnainsights.com/og-image.png" />
   <meta property="og:image:type"   content="image/png">
   <meta property="og:image:width"  content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt"    content="ApnaInsights — India's Practical Knowledge Platform">
+  <meta property="og:image:alt"    content="ApnaInsights - India's Practical Knowledge Platform">
 
   <meta name="twitter:card"        content="summary_large_image">
   <meta name="twitter:site"        content="@apnainsights">
-  <meta name="twitter:title"       content="ApnaInsights — Practical Knowledge for Everyday Life">
-  <meta name="twitter:description" content="Practical knowledge for everyday life — expert guides on Technology, Career, Health &amp; Business written by verified contributors across India.">
+  <meta name="twitter:title"       content="ApnaInsights - Practical Knowledge for Everyday Life">
+  <meta name="twitter:description" content="Practical knowledge for everyday life - expert guides on Technology, Career, Health &amp; Business written by verified contributors across India.">
   <meta name="twitter:image" content="https://apnainsights.com/og-image.png" />
-  <meta name="twitter:image:alt"   content="ApnaInsights — India's Practical Knowledge Platform">
+  <meta name="twitter:image:alt"   content="ApnaInsights - India's Practical Knowledge Platform">
 
   <script type="application/ld+json">
   {
@@ -180,7 +180,7 @@
         "image": {
           "@id": "https://apnainsights.com/#logo"
         },
-        "description": "ApnaInsights is India's practical knowledge platform — expert-reviewed guides on Technology, Career, Health and Business written by verified contributors.",
+        "description": "ApnaInsights is India's practical knowledge platform - expert-reviewed guides on Technology, Career, Health and Business written by verified contributors.",
         "foundingDate": "2024",
         "address": {
           "@type": "PostalAddress",
@@ -206,7 +206,7 @@
         "@id": "https://apnainsights.com/#website",
         "url": "https://apnainsights.com/",
         "name": "ApnaInsights",
-        "description": "India's practical knowledge platform — expert guides on Technology, Career, Health and Business from verified contributors.",
+        "description": "India's practical knowledge platform - expert guides on Technology, Career, Health and Business from verified contributors.",
         "publisher": {
           "@id": "https://apnainsights.com/#organization"
         },
@@ -229,7 +229,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://apnablogserver.onrender.com" crossorigin>
 
-  <!-- Google Identity Services — Sign In with Google -->
+  <!-- Google Identity Services - Sign In with Google -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 
   <!-- Non-blocking font load: media=print trick defers CSS until after paint -->
@@ -243,7 +243,7 @@
 
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6477809641944524" crossorigin="anonymous"></script>
 
-  <!-- Google Analytics 4 — async, does not block render or LCP -->
+  <!-- Google Analytics 4 - async, does not block render or LCP -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-J0EC5NG5M7"></script>
   <script>
     window.dataLayer = window.dataLayer || [];

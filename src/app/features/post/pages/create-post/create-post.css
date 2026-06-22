@@ -155,7 +155,7 @@ form input[type="file"]::file-selector-button {
   padding: 6px 14px;
   border: none;
   border-radius: 6px;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
   color: #ffffff;
   font-size: 13px;
   font-family: 'DM Sans', sans-serif;
@@ -277,7 +277,7 @@ form input[type="file"]::file-selector-button:hover {
   transform: translateY(-1px);
 }
 
-/* Selected state via CSS :has() — no Angular binding needed */
+/* Selected state via CSS :has() - no Angular binding needed */
 .pill-check:has(.pill-check-input:checked) .pill-check-label {
   background: color-mix(in srgb, #43cea2 15%, transparent);
   border-color: #43cea2;
@@ -397,13 +397,13 @@ form input[type="file"]::file-selector-button:hover {
   color: var(--text-primary);
 }
 
-/* submit keeps brand gradient — always white text */
+/* submit keeps brand gradient - always white text */
 .submit-btn {
   flex: 1;
   padding: 13px;
   border: none;
   border-radius: 8px;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
   color: #ffffff;
   font-size: 14px;
   font-weight: 500;
@@ -747,7 +747,7 @@ form input[type="file"]::file-selector-button:hover {
 .inline-img-insert-btn {
   height: 30px;
   padding: 0 14px;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
   color: #fff;
   border: none;
   border-radius: 6px;
@@ -1019,7 +1019,7 @@ form input[type="file"]::file-selector-button:hover {
 }
 
 /* ── Code blocks inside editor ── */
-/* ── Code blocks in editor — matches .code-block visual via ::before header ── */
+/* ── Code blocks in editor - matches .code-block visual via ::before header ── */
 .editor-content pre {
   background: var(--code-bg);
   color: var(--code-text);
@@ -1069,7 +1069,7 @@ form input[type="file"]::file-selector-button:hover {
   content: 'Code';
 }
 
-/* display:block fills the entire pre — no per-line inline backgrounds */
+/* display:block fills the entire pre - no per-line inline backgrounds */
 .editor-content pre code {
   display: block;
   background: none;
@@ -1097,7 +1097,7 @@ form input[type="file"]::file-selector-button:hover {
   position: relative;
   margin: 20px 0;
   padding: 14px 18px 14px 22px;
-  background: linear-gradient(135deg, rgba(67,206,162,0.07) 0%, rgba(24,90,157,0.05) 100%);
+  background: var(--accent-subtle);
   border-left: 4px solid #43cea2;
   border-radius: 0 8px 8px 0;
   font-style: italic;
@@ -1115,7 +1115,7 @@ form input[type="file"]::file-selector-button:hover {
 
 .editor-content hr {
   border: none; height: 2px; margin: 24px auto; width: 60%;
-  background: linear-gradient(90deg, transparent, #43cea2 30%, #185a9d 70%, transparent);
+  background: var(--border);
   border-radius: 2px; opacity: 0.55;
 }
 
@@ -1779,7 +1779,7 @@ form input[type="file"]::file-selector-button:hover {
 .tbl-insert-btn {
   display: flex; align-items: center; justify-content: center; gap: 6px;
   height: 34px; border: none; border-radius: 8px;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
   color: #fff; font-size: 12.5px; font-weight: 600;
   font-family: inherit; cursor: pointer; transition: opacity .15s;
 }

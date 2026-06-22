@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════
-   settings.css — uses CSS variables from styles.css
+   settings.css - uses CSS variables from styles.css
    Dark/light is handled entirely by [data-theme] on <html>
    ═══════════════════════════════════════════════════ */
 
@@ -11,7 +11,7 @@
   color: var(--text-primary);
 }
 
-/* Mobile section title above nav pills — hidden on desktop */
+/* Mobile section title above nav pills - hidden on desktop */
 .mobile-section-header { display: none; }
 
 /* ═══════════════════════════════════════════════════
@@ -322,7 +322,7 @@
   height: 68px;
   border-radius: 50%;
   padding: 3px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+  background: var(--accent);
   flex-shrink: 0;
 }
 
@@ -792,7 +792,7 @@
 }
 
 .toggle-switch.on {
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
 }
 
 .switch-thumb {
@@ -824,7 +824,7 @@
   padding: 0;
 }
 
-.theme-pill.dark { background: linear-gradient(135deg, #43cea2, #185a9d); }
+.theme-pill.dark { background: var(--accent); }
 
 .theme-pill.large {
   width: 56px;
@@ -1028,7 +1028,7 @@
 .delete-confirm-box strong { color: var(--danger); }
 
 /* ═══════════════════════════════════════════════════
-   RESPONSIVE — MOBILE (complete, single source of truth)
+   RESPONSIVE - MOBILE (complete, single source of truth)
    ═══════════════════════════════════════════════════ */
 @media (max-width: 768px) {
 
@@ -1078,7 +1078,7 @@
     line-height: 1.2;
   }
 
-  /* Hide section heading from content area — now shown above the slider */
+  /* Hide section heading from content area - now shown above the slider */
   .section-heading {
     display: none;
   }
@@ -1100,7 +1100,7 @@
   }
   .sidebar-nav::-webkit-scrollbar { display: none; }
 
-  /* Each tab pill — hard-reset every desktop property */
+  /* Each tab pill - hard-reset every desktop property */
   .nav-item {
     flex: 0 0 auto !important;
     display: inline-flex !important;
@@ -1127,14 +1127,14 @@
   .nav-item::after { display: none !important; }
 
   .nav-item.active {
-    background: linear-gradient(135deg, #43cea2, #185a9d) !important;
+    background: var(--accent) !important;
     border-color: transparent !important;
     color: #fff !important;
     box-shadow: 0 3px 12px rgba(67,206,162,0.4);
   }
 
   .nav-item.danger-item.active {
-    background: linear-gradient(135deg, #f87171, #b91c1c) !important;
+    background: #dc2626 !important;
     border-color: transparent !important;
     color: #fff !important;
     box-shadow: 0 3px 12px rgba(239,68,68,0.35);
@@ -1157,9 +1157,9 @@
     scroll-margin-top: calc(90px + 8px);
   }
 
-  /* section-heading is hidden on mobile — shown above slider via .mobile-section-header */
+  /* section-heading is hidden on mobile - shown above slider via .mobile-section-header */
 
-  /* .section-heading is hidden on mobile — title shown above slider via .mobile-section-header */
+  /* .section-heading is hidden on mobile - title shown above slider via .mobile-section-header */
   .mobile-section-name.danger-section {
     color: var(--danger) !important;
   }
@@ -1171,7 +1171,7 @@
     gap: 1.25rem;
   }
 
-  /* Avatar — centered column */
+  /* Avatar - centered column */
   .avatar-area {
     flex-direction: column;
     align-items: center;
@@ -1304,7 +1304,7 @@
   .lang-label  { color: var(--text-primary) !important; }
   .lang-native { color: var(--text-muted) !important; }
 
-  /* ── Toggle switches — hard-clamp dimensions (override global 44px min rule) ── */
+  /* ── Toggle switches - hard-clamp dimensions (override global 44px min rule) ── */
   .toggle-switch {
     width: 50px !important;
     height: 28px !important;
@@ -1729,10 +1729,10 @@
 
 
 /* ══════════════════════════════════════════════════════
-   MODERN REDESIGN — Settings page
+   MODERN REDESIGN - Settings page
 ══════════════════════════════════════════════════════ */
 
-/* Sidebar nav item — gradient active stripe + tinted bg */
+/* Sidebar nav item - gradient active stripe + tinted bg */
 .nav-item {
   border-radius: 10px;
   margin: 0 10px;
@@ -1748,26 +1748,23 @@
   left: 0; top: 50%;
   transform: translateY(-50%);
   width: 3px; height: 60%;
-  background: linear-gradient(180deg, #43cea2, #185a9d);
+  background: var(--accent);
   border-radius: 0 3px 3px 0;
 }
 
-/* Section heading gradient text — desktop only */
+/* Section heading gradient text - desktop only */
 @media (min-width: 769px) {
   .section-heading h1 {
-    background: linear-gradient(135deg, var(--text-primary) 50%, #43cea2);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: var(--text-primary);
     font-size: 22px;
     letter-spacing: -0.4px;
   }
 }
 
-/* Avatar ring — gradient border */
+/* Avatar ring - gradient border */
 .avatar-ring {
   padding: 3px;
-  background: linear-gradient(135deg, #43cea2, #7c3aed, #185a9d);
+  background: var(--accent);
   border-radius: 50%;
   display: inline-block;
 }
@@ -1776,19 +1773,15 @@
   border-radius: 50%;
 }
 
-/* Profile card — subtle gradient tint */
+/* Profile card */
 .profile-card {
-  background: linear-gradient(
-    135deg,
-    color-mix(in srgb, #43cea2 3%, var(--bg-surface)) 0%,
-    var(--bg-surface) 100%
-  );
+  background: var(--bg-surface);
   border-radius: 16px;
 }
 
-/* Role badge — gradient */
+/* Role badge - gradient */
 .role-badge {
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
   color: #fff;
   border-radius: 20px;
   padding: 3px 12px;
@@ -1798,9 +1791,9 @@
   text-transform: capitalize;
 }
 
-/* Primary button — gradient */
+/* Primary button - gradient */
 .btn-primary {
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
   color: #fff;
   border: none;
   border-radius: 10px;
@@ -1818,7 +1811,7 @@
   box-shadow: 0 4px 18px rgba(0,0,0,0.08);
 }
 
-/* Toggle ON — gradient (already set in base toggle-switch.on above) */
+/* Toggle ON - gradient (already set in base toggle-switch.on above) */
 
 /* Theme option selected ring */
 .theme-option.selected {
@@ -1847,7 +1840,7 @@
   outline: none;
 }
 
-/* Info items — cleaner label/value hierarchy */
+/* Info items - cleaner label/value hierarchy */
 .info-item {
   padding-bottom: 14px;
   border-bottom: 1px solid var(--border);

@@ -20,12 +20,13 @@ import { MobileBottomNav } from '../../../../shared/mobile-bottom-nav/mobile-bot
 const FALLBACK_CATEGORIES: string[] = [
   'Update', 'News', 'Sports', 'Entertainment', 'Health', 'Technology', 'Business',
   'Lifestyle', 'Education', 'Exercise', 'Cooking', 'Social', 'Quotes', 'Village',
+  'Career', 'AI', 'Finance', 'Productivity',
 ];
 
 const CATEGORY_DESCRIPTIONS: Record<string, { description: string; intro: string }> = {
   'News':          {
     description: 'Stay updated with the latest news, current events, and breaking stories from across India and the world, written by real community journalists on ApnaInsights.',
-    intro:       'Real news and current events written by community voices — from local happenings to national headlines, unfiltered and authentic.'
+    intro:       'Real news and current events written by community voices - from local happenings to national headlines, unfiltered and authentic.'
   },
   'Update':        {
     description: 'Platform announcements, new features, and community news from the ApnaInsights team. Stay informed about what\'s new on the platform.',
@@ -33,7 +34,7 @@ const CATEGORY_DESCRIPTIONS: Record<string, { description: string; intro: string
   },
   'Technology':    {
     description: 'Explore technology trends, software reviews, AI insights, coding tutorials, and tech innovations written by Indian developers and tech enthusiasts on ApnaInsights.',
-    intro:       'From AI breakthroughs to coding tutorials and gadget reviews — technology stories written by developers and enthusiasts who live and breathe tech.'
+    intro:       'From AI breakthroughs to coding tutorials and gadget reviews - technology stories written by developers and enthusiasts who live and breathe tech.'
   },
   'Health':        {
     description: 'Discover health tips, wellness advice, fitness guides, mental health stories, and medical insights from real people sharing their health journeys on ApnaInsights.',
@@ -41,11 +42,11 @@ const CATEGORY_DESCRIPTIONS: Record<string, { description: string; intro: string
   },
   'Sports':        {
     description: 'Read cricket, football, kabaddi, and all sports stories, match analyses, player profiles, and sports news from passionate fans on ApnaInsights.',
-    intro:       'Cricket, football, kabaddi and beyond — match analyses, player profiles, and sports opinions from fans who live for the game.'
+    intro:       'Cricket, football, kabaddi and beyond - match analyses, player profiles, and sports opinions from fans who live for the game.'
   },
   'Village':       {
-    description: 'Real stories from rural India — village life, farming wisdom, local culture, traditions, and authentic voices from the heartland of India on ApnaInsights.',
-    intro:       'Authentic stories from rural India — farming wisdom, village traditions, local culture, and the heartbeat of communities you rarely hear about.'
+    description: 'Real stories from rural India - village life, farming wisdom, local culture, traditions, and authentic voices from the heartland of India on ApnaInsights.',
+    intro:       'Authentic stories from rural India - farming wisdom, village traditions, local culture, and the heartbeat of communities you rarely hear about.'
   },
   'Business':      {
     description: 'Entrepreneurship, startup stories, career advice, investment tips, and business insights from Indian professionals, founders and working professionals on ApnaInsights.',
@@ -77,7 +78,23 @@ const CATEGORY_DESCRIPTIONS: Record<string, { description: string; intro: string
   },
   'Quotes':        {
     description: 'Inspiring quotes, motivational sayings, life wisdom, and thought-provoking words with context and reflection from writers across India on ApnaInsights.',
-    intro:       'Inspiring quotes and motivational wisdom — not just words, but the stories and reflections behind them from writers across India.'
+    intro:       'Inspiring quotes and motivational wisdom - not just words, but the stories and reflections behind them from writers across India.'
+  },
+  'Career':        {
+    description: 'Job interviews, salary negotiations, resume tips, career switches, and real workplace stories from Indian professionals sharing what actually works in India\'s job market.',
+    intro:       'Real career advice for the Indian job market - from cracking TCS to negotiating your hike at an MNC, written by people who have been there.'
+  },
+  'AI':            {
+    description: 'Practical guides on using AI tools like ChatGPT, Gemini, and Copilot in your work, plus honest takes on how artificial intelligence is changing jobs in India.',
+    intro:       'How to actually use AI in your daily work - practical guides on the tools, prompts, and workflows that Indian professionals are using right now.'
+  },
+  'Finance':       {
+    description: 'Personal finance tips, tax-saving strategies, investment guides, and money management advice written by Indian professionals for the Indian financial context.',
+    intro:       'Your salary, your taxes, your investments - practical personal finance advice grounded in Indian reality, not Western assumptions.'
+  },
+  'Productivity':  {
+    description: 'Time management, work-from-home tips, focus techniques, tools, and real productivity systems that working professionals in India actually use and recommend.',
+    intro:       'Not generic hustle advice - real systems, tools, and habits that working professionals in India use to get more done without burning out.'
   },
 };
 
@@ -151,11 +168,11 @@ export class CategoryPage implements OnInit, OnDestroy {
     return words.length >= 12;
   }
 
-  // Same threshold as applyRobotsForCount() — don't show an ad on a page
+  // Same threshold as applyRobotsForCount() - don't show an ad on a page
   // that's mostly empty (AdSense low-value-content / ad-density risk).
   isThinPage = computed(() => !this.isLoading() && this.posts().length < 5);
 
-  // Renders posts in batches instead of the full (sometimes 100s-long) list —
+  // Renders posts in batches instead of the full (sometimes 100s-long) list -
   // large categories were producing multi-MB prerendered HTML. All posts are
   // already in memory (allPostsCache), so "Load more" is instant, no refetch.
   private readonly PAGE_SIZE = 24;
@@ -169,7 +186,7 @@ export class CategoryPage implements OnInit, OnDestroy {
 
   currentYear = new Date().getFullYear();
 
-  // Tracks which .adsbygoogle <ins> elements have already been pushed —
+  // Tracks which .adsbygoogle <ins> elements have already been pushed -
   // category route params can re-fire (e.g. switching categories), and
   // re-pushing an already-initialised <ins> throws "already have ads in them".
   private pushedAds = new WeakSet<Element>();
@@ -223,7 +240,7 @@ export class CategoryPage implements OnInit, OnDestroy {
       return;
     }
 
-    // Direct navigation / hard refresh — fetch all pages ourselves
+    // Direct navigation / hard refresh - fetch all pages ourselves
     this.isLoading.set(true);
     this.postService.getAllPublished()
       .pipe(
@@ -241,7 +258,7 @@ export class CategoryPage implements OnInit, OnDestroy {
 
   // Mark thin category pages noindex so they don't hurt AdSense review.
   // Categories with fewer than 5 published posts don't have enough content
-  // to provide value to a visitor — indexing them works against us.
+  // to provide value to a visitor - indexing them works against us.
   private applyRobotsForCount(): void {
     const count = this.posts().length;
     // Quotes pages are thin by nature (quote compilations add little unique value)
@@ -261,7 +278,7 @@ export class CategoryPage implements OnInit, OnDestroy {
     this.titleSvc.setTitle(`${name} Guides & Insights | ApnaInsights`);
     this.meta.updateTag({ name: 'description',        content: desc });
     // Fail safe to noindex until applyRobotsForCount() confirms the category
-    // has enough posts — avoids a crawler ever seeing `index` on an
+    // has enough posts - avoids a crawler ever seeing `index` on an
     // empty/thin category page (soft-404 risk).
     this.meta.updateTag({ name: 'robots',             content: 'noindex, follow' });
     this.meta.updateTag({ property: 'og:title',       content: `${name} Guides & Insights | ApnaInsights` });
@@ -277,7 +294,7 @@ export class CategoryPage implements OnInit, OnDestroy {
     }
     canonical.setAttribute('href', url);
 
-    // Structured data — @graph format (valid for multiple types in one tag)
+    // Structured data - @graph format (valid for multiple types in one tag)
     const graph = {
       '@context': 'https://schema.org',
       '@graph': [
@@ -312,7 +329,7 @@ export class CategoryPage implements OnInit, OnDestroy {
     el.textContent = JSON.stringify(graph);
   }
 
-  // Called after posts load — injects ItemList for the visible posts
+  // Called after posts load - injects ItemList for the visible posts
   private injectItemList(posts: Post[]): void {
     if (!posts.length) return;
     const url     = `${environment.siteUrl}/category/${this.categorySlug()}`;

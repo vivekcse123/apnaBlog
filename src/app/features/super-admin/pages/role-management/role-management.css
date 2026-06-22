@@ -30,7 +30,7 @@
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 1px;
-  background: linear-gradient(135deg, #f59e0b, #d97706);
+  background: #d97706;
   color: #fff;
   flex-shrink: 0;
   box-shadow: 0 2px 8px rgba(245, 158, 11, 0.35);
@@ -165,7 +165,7 @@
 .user-avatar-sm {
   width: 34px; height: 34px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  background: #7c3aed;
   color: #fff;
   font-size: 12px;
   font-weight: 700;
@@ -295,7 +295,7 @@
 
 .btn-confirm {
   flex: 1; padding: 10px; border-radius: 8px;
-  background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff;
+  background: #d97706; color: #fff;
   border: none; font-size: 14px; font-weight: 600;
   font-family: inherit; cursor: pointer;
   transition: opacity 0.2s, transform 0.2s;
@@ -330,7 +330,7 @@
   .role-summary { grid-template-columns: repeat(2, 1fr); gap: 10px; }
   .rs-count { font-size: 22px; }
 
-  /* ── Card layout — hide table chrome, stack each row as a card ── */
+  /* ── Card layout - hide table chrome, stack each row as a card ── */
   .rm-table-wrap { background: transparent; border: none; box-shadow: none; border-radius: 0; }
 
   .rm-table thead { display: none; }
@@ -352,14 +352,14 @@
 
   .rm-table td { padding: 4px 0; border: none; }
 
-  /* User cell — keep flex row */
+  /* User cell - keep flex row */
   .cell-user { gap: 10px; margin-bottom: 6px; }
   .user-name-txt { font-size: 14px; }
 
   /* Email */
   .cell-email { font-size: 12px; color: var(--text-muted); padding-left: 44px; }
 
-  /* Role & Status — inline on same row */
+  /* Role & Status - inline on same row */
   .cell-role,
   .cell-status { display: inline-flex; padding-left: 44px; }
   .cell-status { margin-left: 10px; }
@@ -423,7 +423,7 @@
 }
 
 .pg-btn.pg-active {
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
   border-color: transparent;
   color: #fff;
   cursor: default;

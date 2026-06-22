@@ -26,7 +26,7 @@ interface Feature {
         <!-- Always-visible top accent bar -->
         <div class="wm-top-bar"></div>
 
-        <!-- Always-visible header — X button never scrolls away -->
+        <!-- Always-visible header - X button never scrolls away -->
         <div class="wm-head">
           <a class="app-logo" routerLink="/" (click)="close.emit()">
             <img class="app-logo-img" src="/logo-96.png" alt="ApnaInsights" />
@@ -39,7 +39,7 @@ interface Feature {
         <div class="wm-body" (click)="$event.stopPropagation()">
 
           <h2 id="wm-title" class="wm-title">Welcome to ApnaInsights</h2>
-          <p class="wm-sub">India's practical knowledge platform — expert guides, real insights.</p>
+          <p class="wm-sub">India's practical knowledge platform - expert guides, real insights.</p>
 
           <ul class="wm-features" role="list">
             @for (f of features; track f.label) {
@@ -57,7 +57,7 @@ interface Feature {
 
         </div>
 
-        <!-- Always-visible footer — buttons never scroll away -->
+        <!-- Always-visible footer - buttons never scroll away -->
         <div class="wm-footer">
           <button class="wm-btn-secondary" (click)="close.emit()">Maybe later</button>
           <button class="wm-btn-primary" (click)="close.emit()">Start exploring →</button>
@@ -82,7 +82,7 @@ interface Feature {
       to   { opacity: 1; }
     }
 
-    /* ── Modal shell — flex column so header+footer stay pinned ── */
+    /* ── Modal shell - flex column so header+footer stay pinned ── */
     .wm-modal {
       background: var(--bg-surface);
       border: 1px solid var(--border);
@@ -104,14 +104,14 @@ interface Feature {
       to   { opacity: 1; transform: translateY(0) scale(1); }
     }
 
-    /* ── Top gradient accent — always at top, never scrolls ── */
+    /* ── Top gradient accent - always at top, never scrolls ── */
     .wm-top-bar {
       flex-shrink: 0;
       height: 4px;
       background: linear-gradient(90deg, #43cea2, #185a9d);
     }
 
-    /* ── Header — pinned, never scrolls away ── */
+    /* ── Header - pinned, never scrolls away ── */
     .wm-head {
       flex-shrink: 0;
       display: flex;
@@ -208,7 +208,7 @@ interface Feature {
       line-height: 1.45; margin: 0;
     }
 
-    /* ── Footer — pinned, never scrolls away ── */
+    /* ── Footer - pinned, never scrolls away ── */
     .wm-footer {
       flex-shrink: 0;
       display: flex; justify-content: flex-end; align-items: center;
@@ -284,7 +284,7 @@ export class WelcomeModal {
       icon: '◈',
       colorClass: 'teal',
       label: 'Everything in one place',
-      desc: 'Browse stories across 12 categories — from Sports to Village life.',
+      desc: 'Browse stories across 12 categories - from Sports to Village life.',
     },
     {
       icon: '⚿',
@@ -302,7 +302,7 @@ export class WelcomeModal {
       icon: '✦',
       colorClass: 'purple',
       label: 'Easy-to-use interface',
-      desc: 'Search, filters, bookmarks and keyboard shortcuts — designed to stay out of your way.',
+      desc: 'Search, filters, bookmarks and keyboard shortcuts - designed to stay out of your way.',
     },
   ];
 

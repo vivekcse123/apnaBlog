@@ -64,7 +64,7 @@ export class SearchPage implements OnInit {
 
   hasQuery = computed(() => this.query().trim().length > 0);
 
-  // Tracks which .adsbygoogle <ins> elements have already been pushed —
+  // Tracks which .adsbygoogle <ins> elements have already been pushed -
   // avoids re-pushing an already-initialised <ins> ("already have ads in
   // them") if pushAds() is ever called more than once.
   private pushedAds = new WeakSet<Element>();
@@ -83,10 +83,10 @@ export class SearchPage implements OnInit {
   }
 
   ngOnInit(): void {
-    this.titleSvc.setTitle('Search Guides & Articles — ApnaInsights');
+    this.titleSvc.setTitle('Search Guides & Articles - ApnaInsights');
     setTimeout(() => this.pushAds(), 500);
     this.meta.updateTag({ name: 'description', content: 'Search thousands of articles on ApnaInsights.' });
-    // robots.txt no longer disallows /search — that previously blocked Google
+    // robots.txt no longer disallows /search - that previously blocked Google
     // from crawling this page at all, so it could never see this noindex tag
     // and properly drop already-indexed /search?q=... URLs from the index.
     this.meta.updateTag({ name: 'robots', content: 'noindex, follow' });
@@ -105,7 +105,7 @@ export class SearchPage implements OnInit {
         });
       });
 
-    // Autocomplete suggestions — separate stream with faster debounce
+    // Autocomplete suggestions - separate stream with faster debounce
     this.suggestInput$
       .pipe(
         debounceTime(150),

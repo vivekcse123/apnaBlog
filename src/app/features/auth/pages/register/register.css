@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════
-   REGISTER PAGE — Slides in from RIGHT
+   REGISTER PAGE - Slides in from RIGHT
    Form panel | Brand panel
    ═══════════════════════════════════════════ */
 
@@ -67,7 +67,7 @@
   -webkit-mask-image: radial-gradient(ellipse 75% 75% at 50% 50%, black 20%, transparent 100%);
 }
 
-/* ── Card — slides in from RIGHT for register ── */
+/* ── Card - slides in from RIGHT for register ── */
 .login-wrap {
   position: relative;
   z-index: 1;
@@ -109,7 +109,7 @@
 .brand-panel {
   width: 44%;
   flex-shrink: 0;
-  background: linear-gradient(160deg, #071e42 0%, #0c3366 45%, #0d5e46 100%);
+  background: #111827;
   padding: 52px 44px;
   position: relative;
   overflow: hidden;
@@ -119,9 +119,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(circle at 90% 15%, rgba(24, 90, 157, 0.28) 0%, transparent 55%),
-    radial-gradient(circle at 10% 85%, rgba(67, 206, 162, 0.22) 0%, transparent 55%);
+  background: none;
   z-index: 0;
 }
 
@@ -132,11 +130,7 @@
   top: 0; left: 0;
   width: 1px;
   height: 100%;
-  background: linear-gradient(to bottom,
-    transparent 0%,
-    rgba(67, 206, 162, 0.5) 40%,
-    rgba(67, 206, 162, 0.5) 60%,
-    transparent 100%);
+  background: var(--border);
 }
 
 .brand-content {
@@ -173,9 +167,9 @@
 }
 
 .brand-name {
-  font-family: 'Playfair Display', serif;
+  font-family: 'DM Sans', sans-serif;
   font-size: 22px;
-  font-weight: 700;
+  font-weight: 800;
   color: #ffffff;
   letter-spacing: 0.2px;
 }
@@ -208,18 +202,16 @@
 }
 
 .feature-dot {
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   border-radius: 8px;
   flex-shrink: 0;
-  background: rgba(67, 206, 162, 0.2);
-  border: 1px solid rgba(67, 206, 162, 0.45);
+  background: rgba(67, 206, 162, 0.15);
+  border: 1px solid rgba(67, 206, 162, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 11px;
   color: #43cea2;
-  font-weight: 700;
   margin-top: 1px;
 }
 
@@ -235,28 +227,6 @@
   font-size: 12px;
   color: rgba(255, 255, 255, 0.58);
   line-height: 1.5;
-}
-
-.brand-quote {
-  background: rgba(255, 255, 255, 0.06);
-  border-left: 3px solid rgba(67, 206, 162, 0.65);
-  border-radius: 0 10px 10px 0;
-  padding: 14px 18px;
-}
-
-.brand-quote p {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.82);
-  line-height: 1.65;
-  font-style: italic;
-}
-
-.brand-quote cite {
-  display: block;
-  font-size: 11.5px;
-  color: rgba(255, 255, 255, 0.45);
-  font-style: normal;
-  margin-top: 8px;
 }
 
 .brand-stats {
@@ -456,7 +426,7 @@ form input::placeholder { color: var(--text-muted); }
   padding: 13px;
   border: none;
   border-radius: 12px;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
   color: #ffffff;
   font-size: 15px;
   font-weight: 600;
@@ -603,7 +573,7 @@ form input::placeholder { color: var(--text-muted); }
 }
 
 /* ══════════════════════════════════════════
-   MOBILE — complete redesign ≤640px
+   MOBILE - complete redesign ≤640px
    ══════════════════════════════════════════ */
 @media (max-width: 640px) {
 
@@ -621,7 +591,7 @@ form input::placeholder { color: var(--text-muted); }
   .login-page {
     padding: 0;
     height: 100dvh;
-    background: linear-gradient(160deg, #0d5e46 0%, #0c3366 55%, #071e42 100%);
+    background: var(--bg-base);
     align-items: stretch;
     flex-direction: column;
     justify-content: flex-start;
@@ -647,9 +617,9 @@ form input::placeholder { color: var(--text-muted); }
     animation: none;
   }
 
-  /* ── Brand strip — horizontal ── */
+  /* ── Brand strip - horizontal ── */
   .brand-panel {
-    background: transparent !important;
+    background: #111827 !important;
     width: 100%;
     flex: none;
     padding: calc(env(safe-area-inset-top, 0px) + 20px) 22px 18px;
@@ -723,7 +693,7 @@ form input::placeholder { color: var(--text-muted); }
   .form-header h2 { font-size: 22px; font-weight: 700; letter-spacing: -0.3px; margin-bottom: 4px; }
   .form-header p  { font-size: 13.5px; }
 
-  /* ── No labels — placeholder-only inputs ── */
+  /* ── No labels - placeholder-only inputs ── */
   .field-group label { display: none; }
   .field-group { gap: 0; }
 

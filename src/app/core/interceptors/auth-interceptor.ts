@@ -4,7 +4,7 @@ import { catchError, throwError } from 'rxjs';
 import { Router } from '@angular/router';
 import { Auth } from '../services/auth';
 
-let sessionExpiredToastShown = false; // module-level flag — one toast per expiry
+let sessionExpiredToastShown = false; // module-level flag - one toast per expiry
 
 export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, next: HttpHandlerFn) => {
   const authService = inject(Auth);
@@ -21,7 +21,7 @@ export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, ne
         (error.status === 403 && authService.isTokenExpired());
 
       if (isExpiry && authService.isAuthorized()) {
-        // Only show toast once per session expiry — not for every concurrent 401
+        // Only show toast once per session expiry - not for every concurrent 401
         if (!sessionExpiredToastShown) {
           sessionExpiredToastShown = true;
           showSessionToast();

@@ -48,7 +48,7 @@
   position: absolute;
   inset: 34px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
   animation: breathe 1.6s ease-in-out infinite;
 }
 
@@ -132,7 +132,7 @@
   border-radius: 6px;
 }
 
-/* Shimmer animation — applied to all skeleton elements */
+/* Shimmer animation - applied to all skeleton elements */
 .skeleton-img,
 .skeleton-line,
 .skeleton-pill {

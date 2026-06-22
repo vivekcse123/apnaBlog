@@ -29,7 +29,7 @@
         <div class="sv-watermark">ApnaInsights</div>
         @if (s.videoType === 'youtube' && s.youtubeId) {
           @if (ytPlaying()) {
-            <!-- iframe mounts only after tap — autoplay=1 so YouTube idle UI never shows -->
+            <!-- iframe mounts only after tap - autoplay=1 so YouTube idle UI never shows -->
             <iframe class="sv-iframe"
               [src]="safeEmbedUrl(s.youtubeId)"
               allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
@@ -58,7 +58,7 @@
         }
       </div>
 
-      <!-- ── Short metadata — rich text for AdSense & SEO ── -->
+      <!-- ── Short metadata - rich text for AdSense & SEO ── -->
       <div class="sv-meta">
         <div class="sv-meta-top">
           <span class="sv-cat">{{ s.category }}</span>

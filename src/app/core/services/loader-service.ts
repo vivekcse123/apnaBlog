@@ -25,7 +25,7 @@ export class LoaderService {
     if (this._count === 0) this.loading.set(false);
   }
 
-  /** Force-hide regardless of in-flight count — use on component destroy. */
+  /** Force-hide regardless of in-flight count - use on component destroy. */
   forceHide(): void {
     this._count = 0;
     this.loading.set(false);

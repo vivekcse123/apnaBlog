@@ -28,6 +28,7 @@ export interface TopicCard {
 const FALLBACK_CATEGORIES: string[] = [
   'Update', 'News', 'Sports', 'Entertainment', 'Health', 'Technology', 'Business',
   'Lifestyle', 'Education', 'Exercise', 'Cooking', 'Social', 'Quotes', 'Village',
+  'Career', 'AI', 'Finance', 'Productivity',
 ];
 
 const CATEGORY_META: Record<string, { emoji: string; description: string; color: string }> = {
@@ -45,6 +46,10 @@ const CATEGORY_META: Record<string, { emoji: string; description: string; color:
   Quotes:        { emoji: '💬', description: 'Inspiring quotes and motivational wisdom with stories behind them.',        color: '#8B5CF6' },
   News:          { emoji: '📰', description: 'Current events, breaking stories and community journalism.',               color: '#64748B' },
   Update:        { emoji: '📢', description: 'Platform announcements, new features and community highlights.',           color: '#059669' },
+  Career:        { emoji: '💼', description: 'Job interviews, salary tips, career switches and real workplace stories.',  color: '#0F766E' },
+  AI:            { emoji: '🤖', description: 'Practical guides on ChatGPT, Gemini and AI tools for Indian professionals.',color: '#7C3AED' },
+  Finance:       { emoji: '💰', description: 'Personal finance, tax-saving, investments and money advice for India.',     color: '#CA8A04' },
+  Productivity:  { emoji: '⚡', description: 'Time management, focus systems and tools that working professionals use.',  color: '#0369A1' },
 };
 
 @Component({
@@ -126,7 +131,7 @@ export class AllTopicsPage implements OnInit, OnDestroy {
 
   private setMeta(): void {
     const url  = `${environment.siteUrl}/topics`;
-    const desc = 'Explore all topics on ApnaInsights — Technology, Health, Sports, Business, Lifestyle, Education, Entertainment and more. Find stories that matter to you.';
+    const desc = 'Explore all topics on ApnaInsights - Technology, Health, Sports, Business, Lifestyle, Education, Entertainment and more. Find stories that matter to you.';
 
     this.titleSvc.setTitle('Explore All Topics | ApnaInsights');
     this.meta.updateTag({ name: 'description',        content: desc });

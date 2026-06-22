@@ -23,7 +23,7 @@ export class VisitorService {
   }
 
   /**
-   * Per-session deduplication — prevents double-counting on hot-reload
+   * Per-session deduplication - prevents double-counting on hot-reload
    * or rapid back/forward navigation to the same path.
    */
   private isDuplicate(path: string): boolean {

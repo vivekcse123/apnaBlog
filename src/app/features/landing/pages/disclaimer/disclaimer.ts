@@ -31,7 +31,7 @@ export class Disclaimer implements OnInit, OnDestroy {
 
     this.meta.updateTag({ property: 'og:type',        content: 'website' });
     this.meta.updateTag({ property: 'og:title',       content: 'Disclaimer | ApnaInsights' });
-    this.meta.updateTag({ property: 'og:description', content: 'ApnaInsights Disclaimer — content is informational only and does not constitute professional advice.' });
+    this.meta.updateTag({ property: 'og:description', content: 'ApnaInsights Disclaimer - content is informational only and does not constitute professional advice.' });
     this.meta.updateTag({ property: 'og:url',         content: environment.siteUrl + '/disclaimer' });
 
     let canonical = this.document.querySelector('link[rel="canonical"]') as HTMLLinkElement;

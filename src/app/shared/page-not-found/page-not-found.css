@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════════════
    page-not-found.css
-   Uses CSS variables from styles.css — dark/light
+   Uses CSS variables from styles.css - dark/light
    handled entirely by [data-theme] on <html>.
    ═══════════════════════════════════════════════════ */
 
@@ -90,10 +90,7 @@
   font-family: 'Playfair Display', 'Georgia', serif;
   font-size: clamp(100px, 18vw, 160px);
   font-weight: 700;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--accent-text);
   letter-spacing: -4px;
   animation: digitIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
@@ -118,7 +115,7 @@
   border: 6px solid transparent;
   background:
     linear-gradient(var(--bg-base), var(--bg-base)) padding-box,
-    linear-gradient(135deg, #43cea2, #185a9d) border-box;
+    var(--accent) border-box;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -127,10 +124,7 @@
 
 .zero-icon {
   font-size: clamp(28px, 5vw, 48px);
-  background: linear-gradient(135deg, #43cea2, #185a9d);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--accent-text);
   animation: counterSpin 6s linear infinite;
 }
 
@@ -188,7 +182,7 @@
   gap: 6px;
   padding: 12px 28px;
   border-radius: 10px;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
   color: #ffffff;
   font-size: 14px;
   font-weight: 600;

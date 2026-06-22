@@ -154,7 +154,7 @@ export class SponsorDashboard implements OnInit {
   }
 
   daysLeftLabel(item: SponsoredItem): string {
-    if (!item.sponsoredUntil) return '—';
+    if (!item.sponsoredUntil) return '-';
     const diff = Math.ceil((new Date(item.sponsoredUntil).getTime() - Date.now()) / 86_400_000);
     if (diff < 0)  return 'Expired';
     if (diff === 0) return 'Expires today';
@@ -187,7 +187,7 @@ export class SponsorDashboard implements OnInit {
       i.clickAnalytics?.uniqueClicks ?? 0,
       i.clickAnalytics?.ctr?.toFixed(2) ?? '0.00',
       this.formatDate(i.createdAt),
-      i.sponsoredUntil ? this.formatDate(i.sponsoredUntil) : '—',
+      i.sponsoredUntil ? this.formatDate(i.sponsoredUntil) : '-',
       this.daysLeftLabel(i),
     ]);
 

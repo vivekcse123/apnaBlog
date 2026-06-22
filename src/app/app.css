@@ -12,7 +12,7 @@
   text-decoration: none;
   /* translateY (not a negative `top`) so hiding/showing is independent of any
      ancestor that establishes its own containing block (sticky/transformed
-     headers) — keeps the link reliably off-screen until focused. */
+     headers) - keeps the link reliably off-screen until focused. */
   transform: translateY(-150%);
   transition: transform 0.15s ease;
 }

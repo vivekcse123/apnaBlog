@@ -21,7 +21,7 @@ const ALLOWED_ATTRIBUTES = {
  * Sanitizes rich-text post/comment HTML before it's marked trusted via
  * bypassSecurityTrustHtml(). Allows the formatting produced by the post
  * editor (tables, code blocks, inline images/figures) while stripping
- * scripts, event handlers, and other XSS vectors. Pure-JS — safe to run
+ * scripts, event handlers, and other XSS vectors. Pure-JS - safe to run
  * both server-side (SSR) and in the browser.
  */
 export function sanitizeHtml(html: string): string {

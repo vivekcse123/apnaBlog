@@ -59,7 +59,7 @@ export class UploadService {
       const token  = localStorage.getItem('token');
       let xhr: XMLHttpRequest | null = null;
 
-      // Step 1 — fetch signing params from our backend (tiny request, no file involved)
+      // Step 1 - fetch signing params from our backend (tiny request, no file involved)
       const sigXhr = new XMLHttpRequest();
       sigXhr.open('GET', sigUrl);
       if (token) sigXhr.setRequestHeader('Authorization', `Bearer ${token}`);
@@ -74,7 +74,7 @@ export class UploadService {
         try { sig = JSON.parse(sigXhr.responseText); }
         catch { observer.error({ error: { message: 'Invalid signature response.' } }); return; }
 
-        // Step 2 — upload the file directly to Cloudinary (single hop)
+        // Step 2 - upload the file directly to Cloudinary (single hop)
         const formData = new FormData();
         formData.append('file',      file);
         formData.append('api_key',   sig.api_key);

@@ -49,44 +49,44 @@
       <div class="hero-grid"></div>
     </div>
     <div class="hero-content">
-      <span class="hero-eyebrow" role="doc-subtitle">✦ India's Practical Knowledge Platform</span>
+      <span class="hero-eyebrow" role="doc-subtitle">✦ India's Career & Tech Knowledge Platform</span>
       <h1 class="hero-title" id="hero-heading">
-        India's Trusted <span class="gradient-text">Knowledge Community.</span>
+        Where Indian professionals <span class="gradient-text">learn and grow.</span>
       </h1>
       <p class="hero-sub">
-        ApnaInsights is India's practical knowledge platform — expert guides on
-        <strong>Technology, Career, Health, Business, Lifestyle, Sports, Education</strong>
-        and more across 14 topics. Written by contributors who know their subject,
-        for readers who want real answers.
+        ApnaInsights publishes practical guides on
+        <strong>Technology, Careers, AI, Business, and Digital Skills</strong> -
+        written by working professionals who have done it, not AI-generated filler.
+        Free for every reader, forever.
       </p>
 
       <div class="hero-cta" role="group" aria-label="Get started actions">
-        <button class="hero-cta-primary" routerLink="/auth/register" aria-label="Start writing for free on ApnaInsights">
-          ✦ Start Writing Free
+        <button class="hero-cta-primary" routerLink="/topics" aria-label="Browse all articles on ApnaInsights">
+          ✦ Explore Articles
         </button>
-        <button class="hero-cta-secondary" routerLink="/" aria-label="Explore 14 categories on ApnaInsights">
-          Explore 14 Topics →
+        <button class="hero-cta-secondary" routerLink="/auth/register" aria-label="Start writing for free on ApnaInsights">
+          Write for Free →
         </button>
       </div>
 
       <div class="hero-stats" role="region" aria-label="Platform statistics">
         <div class="stat-item">
           @if (totalStories() !== null) {
-            <span class="stat-num">{{ totalStories() }}</span>
+            <span class="stat-num">{{ totalStories() }}+</span>
           } @else {
-            <span class="stat-num stat-num--loading" aria-label="Loading">—</span>
+            <span class="stat-num stat-num--loading" aria-label="Loading">-</span>
           }
-          <span class="stat-label">Stories Published</span>
+          <span class="stat-label">Articles Published</span>
         </div>
         <div class="stat-divider" aria-hidden="true"></div>
         <div class="stat-item">
-          <span class="stat-num">14</span>
-          <span class="stat-label">Categories</span>
+          <span class="stat-num">3</span>
+          <span class="stat-label">Core Topics</span>
         </div>
         <div class="stat-divider" aria-hidden="true"></div>
         <div class="stat-item">
           <span class="stat-num">Free</span>
-          <span class="stat-label">Always Free</span>
+          <span class="stat-label">No Paywall, Ever</span>
         </div>
       </div>
     </div>
@@ -96,22 +96,44 @@
     <div class="section-inner">
       <h2 id="trust-heading" class="visually-hidden">What our community says</h2>
       <div class="trust-bar">
-        <div class="trust-label">✦ Trusted by readers across India</div>
+        <div class="trust-label">✦ Read by professionals across India</div>
         <div class="trust-cats">
-          <span class="trust-cat">📢 Update</span>
-          <span class="trust-cat">📰 News</span>
-          <span class="trust-cat">🏏 Sports</span>
-          <span class="trust-cat">📱 Technology</span>
-          <span class="trust-cat">🌿 Lifestyle</span>
-          <span class="trust-cat">📚 Education</span>
-          <span class="trust-cat">❤️ Health</span>
-          <span class="trust-cat">💼 Business</span>
-          <span class="trust-cat">🎭 Entertainment</span>
-          <span class="trust-cat">🤝 Social</span>
-          <span class="trust-cat">🌾 Village</span>
-          <span class="trust-cat">🍳 Cooking</span>
-          <span class="trust-cat">💬 Quotes</span>
-          <span class="trust-cat">🏋️ Exercise</span>
+          <span class="trust-cat">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            Technology
+          </span>
+          <span class="trust-cat">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
+            Careers
+          </span>
+          <span class="trust-cat">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            AI & Tools
+          </span>
+          <span class="trust-cat">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            Business
+          </span>
+          <span class="trust-cat">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Productivity
+          </span>
+          <span class="trust-cat">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+            Education
+          </span>
+          <span class="trust-cat">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 2l8 4v5c0 5-3.5 9-8 11-4.5-2-8-6-8-11V6l8-4z"/></svg>
+            Finance
+          </span>
+          <span class="trust-cat">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            Remote Work
+          </span>
+          <span class="trust-cat">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Freelancing
+          </span>
         </div>
       </div>
     </div>
@@ -122,37 +144,38 @@
       <div class="section-label-wrap">
         <span class="section-eyebrow">Our Mission</span>
         <h2 class="section-title" id="mission-heading">Why we built<br><span class="gradient-text">ApnaInsights</span></h2>
-        <p class="section-sub">A practical knowledge platform covering 14 topics — built for readers who want real, useful insights from people who know.</p>
+        <p class="section-sub">Most career and tech content online is written for a Western audience. We built ApnaInsights for India - with Indian salaries, Indian companies, and Indian context.</p>
       </div>
       <div class="mission-grid" role="list">
-        <div class="mission-card" role="listitem">
-          <div class="mission-icon" aria-hidden="true">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#43cea2" stroke-width="2" stroke-linejoin="round"/>
-              <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#43cea2" stroke-width="2" stroke-linejoin="round"/>
-            </svg>
-          </div>
-          <h3>14 Topics, One Platform</h3>
-          <p>Technology, Career, Health, Business, Sports, Lifestyle and more — practical knowledge across 14 topics, all in one place. Find expert guides on exactly what you need, when you need it.</p>
-        </div>
-        <div class="mission-card" role="listitem">
-          <div class="mission-icon" aria-hidden="true">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="10" stroke="#185a9d" stroke-width="2"/>
-              <path d="M12 6v6l4 2" stroke="#185a9d" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-          </div>
-          <h3>Always Current & Trending</h3>
-          <p>Career advice, tech guides, health tips, business insights — ApnaInsights surfaces the most useful, trending knowledge every day across every category so you're never out of the loop.</p>
-        </div>
         <div class="mission-card" role="listitem">
           <div class="mission-icon" aria-hidden="true">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="#43cea2" stroke-width="2" stroke-linejoin="round"/>
             </svg>
           </div>
-          <h3>Verified Contributors, Real Insights</h3>
-          <p>No bots. No filler. Every guide on ApnaInsights is written by a real person with practical experience — a developer sharing tech tips, a professional sharing career advice, a health expert sharing wellness guidance.</p>
+          <h3>Written by real professionals, not AI</h3>
+          <p>Every article on ApnaInsights is written by a verified professional with real experience in that field. A software engineer at a Bangalore startup. A recruiter at an MNC. A CA who has filed hundreds of returns. Real people, real knowledge.</p>
+        </div>
+        <div class="mission-card" role="listitem">
+          <div class="mission-icon" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <rect x="2" y="7" width="20" height="14" rx="2" stroke="#43cea2" stroke-width="2"/>
+              <path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16" stroke="#43cea2" stroke-width="2"/>
+            </svg>
+          </div>
+          <h3>Career content built for the Indian job market</h3>
+          <p>How to crack a TCS interview. What to expect at your first Infosys appraisal. How to negotiate a 30% hike in India. How to switch from service to product. We cover the career questions Indian professionals actually have.</p>
+        </div>
+        <div class="mission-card" role="listitem">
+          <div class="mission-icon" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <rect x="2" y="3" width="20" height="14" rx="2" stroke="#185a9d" stroke-width="2"/>
+              <line x1="8" y1="21" x2="16" y2="21" stroke="#185a9d" stroke-width="2"/>
+              <line x1="12" y1="17" x2="12" y2="21" stroke="#185a9d" stroke-width="2"/>
+            </svg>
+          </div>
+          <h3>Tech guides that work in India</h3>
+          <p>Not another "build a FAANG portfolio" tutorial. We write about the tools, languages, and frameworks that get you hired at Indian tech companies - from Wipro to Zepto - with the salaries and skills that actually matter here.</p>
         </div>
         <div class="mission-card" role="listitem">
           <div class="mission-icon" aria-hidden="true">
@@ -161,8 +184,8 @@
               <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="#185a9d" stroke-width="2" stroke-linecap="round"/>
             </svg>
           </div>
-          <h3>Write, Publish, Grow — Free</h3>
-          <p>A rich editor, SEO-friendly publishing, reader analytics, follower system — everything a modern Indian knowledge contributor needs to build an audience and grow online. Always free.</p>
+          <h3>Contribute your expertise for free</h3>
+          <p>If you know something that can help another Indian professional grow, write it here. A rich editor, SEO-friendly publishing, and a follower system - everything you need to build a reputation and reach readers who care.</p>
         </div>
       </div>
     </div>
@@ -193,7 +216,7 @@
               <span class="meta-tag">B.Tech Graduate</span>
             </div>
             <p class="team-bio" itemprop="description">
-              Vivek built ApnaInsights end-to-end — from the Angular frontend and Node.js APIs to the
+              Vivek built ApnaInsights end-to-end - from the Angular frontend and Node.js APIs to the
               deployment pipeline on Vercel. He handles all engineering decisions on the platform.
             </p>
             <div class="team-skills" role="list" aria-label="Technical skills">
@@ -287,7 +310,7 @@
             <p class="inspiration-bio" itemprop="description">
               Mr. Bhanu Pratap Verma is a farming specialist from rural India who spent his life working
               with agricultural communities. He believed that knowledge shared freely is more valuable than
-              knowledge kept. That belief — that every person's experience is worth sharing — is what
+              knowledge kept. That belief - that every person's experience is worth sharing - is what
               ApnaInsights is built on.
             </p>
 
@@ -318,7 +341,7 @@
                 </svg>
               </div>
               <p>"Knowledge grows when shared, dreams grow when supported, and communities grow when we rise together."</p>
-              <footer><cite class="quote-author">— Mr. Bhanu Pratap Verma</cite></footer>
+              <footer><cite class="quote-author">- Mr. Bhanu Pratap Verma</cite></footer>
             </blockquote>
 
           </div>
@@ -334,7 +357,7 @@
       <div class="section-label-wrap">
         <span class="section-eyebrow">Platform Features</span>
         <h2 class="section-title" id="features-heading">What makes ApnaInsights<br><span class="gradient-text">different</span></h2>
-        <p class="section-sub">Built from the ground up for Indian storytellers — powerful, beautiful, and completely free.</p>
+        <p class="section-sub">Built from the ground up for Indian storytellers - powerful, beautiful, and completely free.</p>
       </div>
       <div class="features-grid" role="list">
         <div class="feature-item" role="listitem">
@@ -345,7 +368,7 @@
           </div>
         </div>
         <div class="feature-item" role="listitem">
-          <span class="feature-icon" aria-hidden="true">🔥</span>
+          <span class="feature-icon" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></span>
           <div>
             <h3>Trending Algorithm</h3>
             <p>Surface the best content with smart trending, hot right now, and latest story feeds. Your best work gets discovered.</p>
@@ -355,21 +378,21 @@
           <span class="feature-icon" aria-hidden="true">🌙</span>
           <div>
             <h3>Dark &amp; Light Mode</h3>
-            <p>A beautiful reading experience in any lighting — fully themed with smooth transitions for comfortable reading day or night.</p>
+            <p>A beautiful reading experience in any lighting - fully themed with smooth transitions for comfortable reading day or night.</p>
           </div>
         </div>
         <div class="feature-item" role="listitem">
           <span class="feature-icon" aria-hidden="true">🏷️</span>
           <div>
             <h3>14 Content Categories</h3>
-            <p>From Technology, Health &amp; Lifestyle to Village Life, Sports, Cooking, Quotes, Exercise and more — find your niche and the right audience.</p>
+            <p>From Technology, Health &amp; Lifestyle to Village Life, Sports, Cooking, Quotes, Exercise and more - find your niche and the right audience.</p>
           </div>
         </div>
         <div class="feature-item" role="listitem">
           <span class="feature-icon" aria-hidden="true">👍</span>
           <div>
             <h3>Engagement Tools</h3>
-            <p>Likes, comments, views tracking — everything writers need to connect with their audience and grow their following.</p>
+            <p>Likes, comments, views tracking - everything writers need to connect with their audience and grow their following.</p>
           </div>
         </div>
         <div class="feature-item" role="listitem">
@@ -380,14 +403,14 @@
           </div>
         </div>
         <div class="feature-item" role="listitem">
-          <span class="feature-icon" aria-hidden="true">📱</span>
+          <span class="feature-icon" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg></span>
           <div>
             <h3>Fully Responsive</h3>
-            <p>Read and write from any device — mobile, tablet, or desktop. Always pixel-perfect, always fast on Indian networks.</p>
+            <p>Read and write from any device - mobile, tablet, or desktop. Always pixel-perfect, always fast on Indian networks.</p>
           </div>
         </div>
         <div class="feature-item" role="listitem">
-          <span class="feature-icon" aria-hidden="true">⚡</span>
+          <span class="feature-icon" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span>
           <div>
             <h3>Built with Angular SSR</h3>
             <p>Server-side rendering with Angular 20 for blazing-fast load times and excellent SEO performance.</p>
@@ -712,7 +735,7 @@
       <div class="footer-copy">
         <p>© {{ currentYear }} ApnaInsights. All rights reserved.</p>
         <p>Founded by <strong>Vivek Verma</strong> &amp; <strong>Revathi Satya</strong> · Made with ❤️ in India</p>
-        <p class="footer-seo-text">ApnaInsights is India's trusted practical knowledge platform — free to write, free to read.</p>
+        <p class="footer-seo-text">ApnaInsights is India's trusted practical knowledge platform - free to write, free to read.</p>
       </div>
     </div>
   </footer>

@@ -143,13 +143,13 @@ form input:focus {
   color: var(--text-primary);
 }
 
-/* submit keeps brand gradient — works in both modes */
+/* submit keeps brand gradient - works in both modes */
 .submit-btn {
   flex: 1;
   padding: 13px;
   border: none;
   border-radius: 8px;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
   color: #ffffff;
   font-size: 14px;
   font-weight: 500;

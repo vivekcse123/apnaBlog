@@ -214,10 +214,10 @@ export class CreatePost implements OnInit, OnDestroy {
     return role === 'admin' || role === 'super_admin';
   });
 
-  // Hydrated from localStorage cache synchronously — updated after API load
+  // Hydrated from localStorage cache synchronously - updated after API load
   categoryOptions: string[] = this.taxonomyService.categoryNames().length
     ? this.taxonomyService.categoryNames()
-    : ['Update','News','Sports','Technology','Lifestyle','Education','Health','Business','Entertainment','Social','Village','Cooking','Quotes','Exercise'];
+    : ['Update','News','Sports','Technology','Lifestyle','Education','Health','Business','Entertainment','Social','Village','Cooking','Quotes','Exercise','Career','AI','Finance','Productivity'];
 
   tagOptions: string[] = this.taxonomyService.tagNames().length
     ? this.taxonomyService.tagNames()
@@ -419,7 +419,7 @@ export class CreatePost implements OnInit, OnDestroy {
       const el      = node as Element;
       const tagName = el.tagName.toLowerCase();
 
-      // Preserve pre/code blocks as-is — only strip disallowed attrs
+      // Preserve pre/code blocks as-is - only strip disallowed attrs
       if (tagName === 'pre' || tagName === 'code') {
         const allowed = allowedAttrs[tagName] ?? [];
         Array.from(el.attributes).forEach(attr => {
@@ -762,11 +762,11 @@ export class CreatePost implements OnInit, OnDestroy {
         blockNode.parentNode!.insertBefore(bq, blockNode);
         bq.appendChild(blockNode);
       } else {
-        // Fallback: no block found — wrap selected text directly
+        // Fallback: no block found - wrap selected text directly
         try {
           const bq = document.createElement('blockquote');
           if (range) { range.surroundContents(bq); }
-        } catch { /* partial selection across nodes — skip */ }
+        } catch { /* partial selection across nodes - skip */ }
       }
     }
 
@@ -1197,7 +1197,7 @@ export class CreatePost implements OnInit, OnDestroy {
     this.successMessage.set('');
 
     if (this.imageUploading()) {
-      this.errorMessage.set('Please wait — image is still uploading.');
+      this.errorMessage.set('Please wait - image is still uploading.');
       return;
     }
 

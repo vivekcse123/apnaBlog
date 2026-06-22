@@ -56,7 +56,7 @@ export class ShortsUpload {
   isGeneratingFrames = signal(false);
   activeDragSide     = signal<'left' | 'right' | null>(null);
 
-  // Derived values for the template — avoid inline math
+  // Derived values for the template - avoid inline math
   readonly startPct    = computed(() => this.rawDuration() > 0 ? (this.trimStart()   / this.rawDuration()) * 100 : 0);
   readonly endPct      = computed(() => this.rawDuration() > 0 ? (this.trimEnd()     / this.rawDuration()) * 100 : 100);
   readonly selWidthPct = computed(() => this.endPct() - this.startPct());
@@ -171,7 +171,7 @@ export class ShortsUpload {
 
   // ── Drag handles ──────────────────────────────────────────────────────────
   // Uses setPointerCapture so events keep firing on the handle even when the
-  // pointer moves outside it — no window listeners needed, no zone tricks.
+  // pointer moves outside it - no window listeners needed, no zone tricks.
 
   private seekRaf: number | null = null;
 

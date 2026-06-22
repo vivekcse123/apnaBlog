@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════
-   Common Header — Slim Top Bar (sidebar layout)
+   Common Header - Slim Top Bar (sidebar layout)
    ═══════════════════════════════════════ */
 
 .ch-topbar {
@@ -14,7 +14,7 @@
   position: sticky;
   top: 0;
   z-index: 100;
-  width: 100%; /* always fill parent width — prevents Android flex collapse */
+  width: 100%; /* always fill parent width - prevents Android flex collapse */
   min-width: 0;
   max-width: 100%;
   box-sizing: border-box;
@@ -297,7 +297,7 @@
 .ch-suggestion-icon--cat  { background: rgba(24,90,157,0.12);  color: #185a9d; }
 .ch-suggestion-icon--blog { background: rgba(139,92,246,0.12); color: #8b5cf6; }
 .ch-suggestion-icon--user {
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
   color: #fff; font-size: 12px; font-weight: 700;
 }
 [data-theme="dark"] .ch-suggestion-icon--cat { color: #60a5fa; background: rgba(96,165,250,0.12); }
@@ -333,11 +333,11 @@
 .ch-suggestion-search:hover { background: rgba(67,206,162,0.07); }
 .ch-suggestion-search svg { flex-shrink: 0; opacity: 0.7; }
 
-/* ── Theme toggle — desktop only ── */
+/* ── Theme toggle - desktop only ── */
 .ch-icon-btn.ch-theme-btn { display: flex; }
 
 /* ── Search toggle button (hidden on desktop, shown on mobile) ──
-   Must use combined selector — .ch-icon-btn declares display:flex later
+   Must use combined selector - .ch-icon-btn declares display:flex later
    in the file and would win a single-class specificity race. */
 .ch-icon-btn.ch-search-toggle { display: none; }
 .ch-search-toggle--active {
@@ -347,7 +347,7 @@
 }
 
 /* ══ Mobile search panel ══════════════════════════════════════════════════ */
-/* Always hidden — display:none takes zero space when closed */
+/* Always hidden - display:none takes zero space when closed */
 .ch-search-panel { display: none; }
 
 /* Only rendered (and animated) when --open is applied */
@@ -402,7 +402,7 @@
 }
 .ch-panel-clear:hover { background: rgba(239,68,68,.1); color: #ef4444; }
 
-/* Panel suggestions — in normal flow, not fixed */
+/* Panel suggestions - in normal flow, not fixed */
 .ch-panel-suggestions {
   max-height: 52vh;
   overflow-y: auto;
@@ -459,7 +459,7 @@
 .ch-avatar-btn {
   width: 36px; height: 36px; border-radius: 50%;
   border: 2px solid var(--border);
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
   color: #fff; font-size: 14px; font-weight: 700;
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
@@ -498,11 +498,11 @@
   display: flex; align-items: center; gap: 12px;
   padding: 14px;
   border-bottom: 1px solid var(--border);
-  background: linear-gradient(135deg, rgba(67,206,162,0.06) 0%, rgba(24,90,157,0.06) 100%);
+  background: var(--bg-surface-alt);
 }
 .ch-drawer-avatar {
   width: 42px; height: 42px; border-radius: 10px; flex-shrink: 0;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
   color: #fff; font-size: 16px; font-weight: 700;
   display: flex; align-items: center; justify-content: center;
   overflow: hidden;
@@ -513,7 +513,7 @@
 .ch-role-badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
 .ch-role--user  { background: rgba(67,206,162,0.1); color: #43cea2; border: 1px solid rgba(67,206,162,0.3); }
 .ch-role--admin { background: rgba(24,90,157,0.1); color: #185a9d; border: 1px solid rgba(24,90,157,0.3); }
-.ch-role--super { background: linear-gradient(135deg,#f59e0b,#d97706); color:#fff; }
+.ch-role--super { background: #d97706; color:#fff; }
 [data-theme="dark"] .ch-role--user  { color:#43cea2; border-color:rgba(67,206,162,0.25); }
 [data-theme="dark"] .ch-role--admin { color:#60a5fa; border-color:rgba(96,165,250,0.25); background:rgba(96,165,250,0.08); }
 .ch-drawer-nav { display: flex; flex-direction: column; gap: 2px; padding: 8px; }
@@ -547,10 +547,10 @@
   .ch-hamburger { display: flex; }
 
 
-  /* Inline search hidden — replaced by the slide-down panel */
+  /* Inline search hidden - replaced by the slide-down panel */
   .ch-search { display: none; }
 
-  /* Theme toggle hidden on mobile — available inside the profile panel */
+  /* Theme toggle hidden on mobile - available inside the profile panel */
   .ch-icon-btn.ch-theme-btn    { display: none; }
   /* Search toggle visible; actions auto-margin pushes everything right */
   .ch-icon-btn.ch-search-toggle { display: flex; }
@@ -580,7 +580,7 @@
   .ch-avatar-btn { width: 30px; height: 30px; }
 }
 
-/* ── Mobile logo — hidden on desktop, shown on mobile ── */
+/* ── Mobile logo - hidden on desktop, shown on mobile ── */
 .ch-mob-logo {
   display: none;
 }
@@ -607,24 +607,10 @@
 
   .ch-mob-logo-text {
     font-size: 15px;
-    font-weight: 700;
-    font-family: 'Playfair Display', serif;
-    background: linear-gradient(135deg, #43cea2, #185a9d);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    font-weight: 800;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--accent-text);
     letter-spacing: -0.3px;
     white-space: nowrap;
-  }
-
-  /* Subtle gradient accent line at bottom of header on mobile */
-  .ch-topbar {
-    border-bottom-color: transparent;
-    background-image: linear-gradient(var(--bg-surface), var(--bg-surface)),
-                      linear-gradient(90deg, #43cea2, #185a9d);
-    background-origin: border-box;
-    background-clip: padding-box, border-box;
-    border-bottom-width: 2px;
-    border-bottom-style: solid;
   }
 }

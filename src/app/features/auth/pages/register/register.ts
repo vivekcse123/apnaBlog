@@ -41,7 +41,7 @@ export class Register {
   private destroyRef  = inject(DestroyRef);
   private meta        = inject(Meta);
 
-  // Build the form immediately — no ngOnInit flash
+  // Build the form immediately - no ngOnInit flash
   registerForm = new FormGroup({
     name: new FormControl('', [
       Validators.required,

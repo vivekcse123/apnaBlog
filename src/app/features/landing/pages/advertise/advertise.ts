@@ -87,12 +87,12 @@ export class Advertise implements OnInit {
 
   private setMeta(): void {
     this.titleSvc.setTitle('Advertise with ApnaInsights | Reach India\'s Digital Audience');
-    this.meta.updateTag({ name: 'description', content: 'Partner with ApnaInsights — India\'s practical knowledge platform. Advertise via sponsored shorts, blog features, and newsletter placements. Reach engaged readers across 14 categories including Technology, Health, Sports and more.' });
+    this.meta.updateTag({ name: 'description', content: 'Partner with ApnaInsights - India\'s practical knowledge platform. Advertise via sponsored shorts, blog features, and newsletter placements. Reach engaged readers across 14 categories including Technology, Health, Sports and more.' });
     this.meta.updateTag({ name: 'keywords', content: 'advertise on ApnaInsights, sponsored content India, blog advertising India, digital advertising India, sponsored shorts, content marketing India' });
     this.meta.updateTag({ name: 'robots', content: 'index, follow' });
     this.meta.updateTag({ property: 'og:type',        content: 'website' });
     this.meta.updateTag({ property: 'og:title',       content: 'Advertise with ApnaInsights | Reach India\'s Digital Audience' });
-    this.meta.updateTag({ property: 'og:description', content: 'Partner with ApnaInsights to reach engaged Indian readers. Sponsored shorts, blog features, newsletter ads — flexible packages for every budget.' });
+    this.meta.updateTag({ property: 'og:description', content: 'Partner with ApnaInsights to reach engaged Indian readers. Sponsored shorts, blog features, newsletter ads - flexible packages for every budget.' });
     this.meta.updateTag({ property: 'og:url',         content: 'https://apnainsights.com/advertise' });
     this.meta.updateTag({ property: 'og:site_name',   content: 'ApnaInsights' });
     this.meta.updateTag({ property: 'og:image',       content: 'https://apnainsights.com/og-image.png' });

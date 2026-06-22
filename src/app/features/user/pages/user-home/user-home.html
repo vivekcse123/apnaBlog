@@ -48,7 +48,7 @@
         </div>
       </div>
 
-      <!-- Row 2: name + badges — always full-width, always visible -->
+      <!-- Row 2: name + badges - always full-width, always visible -->
       <div class="spb-identity">
         <p class="spb-greeting">{{ greeting }}</p>
         <h1 class="spb-name">{{ user()?.name || 'Writer' }}</h1>
@@ -225,7 +225,7 @@
             @if (recentBlogs().length === 0) {
               <div class="feed-empty">
                 <span class="feed-empty-icon">📝</span>
-                <p>No blogs yet —
+                <p>No blogs yet -
                   <a [routerLink]="createBlogLink()" class="feed-empty-link">
                     write your first story
                   </a>

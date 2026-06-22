@@ -167,7 +167,7 @@ export class ManageTaxonomy implements OnInit {
       });
   }
 
-  // ── Delete flow — modal instead of browser confirm() ─────────────────────
+  // ── Delete flow - modal instead of browser confirm() ─────────────────────
   confirmDelete(item: TaxonomyItem): void {
     this.deleteTarget.set(item);
     this.clearMessages();

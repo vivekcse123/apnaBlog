@@ -63,7 +63,7 @@ export class CampaignPage implements OnInit {
           const p = res.data;
           if (!p) { this.loadError.set(true); this.isLoading.set(false); return; }
 
-          // Non-sponsored posts don't have a campaign page — send to blog
+          // Non-sponsored posts don't have a campaign page - send to blog
           if (!p.isSponsored) {
             this.router.navigate(['/blog', id], { replaceUrl: true });
             return;
@@ -72,7 +72,7 @@ export class CampaignPage implements OnInit {
           this.post.set(p);
           this.isLoading.set(false);
           this.titleSvc.setTitle(`${p.title} | Sponsored | ApnaInsights`);
-          // Sponsored pages must not be indexed — they are ads, not editorial content
+          // Sponsored pages must not be indexed - they are ads, not editorial content
           this.meta.updateTag({ name: 'robots', content: 'noindex,nofollow' });
         },
         error: () => { this.isLoading.set(false); this.loadError.set(true); },

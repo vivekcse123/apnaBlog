@@ -34,9 +34,9 @@ import { BookmarkService }       from '../../../../core/services/bookmark.servic
 import { PushNotificationService } from '../../../../core/services/push-notification.service';
 
 const PAGE_SIZE   = 8;
-const FETCH_LIMIT = 20;   // posts per server page — keeps initial payload small
+const FETCH_LIMIT = 20;   // posts per server page - keeps initial payload small
 
-const STATS_KEY    = 'apna_site_stats_v3'; // v3 — includes accurate category counts
+const STATS_KEY    = 'apna_site_stats_v3'; // v3 - includes accurate category counts
 const STATS_TTL_MS = 30 * 60 * 1000;
 
 const RECENT_SEARCHES_KEY = 'apna_recent_searches';
@@ -145,7 +145,7 @@ export class Home implements OnInit, OnDestroy {
 
   mobileTab = signal<'for-you' | 'trending' | 'latest'>('for-you');
 
-  // Hero "mega search" — centered search bar + discovery dropdown
+  // Hero "mega search" - centered search bar + discovery dropdown
   heroSearchOpen     = signal(false);
   heroDropdownQuery  = signal('');
   recentSearches     = signal<string[]>(readRecentSearches());
@@ -174,15 +174,15 @@ export class Home implements OnInit, OnDestroy {
   hasMoreOnServer          = signal(false);
   isFetchingMore           = signal(false);
 
-  // Server-reported totals — hydrated from localStorage so stats show immediately
+  // Server-reported totals - hydrated from localStorage so stats show immediately
   private _persistedStats  = readPersistedStats();
   private serverTotal      = signal(this._persistedStats.total);
   private serverTotalViews = signal(this._persistedStats.totalViews);
-  // Monotonically increasing total views — never decreases to prevent flicker
+  // Monotonically increasing total views - never decreases to prevent flicker
   private _maxSeenViews       = signal(this._persistedStats.totalViews);
-  // Accurate category counts from full stats fetch — persisted across sessions
+  // Accurate category counts from full stats fetch - persisted across sessions
   private _allCategoryCounts  = signal<Record<string, number>>(this._persistedStats.categoryCounts);
-  // ALL published posts from the full paginated fetch — used for filtering so
+  // ALL published posts from the full paginated fetch - used for filtering so
   // category/tag/search results are never limited to the 20-post display page
   private _fullPostPool       = signal<PostWithTs[]>([]);
   // True while fetchAccurateStats is in flight (shows skeleton in filter results)
@@ -201,7 +201,7 @@ export class Home implements OnInit, OnDestroy {
   likedPostIds      = signal<Set<string>>(new Set());
   bookmarkedPostIds = this.bookmarkService.bookmarkedIds;
 
-  // ── Personalization signals (browser-only — always false/empty on SSR) ──────
+  // ── Personalization signals (browser-only - always false/empty on SSR) ──────
   historyLoaded    = signal(false);
   readHistoryIds   = signal<Set<string>>(new Set());
   progressMap      = signal<Map<string, number>>(new Map());
@@ -235,6 +235,7 @@ export class Home implements OnInit, OnDestroy {
   private readonly FALLBACK_CATEGORIES = [
     'Update','News','Sports','Entertainment','Health','Technology','Business',
     'Lifestyle','Education','Exercise','Cooking','Social','Quotes','Village',
+    'Career','AI','Finance','Productivity',
   ];
 
   categories = computed<string[]>(() => {
@@ -248,11 +249,11 @@ export class Home implements OnInit, OnDestroy {
 
   private readingTimeCache = new Map<string, number>();
 
-  // "Trending Today" — ranked by the time-decayed hotScore (refreshed on every
+  // "Trending Today" - ranked by the time-decayed hotScore (refreshed on every
   // like/comment/view) so the list shifts day to day as engagement changes,
   // instead of being pinned to all-time likesCount. Falls back to likesCount
   // for posts whose hotScore hasn't been computed yet (score === 0/undefined).
-  // Editorial-only posts — sponsored content has its own dedicated section
+  // Editorial-only posts - sponsored content has its own dedicated section
   // and must not appear in editorial feeds (Trending, Hot, Latest, Filtered).
   private editorialPosts = computed(() => this.allPosts().filter(p => !p.isSponsored));
 
@@ -297,7 +298,7 @@ export class Home implements OnInit, OnDestroy {
     const rt   = this.selectedReadingTime();
     const q    = this.searchQuery().trim().toLowerCase();
     const sort = this.selectedSort();
-    // Use full pool (editorial posts only — sponsored excluded from all filtered views)
+    // Use full pool (editorial posts only - sponsored excluded from all filtered views)
     const pool = this._fullPostPool();
     let posts: PostWithTs[] = (pool.length > 0 ? pool : this.allPosts().filter(p => p.status === 'published'))
       .filter(p => !p.isSponsored);
@@ -360,7 +361,7 @@ export class Home implements OnInit, OnDestroy {
   });
 
   // ── Hero "mega search" dropdown content ──────────────────────────────
-  // All derived from data already loaded for the page — no extra requests.
+  // All derived from data already loaded for the page - no extra requests.
   // When the user is typing, each list is filtered client-side; otherwise
   // a default top-N slice is shown.
   heroDropdownHasQuery = computed(() => this.heroDropdownQuery().trim().length > 0);
@@ -405,7 +406,7 @@ export class Home implements OnInit, OnDestroy {
     return (q ? tags.filter(t => t.toLowerCase().includes(q)) : tags).slice(0, 8);
   });
 
-  /** IDs of the top-5 trending posts — used to show the 🔥 badge on cards. */
+  /** IDs of the top-5 trending posts - used to show the 🔥 badge on cards. */
   private trendingTopIds = computed(() =>
     new Set(this.byLikes().slice(0, 5).map((p: PostWithTs) => p._id))
   );
@@ -417,7 +418,7 @@ export class Home implements OnInit, OnDestroy {
 
   activeTopicsCount = computed(() => this.categories().length);
 
-  // Always the highest total views seen — never decreases
+  // Always the highest total views seen - never decreases
   totalViews = computed(() => this._maxSeenViews());
 
   // True once stats-fetch has returned accurate data
@@ -428,17 +429,17 @@ export class Home implements OnInit, OnDestroy {
     const v = this._maxSeenViews();
     if (v >= 1_000_000) return (v / 1_000_000).toFixed(1) + 'M+';
     if (v >= 1_000)     return (v / 1_000).toFixed(1) + 'K+';
-    return v > 0 ? String(v) + '+' : '—';
+    return v > 0 ? String(v) + '+' : '-';
   });
 
-  /** Unique author count — used as a proxy for community members */
+  /** Unique author count - used as a proxy for community members */
   communityMembersCount = computed(() => {
     const ids = new Set(this.allPosts().filter(p => p.user?._id).map(p => p.user._id));
     return ids.size;
   });
   communityMembersReady = computed(() => this.communityMembersCount() > 0);
 
-  /** Authors who have published 2+ posts — "top contributors" */
+  /** Authors who have published 2+ posts - "top contributors" */
   topContributorsCount = computed(() => {
     const counts = new Map<string, number>();
     for (const post of this.allPosts()) {
@@ -473,7 +474,7 @@ export class Home implements OnInit, OnDestroy {
   showFavorites   = computed(() => this.favoritePosts().length > 0);
   showRecommended = computed(() => this.recommendedPosts().length > 0);
 
-  /** Sponsored posts — sourced only from the dedicated API call (never from stale cache). */
+  /** Sponsored posts - sourced only from the dedicated API call (never from stale cache). */
   sponsoredPosts = computed(() => this.sponsoredFromApi().slice(0, 4));
   showSponsored = computed(() => this.sponsoredPosts().length > 0);
 
@@ -482,7 +483,7 @@ export class Home implements OnInit, OnDestroy {
   filterOpen   = signal(false);
 
   // Use synchronous auth signals (localStorage) so the button routes correctly
-  // even before the API call resolves — avoids the timing gap where
+  // even before the API call resolves - avoids the timing gap where
   // isLoggedIn=false while the token is valid but currentUserData() is still null.
   get writeRoute(): string {
     if (!this.auth.isAuthorized()) return '/auth/login';
@@ -653,7 +654,7 @@ export class Home implements OnInit, OnDestroy {
     this.document.getElementById('home-trending-schema')?.remove();
   }
 
-  // Tracks which .adsbygoogle <ins> elements have already been pushed —
+  // Tracks which .adsbygoogle <ins> elements have already been pushed -
   // background refreshes can re-trigger pushHomeAds(), and re-pushing an
   // already-initialised <ins> throws "already have ads in them".
   private pushedHomeAds = new WeakSet<Element>();
@@ -681,7 +682,7 @@ export class Home implements OnInit, OnDestroy {
     if (cached?.length) {
       this.allPosts.set(cached);
       this.isLoading.set(false);
-      // Cache has all posts — set page count to 1 so computed stats use allPosts directly
+      // Cache has all posts - set page count to 1 so computed stats use allPosts directly
       this.serverTotalPages.set(1);
       this.hasMoreOnServer.set(false);
       
@@ -691,7 +692,7 @@ export class Home implements OnInit, OnDestroy {
         this.loadFresh(false);
       } else {
         // Cache is fresh, so loadFresh() (which normally pushes the ad slots
-        // once data arrives) won't run — push them here instead, otherwise
+        // once data arrives) won't run - push them here instead, otherwise
         // the <ins> elements never get a data-ad-status and .home-ad-wrap
         // stays stuck at its reserved min-height placeholder forever.
         setTimeout(() => this.pushHomeAds(), 300);
@@ -766,7 +767,7 @@ export class Home implements OnInit, OnDestroy {
       && Object.keys(categoryCounts).length > 0;
 
     // If stats are fresh and allPostsCache has posts (populated on previous visit),
-    // restore _fullPostPool instantly from cache — no API call needed.
+    // restore _fullPostPool instantly from cache - no API call needed.
     // This makes category filter results appear immediately when navigating back.
     const cachedPosts = this.allPostsCache.get();
     if (statsAreFresh && cachedPosts.length) {
@@ -812,7 +813,7 @@ export class Home implements OnInit, OnDestroy {
         const total      = published.length;
         const totalViews = published.reduce((s, p) => s + ((p as any).views ?? 0), 0);
 
-        // Full post pool — always rebuilt so filtering is always accurate
+        // Full post pool - always rebuilt so filtering is always accurate
         const fullPool: PostWithTs[] = published.map(p => ({
           ...p,
           _ts:        new Date(p.createdAt).getTime(),
@@ -859,15 +860,15 @@ export class Home implements OnInit, OnDestroy {
         if (!res) return;
         const posts: Post[]      = res.data || [];
         const totalPages: number = res.totalPages || 1;
-        // Use totalPages for pagination only — serverTotal is set by fetchAccurateStats
+        // Use totalPages for pagination only - serverTotal is set by fetchAccurateStats
         // which counts only published posts (single source of truth for stats)
         this.serverTotalPages.set(totalPages);
 
         if (showLoader) {
-          // Fresh load (no cache) — start with just the first 20
+          // Fresh load (no cache) - start with just the first 20
           this.commitPosts(posts);
         } else {
-          // Background refresh — merge new posts into existing dataset
+          // Background refresh - merge new posts into existing dataset
           // so cached posts are never lost
           this.commitPosts([...this.allPosts(), ...posts]);
         }
@@ -912,7 +913,7 @@ export class Home implements OnInit, OnDestroy {
     const incoming = new Map<string, PostWithTs>();
 
     for (const p of raw) {
-      // Home page is public — only published posts with quality descriptions
+      // Home page is public - only published posts with quality descriptions
       if (p.status !== 'published') continue;
       if ((p.description ?? '').trim().split(/\s+/).filter(Boolean).length < 12) continue;
       if (incoming.has(p._id)) continue;
@@ -936,7 +937,7 @@ export class Home implements OnInit, OnDestroy {
     this.updateJsonLdPostCount(visible.length);
     this.updateTrendingItemList();
 
-    // Bump max-seen views — all items in visible are already published
+    // Bump max-seen views - all items in visible are already published
     const summed = visible.reduce((s, p) => s + (p.views ?? 0), 0);
     this.bumpMaxViews(summed);
   }
@@ -966,23 +967,23 @@ export class Home implements OnInit, OnDestroy {
     const site = environment.siteUrl;
     const og   = environment.ogImage;
     // Kept under ~50 chars so it doesn't get truncated in Google search results.
-    this.titleService.setTitle('ApnaInsights — Practical Knowledge for Everyday Life');
-    this.meta.updateTag({ name: 'description',    content: 'Practical knowledge for everyday life — expert guides on Technology, Career, Health & Business written by verified contributors across India.' });
+    this.titleService.setTitle('ApnaInsights - Practical Knowledge for Everyday Life');
+    this.meta.updateTag({ name: 'description',    content: 'Practical knowledge for everyday life - expert guides on Technology, Career, Health & Business written by verified contributors across India.' });
     this.meta.updateTag({ name: 'keywords',       content: 'practical knowledge India, technology guides India, career tips India, health advice India, business insights, ApnaInsights, everyday life guides' });
     this.meta.updateTag({ name: 'robots',         content: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' });
     this.meta.updateTag({ name: 'author',         content: 'ApnaInsights Editorial Team' });
     this.meta.updateTag({ property: 'og:type',         content: 'website' });
-    this.meta.updateTag({ property: 'og:title',        content: 'ApnaInsights — Practical Knowledge for Everyday Life' });
-    this.meta.updateTag({ property: 'og:description',  content: 'Practical knowledge for everyday life — expert guides on Technology, Career, Health & Business written by verified contributors across India.' });
+    this.meta.updateTag({ property: 'og:title',        content: 'ApnaInsights - Practical Knowledge for Everyday Life' });
+    this.meta.updateTag({ property: 'og:description',  content: 'Practical knowledge for everyday life - expert guides on Technology, Career, Health & Business written by verified contributors across India.' });
     this.meta.updateTag({ property: 'og:url',          content: `${site}/` });
     this.meta.updateTag({ property: 'og:site_name',    content: 'ApnaInsights' });
     this.meta.updateTag({ property: 'og:image',        content: og });
     this.meta.updateTag({ property: 'og:image:width',  content: '1200' });
     this.meta.updateTag({ property: 'og:image:height', content: '630' });
-    this.meta.updateTag({ property: 'og:image:alt',    content: 'ApnaInsights — Practical Knowledge for Everyday Life' });
+    this.meta.updateTag({ property: 'og:image:alt',    content: 'ApnaInsights - Practical Knowledge for Everyday Life' });
     this.meta.updateTag({ property: 'og:locale',       content: 'en_IN' });
     this.meta.updateTag({ name: 'twitter:card',        content: 'summary_large_image' });
-    this.meta.updateTag({ name: 'twitter:title',       content: 'ApnaInsights — Practical Knowledge for Everyday Life' });
+    this.meta.updateTag({ name: 'twitter:title',       content: 'ApnaInsights - Practical Knowledge for Everyday Life' });
     this.meta.updateTag({ name: 'twitter:description', content: 'Practical knowledge for everyday life. Expert guides on Technology, Career, Health & Business from verified contributors across India.' });
     this.meta.updateTag({ name: 'twitter:image',       content: og });
     this.meta.updateTag({ name: 'twitter:site',        content: '@apnainsights' });
@@ -1004,7 +1005,7 @@ export class Home implements OnInit, OnDestroy {
       {
         '@context': 'https://schema.org',
         '@graph': [
-          // WebSite — MUST be defined on the homepage for Google's site name feature.
+          // WebSite - MUST be defined on the homepage for Google's site name feature.
           // Google uses this name field to display "ApnaInsights" next to the logo in
           // search results instead of falling back to the domain "apnainsights.com".
           {
@@ -1012,7 +1013,7 @@ export class Home implements OnInit, OnDestroy {
             '@id':       `${site}/#website`,
             url:         `${site}/`,
             name:        'ApnaInsights',
-            description: 'India\'s practical knowledge platform — expert-reviewed guides on Technology, Career, Health & Business.',
+            description: 'India\'s practical knowledge platform - expert-reviewed guides on Technology, Career, Health & Business.',
             publisher:   { '@id': `${site}/#organization` },
             potentialAction: {
               '@type':       'SearchAction',
@@ -1020,7 +1021,7 @@ export class Home implements OnInit, OnDestroy {
               'query-input': 'required name=search_term_string',
             },
           },
-          // Organization — defines the publisher entity referenced by every page's schema.
+          // Organization - defines the publisher entity referenced by every page's schema.
           {
             '@type':         'Organization',
             '@id':           `${site}/#organization`,
@@ -1037,7 +1038,7 @@ export class Home implements OnInit, OnDestroy {
               caption:      'ApnaInsights',
             },
             image:       { '@id': `${site}/#logo` },
-            description: 'ApnaInsights is India\'s practical knowledge platform publishing expert-reviewed guides on Technology, Career, Health and Business — written by verified contributors.',
+            description: 'ApnaInsights is India\'s practical knowledge platform publishing expert-reviewed guides on Technology, Career, Health and Business - written by verified contributors.',
             foundingDate: '2024',
             sameAs: [
               'https://twitter.com/apnainsights',
@@ -1049,8 +1050,8 @@ export class Home implements OnInit, OnDestroy {
             '@type':       'CollectionPage',
             '@id':         `${site}/#homepage`,
             url:           `${site}/`,
-            name:          'ApnaInsights — Practical Guides on Tech, Career & Life',
-            description:   'Browse expert-reviewed guides on Technology, Career, Health & Business — trusted insights from verified contributors across India.',
+            name:          'ApnaInsights - Practical Guides on Tech, Career & Life',
+            description:   'Browse expert-reviewed guides on Technology, Career, Health & Business - trusted insights from verified contributors across India.',
             inLanguage:    'en-IN',
             isPartOf:      { '@id': `${site}/#website` },
             about:         { '@type': 'Thing', name: 'Practical Knowledge Platform India' },
@@ -1069,7 +1070,7 @@ export class Home implements OnInit, OnDestroy {
           }
         ]
       },
-      // FAQ schema — helps Google show rich FAQ snippets in search results
+      // FAQ schema - helps Google show rich FAQ snippets in search results
       {
         '@context': 'https://schema.org',
         '@type': 'FAQPage',
@@ -1079,7 +1080,7 @@ export class Home implements OnInit, OnDestroy {
             name:    'Is ApnaInsights free to use?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text:    'Yes, ApnaInsights is completely free — free to read all guides and articles and free to write and publish your own. No subscription or payment is required.',
+              text:    'Yes, ApnaInsights is completely free - free to read all guides and articles and free to write and publish your own. No subscription or payment is required.',
             },
           },
           {
@@ -1095,7 +1096,7 @@ export class Home implements OnInit, OnDestroy {
             name:    'What topics can I read about on ApnaInsights?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text:    'ApnaInsights covers a wide range of topics including Technology, Health, Sports, Business, Entertainment, Education, Lifestyle, Career, Social Issues, Cooking, Exercise, and more — all written by verified contributors from across India.',
+              text:    'ApnaInsights covers a wide range of topics including Technology, Health, Sports, Business, Entertainment, Education, Lifestyle, Career, Social Issues, Cooking, Exercise, and more - all written by verified contributors from across India.',
             },
           },
           {
@@ -1119,7 +1120,7 @@ export class Home implements OnInit, OnDestroy {
             name:    'Is ApnaInsights available as a mobile app?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text:    'ApnaInsights is a Progressive Web App (PWA). You can install it directly on your Android or iOS device from the browser — no app store download required. It works like a native app with offline support.',
+              text:    'ApnaInsights is a Progressive Web App (PWA). You can install it directly on your Android or iOS device from the browser - no app store download required. It works like a native app with offline support.',
             },
           },
         ],
@@ -1214,7 +1215,7 @@ export class Home implements OnInit, OnDestroy {
 
     if (this.isAndroid()) {
       if (this.canInstallNatively()) {
-        // Chrome/Edge/Samsung: fire native PWA prompt immediately — no popup
+        // Chrome/Edge/Samsung: fire native PWA prompt immediately - no popup
         this.fireInstallPrompt();
       } else {
         // Other Android browsers: start APK download immediately, then show install guide
@@ -1223,13 +1224,13 @@ export class Home implements OnInit, OnDestroy {
       return;
     }
 
-    // iOS / desktop — open the modal
+    // iOS / desktop - open the modal
     this.showInstallModal.set(true);
   }
 
   startApkDownload(): void {
     if (!isPlatformBrowser(this.platformId)) return;
-    // Trigger download immediately — no popup before this
+    // Trigger download immediately - no popup before this
     const a = this.document.createElement('a');
     a.href = this.APK_URL;
     a.download = 'ApnaInsights.apk';
@@ -1244,7 +1245,7 @@ export class Home implements OnInit, OnDestroy {
     if (!isPlatformBrowser(this.platformId)) return;
     const prompt = this.installPrompt || (window as any).__pwaPrompt;
     if (!prompt) {
-      // Prompt expired — fall back to APK
+      // Prompt expired - fall back to APK
       if (this.isAndroid()) { this.startApkDownload(); } else { this.showInstallModal.set(true); }
       return;
     }
@@ -1472,7 +1473,7 @@ export class Home implements OnInit, OnDestroy {
     this.filteredVisibleCount.set(PAGE_SIZE);
   }
 
-  // Centralized scroll helper — call after ANY action that changes the
+  // Centralized scroll helper - call after ANY action that changes the
   // visible feed (search submit/clear, category/tag/sort/filter change,
   // mobile tab switch) so the user always sees the updated results, no
   // matter where they're currently scrolled. `.filter-wrap` sits directly
@@ -1549,7 +1550,7 @@ export class Home implements OnInit, OnDestroy {
     this.scrollToResults();
   }
 
-  // Used by <select> elements — sets directly (no toggle)
+  // Used by <select> elements - sets directly (no toggle)
   onTagSelectChange(tag: string): void {
     this.selectedTag.set(tag);
     this.resetVisibleCounts();
@@ -1571,7 +1572,7 @@ export class Home implements OnInit, OnDestroy {
   }
 
   // Switch the mobile "For You / Trending / Latest" tab and bring the feed
-  // into view — each tab shows different sections, so without this the user
+  // into view - each tab shows different sections, so without this the user
   // could be scrolled past the content the new tab actually has to show.
   setMobileTab(tab: 'for-you' | 'trending' | 'latest'): void {
     this.mobileTab.set(tab);
@@ -1587,7 +1588,7 @@ export class Home implements OnInit, OnDestroy {
       page.update(p => p + 1);
       scrollTo({ top: 0, behavior: 'smooth' });
     }
-    // Last page of memory — transparently fetch more from server
+    // Last page of memory - transparently fetch more from server
     if (page() >= total - 2 && this.hasMoreOnServer()) {
       this.loadNextServerPage();
     }

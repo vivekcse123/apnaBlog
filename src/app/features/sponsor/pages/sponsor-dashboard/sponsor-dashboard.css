@@ -1,5 +1,5 @@
 /* ════════════════════════════════════════════
-   SPONSOR DASHBOARD — Modern Ad Platform UI
+   SPONSOR DASHBOARD - Modern Ad Platform UI
    ════════════════════════════════════════════ */
 
 /* ── Page shell ── */
@@ -14,7 +14,7 @@
    HERO BANNER
    ══════════════════════════════════════════ */
 .sp-hero {
-  background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0d4a3a 100%);
+  background: var(--bg-surface);
   padding: env(safe-area-inset-top, 0px) 5% 0;
   position: relative;
   overflow: hidden;
@@ -22,8 +22,7 @@
 .sp-hero::before {
   content: '';
   position: absolute; inset: 0;
-  background: radial-gradient(ellipse at 80% 50%, rgba(67,206,162,.15) 0%, transparent 60%),
-              radial-gradient(ellipse at 20% 80%, rgba(24,90,157,.2) 0%, transparent 50%);
+  background: none;
   pointer-events: none;
 }
 
@@ -38,7 +37,7 @@
 }
 .sp-hero-logo {
   width: 38px; height: 38px; border-radius: 10px;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
   box-shadow: 0 4px 12px rgba(67,206,162,.3);
@@ -58,7 +57,7 @@
 .sp-btn-campaign {
   display: inline-flex; align-items: center; gap: 7px;
   padding: 9px 18px; border-radius: 10px; font-size: .82rem; font-weight: 700;
-  background: linear-gradient(135deg, #43cea2, #185a9d);
+  background: var(--accent);
   color: #fff; border: none; cursor: pointer;
   box-shadow: 0 4px 14px rgba(67,206,162,.35);
   transition: transform .15s, box-shadow .15s;
@@ -137,12 +136,12 @@
 .sp-stat-card::before {
   content: ''; position: absolute; top: 0; left: 0; right: 0;
   height: 3px;
-  background: var(--stat-accent, linear-gradient(90deg, #185a9d, #43cea2));
+  background: var(--stat-accent, var(--accent));
 }
-.sp-stat-card:nth-child(1)::before { background: linear-gradient(90deg, #185a9d, #43cea2); }
-.sp-stat-card:nth-child(2)::before { background: linear-gradient(90deg, #43cea2, #06b6d4); }
-.sp-stat-card:nth-child(3)::before { background: linear-gradient(90deg, #6366f1, #8b5cf6); }
-.sp-stat-card:nth-child(4)::before { background: linear-gradient(90deg, #f59e0b, #ef4444); }
+.sp-stat-card:nth-child(1)::before { background: var(--accent); }
+.sp-stat-card:nth-child(2)::before { background: var(--accent); }
+.sp-stat-card:nth-child(3)::before { background: #8b5cf6; }
+.sp-stat-card:nth-child(4)::before { background: #f59e0b; }
 
 .sp-stat-icon {
   width: 40px; height: 40px; border-radius: 10px;
@@ -294,12 +293,12 @@
   box-shadow: 0 2px 8px rgba(0,0,0,.1);
 }
 .sp-crow-thumb--letter {
-  background: linear-gradient(135deg, #185a9d, #43cea2);
+  background: var(--accent);
   display: flex; align-items: center; justify-content: center;
   color: #fff; font-weight: 800; font-size: 1rem;
 }
 .sp-crow-thumb--dark {
-  background: linear-gradient(135deg, #1a1a2e, #16213e);
+  background: var(--bg-surface-alt);
   display: flex; align-items: center; justify-content: center;
 }
 .sp-crow-thumb--video { border-radius: 9px; }
@@ -425,7 +424,7 @@
 }
 .sp-empty-icon {
   width: 72px; height: 72px; border-radius: 20px;
-  background: linear-gradient(135deg, rgba(24,90,157,.08), rgba(67,206,162,.08));
+  background: var(--accent-subtle);
   border: 1.5px dashed var(--border-soft, #e2e8f0);
   display: flex; align-items: center; justify-content: center;
 }

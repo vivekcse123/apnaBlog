@@ -21,10 +21,10 @@ interface Slice<T> {
 @Injectable({ providedIn: 'root' })
 export class DashboardCache {
 
-  /** Hard expiry — always refetch after this. */
+  /** Hard expiry - always refetch after this. */
   private readonly TTL_MS   = 5 * 60 * 1_000;   // 5 min
 
-  /** Soft staleness — triggers a silent background refresh while serving
+  /** Soft staleness - triggers a silent background refresh while serving
    *  cached content instantly. 30 s gives a "real-time" feel on tab switch. */
   private readonly STALE_MS = 30 * 1_000;        // 30 s
 
@@ -42,7 +42,7 @@ export class DashboardCache {
   setAdminPosts(posts: any[]): void { this._posts = { data: posts, cachedAt: Date.now() }; }
   invalidateAdminPosts(): void { this._posts = null; }
 
-  // ── Admin users (regular admin — role=user filtered list) ───────────────────
+  // ── Admin users (regular admin - role=user filtered list) ───────────────────
   private _users: Slice<any[]> | null = null;
 
   getAdminUsers(): any[] | null {
@@ -56,7 +56,7 @@ export class DashboardCache {
   setAdminUsers(users: any[]): void { this._users = { data: users, cachedAt: Date.now() }; }
   invalidateAdminUsers(): void { this._users = null; }
 
-  // ── Raw users (super-admin — unfiltered list) ───────────────────────────────
+  // ── Raw users (super-admin - unfiltered list) ───────────────────────────────
   private _rawUsers: Slice<any[]> | null = null;
 
   getRawUsers(): any[] | null {
@@ -115,7 +115,7 @@ export class DashboardCache {
     return this._posts ? Date.now() - this._posts.cachedAt : null;
   }
 
-  /** Populates both slots simultaneously — called by AdminHome after forkJoin. */
+  /** Populates both slots simultaneously - called by AdminHome after forkJoin. */
   set(posts: any[], users: any[]): void {
     this.setAdminPosts(posts);
     this.setAdminUsers(users);
