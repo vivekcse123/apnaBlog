@@ -111,8 +111,8 @@ export const routes: Routes = [
     },
     {
         path: 'contact',
-        redirectTo: 'about',
-        pathMatch: 'full'
+        loadComponent: () => import('./features/landing/pages/contact/contact').then(m => m.Contact),
+        title: 'Contact Us | ApnaInsights'
     },
     {
         path: 'blog/:id',

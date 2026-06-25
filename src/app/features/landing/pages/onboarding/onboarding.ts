@@ -44,7 +44,7 @@ export class Onboarding implements OnInit {
       subtitle: 'Discover authentic blogs written by everyday people across India and the world.',
       accent: '#43cea2',
       bg: 'linear-gradient(160deg, #071e42 0%, #0d4a36 100%)',
-      features: ['14+ topics to explore', '2,400+ published stories', 'Updated daily'],
+      features: ['16+ topics to explore', '2,400+ published stories', 'Updated daily'],
     },
     {
       id: 1,
@@ -53,7 +53,7 @@ export class Onboarding implements OnInit {
       subtitle: 'Technology, Health, Village Life, Sports, Cooking - stories that match your world.',
       accent: '#5b8dee',
       bg: 'linear-gradient(160deg, #0c1a3a 0%, #1a2d6e 100%)',
-      features: ['14 unique categories', 'Personalized for you', 'Smart recommendations'],
+      features: ['16 unique categories', 'Personalized for you', 'Smart recommendations'],
     },
     {
       id: 2,

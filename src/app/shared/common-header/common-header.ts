@@ -57,6 +57,7 @@ export class CommonHeader implements OnInit {
       { label: 'Quotes',        emoji: '💬' }, { label: 'Exercise',       emoji: '🏋️' },
       { label: 'Social',        emoji: '🤝' }, { label: 'Entertainment',  emoji: '🎬' },
       { label: 'News',          emoji: '📰' }, { label: 'Update',         emoji: '📢' },
+      { label: 'Career',        emoji: '💼' }, { label: 'AI',             emoji: '🤖' },
     ];
   }
 

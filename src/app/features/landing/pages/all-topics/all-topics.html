@@ -53,7 +53,7 @@
         <div class="at-grid">
           @for (_ of [1,2,3,4,5,6,7,8,9,10,11,12,13,14]; track $index) {
             <div class="at-card at-card--skeleton">
-              <div class="at-card-emoji-box at-skel"></div>
+              <div class="at-card-emoji-box at-skel" style="width:44px;height:44px;border-radius:12px;flex-shrink:0"></div>
               <div class="at-card-body">
                 <div class="at-skel at-skel--title"></div>
                 <div class="at-skel at-skel--text"></div>
@@ -62,6 +62,25 @@
             </div>
           }
         </div>
+      }
+
+      <!-- Trending Topics -->
+      @if (!isLoading() && trendingTopics().length > 0) {
+        <section class="at-trending" aria-labelledby="at-trending-title">
+          <h2 class="at-section-title" id="at-trending-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+            Trending Topics
+          </h2>
+          <div class="at-trending-row">
+            @for (topic of trendingTopics(); track topic.slug) {
+              <a class="at-trending-chip" [routerLink]="['/category', topic.slug]" (click)="scrollToTop()" [attr.aria-label]="topic.name + ' — ' + topic.count + ' stories'">
+                <span class="at-trending-chip-icon" [innerHTML]="getIcon(topic.name)"></span>
+                <span class="at-trending-chip-name">{{ topic.name }}</span>
+                <span class="at-trending-chip-count">{{ topic.count }}</span>
+              </a>
+            }
+          </div>
+        </section>
       }
 
       <!-- Loaded -->
@@ -74,8 +93,8 @@
               [attr.aria-label]="topic.name + ' stories'"
               (click)="scrollToTop()"
             >
-              <div class="at-card-emoji-box" [style.background]="topic.color + '18'" [style.border-color]="topic.color + '30'">
-                <span class="at-card-emoji" aria-hidden="true">{{ topic.emoji }}</span>
+              <div class="at-card-icon-box">
+                <span class="at-card-icon" aria-hidden="true" [innerHTML]="getIcon(topic.name)"></span>
               </div>
               <div class="at-card-body">
                 <h2 class="at-card-name">{{ topic.name }}</h2>
@@ -84,7 +103,7 @@
                   @if (topic.count > 0) {
                     <span class="at-card-count">{{ topic.count }} {{ topic.count === 1 ? 'story' : 'stories' }}</span>
                   }
-                  <span class="at-card-cta" [style.color]="topic.color">
+                  <span class="at-card-cta">
                     Explore
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                   </span>
@@ -93,6 +112,21 @@
             </a>
           }
         </div>
+
+        <!-- Browse by Tag -->
+        @if (activeTags().length > 0) {
+          <section class="at-tags-section" aria-labelledby="at-tags-title">
+            <h2 class="at-section-title" id="at-tags-title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+              Browse by Tag
+            </h2>
+            <div class="at-tags-row">
+              @for (tag of activeTags(); track tag.slug) {
+                <a class="at-tag-chip" [routerLink]="['/tag', tag.slug]">{{ tag.name }}</a>
+              }
+            </div>
+          </section>
+        }
 
         <!-- Write CTA -->
         <div class="at-write-cta">

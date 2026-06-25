@@ -19,6 +19,12 @@ import { TimeAgoPipe } from '../../../../shared/pipes/time-ago-pipe';
 import { environment } from '../../../../../environments/environment';
 import { MobileBottomNav } from '../../../../shared/mobile-bottom-nav/mobile-bottom-nav';
 
+const ALL_CATEGORIES = [
+  'Technology','Career','Health','Business','Education','Lifestyle','Sports',
+  'Finance','Productivity','AI','Cooking','Exercise','Entertainment',
+  'Social','Update','News','Quotes','Village',
+];
+
 @Component({
   selector: 'app-search',
   standalone: true,
@@ -40,35 +46,60 @@ export class SearchPage implements OnInit {
   private meta          = inject(Meta);
   private titleSvc      = inject(Title);
 
-  query        = signal('');
-  allPosts     = signal<Post[]>([]);
-  isLoading    = signal(true);
-  suggestions  = signal<{ _id: string; title: string; slug: string; categories?: string[] }[]>([]);
+  readonly ALL_CATEGORIES = ALL_CATEGORIES;
+
+  query           = signal('');
+  allPosts        = signal<Post[]>([]);
+  isLoading       = signal(true);
+  suggestions     = signal<{ _id: string; title: string; slug: string; categories?: string[] }[]>([]);
   showSuggestions = signal(false);
   activeSuggIdx   = signal(-1);
+  filterCat       = signal('');
+  sortBy          = signal<'latest' | 'popular'>('latest');
+  displayCount    = signal(10);
 
-  private searchInput$   = new Subject<string>();
-  private suggestInput$  = new Subject<string>();
+  private searchInput$  = new Subject<string>();
+  private suggestInput$ = new Subject<string>();
 
-  results = computed(() => {
-    const q     = this.query().trim().toLowerCase();
-    const posts = this.allPosts();
-    if (!q) return posts.slice(0, 24);
-    return posts.filter(p =>
+  hasQuery = computed(() => this.query().trim().length > 0);
+
+  filteredResults = computed(() => {
+    const q   = this.query().trim().toLowerCase();
+    const cat = this.filterCat();
+    let posts = this.allPosts();
+
+    if (q) posts = posts.filter(p =>
       p.title?.toLowerCase().includes(q) ||
       p.description?.toLowerCase().includes(q) ||
       p.categories?.some(c => c.toLowerCase().includes(q)) ||
       p.tags?.some(t => t.toLowerCase().includes(q))
     );
+
+    if (cat) posts = posts.filter(p =>
+      p.categories?.some(c => c.toLowerCase() === cat.toLowerCase())
+    );
+
+    return this.sortBy() === 'popular'
+      ? [...posts].sort((a, b) => (b.views ?? 0) - (a.views ?? 0))
+      : [...posts].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   });
 
-  hasQuery = computed(() => this.query().trim().length > 0);
+  visibleResults = computed(() => this.filteredResults().slice(0, this.displayCount()));
+  hasMoreResults = computed(() => this.filteredResults().length > this.displayCount());
 
-  // Tracks which .adsbygoogle <ins> elements have already been pushed -
-  // avoids re-pushing an already-initialised <ins> ("already have ads in
-  // them") if pushAds() is ever called more than once.
+  loadMore(): void { this.displayCount.update(n => n + 10); }
+  setFilter(cat: string): void { this.filterCat.set(cat); this.displayCount.set(10); }
+  setSort(s: 'latest' | 'popular'): void { this.sortBy.set(s); this.displayCount.set(10); }
+
+  getAuthorName(post: Post): string {
+    return (post.user as any)?.name || 'ApnaInsights';
+  }
+
+  getAuthorId(post: Post): string | null {
+    return (post.user as any)?._id ?? null;
+  }
+
   private pushedAds = new WeakSet<Element>();
-
   private pushAds(): void {
     if (!isPlatformBrowser(this.platformId)) return;
     try {
@@ -86,9 +117,6 @@ export class SearchPage implements OnInit {
     this.titleSvc.setTitle('Search Guides & Articles - ApnaInsights');
     setTimeout(() => this.pushAds(), 500);
     this.meta.updateTag({ name: 'description', content: 'Search thousands of articles on ApnaInsights.' });
-    // robots.txt no longer disallows /search - that previously blocked Google
-    // from crawling this page at all, so it could never see this noindex tag
-    // and properly drop already-indexed /search?q=... URLs from the index.
     this.meta.updateTag({ name: 'robots', content: 'noindex, follow' });
 
     this.route.queryParamMap
@@ -103,9 +131,9 @@ export class SearchPage implements OnInit {
           queryParamsHandling: 'merge',
           replaceUrl: true,
         });
+        this.displayCount.set(10);
       });
 
-    // Autocomplete suggestions - separate stream with faster debounce
     this.suggestInput$
       .pipe(
         debounceTime(150),
@@ -158,7 +186,6 @@ export class SearchPage implements OnInit {
   }
 
   hideSuggestions(): void {
-    // Small delay so click on suggestion fires before blur hides the list
     setTimeout(() => this.showSuggestions.set(false), 150);
   }
 
@@ -167,6 +194,7 @@ export class SearchPage implements OnInit {
     this.searchInput$.next('');
     this.suggestions.set([]);
     this.showSuggestions.set(false);
+    this.displayCount.set(10);
   }
 
   goBack(): void {
@@ -198,6 +226,4 @@ export class SearchPage implements OnInit {
     const text = (post.content ?? '').replace(/<[^>]*>/g, '');
     return Math.max(1, Math.ceil(text.trim().split(/\s+/).length / 200));
   }
-
-  trackById(_: number, p: Post): string { return p._id; }
 }

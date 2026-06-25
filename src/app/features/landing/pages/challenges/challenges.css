@@ -11,10 +11,11 @@
 .ch-back-btn {
   display: flex; align-items: center; justify-content: center;
   width: 36px; height: 36px; border-radius: 50%;
-  background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12);
-  color: #e8eaf0; cursor: pointer;
+  background: var(--bg-surface-alt, rgba(255,255,255,.08));
+  border: 1px solid var(--border, rgba(255,255,255,.12));
+  color: var(--text-secondary, #e8eaf0); cursor: pointer;
   margin: 0 auto 16px;
-  transition: background .18s, transform .15s;
+  transition: background .18s, color .18s, transform .15s;
 }
 .ch-back-btn:hover { background: rgba(67,206,162,.15); color: #43cea2; transform: translateX(-2px); }
 

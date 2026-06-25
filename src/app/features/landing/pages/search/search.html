@@ -66,92 +66,44 @@
 
       @if (!isLoading()) {
         <p class="search-count" aria-live="polite">
+          <strong>{{ filteredResults().length }}</strong>
           @if (hasQuery()) {
-            <strong>{{ results().length }}</strong> result{{ results().length !== 1 ? 's' : '' }} for
-            "<em>{{ query() }}</em>"
+            result{{ filteredResults().length !== 1 ? 's' : '' }} for "<em>{{ query() }}</em>"
+          } @else if (filterCat()) {
+            stor{{ filteredResults().length !== 1 ? 'ies' : 'y' }} in <em>{{ filterCat() }}</em>
           } @else {
-            <strong>{{ allPosts().length }}</strong> published stories
+            published stor{{ filteredResults().length !== 1 ? 'ies' : 'y' }}
           }
         </p>
       }
     </div>
   </section>
 
-  <!-- Results -->
-  <section class="search-results">
-
-    @if (isLoading()) {
-      <div class="search-skeleton-grid">
-        @for (i of [1,2,3,4,5,6]; track i) {
-          <div class="search-skeleton-card">
-            <div class="sk-img"></div>
-            <div class="sk-body">
-              <div class="sk-line sk-line--short"></div>
-              <div class="sk-line"></div>
-              <div class="sk-line sk-line--med"></div>
-              <div class="sk-line sk-line--xs"></div>
-            </div>
-          </div>
+  <!-- Filter bar -->
+  <div class="sp-filter-bar">
+    <div class="sp-filter-inner">
+      <!-- Category chips -->
+      <div class="sp-cats" role="list" aria-label="Filter by category">
+        <button class="sp-cat-chip" [class.active]="filterCat() === ''" (click)="setFilter('')" role="listitem">All</button>
+        @for (cat of ALL_CATEGORIES; track cat) {
+          <button class="sp-cat-chip" [class.active]="filterCat() === cat" (click)="setFilter(cat)" role="listitem">{{ cat }}</button>
         }
       </div>
-
-    } @else if (results().length === 0) {
-      <div class="search-empty">
-        <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-             stroke-width="1.2" stroke-linecap="round" aria-hidden="true">
-          <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
-          <line x1="8" y1="11" x2="14" y2="11"/>
-        </svg>
-        <h2>No results found</h2>
-        <p>Try a different keyword, or <a routerLink="/" class="search-empty-link">browse all stories</a></p>
+      <!-- Sort -->
+      <div class="sp-sort" role="group" aria-label="Sort by">
+        <button class="sp-sort-btn" [class.active]="sortBy() === 'latest'" (click)="setSort('latest')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Latest
+        </button>
+        <button class="sp-sort-btn" [class.active]="sortBy() === 'popular'" (click)="setSort('popular')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+          Popular
+        </button>
       </div>
+    </div>
+  </div>
 
-    } @else {
-      <div class="search-grid">
-        @for (post of results(); track post._id) {
-          <article class="search-card" [routerLink]="['/blog', post.slug || post._id]">
-
-            @if (post.featuredImage) {
-              <div class="search-card-img-wrap">
-                <img [src]="post.featuredImage" [alt]="post.title"
-                     class="search-card-img" loading="lazy" width="360" height="200"/>
-              </div>
-            } @else {
-              <div class="search-card-img-wrap search-card-img-wrap--placeholder">
-                <span class="search-card-letter">{{ post.title.charAt(0).toUpperCase() }}</span>
-              </div>
-            }
-
-            <div class="search-card-body">
-              @if (post.categories.length) {
-                <span class="search-card-cat">{{ post.categories[0] }}</span>
-              }
-              <h2 class="search-card-title">{{ post.title }}</h2>
-              <p class="search-card-desc">{{ post.description }}</p>
-              <div class="search-card-meta">
-                <span>{{ readingTime(post) }} min read</span>
-                <span class="meta-dot" aria-hidden="true">·</span>
-                <span>{{ post.createdAt | timeAgo }}</span>
-                <span class="meta-dot" aria-hidden="true">·</span>
-                <span>{{ post.views }} views</span>
-              </div>
-              @if (post.tags.length) {
-                <div class="search-card-tags">
-                  @for (tag of post.tags.slice(0, 3); track tag) {
-                    <span class="search-card-tag">#{{ tag }}</span>
-                  }
-                </div>
-              }
-            </div>
-
-          </article>
-        }
-      </div>
-    }
-
-  </section>
-
-  <!-- AdSense - above mobile nav -->
+  <!-- Ad unit -->
   <div class="page-ad-wrap">
     <ins class="adsbygoogle"
       style="display:block"
@@ -160,6 +112,85 @@
       data-ad-format="auto"
       data-full-width-responsive="true"></ins>
   </div>
+
+  <!-- Posts list -->
+  <main class="sp-main">
+
+    @if (isLoading()) {
+      <div class="sp-list">
+        @for (_ of [1,2,3,4,5,6,7,8]; track $index) {
+          <div class="sp-item sp-item--skel">
+            <div class="sp-skel-body">
+              <div class="sp-skel sp-skel--cat"></div>
+              <div class="sp-skel sp-skel--title"></div>
+              <div class="sp-skel sp-skel--desc"></div>
+              <div class="sp-skel sp-skel--meta"></div>
+            </div>
+            <div class="sp-skel sp-skel--thumb"></div>
+          </div>
+        }
+      </div>
+
+    } @else if (filteredResults().length === 0) {
+      <div class="sp-empty">
+        <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+          <line x1="8" y1="11" x2="14" y2="11"/>
+        </svg>
+        <h2>No stories found</h2>
+        @if (hasQuery()) {
+          <p>Try a different keyword, or <button class="sp-empty-link" (click)="clearSearch()">clear search</button></p>
+        } @else {
+          <p>No stories in <strong>{{ filterCat() }}</strong> yet. <button class="sp-empty-link" (click)="setFilter('')">View all</button></p>
+        }
+      </div>
+
+    } @else {
+      <div class="sp-list">
+        @for (post of visibleResults(); track post._id) {
+          <article class="sp-item">
+            <div class="sp-item-body">
+              @if (post.categories.length) {
+                <div class="sp-item-cats">
+                  @for (cat of post.categories!.slice(0,2); track cat) {
+                    <a class="sp-item-cat" [routerLink]="['/category', cat.toLowerCase()]">{{ cat }}</a>
+                  }
+                </div>
+              }
+              <h2 class="sp-item-title">
+                <a class="sp-item-link" [routerLink]="['/blog', post.slug || post._id]">{{ post.title }}</a>
+              </h2>
+              <p class="sp-item-desc">{{ post.description }}</p>
+              <div class="sp-item-meta">
+                @if (getAuthorId(post)) {
+                  <a class="sp-meta-author" [routerLink]="['/author', getAuthorId(post)]">{{ getAuthorName(post) }}</a>
+                } @else {
+                  <span class="sp-meta-author">{{ getAuthorName(post) }}</span>
+                }
+                <span class="sp-meta-dot" aria-hidden="true">·</span>
+                <time [attr.datetime]="post.createdAt | date:'yyyy-MM-dd'">{{ post.createdAt | timeAgo }}</time>
+                <span class="sp-meta-dot" aria-hidden="true">·</span>
+                <span>{{ readingTime(post) }} min read</span>
+              </div>
+            </div>
+
+            @if (post.featuredImage) {
+              <a class="sp-item-thumb" [routerLink]="['/blog', post.slug || post._id]" tabindex="-1" aria-hidden="true">
+                <img [src]="post.featuredImage" [alt]="post.title" loading="lazy" width="160" height="107" />
+              </a>
+            }
+          </article>
+        }
+      </div>
+
+      @if (hasMoreResults()) {
+        <div class="sp-load-more-wrap">
+          <button class="sp-load-more-btn" (click)="loadMore()">Load more stories</button>
+        </div>
+      }
+    }
+
+  </main>
 
   <app-mobile-bottom-nav></app-mobile-bottom-nav>
 

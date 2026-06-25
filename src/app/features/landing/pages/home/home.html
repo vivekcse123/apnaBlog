@@ -83,6 +83,10 @@
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
             About Us
           </a>
+          <a class="nav-more-item" role="menuitem" routerLink="/contact" (click)="navMoreOpen.set(false)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><path d="M22 6l-10 7L2 6"/></svg>
+            Contact
+          </a>
           <a class="nav-more-item nav-more-item--advertise" role="menuitem" routerLink="/advertise" (click)="navMoreOpen.set(false)">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
             Advertise
@@ -225,6 +229,12 @@
     </span>
     About Us
   </a>
+  <a class="drawer-link" routerLink="/contact" (click)="menuOpen.set(false)">
+    <span class="drawer-link-icon drawer-link-icon--cyan">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><path d="M22 6l-10 7L2 6"/></svg>
+    </span>
+    Contact Us
+  </a>
   <a class="drawer-link drawer-link--advertise" routerLink="/advertise" (click)="menuOpen.set(false)">
     <span class="drawer-link-icon drawer-link-icon--orange">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
@@ -278,7 +288,7 @@
 
   <!-- ══ HERO SECTION ══════════════════════════════════════════════════════ -->
   <section class="v2-hero" itemscope itemtype="https://schema.org/WebSite" aria-labelledby="hero-h1">
-    <meta itemprop="name" content="ApnaInsights - India's Career & Tech Knowledge Platform" />
+    <meta itemprop="name" content="ApnaInsights - India's Hub for Tech, Career, Health &amp; Life" />
     <meta itemprop="description" content="Practical guides on Technology, Careers, and Digital Skills - written by verified Indian professionals." />
     <link itemprop="url" href="https://apnainsights.com" />
 
@@ -293,12 +303,12 @@
       <div class="v2-hero-left">
         <div class="v2-hero-eyebrow" aria-hidden="true">
           <span class="v2-hero-eyebrow-dot"></span>
-          India's Career & Tech Knowledge Platform
+          India's Hub for Tech, Career, Health & Life
         </div>
 
         <h1 class="v2-hero-h1" id="hero-h1">
-          Grow your career with<br>
-          <span class="v2-hero-accent">real knowledge built for India</span>
+          Practical guides on tech,<br>
+          <span class="v2-hero-accent">career &amp; life, built for India</span>
         </h1>
 
         <p class="v2-hero-desc">
@@ -379,165 +389,105 @@
           </a>
         </div>
         <p class="v2-hero-write-nudge">
-          <a [routerLink]="writeRoute" class="v2-hero-write-link">Share your expertise - write for free</a>
+          <a [routerLink]="writeRoute" class="v2-hero-write-link">Publish your story and reach thousands of readers</a>
         </p>
       </div>
 
-      <!-- Right illustration -->
-      <div class="v2-hero-right" aria-hidden="true">
-        <div class="v2-hero-illustration">
-          <svg class="v2-india-svg" viewBox="0 0 560 420" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ApnaInsights - read and write stories">
+      <!-- Right: Live trending posts -->
+      <aside class="v2-hero-right" aria-label="Trending stories">
+        <div class="v2-hero-live-panel">
 
-            <!-- Background -->
-            <rect width="560" height="420" fill="#F0FDF9" rx="20"/>
+          <div class="v2-hero-live-header">
+            <span class="v2-hero-live-dot" aria-hidden="true"></span>
+            <span class="v2-hero-live-label">Trending right now</span>
+            <a class="v2-hero-live-all" routerLink="/search" [queryParams]="{q:'trending'}">
+              See all
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </a>
+          </div>
 
-            <!-- Subtle dot grid -->
-            <pattern id="dotgrid" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
-              <circle cx="2" cy="2" r="1.2" fill="#43cea2" opacity="0.15"/>
-            </pattern>
-            <rect width="560" height="420" fill="url(#dotgrid)" rx="20"/>
+          @if (isLoading() || trendingPosts().length === 0) {
+            @for (_ of [1,2,3]; track $index) {
+              <div class="v2-hero-post-skel">
+                <div class="v2-hps-rank"></div>
+                <div class="v2-hps-thumb"></div>
+                <div class="v2-hps-body">
+                  <div class="v2-hps-line v2-hps-line--cat"></div>
+                  <div class="v2-hps-line v2-hps-line--title"></div>
+                  <div class="v2-hps-line v2-hps-line--title" style="width:70%"></div>
+                  <div class="v2-hps-line v2-hps-line--meta"></div>
+                </div>
+              </div>
+            }
+          } @else {
+            @for (post of trendingPosts().slice(0, 3); track post._id; let i = $index) {
+              <a class="v2-hero-post-card" [class.v2-hero-post-card--top]="i === 0"
+                 [routerLink]="['/blog', post.slug || post._id]"
+                 [attr.aria-label]="'Read: ' + post.title">
 
-            <!-- Soft glow corners -->
-            <circle cx="500" cy="50" r="90" fill="#43cea2" opacity="0.06"/>
-            <circle cx="60" cy="380" r="80" fill="#43cea2" opacity="0.05"/>
+                <span class="v2-hero-post-rank" [class.v2-hero-post-rank--gold]="i === 0"
+                      aria-hidden="true">#{{ i + 1 }}</span>
 
-            <!-- ── MAIN BLOG POST CARD ── -->
-            <g transform="translate(90, 50)">
-              <rect x="3" y="3" width="360" height="230" rx="16" fill="#000" opacity="0.05"/>
-              <rect width="360" height="230" rx="16" fill="#fff" stroke="#E2E8F0" stroke-width="1.5"/>
+                <div class="v2-hero-post-thumb">
+                  @if (post.featuredImage) {
+                    <img [src]="post.featuredImage | cldResize:120" [alt]="post.title" loading="lazy" width="72" height="72" />
+                  } @else {
+                    <div class="v2-hero-post-noimg" aria-hidden="true">{{ post.title.charAt(0).toUpperCase() }}</div>
+                  }
+                </div>
 
-              <!-- Cover image area -->
-              <rect width="360" height="96" rx="16" fill="#ECFDF5"/>
-              <rect y="80" width="360" height="16" fill="#ECFDF5"/>
+                <div class="v2-hero-post-body">
+                  <div class="v2-hero-post-top-row">
+                    @if (post.categories[0]) {
+                      <span class="v2-hero-post-cat">{{ post.categories[0] }}</span>
+                    }
+                    @if (i === 0) {
+                      <span class="v2-hero-post-hot" aria-label="Most popular">🔥 Hot</span>
+                    }
+                  </div>
+                  <p class="v2-hero-post-title">{{ post.title }}</p>
+                  <div class="v2-hero-post-author-row">
+                    <span class="v2-hero-post-author-avatar" aria-hidden="true">{{ ($any(post.user).name || 'A').charAt(0).toUpperCase() }}</span>
+                    <span class="v2-hero-post-author-name">{{ $any(post.user).name || 'ApnaInsights' }}</span>
+                  </div>
+                  <div class="v2-hero-post-meta">
+                    <span>
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                      {{ post.views | formatCount }}
+                    </span>
+                    <span class="v2-hero-post-meta-dot" aria-hidden="true">·</span>
+                    <span>
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                      {{ getReadingTime(post) }} min read
+                    </span>
+                  </div>
+                </div>
 
-              <!-- Decorative cover lines (simulates a real cover photo) -->
-              <rect x="20" y="18" width="200" height="9" rx="4" fill="#43cea2" opacity="0.20"/>
-              <rect x="20" y="34" width="280" height="9" rx="4" fill="#43cea2" opacity="0.13"/>
-              <rect x="20" y="50" width="240" height="9" rx="4" fill="#43cea2" opacity="0.09"/>
-              <rect x="20" y="66" width="160" height="9" rx="4" fill="#43cea2" opacity="0.06"/>
+                <svg class="v2-hero-post-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
 
-              <!-- Category tag -->
-              <rect x="20" y="108" width="70" height="20" rx="10" fill="#ECFDF5"/>
-              <text x="55" y="122" text-anchor="middle" font-size="10" fill="#059669" font-family="system-ui,sans-serif" font-weight="700">Technology</text>
+              </a>
+            }
+          }
 
-              <!-- Post title (two solid lines = headline) -->
-              <rect x="20" y="136" width="315" height="12" rx="5" fill="#1e293b" opacity="0.88"/>
-              <rect x="20" y="154" width="250" height="12" rx="5" fill="#1e293b" opacity="0.60"/>
+          <div class="v2-hero-panel-footer">
+            <div class="v2-hero-panel-stat">
+              <span class="v2-hero-panel-stat-num">{{ publishedCount() > 0 ? (publishedCount() | formatCount) + '+' : '500+' }}</span>
+              <span class="v2-hero-panel-stat-label">Articles</span>
+            </div>
+            <div class="v2-hero-panel-stat-divider" aria-hidden="true"></div>
+            <div class="v2-hero-panel-stat">
+              <span class="v2-hero-panel-stat-num">16+</span>
+              <span class="v2-hero-panel-stat-label">Topics</span>
+            </div>
+            <div class="v2-hero-panel-stat-divider" aria-hidden="true"></div>
+            <div class="v2-hero-panel-stat">
+              <span class="v2-hero-panel-stat-num">100%</span>
+              <span class="v2-hero-panel-stat-label">Human Written</span>
+            </div>
+          </div>
 
-              <!-- Short description (three faint lines) -->
-              <rect x="20" y="178" width="310" height="7" rx="3.5" fill="#94a3b8" opacity="0.55"/>
-              <rect x="20" y="191" width="270" height="7" rx="3.5" fill="#94a3b8" opacity="0.45"/>
-              <rect x="20" y="204" width="200" height="7" rx="3.5" fill="#94a3b8" opacity="0.35"/>
-
-              <!-- Read time + author row -->
-              <circle cx="30" cy="222" r="7" fill="#ECFDF5"/>
-              <rect x="42" y="217" width="60" height="6" rx="3" fill="#94a3b8" opacity="0.45"/>
-              <rect x="108" y="217" width="40" height="6" rx="3" fill="#94a3b8" opacity="0.30"/>
-            </g>
-
-            <!-- ── AUTHOR CARD (top left, overlapping) ── -->
-            <g transform="translate(16, 78)">
-              <rect width="158" height="48" rx="13" fill="#fff" stroke="#E2E8F0" stroke-width="1.2"/>
-              <!-- Avatar -->
-              <circle cx="24" cy="24" r="15" fill="#ECFDF5"/>
-              <circle cx="24" cy="19" r="5.5" fill="#43cea2"/>
-              <path d="M13 35 Q13 29 24 29 Q35 29 35 35" fill="#43cea2"/>
-              <!-- Verified badge -->
-              <circle cx="38" cy="12" r="8" fill="#43cea2"/>
-              <polyline points="35,12 37.5,14.5 41,9.5" stroke="#fff" stroke-width="1.6" fill="none" stroke-linecap="round"/>
-              <!-- Text -->
-              <text x="50" y="18" font-size="10" fill="#1e293b" font-family="system-ui,sans-serif" font-weight="700">Verified writer</text>
-              <rect x="50" y="24" width="78" height="6" rx="3" fill="#94a3b8" opacity="0.45"/>
-              <rect x="50" y="34" width="52" height="5" rx="2.5" fill="#94a3b8" opacity="0.30"/>
-            </g>
-
-            <!-- ── STATS PANEL (right side) ── -->
-            <g transform="translate(462, 108)">
-              <rect width="88" height="120" rx="14" fill="#fff" stroke="#E2E8F0" stroke-width="1.2"/>
-
-              <!-- Views -->
-              <text x="44" y="22" text-anchor="middle" font-size="9" fill="#94a3b8" font-family="system-ui,sans-serif" font-weight="600">Views</text>
-              <text x="44" y="40" text-anchor="middle" font-size="17" fill="#1e293b" font-family="system-ui,sans-serif" font-weight="800">8.4K</text>
-              <rect x="12" y="47" width="64" height="1" fill="#E2E8F0"/>
-
-              <!-- Likes -->
-              <text x="44" y="62" text-anchor="middle" font-size="9" fill="#94a3b8" font-family="system-ui,sans-serif" font-weight="600">Likes</text>
-              <text x="44" y="80" text-anchor="middle" font-size="17" fill="#1e293b" font-family="system-ui,sans-serif" font-weight="800">312</text>
-              <rect x="12" y="87" width="64" height="1" fill="#E2E8F0"/>
-
-              <!-- Comments -->
-              <text x="44" y="101" text-anchor="middle" font-size="9" fill="#94a3b8" font-family="system-ui,sans-serif" font-weight="600">Comments</text>
-              <text x="44" y="116" text-anchor="middle" font-size="15" fill="#43cea2" font-family="system-ui,sans-serif" font-weight="800">48</text>
-            </g>
-
-            <!-- ── TRENDING BADGE (top of card, right side) ── -->
-            <g transform="translate(368, 52)">
-              <rect width="120" height="30" rx="15" fill="#43cea2"/>
-              <polyline points="15,20 15,13 21,13" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/>
-              <line x1="11" y1="21" x2="21" y2="11" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
-              <text x="32" y="20" font-size="11" fill="#fff" font-family="system-ui,sans-serif" font-weight="700">Trending now</text>
-            </g>
-
-            <!-- ── JUST PUBLISHED TOAST ── -->
-            <g transform="translate(376, 90)">
-              <rect width="130" height="38" rx="12" fill="#fff" stroke="#E2E8F0" stroke-width="1.2"/>
-              <circle cx="19" cy="19" r="7" fill="#22c55e"/>
-              <circle cx="19" cy="19" r="3.5" fill="#fff"/>
-              <text x="34" y="14" font-size="10" fill="#1e293b" font-family="system-ui,sans-serif" font-weight="700">Just published</text>
-              <rect x="34" y="21" width="80" height="7" rx="3.5" fill="#94a3b8" opacity="0.40"/>
-            </g>
-
-            <!-- ── TOPICS ROW (bottom strip) ── -->
-            <g transform="translate(90, 300)">
-              <rect width="360" height="52" rx="13" fill="#fff" stroke="#E2E8F0" stroke-width="1.2"/>
-              <text x="16" y="16" font-size="9" fill="#94a3b8" font-family="system-ui,sans-serif" font-weight="600">What do you want to read today?</text>
-
-              <rect x="12" y="22" width="60" height="20" rx="10" fill="#F0FDF9" stroke="#43cea2" stroke-width="1"/>
-              <text x="42" y="36" text-anchor="middle" font-size="10" fill="#059669" font-family="system-ui,sans-serif" font-weight="600">Technology</text>
-
-              <rect x="78" y="22" width="46" height="20" rx="10" fill="#F0FDF9" stroke="#43cea2" stroke-width="1"/>
-              <text x="101" y="36" text-anchor="middle" font-size="10" fill="#059669" font-family="system-ui,sans-serif" font-weight="600">Health</text>
-
-              <rect x="130" y="22" width="56" height="20" rx="10" fill="#F0FDF9" stroke="#43cea2" stroke-width="1"/>
-              <text x="158" y="36" text-anchor="middle" font-size="10" fill="#059669" font-family="system-ui,sans-serif" font-weight="600">Business</text>
-
-              <rect x="192" y="22" width="52" height="20" rx="10" fill="#F0FDF9" stroke="#43cea2" stroke-width="1"/>
-              <text x="218" y="36" text-anchor="middle" font-size="10" fill="#059669" font-family="system-ui,sans-serif" font-weight="600">Lifestyle</text>
-
-              <rect x="250" y="22" width="44" height="20" rx="10" fill="#F0FDF9" stroke="#43cea2" stroke-width="1"/>
-              <text x="272" y="36" text-anchor="middle" font-size="10" fill="#059669" font-family="system-ui,sans-serif" font-weight="600">Career</text>
-
-              <rect x="300" y="22" width="48" height="20" rx="10" fill="#ECFDF5" stroke="#43cea2" stroke-width="1"/>
-              <text x="324" y="36" text-anchor="middle" font-size="10" fill="#059669" font-family="system-ui,sans-serif" font-weight="600">+12 more</text>
-            </g>
-
-            <!-- ── READERS THIS WEEK (bottom left) ── -->
-            <g transform="translate(14, 272)">
-              <rect width="70" height="108" rx="13" fill="#fff" stroke="#E2E8F0" stroke-width="1.2"/>
-              <text x="35" y="18" text-anchor="middle" font-size="9" fill="#94a3b8" font-family="system-ui,sans-serif" font-weight="600">Readers</text>
-              <!-- Bar chart rising = growing readership -->
-              <rect x="8"  y="84" width="10" height="15" rx="3" fill="#43cea2" opacity="0.25"/>
-              <rect x="21" y="70" width="10" height="29" rx="3" fill="#43cea2" opacity="0.45"/>
-              <rect x="34" y="56" width="10" height="43" rx="3" fill="#43cea2" opacity="0.65"/>
-              <rect x="47" y="42" width="10" height="57" rx="3" fill="#43cea2"/>
-              <text x="35" y="38" text-anchor="middle" font-size="11" fill="#43cea2" font-family="system-ui,sans-serif" font-weight="800">+38%</text>
-            </g>
-
-            <!-- ── NEW COMMENT TOAST (bottom right) ── -->
-            <g transform="translate(462, 244)">
-              <rect width="88" height="66" rx="13" fill="#fff" stroke="#E2E8F0" stroke-width="1.2"/>
-              <!-- Chat icon -->
-              <rect x="8" y="8" width="22" height="18" rx="5" fill="#ECFDF5" stroke="#43cea2" stroke-width="1.2"/>
-              <path d="M12 26 L12 31 L19 26 Z" fill="#ECFDF5" stroke="#43cea2" stroke-width="1"/>
-              <text x="36" y="17" font-size="8.5" fill="#1e293b" font-family="system-ui,sans-serif" font-weight="700">New comment</text>
-              <rect x="36" y="22" width="42" height="5.5" rx="2.5" fill="#94a3b8" opacity="0.40"/>
-              <rect x="36" y="31" width="32" height="5.5" rx="2.5" fill="#94a3b8" opacity="0.28"/>
-              <text x="44" y="56" text-anchor="middle" font-size="11" fill="#43cea2" font-family="system-ui,sans-serif" font-weight="800">48 replies</text>
-            </g>
-
-          </svg>
         </div>
-      </div>
+      </aside>
     </div>
 
     <!-- ══ Centered hero search ════════════════════════════════════════════ -->
@@ -569,7 +519,7 @@
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
         </button>
         <button type="submit" class="v2-mega-search-btn" aria-label="Search">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
         </button>
       </form>
 
@@ -732,6 +682,31 @@
     </div>
   </section>
 
+  <!-- ══ STATS BAR ═══════════════════════════════════════════════════════ -->
+  <div class="v2-stats-bar" aria-label="ApnaInsights platform stats">
+    <div class="v2-stats-bar-inner">
+      <div class="v2-stat-item">
+        <strong class="v2-stat-num">{{ publishedCount() > 0 ? publishedCount() + '+' : '500+' }}</strong>
+        <span class="v2-stat-label">Stories Published</span>
+      </div>
+      <div class="v2-stat-div" aria-hidden="true"></div>
+      <div class="v2-stat-item">
+        <strong class="v2-stat-num">{{ activeTopicsCount() > 0 ? activeTopicsCount() + '+' : '16+' }}</strong>
+        <span class="v2-stat-label">Topics Covered</span>
+      </div>
+      <div class="v2-stat-div" aria-hidden="true"></div>
+      <div class="v2-stat-item">
+        <strong class="v2-stat-num">{{ communityMembersCount() > 0 ? communityMembersCount() + '+' : '50+' }}</strong>
+        <span class="v2-stat-label">Contributors</span>
+      </div>
+      <div class="v2-stat-div" aria-hidden="true"></div>
+      <div class="v2-stat-item">
+        <strong class="v2-stat-num">{{ totalReadsReady() ? totalViewCount() : '100K+' }}</strong>
+        <span class="v2-stat-label">Total Reads</span>
+      </div>
+    </div>
+  </div>
+
   <!-- ══ ACTIVE CHALLENGE BANNER ══════════════════════════════════════════ -->
   @if (activeChallenge()) {
     <a class="challenge-strip" routerLink="/challenges" aria-label="View writing challenge">
@@ -871,33 +846,8 @@
     <div class="v2-feed-col">
 
       <!-- Filter wrap (sticky) -->
-      <div class="filter-wrap" role="search" aria-label="Filter and search stories">
+      <div class="filter-wrap" role="navigation" aria-label="Filter stories">
         <div class="filter-inner">
-          <div class="filter-inner-scroll">
-            <div class="search-wrap">
-              <svg class="search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              <input #searchInput type="text" class="search-box" placeholder="Search stories…"
-                     aria-label="Search guides and articles" autocomplete="off"
-                     (input)="onSearchInput($any($event.target).value)"
-                     (keydown.enter)="scrollToResultsPublic()" />
-              <kbd class="search-shortcut" aria-label="Press / to focus search">/</kbd>
-            </div>
-            <button class="mob-filter-btn"
-                    [class.mob-filter-btn--active]="filterOpen() || isFiltering()"
-                    (click)="filterOpen.set(!filterOpen())" aria-label="Toggle filter options">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                   stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/>
-              </svg>
-              <span class="mob-filter-btn-label">Filter &amp; Sort</span>
-            </button>
-            @if (isFiltering()) {
-              <button class="cat-clear-btn"
-                      (click)="selectedCategory.set(''); selectedTag.set(''); selectedReadingTime.set(''); selectedSort.set('newest'); searchQuery.set('')"
-                      aria-label="Clear all filters">✕ Clear</button>
-            }
-          </div>
-
           <div class="filter-pills-row" [class.filter-pills-row--open]="filterOpen() || isFiltering()">
             <div class="filter-pills">
               @if (popularTags().length > 0) {
@@ -927,6 +877,23 @@
                 <option value="comments">Most Comments</option>
               </select>
             </div>
+          </div>
+
+          <div class="filter-inner-scroll">
+            <button class="mob-filter-btn"
+                    [class.mob-filter-btn--active]="filterOpen() || isFiltering()"
+                    (click)="filterOpen.set(!filterOpen())" aria-label="Toggle filter options">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/>
+              </svg>
+              <span class="mob-filter-btn-label">Filter &amp; Sort</span>
+            </button>
+            @if (isFiltering()) {
+              <button class="cat-clear-btn"
+                      (click)="selectedCategory.set(''); selectedTag.set(''); selectedReadingTime.set(''); selectedSort.set('newest'); searchQuery.set('')"
+                      aria-label="Clear all filters">✕ Clear</button>
+            }
           </div>
         </div>
 
@@ -1388,11 +1355,9 @@
             <a class="v2-sb-topic" [class.active]="selectedCategory() === cat"
                [href]="'/category/' + cat.toLowerCase()"
                (click)="$event.preventDefault(); selectCategory(cat)" [attr.aria-label]="cat + ' stories'">
-              <span class="v2-sb-topic-emoji" aria-hidden="true">{{ categoryEmojis()[cat] }}</span>
+              <span class="v2-sb-topic-icon" aria-hidden="true" [innerHTML]="getCategoryIcon(cat)"></span>
               <span class="v2-sb-topic-name">{{ cat }}</span>
-              @if (getCatCount(cat) > 0) {
-                <span class="v2-sb-topic-count" aria-hidden="true">{{ getCatCount(cat) }}</span>
-              }
+              <span class="v2-sb-topic-count" aria-hidden="true">{{ getCatCount(cat) }}</span>
             </a>
           }
         </div>
@@ -1471,13 +1436,11 @@
         </div>
         <div class="v2-sb-community-stats">
           <div class="v2-sb-community-stat">
-            @if (communityMembersReady()) { <strong>{{ communityMembersCount() }}+</strong> }
-            @else { <strong>-</strong> }
+            <strong>{{ communityMembersCount() > 0 ? communityMembersCount() + '+' : '50+' }}</strong>
             <span>Contributors</span>
           </div>
           <div class="v2-sb-community-stat">
-            @if (storiesReady()) { <strong>{{ totalViewCount() }}</strong> }
-            @else { <strong>-</strong> }
+            <strong>{{ totalReadsReady() ? totalViewCount() : '100K+' }}</strong>
             <span>Total Reads</span>
           </div>
         </div>
@@ -1624,6 +1587,63 @@
   }
 }
 
+<!-- ══ EDITORIAL MISSION ════════════════════════════════════════════════ -->
+<section class="v2-mission-section" aria-labelledby="mission-heading">
+  <div class="v2-mission-inner">
+    <div class="v2-mission-text">
+      <h2 id="mission-heading" class="v2-mission-title">Our Editorial Promise</h2>
+      <p class="v2-mission-body">
+        Every article on ApnaInsights is written by a real person: a working professional, a domain expert, or a practitioner who has lived the topic they write about. We do not publish AI-generated content. Our editorial team reviews every submission for accuracy, originality, and practical value before it goes live.
+      </p>
+      <p class="v2-mission-body">
+        We cover Technology, Career, Health, Business, Education, Finance, Lifestyle, and more, with a specific focus on what is useful for people in India. No paywalls, no sponsored articles disguised as editorial content, and no clickbait.
+      </p>
+      <a class="v2-mission-link" routerLink="/editorial-policy">Read our editorial policy →</a>
+    </div>
+    <div class="v2-mission-pillars">
+      <div class="v2-mission-pillar">
+        <span class="v2-mission-pillar-icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </span>
+        <strong>Verified Contributors</strong>
+        <span>Real professionals, not anonymous accounts</span>
+      </div>
+      <div class="v2-mission-pillar">
+        <span class="v2-mission-pillar-icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        </span>
+        <strong>Editor Reviewed</strong>
+        <span>Every post checked for quality before publishing</span>
+      </div>
+      <div class="v2-mission-pillar">
+        <span class="v2-mission-pillar-icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </span>
+        <strong>Always Free</strong>
+        <span>No paywall, no subscription required</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ FAQ ═══════════════════════════════════════════════════════════════ -->
+<section class="v2-faq-section" aria-labelledby="faq-heading">
+  <div class="v2-faq-inner">
+    <h2 id="faq-heading" class="v2-faq-title">Frequently Asked Questions</h2>
+    <div class="v2-faq-list">
+      @for (item of faqItems; track $index) {
+        <details class="v2-faq-item">
+          <summary class="v2-faq-question">
+            {{ item.q }}
+            <svg class="v2-faq-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+          </summary>
+          <p class="v2-faq-answer">{{ item.a }}</p>
+        </details>
+      }
+    </div>
+  </div>
+</section>
+
 <!-- ══ NEWSLETTER SECTION ════════════════════════════════════════════════ -->
 <section class="v2-newsletter-section" aria-labelledby="newsletter-heading">
   <div class="v2-newsletter-bg" aria-hidden="true">
@@ -1731,6 +1751,7 @@
       <h3 class="v2-footer-col-heading">Company</h3>
       <nav class="v2-footer-links" aria-label="Company navigation">
         <a class="v2-footer-link" routerLink="/about">About Us</a>
+        <a class="v2-footer-link" routerLink="/contact">Contact Us</a>
         <a class="v2-footer-link" routerLink="/privacy-policy">Privacy Policy</a>
         <a class="v2-footer-link" routerLink="/terms">Terms of Service</a>
         <a class="v2-footer-link" routerLink="/disclaimer">Disclaimer</a>

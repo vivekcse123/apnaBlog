@@ -5,19 +5,10 @@ import { isPlatformBrowser } from '@angular/common';
 import { Meta, Title } from '@angular/platform-browser';
 import { DOCUMENT } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { FormsModule, NgForm } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { ContactService } from '../../../../core/services/contact-service';
 import { MobileBottomNav } from '../../../../shared/mobile-bottom-nav/mobile-bottom-nav';
 import { PostService } from '../../../post/services/post-service';
 import { Auth } from '../../../../core/services/auth';
-
-interface ContactData {
-  name: string;
-  email: string;
-  subject: string;
-  message: string;
-}
 
 interface FAQ {
   q: string;
@@ -28,7 +19,7 @@ interface FAQ {
   selector: 'app-about',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, FormsModule, CommonModule, MobileBottomNav],
+  imports: [RouterLink, CommonModule, MobileBottomNav],
   templateUrl: './about.html',
   styleUrl: './about.css'
 })
@@ -37,7 +28,6 @@ export class About implements OnInit, OnDestroy {
   private meta           = inject(Meta);
   private title          = inject(Title);
   private document       = inject(DOCUMENT);
-  private contactService = inject(ContactService);
   private postService    = inject(PostService);
   private platformId     = inject(PLATFORM_ID);
   private auth           = inject(Auth);
@@ -52,43 +42,29 @@ export class About implements OnInit, OnDestroy {
     if (role === 'super_admin') return `/super-admin/${id}`;
     return `/user/${id}/profile`;
   }
-  formSubmitted = false;
   currentYear = new Date().getFullYear();
-
   totalStories = signal<number | null>(null);
-
-  isSubmitting = signal(false);
-  successMessage = signal('');
-  errorMessage = signal('');
-
-  contactData: ContactData = {
-    name: '',
-    email: '',
-    subject: '',
-    message: ''
-  };
-
 
   faqs: FAQ[] = [
     {
       q: 'What is ApnaInsights?',
-      a: 'ApnaInsights is India\'s practical knowledge platform where knowledgeable contributors share expert guides. Writers publish across 14 categories including technology, lifestyle, health, business, education, sports, career and more. The platform is free to read and free to write - join our growing community today.'
+      a: 'ApnaInsights is India\'s free knowledge platform where working professionals share practical guides on Technology, Career, Health, Business, Finance, AI, and more. Every article is written by a real person and reviewed before going live. Free to read, free to write, no paywall.'
     },
     {
       q: 'Is ApnaInsights free to use?',
-      a: 'Yes, ApnaInsights is completely free to read and write. Any registered user can publish stories, engage with the community, and access all platform features at no cost no hidden fees, no premium paywalls.'
+      a: 'Yes, ApnaInsights is completely free. Free to read every article, free to write and publish your own guides. No subscription, no hidden fees, no premium paywall. It will always be free.'
     },
     {
       q: 'How do I start writing on ApnaInsights?',
-      a: 'Simply sign up for a free account and click "Start Writing" to access our article editor. Submit your guide or article across 14 topics: Technology, Health, Business, Lifestyle, Education, Sports, Entertainment, Cooking, Village, Social, Quotes, Exercise, News and Update.'
+      a: 'Sign up for a free account and click "Start Writing" to open our article editor. Write, format, and submit your guide across 16+ topics including Technology, Career, Health, Business, Finance, AI, Lifestyle, Education, Sports, Entertainment, Cooking, and more.'
     },
     {
       q: 'Who founded ApnaInsights?',
-      a: 'ApnaInsights was founded by Vivek Verma (Founder & Lead Engineer) and Kondra Revathi Satya (CEO). Both are B.Tech graduates who built the platform to give Indian writers a free place to publish their stories.'
+      a: 'ApnaInsights was founded by Vivek Verma (Founder and Lead Engineer) and Kondra Revathi Satya (CEO). Both are B.Tech graduates who built the platform to give Indian professionals and students a free, trusted place to share what they know.'
     },
     {
-      q: 'What categories can I write about on ApnaInsights?',
-      a: 'ApnaInsights supports 14 content categories: Update, News, Sports, Technology, Lifestyle, Education, Health, Business, Entertainment, Social, Village, Cooking, Quotes and Exercise. Each category has a dedicated feed and trending algorithm.'
+      q: 'What topics can I read or write about on ApnaInsights?',
+      a: 'ApnaInsights covers 16+ topics: Technology, Career, AI, Finance, Health, Business, Lifestyle, Education, Sports, Entertainment, Cooking, Exercise, Social Issues, Productivity, News, Updates, and more. Each topic has its own feed and trending articles.'
     },
     {
       q: 'Is my content safe and private on ApnaInsights?',
@@ -100,7 +76,7 @@ export class About implements OnInit, OnDestroy {
     },
     {
       q: 'How can I contact ApnaInsights?',
-      a: 'You can reach us at hello@apnainsights.com for general inquiries or supports@apnainsights.com for support. We respond within 24 hours. You can also use the contact form on this page.'
+      a: 'You can reach us at hello@apnainsights.com for general inquiries or supports@apnainsights.com for support. We respond within 24 hours. You can also use the contact form at apnainsights.com/contact.'
     }
   ];
 
@@ -252,31 +228,4 @@ export class About implements OnInit, OnDestroy {
     });
   }
 
-  scrollTo(id: string): void {
-    const el = this.document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-
-  scrollToContact(): void {
-    this.scrollTo('contact');
-  }
-
-  submitForm(): void {
-    if (this.isSubmitting()) return;
-    this.isSubmitting.set(true);
-    this.successMessage.set('');
-    this.errorMessage.set('');
-
-    this.contactService.sendMessage(this.contactData).subscribe({
-      next: () => {
-        this.isSubmitting.set(false);
-        this.formSubmitted = true;
-        this.contactData = { name: '', email: '', subject: '', message: '' };
-      },
-      error: () => {
-        this.isSubmitting.set(false);
-        this.errorMessage.set('Something went wrong. Please try again or email us directly at hello@apnainsights.com');
-      }
-    });
-  }
 }
