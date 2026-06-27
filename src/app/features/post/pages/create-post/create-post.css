@@ -1795,3 +1795,11 @@ form input[type="file"]::file-selector-button:hover {
   color: var(--text-muted, #9ca3af);
 }
 .editor-content td:focus, .editor-content th:focus { outline: 2px solid #43cea2; outline-offset: -2px; }
+
+
+/* ── Series fields ───────────────────────────────── */
+.series-fields-row {
+  display: flex; gap: 10px; align-items: center;
+}
+.series-name-input { flex: 1; }
+.series-order-input { width: 90px; flex-shrink: 0; }

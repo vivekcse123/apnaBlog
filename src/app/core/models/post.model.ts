@@ -32,6 +32,7 @@ export interface EditHistoryEntry {
   editedBy:      User | string | null;
   editedAt:      Date;
   changedFields: string[];
+  changeNote?:   string;
 }
 
 export interface Post {
@@ -80,6 +81,10 @@ export interface Post {
   sponsorCtaText?:        string | null;
   sponsorCtaUrl?:         string | null;
   sponsorBrand?:          string | null;
+
+  // Series
+  seriesName?:  string;
+  seriesOrder?: number | null;
 
   // Community
   hotScore?:          number;

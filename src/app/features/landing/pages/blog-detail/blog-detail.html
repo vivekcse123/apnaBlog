@@ -273,7 +273,7 @@
     @if (carouselImages().length === 1) {
       <div class="featured-image-wrap">
         <img [src]="carouselImages()[0]" [alt]="post()!.title"
-          class="featured-image zoomable" width="800" fetchpriority="high"
+          class="featured-image zoomable" width="800" height="450" fetchpriority="high"
           (click)="openLightbox(carouselImages()[0], post()!.title)"
           title="Click to enlarge"/>
       </div>
@@ -287,7 +287,7 @@
               <div class="carousel-slide" [class.active]="i === currentSlide()">
                 @if (i === 0) {
                   <img [src]="img" [alt]="post()!.title + ' image ' + (i + 1)"
-                    class="featured-image zoomable" width="800" fetchpriority="high"
+                    class="featured-image zoomable" width="800" height="450" fetchpriority="high"
                     (click)="openLightbox(img, post()!.title + ' - image ' + (i + 1))"
                     title="Click to enlarge"/>
                 } @else {
@@ -361,6 +361,30 @@
         </div>
         <span class="author-chip-arrow" aria-hidden="true">›</span>
       </button>
+
+      <!-- ── Series navigation bar ─────────────────────────────────────────── -->
+      @if (post()!.seriesName && seriesPosts().length > 1) {
+        <nav class="series-nav" aria-label="Article series">
+          <div class="series-nav__header">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 10h16M4 14h10"/></svg>
+            <span class="series-nav__label">Series: <strong>{{ post()!.seriesName }}</strong></span>
+            <span class="series-nav__count">{{ seriesPosts().length }} parts</span>
+          </div>
+          <ol class="series-nav__list">
+            @for (part of seriesPosts(); track part._id) {
+              <li class="series-nav__item" [class.series-nav__item--active]="part._id === post()!._id">
+                @if (part._id === post()!._id) {
+                  <span class="series-nav__part-num">{{ $index + 1 }}</span>
+                  <span class="series-nav__part-title">{{ part.title }}</span>
+                } @else {
+                  <span class="series-nav__part-num">{{ $index + 1 }}</span>
+                  <a class="series-nav__part-title series-nav__part-link" [routerLink]="['/blog', part.slug || part._id]">{{ part.title }}</a>
+                }
+              </li>
+            }
+          </ol>
+        </nav>
+      }
 
       <div class="blog-meta">
         <div class="meta-stats">
@@ -455,7 +479,7 @@
     @if (!isThinPost() && !isShortPost()) {
       <div class="ad-unit-wrap ad-unit-wrap--top">
         <ins class="adsbygoogle"
-          style="display:block"
+          style="display:block; min-height:90px"
           data-ad-client="ca-pub-6477809641944524"
           data-ad-slot="1776889784"
           data-ad-format="auto"
@@ -557,7 +581,7 @@
     @if (!isThinPost() && !isMediumPost()) {
       <div class="ad-unit-wrap ad-unit-wrap--mid">
         <ins class="adsbygoogle"
-          style="display:block"
+          style="display:block; min-height:90px"
           data-ad-client="ca-pub-6477809641944524"
           data-ad-slot="3027610867"
           data-ad-format="auto"
@@ -616,7 +640,7 @@
     @if (!isThinPost()) {
       <div class="ad-unit-wrap ad-unit-wrap--bottom">
         <ins class="adsbygoogle"
-          style="display:block"
+          style="display:block; min-height:90px"
           data-ad-client="ca-pub-6477809641944524"
           data-ad-slot="9018304148"
           data-ad-format="auto"
@@ -635,6 +659,32 @@
           </details>
         }
       </div>
+    }
+
+    <!-- ── Version History ──────────────────────────────────────────────────── -->
+    @if (post()!.editHistory?.length) {
+      <details class="version-history">
+        <summary class="version-history__toggle">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          Version History
+          <span class="version-history__count">{{ post()!.editHistory!.length }} update{{ post()!.editHistory!.length === 1 ? '' : 's' }}</span>
+        </summary>
+        <ol class="version-history__list">
+          @for (entry of post()!.editHistory!.slice().reverse(); track $index) {
+            <li class="vh-entry">
+              <span class="vh-dot"></span>
+              <div class="vh-body">
+                <span class="vh-date">{{ entry.editedAt | date:'MMM d, y' }}</span>
+                @if (entry.changeNote) {
+                  <p class="vh-note">{{ entry.changeNote }}</p>
+                } @else if (entry.changedFields.length) {
+                  <p class="vh-note vh-note--fields">Updated: {{ entry.changedFields.join(', ') }}</p>
+                }
+              </div>
+            </li>
+          }
+        </ol>
+      </details>
     }
 
     <!-- Author card -->
@@ -1215,24 +1265,37 @@
   </div>
 }
 
-<!-- ── Quote Share Popover ── -->
+<!-- ── Quote Share + AI Explain Popover ── -->
 @if (quotePopover()) {
   <div class="quote-popover"
        [style.left.px]="quotePopover()!.x"
        [style.top.px]="quotePopover()!.y"
        role="dialog"
-       aria-label="Share selected quote">
-    <button class="quote-share-btn" (click)="shareQuote()" title="Share quote on X / Twitter">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-      </svg>
-      Quote this
-    </button>
-    <button class="quote-dismiss-btn" (click)="dismissQuotePopover()" aria-label="Dismiss">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-      </svg>
-    </button>
+       aria-label="Text actions">
+    <div class="quote-popover__actions">
+      <button class="quote-share-btn" (click)="shareQuote()" title="Share quote on X / Twitter">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+        </svg>
+        Quote
+      </button>
+      <button class="quote-explain-btn" (click)="explainSelectedText()" [disabled]="explainLoading()" title="Explain with AI">
+        @if (explainLoading()) {
+          <span class="explain-spinner"></span>
+        } @else {
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        }
+        Explain
+      </button>
+      <button class="quote-dismiss-btn" (click)="dismissQuotePopover()" aria-label="Dismiss">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    @if (explainResult()) {
+      <p class="quote-explain-result">{{ explainResult() }}</p>
+    }
   </div>
 }
 

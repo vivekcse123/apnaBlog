@@ -391,8 +391,13 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   shareMenuOpen   = signal(false);
   copyLinkSuccess = signal(false);
 
-  // ── Quote share ───────────────────────────────────────────────────────────
-  quotePopover = signal<{ text: string; x: number; y: number } | null>(null);
+  // ── Quote share + AI explain ──────────────────────────────────────────────
+  quotePopover    = signal<{ text: string; x: number; y: number } | null>(null);
+  explainLoading  = signal(false);
+  explainResult   = signal<string | null>(null);
+
+  // ── Series navigation ─────────────────────────────────────────────────────
+  seriesPosts = signal<{ _id: string; title: string; slug: string; seriesOrder: number | null }[]>([]);
 
   // ── Paragraph Reactions ───────────────────────────────────────────────────
   readonly EMOJIS = ['👍', '❤️', '🔥', '💡', '😮'];
@@ -1075,6 +1080,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
       this.loadRelatedShorts(postData);
       if (postData._id) this.loadReactions(postData._id);
       if (postData._id) this.loadPostReactions(postData._id);
+      this.loadSeriesPosts(postData);
     }, 0);
 
     // ── FIX: Use requestAnimationFrame instead of an arbitrary 300 ms timeout
@@ -1151,16 +1157,24 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // ── AdSense ───────────────────────────────────────────────────────────────
+  // Deferred via requestIdleCallback so ad initialization never blocks LCP or INP.
+  // Falls back to setTimeout(200) on browsers without rIC support.
   private pushAdSense(): void {
     if (!isPlatformBrowser(this.platformId) || this.adsInitialised) return;
     this.adsInitialised = true;
-    try {
-      const ads: any[] = (window as any).adsbygoogle ?? [];
-      (window as any).adsbygoogle = ads;
-      // Push once per <ins> so every ad slot initialises independently
-      const slots = this.elementRef.nativeElement.querySelectorAll('ins.adsbygoogle');
-      slots.forEach(() => ads.push({}));
-    } catch (_) { /* ignore */ }
+    const init = () => {
+      try {
+        const ads: any[] = (window as any).adsbygoogle ?? [];
+        (window as any).adsbygoogle = ads;
+        const slots = this.elementRef.nativeElement.querySelectorAll('ins.adsbygoogle');
+        slots.forEach(() => ads.push({}));
+      } catch (_) {}
+    };
+    if ('requestIdleCallback' in window) {
+      (window as any).requestIdleCallback(init, { timeout: 3000 });
+    } else {
+      setTimeout(init, 200);
+    }
   }
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -1599,9 +1613,18 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     const lang         = this._detectLanguage(post);
     const ogLocale     = lang === 'en-IN' ? 'en_IN' : lang.replace('-', '_');
     const rawDesc      = post.description || post.title;
-    const fullDesc     = isMcq
+    let   fullDesc     = isMcq
       ? `${rawDesc} - Test your knowledge with this ${post.mcqQuestions?.length ?? 0}-question MCQ quiz.`
       : rawDesc;
+    // Enrich short non-MCQ descriptions with keyword context so Google can match
+    // partial-keyword searches (e.g. "AI tools" from "Top 10 AI Tools for Devs").
+    if (!isMcq && fullDesc.replace(/<[^>]*>/g, '').trim().length < 100) {
+      const extraKws = [
+        ...(post.categories?.slice(0, 2) ?? []),
+        ...(post.tags?.slice(0, 3) ?? []),
+      ].filter(Boolean);
+      if (extraKws.length) fullDesc += `. Topics: ${extraKws.join(', ')}.`;
+    }
     // Always truncate to 155 chars for the meta tag
     const desc         = this.truncateDesc(fullDesc, 155);
     const image        = post.featuredImage || environment.ogImage;
@@ -1635,6 +1658,14 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
 
     this.setMeta('name',     'description',              desc);
     this.setMeta('name',     'keywords',                 keywords);
+    // news_keywords — helps Google News and Discover categorize the article.
+    // Must be cleaned up when navigating to a non-news post.
+    const existingNewsKw = this.meta.getTag('name="news_keywords"');
+    if (isNewsMeta && keywords) {
+      this.setMeta('name', 'news_keywords', keywords);
+    } else if (existingNewsKw) {
+      this.meta.removeTagElement(existingNewsKw);
+    }
     this.setMeta('name',     'author',                   (post.user as any)?.name ?? 'ApnaInsights');
     this.setMeta('name',     'robots',                   robotsValue);
     this.setMeta('property', 'og:site_name',             'ApnaInsights');
@@ -1694,8 +1725,9 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
       hreflang.setAttribute('href', canonicalUrl);
     } catch (_) {}
 
-    // Preload featured image (browser only) - update in place
-    if (isPlatformBrowser(this.platformId) && post.featuredImage?.trim()) {
+    // Preload featured image in both SSR and browser — browser starts download
+    // before JavaScript even parses, directly reducing LCP.
+    if (post.featuredImage?.trim()) {
       try {
         let preload = this.document.querySelector("link[rel='preload'][as='image'][data-blog-preload]") as HTMLLinkElement | null;
         if (!preload) {
@@ -1706,10 +1738,18 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
           this.document.head?.appendChild(preload);
         }
         preload.href = post.featuredImage;
+        preload.setAttribute('fetchpriority', 'high');
       } catch (_) {}
     }
 
+    this.updateHtmlLang(lang);
     this.injectArticleSchema(post);
+  }
+
+  private updateHtmlLang(lang: string): void {
+    try {
+      this.document.documentElement.setAttribute('lang', lang);
+    } catch (_) {}
   }
 
   private _detectLanguage(post: Post): string {
@@ -1750,8 +1790,8 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
       // ── Common article fields ─────────────────────────────────────────────
       const plainText    = (post.content ?? '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
       const wordCount    = plainText.split(/\s+/).filter(Boolean).length;
-      // articleBody: first ~500 chars of visible text - used for featured snippets
-      const articleBody  = plainText.substring(0, 500) + (plainText.length > 500 ? '…' : '');
+      // articleBody: first ~2000 chars of visible text - used for featured snippets
+      const articleBody  = plainText.substring(0, 2000) + (plainText.length > 2000 ? '…' : '');
       const readTimeMins = Math.max(1, Math.ceil(wordCount / 200));
       const keywords     = [
         ...(post.categories ?? []), ...(post.tags ?? []),
@@ -1777,14 +1817,30 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
         datePublished:  new Date(post.createdAt).toISOString(),
         dateModified:   new Date(post.updatedAt ?? post.createdAt).toISOString(),
         author: {
-          '@type': 'Person',
-          name:    authorName,
+          '@type':   'Person',
+          name:      authorName,
+          jobTitle:  'Content Creator',
           ...(authorId ? { url: `${site}/author/${authorId}`, '@id': `${site}/author/${authorId}` } : {}),
+          ...((post.user as any)?.bio ? { description: ((post.user as any).bio as string).slice(0, 200) } : {}),
         },
         publisher:        { '@id': `${site}/#organization` },
         mainEntityOfPage: { '@type': 'WebPage', '@id': postUrl },
         isPartOf:         { '@id': `${site}/#website` },
         ...(keywords ? { keywords } : {}),
+        // about — declares the primary topics so Google can build topical connections
+        ...(post.categories?.length ? {
+          about: post.categories.slice(0, 3).map(cat => ({
+            '@type': 'Thing',
+            name:    cat,
+          })),
+        } : {}),
+        // mentions — secondary keywords covered in the article (from tags)
+        ...(post.tags?.length ? {
+          mentions: post.tags.slice(0, 5).map(tag => ({
+            '@type': 'Thing',
+            name:    tag,
+          })),
+        } : {}),
         // InteractionStatistic - helps Google show view/like counts in search
         interactionStatistic: [
           {
@@ -1851,6 +1907,10 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
           commentCount:   post.commentsCount ?? 0,
           timeRequired:   `PT${readTimeMins}M`,
           articleSection: post.categories?.[0] || undefined,
+          speakable: {
+            '@type':     'SpeakableSpecification',
+            cssSelector: ['h1', '.blog-description', '.blog-content > p:first-child'],
+          },
         };
       }
 
@@ -2059,7 +2119,49 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     window.getSelection()?.removeAllRanges();
   }
 
-  dismissQuotePopover(): void { this.quotePopover.set(null); }
+  dismissQuotePopover(): void {
+    this.quotePopover.set(null);
+    this.explainResult.set(null);
+    this.explainLoading.set(false);
+  }
+
+  explainSelectedText(): void {
+    const q = this.quotePopover();
+    if (!q) return;
+    this.explainLoading.set(true);
+    this.explainResult.set(null);
+    this.postService.explainText(q.text, this.post()?.title)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: res => {
+          this.explainLoading.set(false);
+          this.explainResult.set(res?.data?.explanation ?? 'No explanation available.');
+        },
+        error: () => {
+          this.explainLoading.set(false);
+          this.explainResult.set('Could not load explanation. Please try again.');
+        },
+      });
+  }
+
+  private loadSeriesPosts(postData: Post): void {
+    const name     = postData.seriesName;
+    const authorId = (postData.user as any)?._id ?? (postData.user as any);
+    if (!name || !authorId) { this.seriesPosts.set([]); return; }
+    this.postService.getSeriesPosts(String(authorId), name)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: res => this.seriesPosts.set(
+          (res?.data ?? []).map((p: any) => ({
+            _id:         p._id         as string,
+            title:       p.title       as string,
+            slug:        p.slug        as string,
+            seriesOrder: (p.seriesOrder ?? null) as number | null,
+          }))
+        ),
+        error: () => this.seriesPosts.set([]),
+      });
+  }
 
   private initQuoteShare(): void {
     fromEvent(this.document, 'mouseup')
@@ -2358,6 +2460,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   private restoreReactions(): void {
     // No longer uses localStorage - loads from backend after post loads
   }
+
 
   // ══════════════════════════════════════════════════════════════════════════
   // Auth / User

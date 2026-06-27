@@ -572,6 +572,24 @@
       </div>
       }
 
+      <!-- ── Series ── -->
+      @if (postType() === 'blog') {
+      <div class="form-field">
+        <div class="form-section-label">
+          <span class="form-section-icon">📚</span> Part of a series? <span class="field-hint-text optional-tag">optional</span>
+          <span class="field-hint-text">Group related posts — readers get prev/next navigation</span>
+        </div>
+        <div class="series-fields-row">
+          <input type="text" class="form-input series-name-input" placeholder="Series name (e.g. Angular 20 Complete Guide)"
+            [value]="seriesName()"
+            (input)="seriesName.set($any($event.target).value)" maxlength="120" />
+          <input type="number" class="form-input series-order-input" placeholder="Part #" min="1" max="999"
+            [value]="seriesOrder() ?? ''"
+            (input)="seriesOrder.set($any($event.target).value ? +$any($event.target).value : null)" />
+        </div>
+      </div>
+      }
+
       <!-- ── Categories ── -->
       <div class="form-field">
         <div class="form-section-label">

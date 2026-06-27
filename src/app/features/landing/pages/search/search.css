@@ -439,3 +439,6 @@
   .sp-item-desc { display: none; }
   .sp-item { gap: 12px; padding: 18px 0; }
 }
+
+/* No blank placeholder on search — slot expands naturally when filled, collapses when unfilled */
+.search-ad-wrap { min-height: 0; }

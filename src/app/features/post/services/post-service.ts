@@ -265,4 +265,14 @@ export class PostService {
   addReaction(postId: string, paragraphIdx: number, emoji: string): Observable<{ status: number; message: string }> {
     return this.http.post<any>(`${this.endPoint}/${postId}/react`, { paragraphIdx, emoji });
   }
+
+  getSeriesPosts(authorId: string, seriesName: string): Observable<{ status: number; data: Pick<Post, '_id' | 'title' | 'slug' | 'seriesOrder' | 'seriesName' | 'createdAt'>[] }> {
+    const params = new HttpParams().set('authorId', authorId).set('name', seriesName);
+    return this.http.get<any>(`${this.endPoint}/series`, { params });
+  }
+
+  explainText(text: string, title?: string): Observable<{ status: number; data: { explanation: string } }> {
+    return this.http.post<any>(`${environment.apiUrl}/ai/explain`, { text, title });
+  }
+
 }

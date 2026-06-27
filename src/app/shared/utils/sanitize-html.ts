@@ -30,5 +30,8 @@ export function sanitizeHtml(html: string): string {
     allowedAttributes: ALLOWED_ATTRIBUTES,
     allowedSchemes: ['http', 'https', 'mailto'],
     allowProtocolRelative: true,
+    // Discard button tags AND their inner text (e.g. inline-img-remove ✕ buttons
+    // stored in older posts before source-level stripping was added).
+    nonTextTags: ['style', 'script', 'textarea', 'noscript', 'button'],
   });
 }

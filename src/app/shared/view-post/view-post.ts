@@ -97,6 +97,10 @@ export class ViewPost implements OnInit, OnDestroy {
 
   isResubmitting = signal(false);
 
+  changeNote  = signal('');
+  seriesName  = signal('');
+  seriesOrder = signal<number | null>(null);
+
   // MCQ questions state (used when editing an MCQ-type post)
   mcqQuestions = signal<McqQuestion[]>([]);
 
@@ -331,6 +335,10 @@ export class ViewPost implements OnInit, OnDestroy {
       slug:          [p?.slug || '', [Validators.pattern(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)]],
     });
 
+    this.changeNote.set('');
+    this.seriesName.set(p?.seriesName ?? '');
+    this.seriesOrder.set(p?.seriesOrder ?? null);
+
     // Build gallery: featured image first, then any additional images
     const galleryItems: ImageItem[] = [];
     if (p?.featuredImage) {
@@ -364,6 +372,9 @@ export class ViewPost implements OnInit, OnDestroy {
     this.activeBlock.set('');
     this.imageGallery.set([]);
     this.faqs.set([]);
+    this.changeNote.set('');
+    this.seriesName.set('');
+    this.seriesOrder.set(null);
     this.cropQueue = [];
     this.closeCropper();
     this.editForm.reset();
@@ -783,6 +794,9 @@ export class ViewPost implements OnInit, OnDestroy {
     // Non-admins cannot set status via the edit form - status is controlled
     // separately (resubmit button). Strip it to avoid a 403 from the backend.
     const payload: any = { ...this.editForm.value, featuredImage, images };
+
+    if (this.changeNote().trim())             payload.changeNote         = this.changeNote().trim();
+
     if (this.isPendingForUser()) delete payload.status;
     // Slug editing is admin-only - strip from payload for regular users
     if (!this.isAdmin()) delete payload.slug;
@@ -794,6 +808,8 @@ export class ViewPost implements OnInit, OnDestroy {
     } else {
       // For blog posts: include FAQs (only non-empty entries)
       payload.faqs = this.faqs().filter(f => f.question.trim() && f.answer.trim());
+      payload.seriesName  = this.seriesName().trim();
+      payload.seriesOrder = this.seriesOrder();
     }
 
     this.postService.updatePost(this.post()?._id ?? '', payload)

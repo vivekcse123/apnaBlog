@@ -757,6 +757,23 @@
           </div>
           } <!-- end @if postType !== mcq -->
 
+          <!-- ── Series Editor (blog posts only) ── -->
+          @if (post()?.postType !== 'mcq') {
+            <div class="edit-field full">
+              <div class="form-section-label">📚 Part of a series? (optional)</div>
+              <div class="series-fields-row">
+                <input type="text" class="edit-input series-name-input" placeholder="Series name…"
+                  maxlength="120"
+                  [value]="seriesName()"
+                  (input)="seriesName.set($any($event.target).value)" />
+                <input type="number" class="edit-input series-order-input" placeholder="Part #"
+                  min="1" max="999"
+                  [value]="seriesOrder() ?? ''"
+                  (input)="seriesOrder.set($any($event.target).value ? +$any($event.target).value : null)" />
+              </div>
+            </div>
+          }
+
           <!-- ── FAQ Editor (blog posts only) ── -->
           @if (post()?.postType !== 'mcq') {
             <div class="edit-field full">
@@ -807,6 +824,19 @@
               }
             </div>
           }
+
+          <!-- What changed in this update? -->
+          <div class="edit-field full">
+            <div class="form-section-label">
+              <span class="form-section-icon">📝</span> What changed in this update? (optional)
+              <span class="field-hint-text">Added to the version history — helps readers know what was fixed or improved</span>
+            </div>
+            <textarea class="mcq-editor-input"
+              rows="2"
+              placeholder="e.g. Updated commands for Angular 20, fixed broken npm steps…"
+              [value]="changeNote()"
+              (input)="changeNote.set($any($event.target).value)"></textarea>
+          </div>
 
           <!-- Categories -->
           <div class="edit-field full">

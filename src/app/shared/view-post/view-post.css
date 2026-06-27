@@ -2406,3 +2406,11 @@
 .faq-empty-state svg {
   opacity: 0.5;
 }
+
+
+/* ── Series fields ───────────────────────────────── */
+.series-fields-row {
+  display: flex; gap: 10px; align-items: center;
+}
+.series-name-input { flex: 1; }
+.series-order-input { width: 90px; flex-shrink: 0; }

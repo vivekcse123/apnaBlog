@@ -68,6 +68,10 @@ export class CreatePost implements OnInit, OnDestroy {
   tableCols       = signal(4);
   isInTable       = signal(false);
 
+  // ── Series ────────────────────────────────────────────────────────────────
+  seriesName  = signal('');
+  seriesOrder = signal<number | null>(null);
+
   // ── Inline image picker ────────────────────────────────────────────────────
   showInlineImgPicker  = signal(false);
   inlineImgUrl         = signal('');
@@ -313,6 +317,7 @@ export class CreatePost implements OnInit, OnDestroy {
       });
       if (d.content && this.editorRef?.nativeElement) {
         this.editorRef.nativeElement.innerHTML = d.content;
+        this.reAddInlineImgButtons();
       }
     } catch { /* ignore */ }
     this.hasDraft.set(false);
@@ -342,13 +347,38 @@ export class CreatePost implements OnInit, OnDestroy {
 
   // ── Rich-text editor ─────────────────────────────────────────────────────────
   onEditorInput(): void {
-    const html    = this.editorRef.nativeElement.innerHTML;
-    const isEmpty = html === '' || html === '<br>';
+    const raw     = this.editorRef.nativeElement.innerHTML;
+    const isEmpty = raw === '' || raw === '<br>';
+
+    // Strip editor-only remove buttons before persisting — clone so the live
+    // editor DOM (where the user still needs to click ✕) is left untouched.
+    let html = raw;
+    if (!isEmpty) {
+      const tmp = document.createElement('div');
+      tmp.innerHTML = raw;
+      tmp.querySelectorAll('.inline-img-remove').forEach(el => el.remove());
+      html = tmp.innerHTML;
+    }
+
     this.createBlogForm.get('content')?.setValue(isEmpty ? '' : html);
     this.createBlogForm.get('content')?.markAsTouched();
     this.updateWordCount(isEmpty ? '' : html);
     this.updateActiveFormats();
     this.scheduleAutosave();
+  }
+
+  private reAddInlineImgButtons(): void {
+    const editor = this.editorRef?.nativeElement;
+    if (!editor) return;
+    editor.querySelectorAll('figure.inline-img').forEach(fig => {
+      if (fig.querySelector('.inline-img-remove')) return;
+      const btn = document.createElement('button');
+      btn.className = 'inline-img-remove';
+      btn.type      = 'button';
+      btn.title     = 'Remove image';
+      btn.textContent = '✕';
+      fig.prepend(btn);
+    });
   }
 
   onEditorPaste(event: ClipboardEvent): void {
@@ -1270,6 +1300,8 @@ export class CreatePost implements OnInit, OnDestroy {
       ...(this.isScheduled && this.createBlogForm.value.scheduledAt
         ? { scheduledAt: new Date(this.createBlogForm.value.scheduledAt).toISOString() }
         : {}),
+      ...(this.seriesName().trim() ? { seriesName: this.seriesName().trim() } : {}),
+      ...(this.seriesOrder() != null ? { seriesOrder: this.seriesOrder()! } : {}),
     };
 
     this.isSubmitting.set(true);
@@ -1299,6 +1331,8 @@ export class CreatePost implements OnInit, OnDestroy {
           this.postType.set('blog');
           this.mcqQuestions.set([]);
           this.faqs.set([]);
+          this.seriesName.set('');
+          this.seriesOrder.set(null);
           this.createBlogForm.reset();
           this.createBlogForm.get('status')?.setValidators(Validators.required);
           this.createBlogForm.get('status')?.updateValueAndValidity();
