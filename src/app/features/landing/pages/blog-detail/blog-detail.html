@@ -698,7 +698,7 @@
         <a class="author-card-name" [routerLink]="['/author', authorId()]">
           {{ authorName }}
           @if (authorWOM?.active && challengeEnded) {
-            <span class="wom-badge" [title]="'Writer of the Month - ' + (authorWOM.challengeTitle || '')">👑 Writer of the Month</span>
+            <span class="wom-badge" [title]="'Writer of the Month - ' + (authorWOM?.challengeTitle || '')">👑 Writer of the Month</span>
           }
         </a>
         @if (authorBio) {
