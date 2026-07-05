@@ -8,8 +8,8 @@ import { FormsModule } from '@angular/forms';
 // Event window - a self-contained, hardcoded "special event" for now.
 // The active window is the visitor's local calendar date; it goes quiet on
 // its own once the clock rolls past END_DATE, no deploy needed.
-const START_DATE = '2026-07-05';
-const END_DATE = '2026-07-05';
+const START_DATE = '2026-07-06';
+const END_DATE = '2026-07-06';
 const PERSON_NAME = 'Revathi Satya';
 const PERSON_TITLE = 'CEO & Founder';
 
