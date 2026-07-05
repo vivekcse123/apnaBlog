@@ -17,6 +17,7 @@ import { TaxonomyService } from '../../../../core/services/taxonomy.service';
 import { Post }           from '../../../../core/models/post.model';
 import { TimeAgoPipe }    from '../../../../shared/pipes/time-ago-pipe';
 import { MobileBottomNav } from '../../../../shared/mobile-bottom-nav/mobile-bottom-nav';
+import { Auth }           from '../../../../core/services/auth';
 
 const FALLBACK_CATEGORIES: string[] = [
   'Update', 'News', 'Sports', 'Entertainment', 'Health', 'Technology', 'Business',
@@ -34,7 +35,7 @@ const CATEGORY_DESCRIPTIONS: Record<string, { description: string; intro: string
     intro:       'The latest announcements, feature updates, and community highlights straight from the ApnaInsights team.'
   },
   'Technology':    {
-    description: 'Explore technology trends, software reviews, AI insights, coding tutorials, and tech innovations written by Indian developers and tech enthusiasts on ApnaInsights.',
+    description: 'Explore technology trends, AI insights, and coding tutorials written by Indian developers on ApnaInsights.',
     intro:       'From AI breakthroughs to coding tutorials and gadget reviews - technology stories written by developers and enthusiasts who live and breathe tech.'
   },
   'Health':        {
@@ -118,6 +119,23 @@ export class CategoryPage implements OnInit, OnDestroy {
   private meta        = inject(Meta);
   private titleSvc    = inject(Title);
   private document    = inject(DOCUMENT);
+  private auth        = inject(Auth);
+
+  // Category pages are the site's top SEO landing pages - they need a way to
+  // search or start writing without first clicking "Back to Home". Uses the
+  // same synchronous auth-signal pattern as Home's writeRoute (no profile
+  // fetch needed just to route correctly).
+  get isLoggedIn(): boolean { return this.auth.isAuthorized(); }
+  get writeRoute(): string {
+    if (!this.auth.isAuthorized()) return '/auth/login';
+    const id   = this.auth.userId();
+    const role = this.auth.userRole();
+    if (!id) return '/auth/login';
+    if (role === 'admin')       return `/admin/${id}`;
+    if (role === 'super_admin') return `/super-admin/${id}`;
+    if (role === 'sponsor')     return `/sponsor/${id}`;
+    return `/user/${id}`;
+  }
 
   private readonly ICONS: Record<string, string> = {
     Technology:    `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`,
@@ -327,6 +345,8 @@ export class CategoryPage implements OnInit, OnDestroy {
     this.meta.updateTag({ property: 'og:description', content: desc });
     this.meta.updateTag({ property: 'og:url',         content: url });
     this.meta.updateTag({ property: 'og:type',        content: 'website' });
+    this.meta.updateTag({ name: 'twitter:title',       content: `${name} Guides & Insights | ApnaInsights` });
+    this.meta.updateTag({ name: 'twitter:description', content: desc });
 
     let canonical = this.document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
     if (!canonical) {

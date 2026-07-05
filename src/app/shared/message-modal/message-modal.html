@@ -1,7 +1,8 @@
 @if(show()) {
   <div class="modal-overlay" (click)="close()">
 
-    <div class="modal-box" [class]="type()" (click)="$event.stopPropagation()">
+    <div class="modal-box" [class]="type()" (click)="$event.stopPropagation()"
+         role="alertdialog" aria-modal="true" aria-labelledby="mm-title">
 
       <!-- Accent bar -->
       <div class="accent-bar"></div>
@@ -23,10 +24,10 @@
           }
         </div>
 
-        <h2>{{ title() }}</h2>
+        <h2 id="mm-title">{{ title() }}</h2>
         <p>{{ message() }}</p>
 
-        <button class="ok-btn" (click)="close()">OK</button>
+        <button #okBtn class="ok-btn" (click)="close()">OK</button>
 
       </div>
 

@@ -296,7 +296,8 @@ export class CommonHeader implements OnInit {
 
   @HostListener('document:keydown', ['$event'])
   onKeydown(e: KeyboardEvent): void {
-    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+    const tag = (e.target as Element).tagName;
+    if (e.key === '/' && !['INPUT', 'TEXTAREA'].includes(tag)) {
       e.preventDefault();
       const el = document.querySelector('.ch-search-input') as HTMLInputElement;
       el?.focus();

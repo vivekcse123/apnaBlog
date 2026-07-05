@@ -1,8 +1,8 @@
 import {
-  Component, Output, EventEmitter,
-  ChangeDetectionStrategy
+  AfterViewInit, Component, ElementRef, HostListener, Output, EventEmitter,
+  PLATFORM_ID, ViewChild, ChangeDetectionStrategy, inject
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
 
 interface Feature {
@@ -32,7 +32,7 @@ interface Feature {
             <img class="app-logo-img" src="/logo-96.png" alt="ApnaInsights" />
             <span class="app-logo-text">ApnaInsights</span>
           </a>
-          <button class="wm-x-btn" (click)="close.emit()" aria-label="Close welcome modal">✕</button>
+          <button #closeBtn class="wm-x-btn" (click)="close.emit()" aria-label="Close welcome modal">✕</button>
         </div>
 
         <!-- Scrollable body -->
@@ -276,21 +276,37 @@ interface Feature {
     }
   `],
 })
-export class WelcomeModal {
+export class WelcomeModal implements AfterViewInit {
+  private platformId = inject(PLATFORM_ID);
+  private previouslyFocused: HTMLElement | null = null;
+
+  @ViewChild('closeBtn') closeBtn?: ElementRef<HTMLButtonElement>;
   @Output() close = new EventEmitter<void>();
+
+  ngAfterViewInit(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    this.previouslyFocused = document.activeElement as HTMLElement;
+    this.closeBtn?.nativeElement?.focus();
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    this.close.emit();
+    if (isPlatformBrowser(this.platformId)) this.previouslyFocused?.focus();
+  }
 
   readonly features: Feature[] = [
     {
       icon: '◈',
       colorClass: 'teal',
       label: 'Everything in one place',
-      desc: 'Browse stories across 12 categories - from Sports to Village life.',
+      desc: 'Browse stories across 16+ categories - from Sports to Village life.',
     },
     {
       icon: '⚿',
       colorClass: 'blue',
-      label: 'Secure JWT authentication',
-      desc: 'Your account and data are protected with industry-standard token auth.',
+      label: 'Read in your language',
+      desc: 'Every article can be translated into Hindi, Marathi, Tamil, Telugu, Malayalam and Kannada - no third-party app needed.',
     },
     {
       icon: '⚡',

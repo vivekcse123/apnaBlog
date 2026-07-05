@@ -142,9 +142,6 @@
     }
     <button class="float-btn" (click)="nativeSharePost()" [class.active]="shareMenuOpen()" title="Share">
       <span class="float-icon">↗</span>
-      @if (shareCount() > 0) {
-        <span class="share-count-badge">{{ shareCount() }}</span>
-      }
     </button>
     @if (shareMenuOpen()) {
       <div class="share-menu">
@@ -222,26 +219,6 @@
         }
       </div>
     </div>
-  }
-
-  <!-- TOC sidebar -->
-  @if (showToc() && tableOfContents().length > 0) {
-    <div class="toc-sidebar open">
-      <div class="toc-header">
-        <h3 class="toc-title">📋 Contents</h3>
-        <button class="toc-close" (click)="showToc.set(false)">✕</button>
-      </div>
-      <nav class="toc-nav">
-        @for (item of tableOfContents(); track item.id) {
-          <a class="toc-item"
-            [class.level-2]="item.level === 2"
-            [class.level-3]="item.level === 3"
-            [class.active]="activeHeadingId() === item.id"
-            (click)="scrollToHeading(item.id)">{{ item.text }}</a>
-        }
-      </nav>
-    </div>
-    <div class="toc-backdrop" (click)="showToc.set(false)"></div>
   }
 
   <!-- Visual breadcrumb - matches JSON-LD BreadcrumbList for structured-data consistency -->
@@ -326,7 +303,7 @@
     <header class="blog-header">
       <div class="category-pills">
         @for (cat of post()!.categories; track cat) {
-          <span class="category-pill" (click)="filterByTag(cat)">{{ cat }}</span>
+          <button type="button" class="category-pill" (click)="filterByTag(cat)">{{ cat }}</button>
         }
       </div>
 
@@ -343,6 +320,28 @@
       }
 
       <h1 class="blog-title">{{ translation()?.title || post()!.title }}</h1>
+
+      <!-- TOC sidebar - placed after the H1 in reading order so screen-reader
+           heading navigation meets the article title before this sidebar widget -->
+      @if (showToc() && tableOfContents().length > 0) {
+        <div class="toc-sidebar open">
+          <div class="toc-header">
+            <h3 class="toc-title">📋 Contents</h3>
+            <button class="toc-close" (click)="showToc.set(false)" aria-label="Close table of contents">✕</button>
+          </div>
+          <nav class="toc-nav">
+            @for (item of tableOfContents(); track item.id) {
+              <a class="toc-item"
+                [class.level-2]="item.level === 2"
+                [class.level-3]="item.level === 3"
+                [class.active]="activeHeadingId() === item.id"
+                (click)="scrollToHeading(item.id)">{{ item.text }}</a>
+            }
+          </nav>
+        </div>
+        <div class="toc-backdrop" (click)="showToc.set(false)"></div>
+      }
+
       <p class="blog-description">{{ translation()?.description || post()!.description }}</p>
 
       <!-- Author chip -->
@@ -403,9 +402,6 @@
           <button class="meta-item meta-comments-link" (click)="openCommentDrawer()" title="Open comments">
             <span class="meta-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>{{ post()!.commentsCount }} comment{{ post()!.commentsCount === 1 ? '' : 's' }}
           </button>
-          @if (shareCount() > 0) {
-            <span class="meta-item"><span class="meta-icon">↗</span>{{ shareCount() }} shares</span>
-          }
         </div>
         <div class="meta-right">
           <!-- Text resize -->
@@ -1191,6 +1187,7 @@
                   </div>
                   <div class="disc-reply-body">
                     <textarea class="disc-reply-textarea"
+                      aria-label="Write a reply"
                       [ngModel]="replyText()" (ngModelChange)="replyText.set($event)"
                       placeholder="Write a reply…" rows="2" maxlength="500"
                       (keydown.enter)="$any($event).ctrlKey && submitReply(c._id!)"></textarea>
@@ -1360,9 +1357,9 @@
 <!-- ── Flag / Report modal ──────────────────────────────────────────────── -->
 @if (showFlagModal()) {
   <div class="flag-modal-overlay" (click)="closeFlagModal()">
-    <div class="flag-modal" (click)="$event.stopPropagation()">
-      <button class="flag-modal-close" (click)="closeFlagModal()">✕</button>
-      <h3 class="flag-modal-title">Report this post</h3>
+    <div class="flag-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-labelledby="flag-modal-title">
+      <button class="flag-modal-close" (click)="closeFlagModal()" aria-label="Close">✕</button>
+      <h3 class="flag-modal-title" id="flag-modal-title">Report this post</h3>
       <p class="flag-modal-sub">Help us keep ApnaInsights safe and accurate.</p>
 
       <div class="flag-reasons">
@@ -1383,6 +1380,7 @@
       </div>
 
       <textarea class="flag-details"
+        aria-label="Additional details (optional)"
         placeholder="Optional: add more details (max 500 chars)"
         maxlength="500"
         [value]="flagDetails()"

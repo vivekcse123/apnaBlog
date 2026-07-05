@@ -212,14 +212,16 @@
       placeholder="Search blogs, users, sections..."
       autocomplete="off"
       aria-label="Global search"
+      role="combobox"
       aria-haspopup="listbox"
+      aria-controls="ch-suggestions-listbox"
       [attr.aria-expanded]="showSuggestions"
     />
     <span class="ch-search-divider" aria-hidden="true"></span>
-    <kbd class="ch-search-kbd" aria-label="Press Ctrl K or Cmd K">⌘K</kbd>
+    <kbd class="ch-search-kbd" aria-label="Press / to search">/</kbd>
 
     @if (showSuggestions) {
-      <div class="ch-suggestions" role="listbox" aria-label="Search suggestions">
+      <div id="ch-suggestions-listbox" class="ch-suggestions" role="listbox" aria-label="Search suggestions">
         <ng-container [ngTemplateOutlet]="suggBody"/>
       </div>
     }

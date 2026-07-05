@@ -51,7 +51,9 @@
 .header-nav {
   display: flex;
   align-items: center;
-  gap: 2px;
+  /* was 2px - nav items read as a cramped, single fused block; 6px gives
+     each link room to breathe without meaningfully widening the header. */
+  gap: 6px;
   flex: 1;
   justify-content: center;
 }
@@ -60,8 +62,8 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  padding: 6px 13px;
-  border-radius: 6px;
+  padding: 8px 14px;
+  border-radius: 7px;
   font-size: 14px;
   font-weight: 500;
   color: var(--text-secondary);
@@ -71,12 +73,25 @@
   border: none;
   font-family: inherit;
   letter-spacing: 0.01em;
-  transition: color 0.15s;
+  transition: color 0.15s ease, background-color 0.15s ease;
   white-space: nowrap;
   position: relative;
 }
-.nav-link:hover { color: var(--text-primary); }
-.nav-link--active { color: var(--text-primary); font-weight: 600; }
+.nav-link:hover { color: var(--text-primary); background: var(--bg-hover); }
+.nav-link--active {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+.nav-link--active::after {
+  content: '';
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: -1px;
+  height: 2px;
+  border-radius: 2px 2px 0 0;
+  background: var(--accent);
+}
 
 /* More dropdown */
 .nav-more-wrap { position: relative; }
@@ -517,9 +532,52 @@
 .drawer-link-icon--orange { background: var(--accent-subtle); color: var(--accent-text); }
 
 /* ═══════════════════════════════════════════════════════════════
-   MOBILE TAB BAR
+   FEED SORT TABS - persistent at all breakpoints, drives the single
+   feed below via selectedSort(). Replaces the old sort <select>, the
+   three separately-paginated static sections, and the old mobile-only
+   "For You/Trending/Latest" tab bar.
    ═══════════════════════════════════════════════════════════════ */
-.mob-tabs { display: none; }
+.feed-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  margin-bottom: 10px;
+  background: var(--bg-surface-alt);
+  border-radius: 12px;
+}
+.feed-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border: none;
+  background: transparent;
+  border-radius: 9px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+.feed-tab:hover { color: var(--text-primary); }
+.feed-tab--active {
+  background: var(--bg-surface);
+  color: var(--accent-text);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+.feed-tab-icon { display: flex; line-height: 1; flex-shrink: 0; }
+
+@media (max-width: 640px) {
+  .feed-tab { font-size: 11.5px; padding: 7px 4px; gap: 4px; }
+}
+@media (max-width: 420px) {
+  .feed-tab-text { display: none; }
+  .feed-tab { padding: 9px; }
+}
 
 /* ═══════════════════════════════════════════════════════════════
    MOBILE INSTALL STRIP - hidden on desktop, shown on mobile
@@ -773,7 +831,7 @@
 .winners-section {
   background: var(--bg-surface-alt);
   border-bottom: 1px solid var(--border);
-  padding: 28px 24px 32px;
+  padding: var(--space-section-y) 24px;
 }
 .winners-inner  { max-width: 1100px; margin: 0 auto; }
 .winners-heading-row {
@@ -992,7 +1050,7 @@
 
 .section-title {
   font-size: 20px;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--text-primary);
   flex: 1;
 }
@@ -1006,36 +1064,10 @@
   text-transform: uppercase;
   flex-shrink: 0;
 }
-.section-pill.trending,
-.section-pill.hot,
-.section-pill.new,
 .section-pill.fav,
 .section-pill.rec { background: var(--accent-subtle); color: var(--accent-text); }
 
 .result-count { font-size: 13px; color: var(--text-muted); flex-shrink: 0; }
-
-.pagination-btns { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
-
-.page-btn {
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
-  border: 1.5px solid var(--border);
-  background: var(--bg-surface);
-  color: var(--text-secondary);
-  font-size: 16px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: inherit;
-  transition: border-color 0.15s, color 0.15s;
-}
-.page-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent-text); }
-.page-btn:disabled { opacity: 0.4; cursor: default; }
-
-.page-info { font-size: 12.5px; color: var(--text-muted); white-space: nowrap; }
-.page-loading { color: var(--accent); }
 
 .section--pers { padding-top: 24px; }
 .fav-count-chip {
@@ -1047,7 +1079,7 @@
   font-weight: 700;
   flex-shrink: 0;
 }
-.rec-subtitle { font-size: 13.5px; color: var(--text-muted); margin: -14px 0 16px; }
+.rec-subtitle,
 
 /* ═══════════════════════════════════════════════════════════════
    SKELETON LOADERS
@@ -1055,7 +1087,7 @@
 .skeleton-card {
   background: var(--bg-surface);
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: 18px;
   overflow: hidden;
 }
 
@@ -1088,8 +1120,14 @@
    ═══════════════════════════════════════════════════════════════ */
 .blog-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  /* was 24px - more breathing room between shorter cards reads as more
+     premium than tightly-packed taller ones. */
+  gap: 28px;
+  /* Stretch (the grid default) so every card in a row matches the tallest
+     one - was align-items:start, which let each card shrink to its own
+     content height and left ragged card-footer positions across a row. */
+  align-items: stretch;
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -1098,26 +1136,21 @@
 .blog-card {
   background: var(--bg-surface);
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: 18px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform 0.25s cubic-bezier(0.16,1,0.3,1), box-shadow 0.25s cubic-bezier(0.16,1,0.3,1), border-color 0.25s;
+  /* No per-card mount animation/stagger here (was cardFadeSlideUp) - at the
+     denser row height that reads as "busy" rather than lively once more
+     cards are visible per screen. */
 }
-.blog-card:hover { transform: translateY(-3px); box-shadow: var(--card-shadow-lg); }
-
-.card-cat {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  padding: 3px 10px;
-  border-radius: 12px;
-  background: rgba(0,0,0,0.55);
-  color: #fff;
-  font-size: 11px;
-  font-weight: 600;
-  backdrop-filter: blur(4px);
+.blog-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--card-shadow-lg);
+  border-color: color-mix(in srgb, var(--accent) 25%, var(--border));
 }
+.blog-card:hover .card-title { color: var(--accent-text); }
 
 .continue-badge {
   position: absolute;
@@ -1142,33 +1175,27 @@
   border-radius: 0 2px 2px 0;
 }
 
-.card-body {
-  padding: 14px 16px 10px;
-  cursor: pointer;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-width: 0;
-}
-
-.card-author-row { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+/* margin-top:auto (not a fixed 2px) so this row is pinned to the bottom of
+   .card-content once the column is stretched to match a taller sibling
+   card - the gap lands above the meta row instead of leaving the whole
+   text block visually adrift with dead space beneath it. */
+.card-author-row { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; margin-top: auto; padding-top: 0; }
 
 .card-author-avatar {
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   background: var(--accent);
   display: flex;
   align-items: center;
   justify-content: center;
   color: #fff;
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 700;
   flex-shrink: 0;
 }
 
-.card-author-name { font-size: 12.5px; font-weight: 600; color: var(--text-secondary); }
+.card-author-name { font-size: 13px; font-weight: 600; color: var(--text-secondary); }
 
 .card-author-badge {
   display: inline-flex;
@@ -1180,121 +1207,86 @@
 .card-meta-sep    { color: var(--text-muted); font-size: 12px; }
 .card-date        { font-size: 12px; color: var(--text-muted); }
 
-.card-body h3 {
-  font-size: 15.5px;
-  font-weight: 700;
-  color: var(--text-primary);
-  line-height: 1.35;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  margin-top: 2px;
-}
-
-.card-body p {
-  font-size: 13.5px;
-  color: var(--text-secondary);
-  line-height: 1.55;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.card-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; }
-
-.card-tag-chip {
-  display: inline-flex;
-  align-items: center;
-  min-height: 24px;
-  padding: 3px 9px;
-  border-radius: 10px;
-  background: var(--bg-hover);
-  color: var(--text-secondary);
-  font-size: 11px;
-  font-weight: 600;
-  text-decoration: none;
-  transition: background 0.15s, color 0.15s;
-}
-.card-tag-chip:hover, .card-tag-chip.active { background: var(--accent-subtle); color: var(--accent-text); }
-
 .card-footer {
-  padding: 10px 16px 12px;
+  /* was 14px 20px - part of the overall card-height reduction. */
+  padding: 8px 14px;
   border-top: 1px solid var(--border);
   display: flex;
   align-items: center;
+  /* Upvote count on the left, Read -> pinned to the right. */
   justify-content: space-between;
-  gap: 8px;
 }
 
-.card-stats { display: flex; align-items: center; gap: 10px; }
-
-.stat-btn {
+/* Reddit-style upvote - reuses the like/unlike toggle centralized in
+   PostService (shared with blog-detail's like button). */
+.card-upvote-btn {
   display: flex;
   align-items: center;
   gap: 5px;
-  background: none;
-  border: none;
-  cursor: pointer;
   padding: 4px 8px;
+  border: none;
   border-radius: 8px;
-  font-family: inherit;
-  transition: background 0.15s;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 12.5px;
+  font-weight: 700;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
 }
-.stat-btn:hover { background: var(--bg-hover); }
+.card-upvote-btn:hover { background: var(--accent-subtle); color: var(--accent-text); }
+.card-upvote-btn--active { color: var(--accent-text); }
 
-.stat-display { display: flex; align-items: center; gap: 5px; color: var(--text-secondary); }
-.stat-btn     { color: var(--text-secondary); }
-.stat-icon  { display: block; line-height: 1; flex-shrink: 0; }
-.stat-count { font-size: 12px; color: var(--text-secondary); }
-.like-btn.liked { color: #ef4444; }
-.like-btn.liked .stat-count { color: #ef4444; }
+.card-bookmark-btn:focus-visible,
+.read-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-.card-actions { display: flex; align-items: center; gap: 6px; }
-
+/* Overlay bookmark button, sits on top of .card-thumb-wrap (same pattern as .v2-trending-bookmark) */
 .card-bookmark-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  background: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   border: none;
   cursor: pointer;
   color: var(--text-secondary);
   transition: background 0.15s, color 0.15s, transform 0.1s;
 }
-.card-bookmark-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
-.card-bookmark-btn.bookmarked { transform: scale(1.15); color: var(--accent-text); }
+.card-bookmark-btn:hover { background: var(--bg-surface); color: var(--accent-text); }
+.card-bookmark-btn.bookmarked { background: var(--accent); color: #fff; }
 
 .read-btn {
-  padding: 6px 16px;
-  border-radius: 20px;
-  background: var(--accent-subtle);
   color: var(--accent-text);
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 13.5px;
+  font-weight: 700;
   text-decoration: none;
   white-space: nowrap;
-  transition: background 0.15s, transform 0.1s, color 0.15s;
+  transition: color 0.2s, transform 0.2s;
 }
-.read-btn:hover { background: var(--accent); color: #fff; transform: translateY(-1px); }
+.read-btn:hover { color: var(--accent); transform: translateX(2px); }
 
 /* ─── Horizontal card layout (card-inner = flex row) ─────────────────────── */
 .card-inner {
   display: flex;
-  align-items: flex-start;
-  gap: 14px;
-  padding: 14px 16px 10px;
+  /* stretch (not flex-start) so .card-content fills the full card height
+     once .blog-grid stretches the card - .card-thumb-wrap keeps its own
+     fixed aspect-ratio size regardless, so only the text column grows. */
+  align-items: stretch;
+  gap: 12px;
+  padding: 12px 14px 8px;
   cursor: pointer;
   outline: none;
   flex: 1; /* fill available height so footer is always pinned to bottom */
 }
-.card-inner:focus-visible { box-shadow: inset 0 0 0 2px var(--accent); border-radius: 13px; }
+.card-inner:focus-visible { box-shadow: inset 0 0 0 2px var(--accent); border-radius: 16px; }
 
 /* Left: text */
 .card-content {
@@ -1316,33 +1308,24 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 2px 9px;
-  border-radius: 10px;
+  height: 22px;
+  padding: 0 10px;
+  border-radius: 11px;
   background: var(--accent-subtle);
   color: var(--accent-text);
   font-size: 11px;
   font-weight: 700;
 }
-.card-badge {
-  padding: 2px 8px;
-  border-radius: 10px;
-  font-size: 10.5px;
-  font-weight: 700;
-}
-.card-badge--hot { background: rgba(249,115,22,0.12); color: #ea580c; }
-.card-badge--new { background: rgba(34,197,94,0.12);  color: #16a34a; }
-.card-badge--sp  { background: rgba(251,191,36,0.12); color: #b45309; }
-.card-read-time  { font-size: 11px; color: var(--text-muted); margin-left: auto; white-space: nowrap; }
-
-/* Mobile-only inline read time (shown next to the author date) */
-.card-read-time-mob { display: none; }
+.card-read-time  { font-size: 12px; color: var(--text-muted); margin-left: auto; white-space: nowrap; }
 
 /* Title & description */
 .card-title {
-  font-size: 15.5px;
-  font-weight: 700;
+  /* bumped up from 16.5px - title is now the card's dominant visual element */
+  font-size: 19px;
+  font-weight: 750;
+  letter-spacing: -0.01em;
   color: var(--text-primary);
-  line-height: 1.35;
+  line-height: 1.3;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   line-clamp: 2;
@@ -1351,12 +1334,13 @@
   margin: 0;
 }
 .card-desc {
+  /* clamped to 1 line (was 2) to offset the larger title within the height budget */
   font-size: 13.5px;
   color: var(--text-secondary);
-  line-height: 1.55;
+  line-height: 1.5;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
   margin: 0;
@@ -1365,10 +1349,15 @@
 /* Right: thumbnail */
 .card-thumb-wrap {
   position: relative;
-  width: 110px;
-  height: 82px;
+  width: 84px;
+  aspect-ratio: 4 / 3;
   flex-shrink: 0;
-  border-radius: 9px;
+  /* .card-inner uses align-items:stretch so .card-content fills the equal
+     card height set by .blog-grid - without this override the thumbnail
+     was being stretched along with it, blowing out its 4:3 ratio into a
+     tall, disproportionate strip instead of a normal photo shape. */
+  align-self: flex-start;
+  border-radius: 12px;
   overflow: hidden;
   background: var(--bg-surface-alt);
 }
@@ -1376,9 +1365,9 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.25s;
+  transition: transform 0.35s cubic-bezier(0.16,1,0.3,1);
 }
-.blog-card:hover .card-thumb-wrap img { transform: scale(1.04); }
+.blog-card:hover .card-thumb-wrap img { transform: scale(1.06); }
 .card-no-thumb {
   width: 100%;
   height: 100%;
@@ -1902,7 +1891,7 @@
 .pwa-banner {
   position: fixed;
   bottom: 0; left: 0; right: 0;
-  z-index: 1150;
+  z-index: 1090;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1912,6 +1901,16 @@
   background: var(--bg-surface);
   border-top: 1px solid var(--border);
   box-shadow: 0 -8px 32px rgba(0,0,0,0.12);
+}
+
+@media (max-width: 768px) {
+  /* Clear the mobile bottom nav (64px + safe area, z-index 1100) instead of
+     sharing its bottom:0 edge - otherwise this banner renders on top of and
+     hides Home/Explore/Shorts/Saved/Profile navigation. */
+  .pwa-banner {
+    bottom: calc(64px + var(--safe-area-bottom, env(safe-area-inset-bottom, 0px)));
+    padding-bottom: 14px;
+  }
 }
 
 .pwa-banner-left { display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1; }
@@ -2195,56 +2194,13 @@
   .hdr-signin-btn  { display: none; }
   
 
-  /* ── Mobile tab bar ── */
-  .mob-tabs {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    padding: 10px 16px 8px;
-    background: var(--bg-surface);
-    border-bottom: 1px solid var(--border);
-    position: sticky;
-    top: calc(56px + env(safe-area-inset-top, 0px));
-    z-index: 88;
-  }
-
-  /* Embedded in dashboard - no home header above, so remove the 56px header offset */
-  :host(.mode-embedded) .mob-tabs {
-    top: 0;
-  }
-
+  /* Embedded in dashboard - no home header above, so filter-wrap (which now
+     contains the feed-tabs bar itself) sticks flush to the top instead of
+     leaving room for a header. */
   :host(.mode-embedded) .filter-wrap {
-    top: 55px; /* mob-tabs height (47px) + 8px gap, no header offset */
-    scroll-margin-top: 55px;
+    top: 0;
+    scroll-margin-top: 0;
   }
-
-  .mob-tab {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-    padding: 8px 10px;
-    border-radius: 22px;
-    border: 1.5px solid transparent;
-    background: transparent;
-    font-size: 13px;
-    font-weight: 600;
-    font-family: inherit;
-    color: var(--text-muted);
-    cursor: pointer;
-    transition: all 0.2s;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .mob-tab:hover { color: var(--text-secondary); }
-  .mob-tab--active {
-    background: var(--accent-subtle);
-    border-color: transparent;
-    color: var(--accent-text);
-  }
-  .mob-tab-icon { font-size: 15px; line-height: 1; }
-  .mob-tab-text { font-size: 13px; }
 
   /* ── Hero ── */
   
@@ -2289,17 +2245,13 @@
   
   .hero-install-btn    { padding: 8px 11px; font-size: 11px; gap: 4px; }
 
-  /* ── Filter ──
-     Sticks directly below the mob-tabs bar (56px header + 47px tabs).
-     The hero search zone above it can't itself stay stuck - its
-     containing block (.v2-hero) is exactly its own height once the
-     marketing copy is hidden, so it scrolls away normally and
-     .filter-wrap is the next bar to catch. ── */
+  /* ── Filter ── Sticks directly below the 56px mobile header - the
+     feed-tabs bar now lives inside .filter-wrap itself, so there's no
+     separate bar above it to clear anymore. ── */
   .filter-wrap {
     padding: 10px 12px 8px;
-    /* +8px so the bar sticks just below the mob-tabs bar instead of flush against it. */
-    top: calc(56px + 47px + env(safe-area-inset-top, 0px) + 8px);
-    scroll-margin-top: calc(56px + 47px + env(safe-area-inset-top, 0px) + 8px);
+    top: calc(56px + env(safe-area-inset-top, 0px));
+    scroll-margin-top: calc(56px + env(safe-area-inset-top, 0px));
     z-index: 87;
   }
   .filter-inner { flex-direction: column; gap: 8px; }
@@ -2314,80 +2266,9 @@
   .section { padding: 18px 14px; }
   .section-title { font-size: 17px; }
 
-  /* ── Tab section visibility ──
-     For You  → all 3 carousels + featured/shorts/personalized
-     Trending → trending + most-viewed (focused)
-     Latest   → latest only (focused)
-  ── */
-
-  /* For You: show everything except the Trending Today carousel - it's the
-     Trending tab's focus, and showing it here too made For You and Trending
-     look identical above the fold. */
-  main[data-mob-tab="for-you"] .v2-trending-section { display: none; }
-
-  /* Trending tab: show only trending + most-viewed */
-  main[data-mob-tab="trending"] .mob-tab-section--latest { display: none; }
-  main[data-mob-tab="trending"] .feat-section            { display: none; }
-  main[data-mob-tab="trending"] .sp-shorts-section       { display: none; }
-  main[data-mob-tab="trending"] .section--pers           { display: none; }
-
-  /* Latest tab: show only latest */
-  main[data-mob-tab="latest"] .mob-tab-section--trending   { display: none; }
-  main[data-mob-tab="latest"] .mob-tab-section--most-viewed{ display: none; }
-  main[data-mob-tab="latest"] .feat-section                { display: none; }
-  main[data-mob-tab="latest"] .sp-shorts-section           { display: none; }
-  main[data-mob-tab="latest"] .section--pers               { display: none; }
-  main[data-mob-tab="latest"] .home-ad-wrap                { display: none; }
-
-  /* ── Trending / Most Viewed / Latest - vertical feed, same card
-     style as the For You feed (matches design reference: a single
-     scrolling list of cards, no horizontal carousels). ── */
-  .mob-tab-section--trending .section-header .pagination-btns,
-  .mob-tab-section--most-viewed .section-header .pagination-btns,
-  .mob-tab-section--latest .section-header .pagination-btns {
-    display: none;
-  }
-
-  .mob-tab-section--trending .blog-grid,
-  .mob-tab-section--most-viewed .blog-grid,
-  .mob-tab-section--latest .blog-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-  }
-
-  .mob-tab-section--trending .blog-card,
-  .mob-tab-section--most-viewed .blog-card,
-  .mob-tab-section--latest .blog-card,
-  .mob-tab-section--trending .skeleton-card,
-  .mob-tab-section--most-viewed .skeleton-card,
-  .mob-tab-section--latest .skeleton-card {
-    flex: unset;
-    max-width: unset;
-  }
-
   /* ── Blog grid & cards ── */
   .blog-grid { grid-template-columns: 1fr; gap: 14px; }
-  
-  .card-body  { padding: 12px 13px 8px; }
-  .card-body h3 { font-size: 15px; }
-  .card-body p  { font-size: 13px; }
   .card-footer  { padding: 8px 13px 10px; }
-  .card-tag-chip {
-    padding: 4px 10px;
-    font-size: 11.5px;
-    min-height: 26px;
-    display: inline-flex;
-    align-items: center;
-  }
-  .read-btn {
-    padding: 7px 14px;
-    font-size: 12.5px;
-    min-height: 34px;
-    display: inline-flex;
-    align-items: center;
-    white-space: nowrap;
-  }
 
   /* ── Featured ── */
   .feat-section { padding: 14px; }
@@ -2454,8 +2335,6 @@
   
   
   .hero-install-btn { padding: 6px 8px; font-size: 10px; }
-  .mob-tab { font-size: 12px; padding: 7px 7px; }
-  .mob-tab-icon { font-size: 13px; }
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -2465,9 +2344,6 @@
 
 /* ── Mobile category chips (always hidden on desktop) ── */
 .mob-cat-chips { display: none; }
-
-/* ── Card header (desktop: hidden, mobile: shown above image) ── */
-.card-header { display: none; }
 
 @media (max-width: 768px) {
 
@@ -2481,11 +2357,9 @@
   /* ── Tighter filter-wrap since cat-bar is gone ── */
   .filter-wrap { padding-bottom: 10px; }
 
-  /* ── Hide hero category icons & install button - mob-cat-chips and
-     mob-install-strip above already cover these on mobile.
-     !important needed: base .v2-hero-categories/.v2-hero-install-btn rules
-     are defined later in this file with equal specificity and would win. ── */
-  .v2-hero-categories { display: none !important; }
+  /* ── Hide hero install button - mob-install-strip above already covers
+     this on mobile. !important needed: the base .v2-hero-install-btn rule
+     is defined later in this file with equal specificity and would win. ── */
   .v2-hero-install-btn { display: none !important; }
 
   /* ── Search-first mobile hero: hide marketing copy, lead with search ──
@@ -2563,99 +2437,11 @@
     animation: livePulse 1.5s ease-in-out infinite;
   }
 
-  /* ── Instagram-style blog card ── */
-
-  /* Card header: author info above image */
-  .card-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 12px 8px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  
-
-  /* Remove category badge overlay from image (header shows it now) */
-  .card-cat { display: none; }
-
-  /* Action bar: Instagram-style stats row - move footer above body text */
-  /* Use CSS order to place footer between image and text */
-  .blog-card { flex-direction: column; }
-  .card-header  { order: 1; }
-  
-  .card-footer  { order: 3; }
-  .card-body    { order: 4; }
-
-  /* Style the footer as an action bar (Instagram-like) */
-  .card-footer {
-    padding: 10px 12px 6px;
-    border-top: none;
-    border-bottom: 1px solid var(--border);
-  }
-
-  /* Slightly bigger stat icons on mobile action bar */
-  .stat-icon { width: 17px; height: 17px; }
-  .stat-count { font-size: 13px; font-weight: 600; color: var(--text-secondary); }
-  .like-btn.liked .stat-count { color: #ef4444; font-weight: 700; }
-
-  /* Card body text adjustments */
-  .card-body {
-    padding: 10px 12px 12px;
-    border-top: none;
-  }
-  .card-body h3 {
-    font-size: 15px;
-    font-weight: 700;
-    line-height: 1.35;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
-  }
-  .card-body p {
-    font-size: 13px;
-    color: var(--text-secondary);
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
-  }
-  
-  
-
-  /* Read button: full-width on mobile for easy tap */
-  .card-actions { flex: 1; justify-content: flex-end; }
-  .read-btn {
-    padding: 7px 16px;
-    font-size: 13px;
-    font-weight: 700;
-    border-radius: 20px;
-  }
-
   /* Bookmark button size */
   .card-bookmark-btn { width: 36px; height: 36px; font-size: 18px; }
 
   /* ── Cleaner header on mobile ── */
   .header { background: var(--bg-surface); }
-
-  /* ── Compact mob-tabs ── */
-  .mob-tabs {
-    padding: 8px 16px 6px;
-    gap: 6px;
-  }
-  .mob-tab {
-    padding: 7px 12px;
-    gap: 4px;
-  }
-  .mob-tab-icon { font-size: 14px; }
-  .mob-tab-text { font-size: 12.5px; }
 
   /* ── Featured sponsored section ── */
   .feat-item { flex-direction: column; gap: 0; padding: 0; overflow: hidden; }
@@ -2710,95 +2496,6 @@
   .skeleton-action-bar  { order: 3; }
   .skeleton-body        { order: 4; }
   .skeleton-footer      { order: 5; display: none; } /* footer hidden, action-bar replaces it */
-
-  /* Carousel skeleton cards: taller image */
-  .mob-tab-section--trending .skeleton-img-block,
-  .mob-tab-section--most-viewed .skeleton-img-block,
-  .mob-tab-section--latest .skeleton-img-block { height: 220px; }
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   IMPROVEMENT 2 - FOR YOU TAB: MEDIUM-STYLE LIST CARDS
-   ═══════════════════════════════════════════════════════════════ */
-@media (max-width: 768px) {
-
-  /* "For You" non-carousel sections: grouped list */
-  .section--pers .blog-grid {
-    grid-template-columns: 1fr;
-    gap: 0;
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    overflow: hidden;
-  }
-
-  /* Filtered results: individual spaced cards */
-  #filtered-results .blog-grid {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
-
-  /* For You list: Medium-style compact grid cards */
-  .section--pers .blog-card {
-    display: grid;
-    grid-template-columns: 1fr 88px;
-    grid-template-rows: auto auto;
-    grid-template-areas:
-      "body img"
-      "foot foot";
-    border-radius: 0;
-    border: none;
-    border-bottom: 1px solid var(--border);
-    transform: none !important;
-    box-shadow: none !important;
-    flex-direction: unset;
-  }
-  .section--pers .blog-card:last-child { border-bottom: none; }
-
-  /* Filtered results: standalone rounded cards (use base flex-column layout) */
-  #filtered-results .blog-card {
-    transform: none !important;
-    box-shadow: none !important;
-  }
-
-  /* Hide Instagram-style card-header for list cards */
-  .section--pers .card-header,
-  #filtered-results .card-header { display: none; }
-
-  /* Re-show author row inside card-body (card-header is hidden) */
-  .section--pers .card-author-row,
-  #filtered-results .card-author-row { display: flex; }
-
-  /* Badges hidden in compact list mode */
-  .section--pers .continue-badge,
-  #filtered-results .continue-badge { display: none; }
-
-  /* Body: left column */
-  .section--pers .card-body,
-  #filtered-results .card-body {
-    grid-area: body;
-    padding: 10px 0 8px 12px;
-    order: unset;
-  }
-  .section--pers .card-body h3,
-  #filtered-results .card-body h3 {
-    font-size: 14px;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
-  }
-  .section--pers .card-body p,
-  #filtered-results .card-body p { display: none; }
-  .section--pers .card-tags,
-  #filtered-results .card-tags { display: none; }
-
-  /* Footer: full-width bottom strip */
-  .section--pers .card-footer,
-  #filtered-results .card-footer {
-    grid-area: foot;
-    order: unset;
-    border-top: 1px solid var(--border);
-    border-bottom: none;
-    padding: 7px 12px;
-  }
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -3098,12 +2795,141 @@
   background: var(--bg-hover);
 }
 
+/* ══════════════════════════════════════════════════════════════════
+   Editor's Picks reuses .v2-discover-row/.v2-mini-section-inner/-label
+   further down the page (its --alt tint still applies there). Browse by
+   Topic itself moved into the masthead band as .v2-hero-topics below -
+   it's the one surviving categories widget on the page (Trending
+   Searches, Continue Reading/Readers' Favorites, and the mini-stats bar
+   were removed as duplicates of content shown elsewhere). */
+
+.v2-discover-row { background: var(--bg-surface); }
+.v2-discover-row--alt { background: var(--bg-surface-alt); }
+
+.v2-mini-section-inner {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 14px 32px;
+}
+.v2-mini-section-label {
+  /* Sentence case, normal weight - not the all-caps eyebrow-style label
+     used elsewhere - reads as a friendly heading rather than a dashboard
+     widget title. */
+  font-size: 15.5px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+}
+/* Browse by Topic */
+.v2-popular-topics-scroll {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+.v2-popular-topics-scroll::-webkit-scrollbar { display: none; }
+.v2-pt-tile {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  font-size: 13.5px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+.v2-pt-tile:hover { border-color: var(--accent); background: var(--accent-subtle); color: var(--accent-text); }
+.v2-pt-tile-emoji { font-size: 15px; line-height: 1; }
+.v2-pt-tile-count {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: var(--bg-hover);
+  padding: 1px 7px;
+  border-radius: 10px;
+}
+.v2-pt-tile:hover .v2-pt-tile-count { color: var(--accent-text); background: var(--bg-surface); }
+
+/* Browse by Topic - slim chip strip inside the masthead band, sits directly
+   below the compact search bar. Full-bleed background (like
+   .v2-hero-search-zone above it) with padding standing in for a centered
+   column, rather than max-width+margin:auto - a fixed-width centered box
+   here would leave its edges transparent, showing the page's --bg-base
+   through on both sides and re-creating the same mismatched-band seam the
+   search zone's own comment describes fixing. A bit wider than the
+   search/hero column (600px half-width vs 500px) so a couple more chips
+   are visible before the row needs scrolling. */
+.v2-hero-topics {
+  background: var(--bg-surface);
+  padding: 4px max(32px, calc(50% - 600px)) 18px;
+}
+
+/* Editor's Picks */
+.v2-todays-picks-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.v2-pick-card {
+  display: block;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.v2-pick-card:hover { transform: translateY(-3px); box-shadow: var(--card-shadow-lg); }
+.v2-pick-card-img { position: relative; aspect-ratio: 16/10; overflow: hidden; background: var(--bg-surface-alt); }
+.v2-pick-card-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.35s ease; }
+.v2-pick-card:hover .v2-pick-card-img img { transform: scale(1.06); }
+.v2-pick-card-noimg {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; font-weight: 800; color: var(--accent-text);
+  background: var(--accent-subtle);
+}
+.v2-pick-card-body { padding: 12px 14px 14px; }
+.v2-pick-card-cat {
+  display: inline-block;
+  font-size: 10.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--accent-text);
+  margin-bottom: 6px;
+}
+.v2-pick-card-title {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--text-primary);
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@media (max-width: 640px) {
+  .v2-mini-section-inner { padding: 12px 20px; }
+  .v2-todays-picks-grid { grid-template-columns: 1fr; }
+}
+
 /* ── V2 Hero ─────────────────────────────────────────────────────── */
 .v2-hero {
   position: relative;
   background: var(--bg-surface);
   border-bottom: 1px solid var(--border);
-  padding: 52px 32px 44px;
+  /* No top border/rule here on purpose - it shares var(--bg-surface) with
+     the "Browse by Topic" block above, so the hero should read as a
+     continuation of the same surface rather than a separate section
+     announced by a colored divider line. */
+  padding: 26px 32px 32px;
   overflow: hidden;
 }
 
@@ -3133,9 +2959,15 @@
   max-width: 1600px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: 1fr 580px;
+  /* 440px (was 580px): the right column now holds only the single featured
+     card (max-width 400px) - the old 580px track was sized for that card
+     plus the "Trending right now" panel that used to sit under it, and
+     left ~180px of dead space once that panel was removed from the hero. */
+  grid-template-columns: 1fr 440px;
   gap: 36px;
-  align-items: center;
+  /* start, not center - avoids the headline vertically centering against
+     whichever column happens to be taller and opening a gap above it. */
+  align-items: start;
   position: relative;
   z-index: 1;
 }
@@ -3153,7 +2985,7 @@
   font-size: 12.5px;
   font-weight: 600;
   letter-spacing: 0.15px;
-  margin-bottom: 20px;
+  margin-bottom: 14px;
 }
 .v2-hero-eyebrow-dot {
   width: 7px;
@@ -3190,20 +3022,51 @@
 .v2-hero-search-zone {
   position: relative;
   z-index: 2;
-  max-width: 1000px;
-  margin: 32px auto 0;
+  /* Full-bleed border/background, content centered to the same 1000px
+     column the hero uses - avoids an extra wrapper element.
+     Background matches .v2-hero (var(--bg-surface)) rather than falling
+     back to the page's --bg-base - previously this strip inherited the
+     gray page background, creating a mismatched band wedged between the
+     white header and the white hero instead of reading as one surface. */
+  background: var(--bg-surface);
+  /* was 20px/14px - the whole search zone (lead + bar + chips) measured
+     close to 320px tall; tightening this plus the lead/chip margins below
+     brings it closer to ~220px without losing any content. */
+  padding: 14px max(32px, calc(50% - 500px)) 10px;
 }
 
-/* Trending searches chip row - mobile only (see media query) */
-/* Trending searches - chip row under the search bar (desktop: centered;
-   mobile gets a horizontally-scrolling variant in the media query below) */
+/* Centered lead-in above the search bar - without it the page felt like it
+   dropped straight into an input with no context/greeting. Two short lines
+   (title + supporting line), kept visually quiet so it doesn't compete
+   with the H1 immediately below the search zone. */
+.v2-hero-search-lead {
+  text-align: center;
+  margin: 0 0 10px;
+}
+.v2-hero-search-lead-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 2px;
+}
+.v2-hero-search-lead-sub {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* Trending-topic chip row directly under the search bar - visible by
+   default (desktop: centered, wrapping); hidden at <=768px where
+   .mob-cat-chips already covers the same "quick nav" role in the
+   compact mobile layout, so it isn't duplicated there. */
 .v2-hero-trending-chips {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  margin-top: 18px;
+  margin-top: 12px;
 }
 .v2-hero-trending-chip {
   padding: 8px 16px;
@@ -3228,12 +3091,15 @@
   align-items: center;
   gap: 0;
   width: 100%;
-  height: 68px;
+  /* Compact but still prominent: 52px (was 68px) keeps it a clear focal
+     point without the tall zone it used to sit in below eating a whole
+     screen's worth of above-the-fold height on its own. */
+  height: 52px;
   background: var(--bg-surface);
-  border: 2px solid var(--border);
-  border-radius: 22px;
-  padding: 0 8px 0 22px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04);
+  border: 1.5px solid var(--border);
+  border-radius: 16px;
+  padding: 0 6px 0 18px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05), 0 1px 3px rgba(0,0,0,0.04);
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 .v2-mega-search:focus-within {
@@ -3332,7 +3198,22 @@
 .v2-mega-dd-close { display: none; }
 
 /* ── Discovery dropdown ── */
+/* Dims the rest of the page while the dropdown is open - the dropdown itself
+   can be quite tall (categories/trending/latest/writers sections), so without
+   this there's no visual cue for where it ends and the page resumes, and
+   clicks that look like "clicking away" often still land inside it. */
+.v2-mega-dd-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 1;
+  animation: megaBackdropIn 0.2s ease both;
+}
+@keyframes megaBackdropIn { from { opacity: 0; } to { opacity: 1; } }
+
 .v2-mega-dropdown {
+  position: relative;
+  z-index: 2;
   margin-top: 12px;
   padding: 16px;
   background: var(--bg-surface);
@@ -3599,80 +3480,35 @@
 }
 .v2-mega-dd-footer a:hover { text-decoration: underline; }
 
-/* Hero topic categories - icon circles */
-.v2-hero-categories {
-  display: flex;
-  gap: 18px;
-  overflow-x: auto;
-  scrollbar-width: none;
-  margin-bottom: 28px;
-  padding-bottom: 2px;
-}
-.v2-hero-categories::-webkit-scrollbar { display: none; }
-.v2-hero-cat {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  flex-shrink: 0;
-  min-width: 64px;
-  text-decoration: none;
-  color: var(--text-secondary);
-}
-.v2-hero-cat-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-  transition: transform 0.15s, box-shadow 0.15s;
-}
-.v2-hero-cat:hover .v2-hero-cat-icon {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-}
-.v2-hero-cat-label {
-  font-size: 12.5px;
-  font-weight: 600;
-  white-space: nowrap;
-}
-.v2-hero-cat--all .v2-hero-cat-icon,
-.v2-hero-cat--technology .v2-hero-cat-icon,
-.v2-hero-cat--health .v2-hero-cat-icon,
-.v2-hero-cat--sports .v2-hero-cat-icon,
-.v2-hero-cat--business .v2-hero-cat-icon,
-.v2-hero-cat--lifestyle .v2-hero-cat-icon,
-.v2-hero-cat--career .v2-hero-cat-icon,
-.v2-hero-cat--ai .v2-hero-cat-icon,
-.v2-hero-cat--productivity .v2-hero-cat-icon { color: var(--accent-text); background: var(--accent-subtle); }
-.v2-hero-cat--more .v2-hero-cat-icon { color: var(--text-secondary); background: var(--bg-surface-alt); }
-.v2-hero-cat--active .v2-hero-cat-icon {
-  background: var(--accent);
-  border-color: transparent;
-  color: #fff;
-}
-.v2-hero-cat--active .v2-hero-cat-label { color: var(--accent-text); }
-
-/* Hero stats */
+/* Hero trust strip - compact single-row inline items (icon + label only,
+   no card chrome/subtitle). Superseded the bordered 2x2 icon-tile cards:
+   those competed visually with the headline/CTAs for attention; this reads
+   as a quiet credibility footnote instead, matching the shorter, more
+   editorial hero the redesign calls for. */
 .v2-hero-highlights {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 28px;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 24px;
 }
 .v2-hero-highlight {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  font-size: 13.5px;
-  font-weight: 500;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
   color: var(--text-secondary);
+  white-space: nowrap;
 }
 .v2-hero-highlight svg { color: var(--accent-text); flex-shrink: 0; }
+.v2-hero-highlight-sep {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--border-strong);
+  flex-shrink: 0;
+}
 
 /* Hero CTA row */
 .v2-hero-cta {
@@ -3790,279 +3626,104 @@
 /* Hero right - illustration */
 .v2-hero-right {
   display: flex;
-  align-items: flex-start;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
+  gap: 18px;
+  /* .v2-hero-inner uses align-items:start, so this column's top otherwise
+     lines up with the eyebrow pill's top - leaving a gap above the
+     featured card relative to the H1, since the eyebrow (~44px incl. its
+     margin-bottom) sits above the H1 in the left column. Nudge this
+     column down so the card starts flush with the H1 instead. */
+  margin-top: 44px;
 }
 
-/* ── Live trending panel ── */
-.v2-hero-live-panel {
+/* ── Featured Article card ── */
+.v2-featured-card {
+  display: block;
   width: 100%;
   max-width: 400px;
   background: var(--bg-surface);
   border: 1px solid var(--border);
   border-radius: 20px;
   overflow: hidden;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
-}
-
-.v2-hero-live-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 14px 18px;
-  border-bottom: 1px solid var(--border);
-  background: var(--bg-base);
-}
-
-.v2-hero-live-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #22c55e;
-  flex-shrink: 0;
-  box-shadow: 0 0 0 3px rgba(34,197,94,0.2);
-  animation: live-pulse 2s ease-in-out infinite;
-}
-
-@keyframes live-pulse {
-  0%, 100% { box-shadow: 0 0 0 3px rgba(34,197,94,0.2); }
-  50%       { box-shadow: 0 0 0 6px rgba(34,197,94,0.08); }
-}
-
-.v2-hero-live-label {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--text-primary);
-  letter-spacing: 0.02em;
-  flex: 1;
-}
-
-.v2-hero-live-all {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--accent-text);
-  text-decoration: none;
-}
-.v2-hero-live-all:hover { text-decoration: underline; }
-
-/* Post cards */
-.v2-hero-post-card {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  padding: 14px 16px;
-  border-bottom: 1px solid var(--border);
   text-decoration: none;
   color: inherit;
-  transition: background 0.15s, transform 0.15s;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.v2-featured-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--accent);
+  box-shadow: 0 14px 36px -8px color-mix(in srgb, var(--accent) 30%, transparent), 0 1px 4px rgba(0,0,0,0.04);
+}
+.v2-featured-card-media {
   position: relative;
-}
-.v2-hero-post-card:hover { background: var(--bg-base); }
-.v2-hero-post-card:hover .v2-hero-post-arrow { opacity: 1; transform: translateX(2px); }
-.v2-hero-post-card--top {
-  background: color-mix(in srgb, var(--accent) 4%, var(--bg-surface));
-}
-.v2-hero-post-card--top:hover {
-  background: color-mix(in srgb, var(--accent) 8%, var(--bg-surface));
-}
-
-/* Rank badge */
-.v2-hero-post-rank {
-  flex-shrink: 0;
-  width: 22px;
-  font-size: 12px;
-  font-weight: 800;
-  color: var(--text-muted);
-  text-align: center;
-  line-height: 1;
-}
-.v2-hero-post-rank--gold {
-  color: #f59e0b;
-}
-
-.v2-hero-post-thumb {
-  flex-shrink: 0;
-  width: 72px;
-  height: 72px;
-  border-radius: 10px;
-  overflow: hidden;
+  width: 100%;
+  /* was 150px - the card read short/squat next to the hero-left column's
+     headline+desc+trust-strip+CTA stack, leaving visible white space below
+     it in the grid cell (align-items:start doesn't stretch to match). */
+  height: 240px;
   background: var(--bg-base);
 }
-.v2-hero-post-thumb img {
-  width: 100%; height: 100%;
-  object-fit: cover; display: block;
-}
-.v2-hero-post-noimg {
+.v2-featured-card-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.v2-featured-card-noimg {
   width: 100%; height: 100%;
   display: flex; align-items: center; justify-content: center;
-  background: var(--accent);
-  font-size: 22px; font-weight: 700; color: #fff;
-}
-
-.v2-hero-post-body {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.v2-hero-post-top-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.v2-hero-post-cat {
-  display: inline-block;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--accent-text);
+  font-size: 40px; font-weight: 800; color: var(--accent-text);
   background: var(--accent-subtle);
-  padding: 2px 7px;
-  border-radius: 99px;
 }
-
-.v2-hero-post-hot {
-  font-size: 10px;
+.v2-featured-card-tag {
+  position: absolute;
+  top: 12px; left: 12px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 11.5px;
   font-weight: 700;
-  color: #f59e0b;
-  background: rgba(245,158,11,0.1);
-  padding: 2px 7px;
-  border-radius: 99px;
+  letter-spacing: 0.02em;
+  color: #111827;
+  background: var(--accent);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
-
-.v2-hero-post-title {
-  font-size: 13px;
-  font-weight: 600;
+.v2-featured-card-body { padding: 16px 18px 18px; }
+.v2-featured-card-cat {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--accent-text);
+  margin-bottom: 6px;
+}
+.v2-featured-card-title {
+  font-size: 16.5px;
+  font-weight: 700;
+  line-height: 1.35;
   color: var(--text-primary);
-  line-height: 1.45;
-  margin: 0;
+  margin: 0 0 8px;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
-
-.v2-hero-post-author-row {
+.v2-featured-card-meta {
   display: flex;
   align-items: center;
-  gap: 5px;
-  margin-top: 1px;
-}
-.v2-hero-post-author-avatar {
-  width: 16px; height: 16px;
-  border-radius: 50%;
-  background: var(--accent);
-  color: #fff;
-  font-size: 9px;
-  font-weight: 700;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-}
-.v2-hero-post-author-name {
-  font-size: 11px;
+  gap: 6px;
+  font-size: 12.5px;
   color: var(--text-muted);
-  font-weight: 500;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 120px;
 }
+.v2-featured-card-author { font-weight: 600; color: var(--text-secondary); }
 
-.v2-hero-post-meta {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 11px;
-  color: var(--text-muted);
-  margin-top: 1px;
-}
-.v2-hero-post-meta span { display: flex; align-items: center; gap: 3px; }
+/* Separator dot reused in .v2-featured-card-meta - the rest of the old
+   "live trending panel" this belonged to was removed from the hero (see
+   home.html) since it duplicated the full Trending Today section further
+   down the page; only this one rule is still referenced. */
 .v2-hero-post-meta-dot { color: var(--border); }
-.v2-hero-post-meta svg { color: var(--text-muted); flex-shrink: 0; }
-
-.v2-hero-post-arrow {
-  flex-shrink: 0;
-  color: var(--text-muted);
-  opacity: 0;
-  transition: opacity 0.15s, transform 0.15s;
-}
-
-/* Skeleton */
-.v2-hero-post-skel {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  padding: 14px 16px;
-  border-bottom: 1px solid var(--border);
-}
-.v2-hps-rank {
-  flex-shrink: 0;
-  width: 22px; height: 14px;
-  border-radius: 4px;
-  background: linear-gradient(90deg, var(--bg-base) 25%, var(--border) 50%, var(--bg-base) 75%);
-  background-size: 200% 100%;
-  animation: skel-shimmer 1.5s infinite;
-}
-.v2-hps-thumb {
-  flex-shrink: 0;
-  width: 72px; height: 72px;
-  border-radius: 10px;
-  background: linear-gradient(90deg, var(--bg-base) 25%, var(--border) 50%, var(--bg-base) 75%);
-  background-size: 200% 100%;
-  animation: skel-shimmer 1.5s infinite;
-}
-.v2-hps-body { flex: 1; display: flex; flex-direction: column; gap: 7px; }
-.v2-hps-line {
-  border-radius: 4px;
-  background: linear-gradient(90deg, var(--bg-base) 25%, var(--border) 50%, var(--bg-base) 75%);
-  background-size: 200% 100%;
-  animation: skel-shimmer 1.5s infinite;
-}
-.v2-hps-line--cat   { height: 10px; width: 38%; }
-.v2-hps-line--title { height: 13px; width: 90%; }
-.v2-hps-line--meta  { height: 10px; width: 55%; }
-
-/* Panel footer stats */
-.v2-hero-panel-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-around;
-  padding: 14px 18px;
-  border-top: 1px solid var(--border);
-  background: var(--bg-base);
-}
-.v2-hero-panel-stat {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-}
-.v2-hero-panel-stat-num {
-  font-size: 15px;
-  font-weight: 800;
-  color: var(--accent-text);
-  line-height: 1;
-}
-.v2-hero-panel-stat-label {
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-.v2-hero-panel-stat-divider {
-  width: 1px;
-  height: 28px;
-  background: var(--border);
-}
 
 /* Hero responsive */
 @media (max-width: 1100px) {
-  .v2-hero-inner { grid-template-columns: 1fr 460px; gap: 28px; }
+  .v2-hero-inner { grid-template-columns: 1fr 400px; gap: 28px; }
 }
 @media (max-width: 900px) {
   .v2-hero { padding: 36px 24px 32px; }
@@ -4088,14 +3749,26 @@
 
   .v2-hero-search-zone {
     position: sticky;
-    top: calc(56px + 47px + env(safe-area-inset-top, 0px));
+    top: calc(56px + env(safe-area-inset-top, 0px));
     z-index: 87;
     max-width: none;
     margin: 0;
     padding: 10px 12px;
-    background: var(--bg-base);
+    /* Match .mob-cat-chips (var(--bg-surface)) - this bar used the page's
+       gray --bg-base, the only white->gray->white seam in the otherwise
+       continuous mobile top stack. */
+    background: var(--bg-surface);
     border-bottom: 1px solid var(--border);
   }
+  /* Mobile already has .mob-cat-chips as its persistent category nav -
+     showing this too duplicated the exact same category list twice in a
+     row (once here, once in .mob-cat-chips right below the header). */
+  .v2-hero-topics { display: none; }
+  /* This zone is sticky/persistent on mobile scroll - the lead-in greeting
+     only makes sense once, on first paint, not on every re-pin while
+     scrolling, so it's dropped here rather than costing sticky-bar height
+     permanently. */
+  .v2-hero-search-lead { display: none; }
   .v2-mega-search { height: 52px; border-radius: 16px; padding: 0 6px 0 16px; }
   .v2-mega-search-icon svg { width: 17px; height: 17px; }
   .v2-mega-search-input { font-size: 14px; }
@@ -4123,7 +3796,7 @@
     border: none;
     border-top: 1px solid var(--border);
     border-radius: 0 0 16px 16px;
-    max-height: calc(100vh - 56px - 47px - var(--mob-search-zone-h, 112px) - env(safe-area-inset-top, 0px));
+    max-height: calc(100vh - 56px - var(--mob-search-zone-h, 112px) - env(safe-area-inset-top, 0px));
     display: flex;
     flex-direction: column;
     animation: megaDropIn 0.2s ease both;
@@ -4185,6 +3858,8 @@
   letter-spacing: -0.3px;
   margin: 0;
 }
+.v2-section-subtitle { font-size: 13.5px; color: var(--text-muted); margin: -14px 0 20px; }
+
 .v2-section-viewall {
   display: inline-flex;
   align-items: center;
@@ -4210,7 +3885,7 @@
 .v2-trending-section {
   background: var(--bg-surface);
   border-bottom: 1px solid var(--border);
-  padding: 32px 32px 28px;
+  padding: var(--space-section-y) 32px;
 }
 .v2-trending-inner { max-width: 1600px; margin: 0 auto; }
 
@@ -4247,7 +3922,7 @@
 
 .v2-trending-card-img {
   position: relative;
-  height: 175px;
+  height: 190px;
   background: var(--bg-surface-alt);
   overflow: hidden;
 }
@@ -4295,6 +3970,22 @@
   -webkit-backdrop-filter: blur(6px);
 }
 
+.v2-trending-rank {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 800;
+}
+
 .v2-trending-bookmark {
   position: absolute;
   top: 8px;
@@ -4319,9 +4010,9 @@
   color: #fff;
 }
 
-.v2-trending-card-body { padding: 14px 16px 16px; }
+.v2-trending-card-body { padding: 16px; }
 .v2-trending-card-title {
-  font-size: 14.5px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--text-primary);
   line-height: 1.4;
@@ -4353,9 +4044,9 @@
 }
 
 @media (max-width: 900px) {
-  .v2-trending-section { padding: 24px 16px 20px; }
+  .v2-trending-section { padding: var(--space-section-y-tablet) 16px; }
   .v2-trending-card { width: 230px; }
-  .v2-trending-card-img { height: 148px; }
+  .v2-trending-card-img { height: 158px; }
 }
 @media (max-width: 600px) {
   .v2-trending-section { padding: 20px 14px 16px; }
@@ -4380,29 +4071,32 @@
 /* ── V2 Sidebar ──────────────────────────────────────────────────── */
 .v2-sidebar {
   position: sticky;
-  top: calc(60px + env(safe-area-inset-top, 0px));
-  max-height: calc(100vh - 80px);
-  overflow-y: auto;
-  scrollbar-width: none;
+  /* was 60px - feedback asked for more clearance below the sticky header */
+  top: calc(90px + env(safe-area-inset-top, 0px));
+  /* Caps the sticky box to the viewport rather than letting it grow with
+     content. No internal scrollbar/clipping on top of that: overflow:visible
+     means content that runs past this height just flows past the bottom
+     edge into the tall grid cell below rather than being cut off. */
+  height: calc(100vh - 80px);
+  overflow-y: visible;
   padding: 24px 20px;
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
-.v2-sidebar::-webkit-scrollbar { display: none; }
 
 .v2-sb-card {
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 18px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  /* lightened: no border/shadow (was 1px border + drop shadow) - a subtle
+     tint is enough to separate widgets without the sidebar feeling boxy. */
+  background: var(--bg-surface-alt);
+  border-radius: 14px;
+  padding: 16px;
 }
 .v2-sb-card-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 }
 .v2-sb-card-title {
   font-size: 14px;
@@ -4410,64 +4104,6 @@
   color: var(--text-primary);
   margin: 0;
 }
-.v2-sb-card-link {
-  font-size: 12px;
-  color: var(--accent-text);
-  text-decoration: none;
-  font-weight: 600;
-  transition: opacity 0.15s;
-  flex-shrink: 0;
-}
-.v2-sb-card-link:hover { opacity: 0.75; }
-
-/* Topics list */
-.v2-sb-topics { display: flex; flex-direction: column; gap: 2px; }
-.v2-sb-topic {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 9px 10px;
-  border-radius: 10px;
-  background: none;
-  border: none;
-  color: inherit;
-  text-decoration: none;
-  cursor: pointer;
-  font-family: inherit;
-  width: 100%;
-  text-align: left;
-  box-sizing: border-box;
-  transition: background 0.14s;
-}
-.v2-sb-topic:hover { background: var(--bg-hover); }
-.v2-sb-topic.active {
-  background: var(--accent-subtle);
-}
-.v2-sb-topic-icon { display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 28px; height: 28px; border-radius: 7px; background: var(--bg-base); color: var(--text-secondary); }
-.v2-sb-topic-icon svg { display: block; }
-.v2-sb-topic-name {
-  flex: 1;
-  font-size: 13.5px;
-  font-weight: 500;
-  color: var(--text-secondary);
-  min-width: 0;
-}
-.v2-sb-topic.active .v2-sb-topic-name { color: var(--accent-text); font-weight: 600; }
-.v2-sb-topic.active .v2-sb-topic-icon { background: var(--accent-subtle); color: var(--accent-text); }
-.v2-sb-topic-count {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--text-muted);
-  background: var(--bg-hover);
-  border-radius: 10px;
-  padding: 2px 7px;
-  flex-shrink: 0;
-}
-.v2-sb-topic.active .v2-sb-topic-count {
-  background: var(--accent-subtle);
-  color: var(--accent-text);
-}
-
 /* Top Writers */
 .v2-sb-writers { display: flex; flex-direction: column; gap: 10px; }
 .v2-sb-writer {
@@ -4507,10 +4143,9 @@
 /* Challenge widget */
 .v2-sb-challenge {
   display: block;
-  padding: 18px;
-  border-radius: 16px;
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
+  padding: 16px;
+  border-radius: 14px;
+  background: var(--bg-surface-alt);
   text-decoration: none;
   transition: background 0.2s, transform 0.18s;
 }
@@ -4557,29 +4192,11 @@
   border: none;
 }
 
-/* Trending tags */
-.v2-sb-tags { display: flex; flex-wrap: wrap; gap: 6px; }
-.v2-sb-tag {
-  padding: 5px 12px;
-  border-radius: 20px;
-  border: 1.5px solid var(--border);
-  background: var(--bg-surface);
-  color: var(--text-secondary);
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  font-family: inherit;
-  transition: border-color 0.15s, color 0.15s, background 0.15s;
-}
-.v2-sb-tag:hover { border-color: var(--accent); color: var(--accent-text); background: var(--accent-subtle); }
-.v2-sb-tag.active { border-color: var(--accent); color: var(--accent-text); background: var(--accent-subtle); }
-
 /* Community stats */
 .v2-sb-community {
-  background: var(--bg-surface-alt);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 18px;
+  background: var(--accent-subtle);
+  border-radius: 14px;
+  padding: 16px;
 }
 .v2-sb-community-header {
   display: flex;
@@ -4590,24 +4207,6 @@
 .v2-sb-community-icon { font-size: 22px; flex-shrink: 0; line-height: 1; margin-top: 2px; }
 .v2-sb-community-header strong { display: block; font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px; }
 .v2-sb-community-header span { font-size: 12px; color: var(--text-muted); }
-.v2-sb-community-stats {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-bottom: 14px;
-}
-.v2-sb-community-stat {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 10px;
-  border-radius: 10px;
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  text-align: center;
-}
-.v2-sb-community-stat strong { font-size: 18px; font-weight: 800; color: var(--text-primary); }
-.v2-sb-community-stat span { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
 .v2-sb-community-btn {
   display: flex;
   align-items: center;
@@ -4653,6 +4252,62 @@
 }
 .v2-sb-about-link:hover { opacity: 0.75; }
 
+/* ── Sidebar ad ──────────────────────────────────────────────────────────
+   Reuses .home-ad-wrap so the existing pushHomeAds() JS (which queries
+   `.home-ad-wrap ins.adsbygoogle` from home.ts) initializes this slot too,
+   but overrides its feed-oriented rules. Fixed height (standard IAB medium
+   rectangle) instead of flex:1 - the ad is one widget among many now, not
+   a filler relied on to occupy leftover vertical space when it doesn't fill. */
+.v2-sidebar .home-ad-wrap {
+  max-width: none;
+  margin: 0;
+  height: 250px;
+  max-height: 250px;
+  min-height: 250px;
+  flex: none;
+  padding: 12px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--bg-surface);
+}
+.v2-sidebar .home-ad-wrap ins.adsbygoogle { width: 100%; }
+
+/* Trending Now widget */
+.v2-sb-trending { list-style: none; display: flex; flex-direction: column; gap: 10px; margin: 0; padding: 0; }
+.v2-sb-trending-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  text-decoration: none;
+  padding: 4px 0;
+  border-radius: 8px;
+  transition: background 0.14s;
+}
+.v2-sb-trending-item:hover { background: var(--bg-hover); padding: 4px 6px; margin: 0 -6px; }
+.v2-sb-trending-rank {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--accent-text);
+  min-width: 16px;
+  flex-shrink: 0;
+  line-height: 1.4;
+}
+.v2-sb-trending-info { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.v2-sb-trending-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.v2-sb-trending-stat { font-size: 11.5px; color: var(--text-muted); }
+
 @media (max-width: 1024px) {
   /* minmax(0, 1fr): without the 0 minimum, this track (and the whole
      grid) can be stretched wider than the viewport by a card's
@@ -4662,65 +4317,6 @@
   .v2-main-layout { grid-template-columns: minmax(0, 1fr); }
   .v2-feed-col { border-right: none; min-width: 0; }
   .v2-sidebar { display: none; min-width: 0; }
-}
-
-/* ── V2 Topics Section ───────────────────────────────────────────── */
-.v2-topics-section {
-  background: var(--bg-surface-alt);
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  padding: 48px 32px;
-}
-.v2-topics-inner { max-width: 1600px; margin: 0 auto; }
-
-.v2-topics-grid {
-  display: grid;
-  grid-template-columns: repeat(8, 1fr);
-  gap: 12px;
-}
-
-.v2-topic-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  padding: 20px 12px;
-  border-radius: 16px;
-  background: var(--bg-surface);
-  border: 1.5px solid var(--border);
-  text-decoration: none;
-  text-align: center;
-  transition: border-color 0.18s, box-shadow 0.18s, transform 0.16s;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
-}
-.v2-topic-card:hover {
-  background: var(--bg-hover);
-  transform: translateY(-3px);
-}
-.v2-topic-card--more {
-  background: var(--accent-subtle);
-}
-.v2-topic-card-emoji { font-size: 26px; line-height: 1; }
-.v2-topic-card-name {
-  font-size: 12.5px;
-  font-weight: 700;
-  color: var(--text-primary);
-  white-space: nowrap;
-}
-.v2-topic-card-count {
-  font-size: 10.5px;
-  color: var(--text-muted);
-  font-weight: 500;
-}
-
-@media (max-width: 1024px) { .v2-topics-grid { grid-template-columns: repeat(4, 1fr); } }
-@media (max-width: 600px) {
-  .v2-topics-section { padding: 28px 16px; }
-  .v2-topics-grid { grid-template-columns: repeat(4, 1fr); gap: 8px; }
-  .v2-topic-card { padding: 14px 8px; gap: 6px; border-radius: 12px; }
-  .v2-topic-card-emoji { font-size: 22px; }
-  .v2-topic-card-name { font-size: 11px; }
-  .v2-topic-card-count { display: none; }
 }
 
 /* ── V2 Newsletter ───────────────────────────────────────────────── */
@@ -4781,6 +4377,10 @@
   border: 1.5px solid var(--border);
   border-radius: 16px;
   padding: 5px;
+}
+.v2-newsletter-form:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);
 }
 
 .v2-newsletter-input {
@@ -4981,13 +4581,12 @@
   .v2-trending-section { padding: 24px 16px 20px; }
   .v2-section-title { font-size: 17px; }
 }
-@media (max-width: 768px) {
-  .v2-trending-section { display: none; } /* mobile uses the existing mob-tab carousel */
-  .v2-topics-section { display: none; }   /* keep mobile clean */
-}
-@media (min-width: 769px) {
-  .mob-tab-section--trending { display: none; } /* desktop uses .v2-trending-section instead */
-}
+/* Shown at all breakpoints now - its former mobile stand-in (the
+   paginated "Trending Today" static section) was removed when the three
+   stacked sections were consolidated into the single sort-tab-driven
+   feed; mobile users can still get a likes-sorted view via the
+   "Trending" feed tab, but this carousel is no longer redundant with it
+   since it's the only trending surface mobile has left. */
 
 /* ═══════════════════════════════════════════════════════════════
    ARTICLE FEED CARD - MOBILE REDESIGN
@@ -5001,7 +4600,7 @@
 @media (max-width: 768px) {
   .blog-card,
   .section--pers .blog-card,
-  #filtered-results .blog-card {
+  #feed-results .blog-card {
     position: relative;
     display: flex;
     flex-direction: column;
@@ -5039,11 +4638,14 @@
     border-radius: 12px;
   }
 
-  /* Hide category/sponsored/trending/new badges, read-time pill and tags */
-  .card-meta-top,
-  .card-tags {
+  /* Hide the category badge, keep only the read-time - it's the sole thing
+     left in this row now that .card-read-time-mob (the old author-row
+     duplicate) has been removed, so mobile still needs it here. */
+  .card-cat-badge {
     display: none;
   }
+  .card-meta-top { justify-content: flex-end; }
+  .card-read-time { margin-left: 0; }
 
   .card-title {
     font-size: 16px;
@@ -5059,147 +4661,25 @@
     min-width: 0;
   }
 
-  /* Author row: name + verified badge + read time (publish date hidden) */
+  /* Author row: name + verified badge + date (read time now lives in the
+     meta-top row above the title, so no separate mobile duplicate needed) */
   .card-author-row { display: flex; }
-  .card-author-row .card-meta-sep,
-  .card-author-row .card-date {
-    display: none;
-  }
-  .card-read-time-mob {
-    display: inline;
-    font-size: 12px;
-    color: var(--text-muted);
+
+  /* Footer now holds the upvote button + count, so it's shown again on
+     mobile (it used to be dropped entirely here, back when the Read link
+     was the only thing in it and felt redundant with the whole card
+     already being tappable - the upvote action isn't redundant). */
+  .card-footer {
+    padding: 8px 13px 10px;
   }
 
-  /* Hide like/comment/view stats and the "Read →" button */
-  .card-stats,
-  .read-btn {
-    display: none;
-  }
-
-  /* Bookmark becomes a circular overlay on the thumbnail's top-right corner */
-  .card-footer,
-  .section--pers .card-footer,
-  #filtered-results .card-footer {
-    position: absolute;
-    top: 22px;
-    right: 22px;
-    z-index: 2;
-    padding: 0;
-    border: none;
-    background: none;
-    grid-area: unset;
-  }
-  .card-actions { flex: none; gap: 0; }
+  /* Bump bookmark contrast since mobile thumbnails vary more. */
   .card-bookmark-btn {
-    width: 30px;
-    height: 30px;
-    font-size: 15px;
-    border-radius: 50%;
     background: rgba(17,17,17,0.45);
     color: #fff;
     backdrop-filter: blur(4px);
   }
   .card-bookmark-btn:hover { background: rgba(17,17,17,0.6); }
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   TRENDING TOPICS - mobile
-   The sidebar is hidden on mobile (see the ≤1024px rule above);
-   re-show just the "Trending Topics" card as a horizontal chip
-   row between the feed and the install banner (matches design
-   reference). All other sidebar cards (Popular Topics, Top
-   Writers, Active Challenge, Community, install CTA, About)
-   stay hidden on mobile.
-   ═══════════════════════════════════════════════════════════════ */
-@media (max-width: 768px) {
-  .v2-sidebar {
-    display: flex !important;
-    position: static;
-    max-height: none;
-    overflow: visible;
-    padding: 0 12px 14px;
-    gap: 0;
-  }
-  .v2-sidebar > .v2-sb-card:not(:has(.v2-sb-tags)),
-  .v2-sb-challenge,
-  .v2-sb-community,
-  .sb-install-cta,
-  .v2-sb-about {
-    display: none;
-  }
-  .v2-sidebar > .v2-sb-card:has(.v2-sb-tags) {
-    width: 100%;
-    border-radius: 16px;
-  }
-  .v2-sb-tags {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
-  }
-  .v2-sb-tags::-webkit-scrollbar { display: none; }
-  .v2-sb-tag {
-    flex-shrink: 0;
-    white-space: nowrap;
-  }
-}
-
-/* ══ STATS BAR ══════════════════════════════════════════════════════════ */
-.v2-stats-bar {
-  background: var(--bg-surface);
-  border-bottom: 1px solid var(--border);
-}
-.v2-stats-bar-inner {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 18px 5%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0;
-  flex-wrap: wrap;
-}
-.v2-stat-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  padding: 4px 32px;
-  text-align: center;
-}
-.v2-stat-num {
-  font-size: 22px;
-  font-weight: 800;
-  color: var(--accent-text);
-  line-height: 1.1;
-  font-family: 'DM Sans', sans-serif;
-}
-.v2-stat-label {
-  font-size: 12px;
-  color: var(--text-muted);
-  font-weight: 500;
-  white-space: nowrap;
-}
-.v2-stat-div {
-  width: 1px;
-  height: 32px;
-  background: var(--border);
-  flex-shrink: 0;
-}
-
-@media (max-width: 640px) {
-  .v2-stats-bar-inner { gap: 0; padding: 14px 4%; }
-  .v2-stat-item { padding: 4px 16px; }
-  .v2-stat-num { font-size: 18px; }
-  .v2-stat-label { font-size: 11px; }
-  .v2-stat-div { height: 24px; }
-}
-
-@media (max-width: 400px) {
-  .v2-stat-item { padding: 4px 10px; }
-  .v2-stat-div { display: none; }
-  .v2-stats-bar-inner { display: grid; grid-template-columns: 1fr 1fr; row-gap: 12px; }
 }
 
 /* ══ EDITORIAL MISSION ═══════════════════════════════════════════════════ */
@@ -5344,3 +4824,5 @@
   .v2-faq-inner { padding: 36px 5%; }
   .v2-faq-question { font-size: 14px; padding: 15px 0; }
 }
+
+

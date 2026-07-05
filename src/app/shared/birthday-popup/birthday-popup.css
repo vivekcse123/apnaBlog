@@ -1,0 +1,374 @@
+/* ── Homepage-style announcement banner ── */
+.bday-banner {
+  position: relative;
+  z-index: 40;
+  margin: 12px 5% 0;
+  border-radius: 16px;
+  background: linear-gradient(120deg, rgba(67, 206, 162, 0.14), rgba(24, 90, 157, 0.10));
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
+  animation: bdaySlideDown 0.35s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+@keyframes bdaySlideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.bday-banner-inner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+  flex-wrap: wrap;
+}
+
+.bday-banner-icon { font-size: 26px; flex-shrink: 0; line-height: 1; }
+
+.bday-banner-text { flex: 1; min-width: 200px; }
+
+.bday-banner-title {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.bday-banner-sub {
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  margin: 2px 0 0;
+}
+
+.bday-banner-btn {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, #43cea2, #185a9d);
+  border: none;
+  border-radius: 9px;
+  padding: 9px 16px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.2s, transform 0.2s, box-shadow 0.2s;
+}
+
+.bday-banner-btn:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(67, 206, 162, 0.35);
+}
+
+.bday-banner-x {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border);
+  background: var(--bg-surface-alt);
+  color: var(--text-muted);
+  font-size: 12px;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.bday-banner-x:hover {
+  background: color-mix(in srgb, #ef4444 10%, transparent);
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+@media (max-width: 560px) {
+  .bday-banner-inner { padding: 12px; }
+  .bday-banner-btn { flex: 1; text-align: center; }
+  .bday-banner-x { order: -1; margin-left: auto; }
+}
+
+/* ── Floating celebration button ── */
+.bday-fab {
+  position: fixed;
+  right: 20px;
+  bottom: 84px;
+  z-index: 1500;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 16px 10px 12px;
+  border-radius: 999px;
+  border: none;
+  background: linear-gradient(135deg, #43cea2, #185a9d);
+  color: #fff;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(24, 90, 157, 0.35);
+  animation: bdayFabIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+@keyframes bdayFabIn {
+  from { opacity: 0; transform: scale(0.7); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.bday-fab:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(24, 90, 157, 0.45);
+}
+
+.bday-fab-icon { font-size: 16px; line-height: 1; }
+
+@media (max-width: 560px) {
+  .bday-fab { bottom: 76px; right: 14px; }
+}
+
+/* ── Modal backdrop ── */
+.bday-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2100;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  overflow: hidden;
+  animation: bdayFadeIn 0.22s ease both;
+}
+
+@keyframes bdayFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Falling flower petals ── */
+.bday-petals {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.bday-petal {
+  position: absolute;
+  top: -30px;
+  line-height: 1;
+  opacity: 0.9;
+  will-change: transform, opacity;
+  animation-name: bdayPetalFall;
+  animation-timing-function: ease-in;
+  animation-fill-mode: forwards;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.12));
+}
+
+@keyframes bdayPetalFall {
+  0%   { transform: translate3d(0, -10vh, 0) rotate(var(--petal-rotate, 0deg)); opacity: 0.95; }
+  100% { transform: translate3d(24px, 110vh, 0) rotate(calc(var(--petal-rotate, 0deg) + 280deg)); opacity: 0; }
+}
+
+/* ── Confetti burst on wish sent ── */
+.bday-confetti {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+.bday-confetti-piece {
+  position: absolute;
+  top: -10px;
+  border-radius: 2px;
+  will-change: transform, opacity;
+  animation-name: bdayConfettiFall;
+  animation-timing-function: ease-out;
+  animation-fill-mode: forwards;
+}
+
+@keyframes bdayConfettiFall {
+  0%   { transform: translate3d(0, 0, 0) rotate(0deg); opacity: 1; }
+  100% { transform: translate3d(0, 140px, 0) rotate(240deg); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bday-petal, .bday-confetti-piece { animation: none !important; display: none; }
+}
+
+/* ── Modal shell ── */
+.bday-modal {
+  position: relative;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 380px;
+  max-height: 90dvh;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 32px 24px 24px;
+  text-align: center;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.22);
+  animation: bdaySlideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes bdaySlideUp {
+  from { opacity: 0; transform: translateY(20px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.bday-x-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border);
+  background: var(--bg-surface-alt);
+  color: var(--text-muted);
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.2s;
+}
+
+@media (hover: hover) {
+  .bday-x-btn:hover {
+    background: color-mix(in srgb, #ef4444 10%, transparent);
+    border-color: #ef4444;
+    color: #ef4444;
+    transform: rotate(90deg);
+  }
+}
+
+.bday-emoji { font-size: 36px; margin-bottom: 6px; line-height: 1; }
+
+.bday-title {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 4px;
+}
+
+.bday-name {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  margin: 0;
+  background: linear-gradient(135deg, #43cea2, #185a9d);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.bday-role {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  margin: 2px 0 12px;
+}
+
+.bday-text {
+  font-size: 13.5px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0 0 18px;
+}
+
+.bday-wish-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bday-wish-input {
+  width: 100%;
+  resize: vertical;
+  min-height: 64px;
+  border-radius: 10px;
+  border: 1.5px solid var(--border);
+  background: var(--bg-surface-alt);
+  color: var(--text-primary);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13.5px;
+  padding: 10px 12px;
+  line-height: 1.5;
+}
+
+.bday-wish-input:focus {
+  outline: none;
+  border-color: #43cea2;
+}
+
+.bday-btn {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, #43cea2, #185a9d);
+  border: none;
+  border-radius: 10px;
+  padding: 10px 24px;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.2s, box-shadow 0.2s;
+}
+
+.bday-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.bday-btn:not(:disabled):hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(67, 206, 162, 0.35);
+}
+
+.bday-btn-secondary {
+  background: transparent;
+  border: 1.5px solid var(--border);
+  color: var(--text-secondary);
+  box-shadow: none;
+}
+
+.bday-btn-secondary:hover {
+  background: var(--bg-surface-alt);
+  color: var(--text-primary);
+  box-shadow: none;
+}
+
+.bday-thanks {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.bday-thanks-emoji { font-size: 30px; margin: 0; }
+
+.bday-thanks-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.bday-thanks-sub {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 0 0 14px;
+}
+
+@media (max-width: 380px) {
+  .bday-modal { padding: 28px 18px 20px; }
+  .bday-title { font-size: 18px; }
+}

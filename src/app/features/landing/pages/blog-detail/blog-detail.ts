@@ -1,5 +1,5 @@
 import {
-  AfterViewInit, ChangeDetectionStrategy, Component, DestroyRef, ElementRef, NgZone, OnDestroy, OnInit, PLATFORM_ID, computed, inject, signal
+  AfterViewInit, ChangeDetectionStrategy, Component, DestroyRef, ElementRef, HostListener, NgZone, OnDestroy, OnInit, PLATFORM_ID, computed, inject, signal
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { environment } from '../../../../../environments/environment';
@@ -387,7 +387,6 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // ── Share ─────────────────────────────────────────────────────────────────
-  shareCount      = signal(0);
   shareMenuOpen   = signal(false);
   copyLinkSuccess = signal(false);
 
@@ -488,6 +487,11 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   get winnerRankLabel(): string {
     const rank = (this.post() as any)?.featuredWinnerRank;
     return rank === 1 ? '🥇 1st Place Winner' : rank === 2 ? '🥈 2nd Place Winner' : '🥉 3rd Place Winner';
+  }
+
+  @HostListener('document:keydown.escape')
+  onFlagModalEscape(): void {
+    if (this.showFlagModal()) this.closeFlagModal();
   }
 
   openFlagModal(): void {
@@ -786,7 +790,6 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
         }
 
         this.loadPost(postId);
-        this.loadShareCount(postId);
       });
 
     this.restoreLikedIds();
@@ -1063,6 +1066,18 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
       this.startCarousel();
     }
 
+    // Author identity + related content are plain data fetches, not browser
+    // APIs - resolve them during SSR too. Otherwise crawlers see zero internal
+    // links on every post, the author link server-renders as "/author/null",
+    // and the author's post count is serialized as a false "0".
+    const aId = (postData.user as any)?._id ?? (postData.user as any);
+    if (aId) {
+      this.authorId.set(aId.toString());
+      this.fetchAuthorFollowData(aId.toString());
+    }
+    this.loadRelatedAndAuthorPosts(postData);
+    this.loadRelatedShorts(postData);
+
     if (!isPlatformBrowser(this.platformId)) return;
 
     this.restoreSessionCommentCount(postData._id);
@@ -1070,14 +1085,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     // Defer side-effects that hit the network or DOM until after Angular
     // has painted the initial view (avoids ExpressionChangedAfterChecked).
     setTimeout(() => {
-      const aId = (postData.user as any)?._id ?? (postData.user as any);
-      if (aId) {
-        this.authorId.set(aId.toString());
-        this.fetchAuthorFollowData(aId.toString());
-      }
       this.addView(postData);
-      this.loadRelatedAndAuthorPosts(postData);
-      this.loadRelatedShorts(postData);
       if (postData._id) this.loadReactions(postData._id);
       if (postData._id) this.loadPostReactions(postData._id);
       this.loadSeriesPosts(postData);
@@ -1629,8 +1637,11 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     const desc         = this.truncateDesc(fullDesc, 155);
     const image        = post.featuredImage || environment.ogImage;
     const titleSuffix  = isMcq ? ' [MCQ Quiz]' : '';
+    // Cap at 60 chars before the suffix - Google truncates SERP titles beyond
+    // ~60-70 chars anyway, so anything longer is wasted on the tab/SERP title.
+    const cappedTitle  = post.title.length > 60 ? `${post.title.slice(0, 57).trimEnd()}...` : post.title;
 
-    this.titleService.setTitle(`${post.title}${titleSuffix} | ApnaInsights`);
+    this.titleService.setTitle(`${cappedTitle}${titleSuffix} | ApnaInsights`);
 
     // Pending and draft posts must not be indexed.
     // Thin posts (< 500 words) get noindex so they don't drag down site quality
@@ -1640,7 +1651,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     this.contentWordCount.set(wordCount);
     const isThinPost        = !isMcq && wordCount < 500;
 
-    // News articles get max-snippet for Top Stories eligibility
+    // News articles get news_keywords for Google News/Discover categorization
     const NEWS_CATS_META = new Set(['News','Sports','Business','Entertainment','Health','Science','Technology']);
     const isNewsMeta = post.categories?.some(c => NEWS_CATS_META.has(c));
     // Sponsored posts are paid native advertising - must not be indexed as editorial content.
@@ -1648,7 +1659,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     // from organic indexing to avoid misleading users and crawlers.
     const isSponsored = !!post.isSponsored;
     const robotsValue = (post.status === 'published' && !isThinPost && !isSponsored)
-      ? `index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1${isNewsMeta ? ', max-image-preview:large' : ''}`
+      ? 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'
       : 'noindex, nofollow';
 
     // Keywords - MCQ gets quiz terms; regular posts get categories + tags
@@ -2075,23 +2086,6 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     return p ? `${environment.siteUrl}/blog/${p.slug || p._id}` : '';
   }
 
-  private loadShareCount(postId: string): void {
-    if (!isPlatformBrowser(this.platformId)) return;
-    try {
-      const v = localStorage.getItem(`share_count_${postId}`);
-      this.shareCount.set(v ? parseInt(v, 10) : 0);
-    } catch { }
-  }
-
-  private incrementShareCount(): void {
-    const p = this.post();
-    if (!p) return;
-    const n = this.shareCount() + 1;
-    this.shareCount.set(n);
-    if (!isPlatformBrowser(this.platformId)) return;
-    try { localStorage.setItem(`share_count_${p._id}`, String(n)); } catch { }
-  }
-
   toggleShareMenu(): void { this.shareMenuOpen.set(!this.shareMenuOpen()); }
 
   async nativeSharePost(): Promise<void> {
@@ -2100,7 +2094,6 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     if ('share' in navigator) {
       try {
         await (navigator as any).share({ title: p.title, text: p.description || p.title, url: this.shareUrl() });
-        this.incrementShareCount();
       } catch (err: any) {
         if (err?.name !== 'AbortError') this.shareMenuOpen.set(true);
       }
@@ -2197,14 +2190,12 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
       `https://twitter.com/intent/tweet?url=${encodeURIComponent(this.shareUrl())}&text=${encodeURIComponent(p.title)}`,
       '_blank',
     );
-    this.incrementShareCount();
     this.shareMenuOpen.set(false);
   }
 
   shareOnFacebook(): void {
     if (!isPlatformBrowser(this.platformId)) return;
     window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(this.shareUrl())}`, '_blank');
-    this.incrementShareCount();
     this.shareMenuOpen.set(false);
   }
 
@@ -2215,7 +2206,6 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
       `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(this.shareUrl())}&title=${encodeURIComponent(p.title)}`,
       '_blank',
     );
-    this.incrementShareCount();
     this.shareMenuOpen.set(false);
   }
 
@@ -2223,7 +2213,6 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     const p = this.post();
     if (!p || !isPlatformBrowser(this.platformId)) return;
     window.open(`https://wa.me/?text=${encodeURIComponent(p.title + ' - ' + this.shareUrl())}`, '_blank');
-    this.incrementShareCount();
     this.shareMenuOpen.set(false);
   }
 
@@ -2232,7 +2221,6 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     try {
       await navigator.clipboard.writeText(this.shareUrl());
       this.copyLinkSuccess.set(true);
-      this.incrementShareCount();
       setTimeout(() => {
         this.copyLinkSuccess.set(false);
         this.shareMenuOpen.set(false);
@@ -2249,16 +2237,11 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   // ══════════════════════════════════════════════════════════════════════════
 
   private restoreLikedIds(): void {
-    if (!isPlatformBrowser(this.platformId)) return;
-    try {
-      const s = localStorage.getItem('apna_liked_posts');
-      if (s) this.likedPostIds.set(new Set(JSON.parse(s)));
-    } catch { }
+    this.likedPostIds.set(this.postService.getLikedIds());
   }
 
   private persistLikedIds(ids: Set<string>): void {
-    if (!isPlatformBrowser(this.platformId)) return;
-    try { localStorage.setItem('apna_liked_posts', JSON.stringify([...ids])); } catch { }
+    this.postService.saveLikedIds(ids);
   }
 
   isLiked(postId: string): boolean { return this.likedPostIds().has(postId); }

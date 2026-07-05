@@ -384,6 +384,9 @@
 }
 
 /* ── Featured image ── */
+/* Cap height rather than forcing a square - infographics and other
+   naturally wide/tall images look cramped or lose readability when
+   squeezed into a 1:1 box. Contain keeps the image un-distorted. */
 .featured-image-wrap {
   width: 100%; margin-bottom: 24px;
   border-radius: 14px; overflow: hidden;
@@ -440,6 +443,7 @@
 .category-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
 .category-pill {
   display: inline-block;
+  font-family: inherit; line-height: normal; appearance: none;
   background: var(--accent-subtle); color: #0f7a5a;
   border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
   font-size: 11px; font-weight: 700; letter-spacing: 0.04em;
@@ -561,6 +565,24 @@
   position: relative;
   display: inline-flex;
   align-items: center;
+}
+/* Invisible hover bridge across the gap between the button and the popup
+   floating above it (.like-emoji-picker's `bottom: calc(100% + 8px)`). That
+   gap isn't part of this element visually, so moving the mouse toward the
+   popup at any angle other than dead-straight-up briefly crosses page
+   content outside this subtree - and since mouseenter/mouseleave only stay
+   "open" while the cursor remains within this element's own descendants,
+   that split-second exit closes the picker before the cursor ever reaches
+   it. This pseudo-element (part of the same box for hover purposes) covers
+   the dead zone, generously overhung since the popup can be wider than the
+   button. */
+.like-reaction-wrap::before {
+  content: '';
+  position: absolute;
+  left: -60px;
+  right: -60px;
+  bottom: 100%;
+  height: 16px;
 }
 
 /* ── Emoji picker - floats above the button ── */
@@ -752,7 +774,8 @@
   color: var(--text-secondary); font-style: italic;
 }
 .blog-content ::ng-deep img {
-  max-width: 100%; height: auto; border-radius: 10px;
+  max-width: 100%; width: auto; height: auto; max-height: 70vh;
+  border-radius: 10px;
   display: block; margin: 1.2em auto;
 }
 .blog-content ::ng-deep strong { font-weight: 700; }
@@ -1175,10 +1198,11 @@
   width: 100%; padding: 8px 0; border: none; background: transparent;
   color: var(--text-primary); font-family: inherit;
   font-size: 14px; line-height: 1.5; resize: none;
-  outline: none !important; box-shadow: none !important;
   -webkit-appearance: none; appearance: none;
 }
-.disc-textarea:focus { outline: none !important; box-shadow: none !important; }
+.disc-textarea:focus-visible {
+  outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px;
+}
 .disc-textarea::placeholder { color: var(--text-muted); }
 .disc-compose-footer { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .disc-char-count { font-size: 11px; color: var(--text-muted); }
@@ -1706,6 +1730,9 @@
     margin-left: calc(50% - 50vw);
     margin-right: 0;
   }
+
+  /* Shorter viewports need a tighter cap so tall/portrait images don't eat the whole screen */
+  .blog-content ::ng-deep img { max-height: 50vh; }
 
   /* Typography */
   .blog-title       { font-size: clamp(22px, 6.5vw, 30px); }

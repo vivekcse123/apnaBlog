@@ -1,0 +1,92 @@
+@if (eventActive()) {
+
+  @if (bannerVisible()) {
+    <div class="bday-banner" role="region" aria-label="CEO birthday announcement">
+      <div class="bday-banner-inner">
+        <span class="bday-banner-icon" aria-hidden="true">🎂</span>
+        <div class="bday-banner-text">
+          <p class="bday-banner-title">Today is our CEO {{ personName }}'s Birthday!</p>
+          <p class="bday-banner-sub">Join thousands of readers in celebrating.</p>
+        </div>
+        <button class="bday-banner-btn" (click)="openModal()" type="button">Wish Happy Birthday</button>
+        <button class="bday-banner-x" (click)="dismissBanner()" type="button" aria-label="Dismiss banner">✕</button>
+      </div>
+    </div>
+  }
+
+  @if (floatingVisible() && !modalOpen()) {
+    <button class="bday-fab" (click)="openModal()" type="button" aria-label="Open birthday celebration">
+      <span class="bday-fab-icon" aria-hidden="true">🎁</span>
+      <span class="bday-fab-label">Celebrate</span>
+    </button>
+  }
+
+  @if (modalOpen()) {
+    <div class="bday-backdrop" (click)="onBackdropClick($event)" role="dialog" aria-modal="true" aria-labelledby="bday-title">
+
+      @if (showPetals()) {
+        <div class="bday-petals" aria-hidden="true">
+          @for (p of petals; track $index) {
+            <span class="bday-petal"
+                  [style.left.%]="p.left"
+                  [style.animation-delay.s]="p.delay"
+                  [style.animation-duration.s]="p.duration"
+                  [style.font-size.px]="p.size"
+                  [style.--petal-rotate.deg]="p.rotate">{{ p.glyph }}</span>
+          }
+        </div>
+      }
+
+      <div class="bday-modal" (click)="$event.stopPropagation()">
+        <button #closeBtn class="bday-x-btn" (click)="closeModal()" aria-label="Close birthday message">✕</button>
+
+        @if (showConfetti()) {
+          <div class="bday-confetti" aria-hidden="true">
+            @for (c of confetti; track $index) {
+              <span class="bday-confetti-piece"
+                    [style.left.%]="c.left"
+                    [style.animation-delay.s]="c.delay"
+                    [style.animation-duration.s]="c.duration"
+                    [style.width.px]="c.size"
+                    [style.height.px]="c.size"
+                    [style.background]="'hsl(' + c.hue + ', 80%, 60%)'">
+              </span>
+            }
+          </div>
+        }
+
+        <div class="bday-emoji" aria-hidden="true">🎂</div>
+        <h2 id="bday-title" class="bday-title">Happy Birthday</h2>
+        <p class="bday-name">{{ personName }}</p>
+        <p class="bday-role">{{ personTitle }}</p>
+        <p class="bday-text">
+          Thank you for building ApnaInsights and inspiring thousands of learners.
+        </p>
+
+        @if (!wishSent()) {
+          <div class="bday-wish-form">
+            <textarea
+              class="bday-wish-input"
+              rows="3"
+              placeholder="Write your wishes..."
+              [ngModel]="wishText()"
+              (ngModelChange)="wishText.set($event)"
+              maxlength="280"
+              aria-label="Write your birthday wish"
+            ></textarea>
+            <button class="bday-btn" type="button" [disabled]="!wishText().trim()" (click)="submitWish()">
+              Send Wishes
+            </button>
+          </div>
+        } @else {
+          <div class="bday-thanks">
+            <p class="bday-thanks-emoji" aria-hidden="true">🎉</p>
+            <p class="bday-thanks-title">Thank you for your wishes!</p>
+            <p class="bday-thanks-sub">Your birthday wishes have been sent. ❤️</p>
+            <button class="bday-btn bday-btn-secondary" type="button" (click)="closeModal()">Close</button>
+          </div>
+        }
+      </div>
+    </div>
+  }
+}

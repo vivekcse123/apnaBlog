@@ -97,6 +97,10 @@ export default async function handler(req, res) {
       { url: '/category/social',        changefreq: 'weekly', priority: 0.6, lastmod: new Date().toISOString() },
       { url: '/category/quotes',        changefreq: 'weekly', priority: 0.6, lastmod: new Date().toISOString() },
       { url: '/category/village',       changefreq: 'weekly', priority: 0.6, lastmod: new Date().toISOString() },
+      { url: '/category/career',        changefreq: 'weekly', priority: 0.6, lastmod: new Date().toISOString() },
+      { url: '/category/ai',            changefreq: 'weekly', priority: 0.6, lastmod: new Date().toISOString() },
+      { url: '/category/finance',       changefreq: 'weekly', priority: 0.6, lastmod: new Date().toISOString() },
+      { url: '/category/productivity',  changefreq: 'weekly', priority: 0.6, lastmod: new Date().toISOString() },
     ];
 
     // Dynamic blog routes — published posts with enough description to indicate substantive content.

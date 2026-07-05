@@ -1,4 +1,5 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { Observable, of, shareReplay, finalize, tap, EMPTY } from 'rxjs';
 import { expand, reduce } from 'rxjs/operators';
 import { apiResponse } from '../../../core/models/api-response.model';
@@ -35,8 +36,36 @@ export interface CommentsResponse {
 
 @Injectable({ providedIn: 'root' })
 export class PostService {
-  private endPoint = environment.apiPostEndpoint.replace(/\/+$/, '');
-  private http     = inject(HttpClient);
+  private endPoint   = environment.apiPostEndpoint.replace(/\/+$/, '');
+  private http       = inject(HttpClient);
+  private platformId = inject(PLATFORM_ID);
+
+  // ── Liked-post-ID persistence (shared by blog-detail and home feed cards) ──
+  // Single localStorage-backed set, keyed globally (not per logged-in user) -
+  // matches the pre-existing behavior this centralizes, unchanged.
+  private readonly LIKED_IDS_KEY = 'apna_liked_posts';
+
+  getLikedIds(): Set<string> {
+    if (!isPlatformBrowser(this.platformId)) return new Set();
+    try {
+      const s = localStorage.getItem(this.LIKED_IDS_KEY);
+      return s ? new Set(JSON.parse(s)) : new Set();
+    } catch { return new Set(); }
+  }
+
+  saveLikedIds(ids: Set<string>): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    try { localStorage.setItem(this.LIKED_IDS_KEY, JSON.stringify([...ids])); } catch { }
+  }
+
+  /** Toggles one post ID in the liked-set, persists it, and returns the new liked state. */
+  toggleLikedId(postId: string): boolean {
+    const ids = this.getLikedIds();
+    const nowLiked = !ids.has(postId);
+    if (nowLiked) ids.add(postId); else ids.delete(postId);
+    this.saveLikedIds(ids);
+    return nowLiked;
+  }
 
   // In-flight request deduplication - concurrent callers share one HTTP request
   private readonly _inflight = new Map<string, Observable<any>>();

@@ -1,5 +1,13 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&display=swap');
+/* Font loading is handled by the preload+swap <link> in index.html - do not
+   re-@import Google Fonts here, it triggers a second, redundant fetch of a
+   different (unused) weight set on top of what's already preloaded. */
 @import './mobile-ui.css';
+
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
 
 /* ── View Transitions (route cross-fade) ─────────────────────────────────────
    Angular's withViewTransitions() hooks into the browser View Transitions API.
@@ -45,6 +53,13 @@
 
   --warn-hover: #b76910;
   --success-hover: green;
+
+  /* Homepage section vertical rhythm - shared so feed sections (Trending,
+     Browse Topics, Challenge Winners, etc.) don't each invent their own
+     padding scale. */
+  --space-section-y:        48px;
+  --space-section-y-tablet: 32px;
+  --space-section-y-mobile: 24px;
 }
 
 :root,
@@ -114,7 +129,9 @@
   --border-strong:  #3d4268;
   --text-primary:   #f0f2ff;
   --text-secondary: #a5aabf;
-  --text-muted:     #6b7280;
+  /* Lighter than the light-theme value (#6b7280 only hits ~3.48:1 here) so
+     timestamps/meta text clear WCAG AA's 4.5:1 minimum against --bg-surface. */
+  --text-muted:     #8a90a8;
   --text-inverse:   #111827;
 
   /* Accent = slightly lighter teal for dark-mode readability */
@@ -181,7 +198,8 @@ body {
   color: var(--text-primary);
   transition: background-color 0.25s ease, color 0.25s ease;
   min-height: 100dvh;
-  overscroll-behavior-y: none;
+  overflow-y: auto;
+  overflow-x: hidden;
   line-height: 1.6;
 }
 
@@ -376,10 +394,24 @@ app-promo-modal .modal .cta-btn {
   -webkit-text-fill-color: #fff !important;
 }
 
-html, body { 
-  height: 100%; 
-  overflow-x: hidden; 
-  max-width: 100%; 
+html {
+  /* html keeps height:100% (viewport-sized) - this is what makes it the
+     "root scroller" that properly propagates scrolling to the viewport.
+     Without it, html's box grows to match its content with nothing left
+     to overflow, and mouse-wheel scrolling stops working entirely. */
+  height: 100%;
+  overflow-x: hidden;
+  max-width: 100%;
+}
+body {
+  /* NOT height:100% here - body already has min-height:100dvh (above), and
+     forcing height:100% on top of that clips body to exactly the viewport
+     while real content keeps growing past it, splitting the page across two
+     competing scroll contexts (visible as a double scrollbar + a large blank
+     area once scrolled past the clipped height). min-height lets body grow
+     with content while still filling short pages. */
+  overflow-x: hidden;
+  max-width: 100%;
 }
 
 

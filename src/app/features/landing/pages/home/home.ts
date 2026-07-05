@@ -8,7 +8,7 @@ import { environment } from '../../../../../environments/environment';
 import { ActivatedRoute, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule, isPlatformBrowser, NgTemplateOutlet, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { DomSanitizer, Meta, SafeHtml, Title } from '@angular/platform-browser';
+import { Meta, Title } from '@angular/platform-browser';
 import { DOCUMENT } from '@angular/common';
 import { of, Subject, EMPTY, interval } from 'rxjs';
 import { debounceTime, distinctUntilChanged, catchError, expand, reduce, timeout } from 'rxjs/operators';
@@ -22,6 +22,7 @@ import { Auth } from '../../../../core/services/auth';
 import { UserService } from '../../../user/services/user-service';
 import { User } from '../../../user/models/user.mode';
 import { WelcomeModal } from '../welcome.modal';
+import { BirthdayPopup, isBirthdayEventActiveToday } from '../../../../shared/birthday-popup/birthday-popup';
 import { FormatCountPipe } from '../../../../shared/pipes/format-count-pipe';
 import { TimeAgoPipe }     from '../../../../shared/pipes/time-ago-pipe';
 import { CloudinaryResizePipe } from '../../../../shared/pipes/cloudinary-resize-pipe';
@@ -98,7 +99,7 @@ function persistStats(total: number, totalViews: number, categoryCounts: Record<
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, CommonModule, FormsModule, NgTemplateOutlet, WelcomeModal, FormatCountPipe, TimeAgoPipe, CloudinaryResizePipe, MobileBottomNav],
+  imports: [RouterLink, RouterLinkActive, CommonModule, FormsModule, NgTemplateOutlet, WelcomeModal, BirthdayPopup, FormatCountPipe, TimeAgoPipe, CloudinaryResizePipe, MobileBottomNav],
   templateUrl: './home.html',
   styleUrl: './home.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -121,14 +122,12 @@ export class Home implements OnInit, OnDestroy {
   private userService    = inject(UserService);
   themeService           = inject(ThemeService);
   private platformId     = inject(PLATFORM_ID);
-  private sanitizer      = inject(DomSanitizer);
   private meta           = inject(Meta);
   private titleService   = inject(Title);
   private document       = inject(DOCUMENT);
 
   @Input() standalone = true;
   @HostBinding('class.mode-embedded') get isEmbedded() { return !this.standalone; }
-  @ViewChild('searchInput') searchInputEl?: ElementRef<HTMLInputElement>;
   @ViewChild('megaSearchInput') megaSearchInputEl?: ElementRef<HTMLInputElement>;
 
   allPosts           = signal<PostWithTs[]>([]);
@@ -143,8 +142,6 @@ export class Home implements OnInit, OnDestroy {
   selectedReadingTime  = signal<'' | 'quick' | 'medium' | 'long'>('');
   selectedSort         = signal('newest');
   showScrollTop    = signal(false);
-
-  mobileTab = signal<'for-you' | 'trending' | 'latest'>('for-you');
 
   // Hero "mega search" - centered search bar + discovery dropdown
   heroSearchOpen     = signal(false);
@@ -190,16 +187,12 @@ export class Home implements OnInit, OnDestroy {
   filterPoolLoading           = signal(true);
   filterError                 = signal('');
 
-  trendingPage = signal(0);
-  hotPage      = signal(0);
-  latestPage   = signal(0);
   filteredPage = signal(0);
 
   // Infinite scroll: grows as user scrolls; resets when filters change
   filteredVisibleCount = signal(PAGE_SIZE);
   filterOutOfView      = signal(false);
 
-  likedPostIds      = signal<Set<string>>(new Set());
   bookmarkedPostIds = this.bookmarkService.bookmarkedIds;
 
   // ── Personalization signals (browser-only - always false/empty on SSR) ──────
@@ -271,35 +264,6 @@ export class Home implements OnInit, OnDestroy {
     return names.length ? names : this.FALLBACK_CATEGORIES;
   });
 
-  private static readonly CATEGORY_ICONS: Record<string, string> = {
-    Technology:    `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`,
-    Career:        `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>`,
-    Health:        `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`,
-    Business:      `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>`,
-    Education:     `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>`,
-    Lifestyle:     `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`,
-    Sports:        `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>`,
-    Finance:       `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`,
-    Productivity:  `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>`,
-    AI:            `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>`,
-    Cooking:       `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>`,
-    Exercise:      `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>`,
-    Entertainment: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>`,
-    'Social Issues':`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
-    Social:        `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
-    Update:        `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>`,
-    News:          `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>`,
-    Quotes:        `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`,
-    Village:       `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`,
-  };
-
-  private static readonly FALLBACK_ICON = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>`;
-
-  getCategoryIcon(cat: string): SafeHtml {
-    const svg = Home.CATEGORY_ICONS[cat] ?? Home.FALLBACK_ICON;
-    return this.sanitizer.bypassSecurityTrustHtml(svg);
-  }
-
   categoryEmojis = computed<Record<string, string>>(() =>
     this.taxonomyService.categoryEmojiMap()
   );
@@ -326,22 +290,25 @@ export class Home implements OnInit, OnDestroy {
     return [...this.editorialPosts()].sort((a, b) => b._ts - a._ts);
   });
 
-  trendingPosts = computed(() => {
-    const start = this.trendingPage() * PAGE_SIZE;
-    return this.byLikes().slice(start, start + PAGE_SIZE);
-  });
-  hotPosts = computed(() => {
-    const start = this.hotPage() * PAGE_SIZE;
-    return this.byViews().slice(start, start + PAGE_SIZE);
-  });
-  latestPosts = computed(() => {
-    const start = this.latestPage() * PAGE_SIZE;
-    return this.byDate().slice(start, start + PAGE_SIZE);
-  });
+  // Top-N by likes/views - used by the trending carousel, sidebar widgets,
+  // and Editor's Picks. No longer paginated: these fed three separate
+  // static sections that are now one unified sort-tab-driven feed below,
+  // and none of the surviving callers ever showed a page beyond the first.
+  trendingPosts = computed(() => this.byLikes().slice(0, PAGE_SIZE));
+  hotPosts      = computed(() => this.byViews().slice(0, PAGE_SIZE));
 
-  trendingPageCount = computed(() => Math.max(1, Math.ceil(this.editorialPosts().length / PAGE_SIZE)));
-  hotPageCount      = computed(() => Math.max(1, Math.ceil(this.editorialPosts().length / PAGE_SIZE)));
-  latestPageCount   = computed(() => Math.max(1, Math.ceil(this.editorialPosts().length / PAGE_SIZE)));
+  // Sidebar "Trending Now" widget - fixed top-5 by views.
+  sidebarTrending = computed(() => this.byViews().slice(0, 5));
+
+  // Hero "Featured Article" card - highest-engagement post that isn't already
+  // one of the 3 shown in the trending panel below it. Uses byLikes (same
+  // ranking as trending) rather than most-recent-by-date, since recency alone
+  // can surface an unvetted/off-topic post as the homepage's showcase content.
+  featuredArticle = computed(() => {
+    const ranked = this.byLikes();
+    const shownIds = new Set(this.trendingPosts().map(p => p._id));
+    return ranked.find(p => !shownIds.has(p._id)) ?? ranked[0] ?? null;
+  });
 
   filteredPageCount    = computed(() => Math.max(1, Math.ceil(this.filteredPosts().length / PAGE_SIZE)));
   visibleFilteredPosts = computed(() => this.filteredPosts().slice(0, this.filteredVisibleCount()));
@@ -397,10 +364,22 @@ export class Home implements OnInit, OnDestroy {
     return counts;
   });
 
+  // Note: does NOT include selectedSort() - switching sort tabs re-orders the
+  // one always-on feed below, it doesn't count as "filtering" (which instead
+  // gates supplementary sections like Sponsored/Favorites/Recommended and
+  // picks the results heading/empty-state copy).
   isFiltering = computed(() =>
     !!this.selectedCategory() || !!this.selectedTag() || !!this.selectedReadingTime() ||
-    !!this.searchQuery().trim() || this.selectedSort() !== 'newest'
+    !!this.searchQuery().trim()
   );
+
+  private readonly SORT_TABS: Record<string, { label: string; emoji: string }> = {
+    newest:   { label: 'Latest',         emoji: '🕐' },
+    liked:    { label: 'Trending',       emoji: '🔥' },
+    viewed:   { label: 'Most Viewed',    emoji: '👁' },
+    comments: { label: 'Most Discussed', emoji: '💬' },
+  };
+  activeSortTab = computed(() => this.SORT_TABS[this.selectedSort()] ?? this.SORT_TABS['newest']);
 
   /** Top 15 tags by frequency across published posts only. */
   popularTags = computed(() => {
@@ -429,15 +408,26 @@ export class Home implements OnInit, OnDestroy {
     return (q ? cats.filter(c => c.toLowerCase().includes(q)) : cats).slice(0, 8);
   });
 
+  // Same full-catalog pool used for accurate category/tag filtering (see
+  // filteredPosts) - falls back to the fast initial-page pool until it's
+  // ready, so live-typing suggestions aren't limited to ~20-100 loaded posts
+  // while the actual submitted search already searches the whole catalog.
+  // Kept separate from byLikes/byViews/byDate (main Trending/Hot/Latest
+  // sections) so their pagination isn't affected by this.
+  private heroSearchPool = computed<PostWithTs[]>(() => {
+    const pool = this._fullPostPool();
+    return (pool.length > 0 ? pool : this.allPosts()).filter(p => !p.isSponsored);
+  });
+
   heroDropdownTrending = computed(() => {
     const q = this.heroDropdownQuery().trim().toLowerCase();
-    const posts = this.byViews();
+    const posts = [...this.heroSearchPool()].sort((a, b) => b.views - a.views);
     return (q ? posts.filter(p => p.title.toLowerCase().includes(q)) : posts).slice(0, 3);
   });
 
   heroDropdownLatest = computed(() => {
     const q = this.heroDropdownQuery().trim().toLowerCase();
-    const posts = this.byDate();
+    const posts = [...this.heroSearchPool()].sort((a, b) => b._ts - a._ts);
     return (q ? posts.filter(p => p.title.toLowerCase().includes(q)) : posts).slice(0, 3);
   });
 
@@ -445,7 +435,8 @@ export class Home implements OnInit, OnDestroy {
     const q = this.heroDropdownQuery().trim().toLowerCase();
     const seen = new Set<string>();
     const writers: { id: string; name: string; reads: number }[] = [];
-    for (const post of this.byLikes()) {
+    const byLikesFull = [...this.heroSearchPool()].sort((a, b) => (b.hotScore || b.likesCount) - (a.hotScore || a.likesCount));
+    for (const post of byLikesFull) {
       const id   = post.user?._id;
       const name = post.user?.name || 'Anonymous';
       if (!id || seen.has(id)) continue;
@@ -462,13 +453,6 @@ export class Home implements OnInit, OnDestroy {
     const tags = this.popularTags();
     return (q ? tags.filter(t => t.toLowerCase().includes(q)) : tags).slice(0, 8);
   });
-
-  /** IDs of the top-5 trending posts - used to show the 🔥 badge on cards. */
-  private trendingTopIds = computed(() =>
-    new Set(this.byLikes().slice(0, 5).map((p: PostWithTs) => p._id))
-  );
-
-  isTrending(postId: string): boolean { return this.trendingTopIds().has(postId); }
 
   // Only show stories count once we have an accurate server-side total
   publishedCount = computed(() => this.serverTotal());
@@ -568,7 +552,7 @@ export class Home implements OnInit, OnDestroy {
     const tag = (event.target as Element).tagName;
     if (event.key === '/' && !['INPUT', 'TEXTAREA'].includes(tag)) {
       event.preventDefault();
-      this.searchInputEl?.nativeElement?.focus();
+      this.megaSearchInputEl?.nativeElement?.focus();
     }
     if (event.key === 'Escape') {
       if (this.menuOpen())    this.menuOpen.set(false);
@@ -586,10 +570,19 @@ export class Home implements OnInit, OnDestroy {
 
     this.showScrollTop.set(scrollY > 500);
 
-    // Infinite scroll: load next batch when within 400px of page bottom
-    if (this.isFiltering() && this.hasMoreFiltered()) {
-      const nearBottom = scrollY + window.innerHeight >= this.document.documentElement.scrollHeight - 400;
-      if (nearBottom) this.filteredVisibleCount.update(n => n + PAGE_SIZE);
+    // Infinite scroll: load next batch when within 400px of page bottom.
+    // The feed is now always the same always-on list (previously this only
+    // ran while isFiltering() was true), so once the currently-loaded pool
+    // is exhausted, fall through to fetching the next server page instead -
+    // this replaces the old "Latest Stories" pagination button's equivalent
+    // check (nextPage -> loadNextServerPage when near its last page).
+    const nearBottom = scrollY + window.innerHeight >= this.document.documentElement.scrollHeight - 400;
+    if (nearBottom) {
+      if (this.hasMoreFiltered()) {
+        this.filteredVisibleCount.update(n => n + PAGE_SIZE);
+      } else if (this.hasMoreOnServer() && !this.isFetchingMore()) {
+        this.loadNextServerPage();
+      }
     }
 
     // Floating filter badge: show when filter-wrap has been scrolled past
@@ -602,8 +595,8 @@ export class Home implements OnInit, OnDestroy {
     this.setMetaTags();
     this.injectJsonLd();
 
-    this.restoreLikedIds();
     this.bookmarkService.syncFromServer();
+    this.likedPostIds.set(this.postService.getLikedIds());
     this.restoreReadHistory();
     this.loadPwaInstalls();
     this.loadActiveChallenge();
@@ -622,7 +615,7 @@ export class Home implements OnInit, OnDestroy {
 
     if (isPlatformBrowser(this.platformId)) {
       const alreadySeen = sessionStorage.getItem('apna_welcome_seen');
-      if (!alreadySeen) {
+      if (!alreadySeen && !isBirthdayEventActiveToday()) {
         const delay = 2000 + Math.random() * 1000;
         this.welcomeTimerId = setTimeout(() => {
           if (window.innerWidth >= 768) this.showWelcomeModal.set(true);
@@ -672,12 +665,14 @@ export class Home implements OnInit, OnDestroy {
         this.selectedTag.set(params.get('tag') ?? '');
         const rt = params.get('rt') ?? '';
         this.selectedReadingTime.set(['quick','medium','long'].includes(rt) ? rt as any : '');
+        const sort = params.get('sort') ?? '';
+        this.selectedSort.set(['liked','viewed','comments'].includes(sort) ? sort : 'newest');
         const q = params.get('q');
         if (q) {
           this.searchQuery.set(q);
           this.searchInput$.next(q);
-          if (this.searchInputEl?.nativeElement) {
-            this.searchInputEl.nativeElement.value = q;
+          if (this.megaSearchInputEl?.nativeElement) {
+            this.megaSearchInputEl.nativeElement.value = q;
           }
         }
       });
@@ -1374,7 +1369,12 @@ export class Home implements OnInit, OnDestroy {
       .subscribe({
         next: res => {
           const challenges = res.data ?? [];
-          this.activeChallenge.set(challenges[0] ?? null);
+          // Ignore challenges whose month has already ended - the backend's
+          // isActive flag is a manual admin toggle, not tied to endDate, so
+          // an expired-but-still-"active" challenge would otherwise linger
+          // on the homepage until someone remembers to deactivate it.
+          const current = challenges.find((c: any) => new Date(c.endDate).getTime() >= Date.now());
+          this.activeChallenge.set(current ?? null);
         },
         error: () => {},
       });
@@ -1388,7 +1388,23 @@ export class Home implements OnInit, OnDestroy {
     this.http.get<any>(`${environment.apiUrl}/challenge/featured-winners`)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: res => this.featuredWinners.set(res.data ?? []),
+        next: res => {
+          const winners = res.data ?? [];
+          // Only surface winners from the challenge that ended in the
+          // current calendar month - once the month rolls over, last
+          // month's winners should stop appearing on the homepage.
+          // Compare in UTC - endDate is stored as 23:59:59Z on the challenge's
+          // last day, which local-time getMonth()/getFullYear() can round
+          // into the next month in timezones ahead of UTC (e.g. IST).
+          const now = new Date();
+          const current = winners.filter((post: any) => {
+            const endDate = post.challengeId?.endDate;
+            if (!endDate) return false;
+            const d = new Date(endDate);
+            return d.getUTCFullYear() === now.getUTCFullYear() && d.getUTCMonth() === now.getUTCMonth();
+          });
+          this.featuredWinners.set(current);
+        },
         error: () => {},
       });
   }
@@ -1406,11 +1422,6 @@ export class Home implements OnInit, OnDestroy {
     if (isPlatformBrowser(this.platformId)) {
       localStorage.setItem('apna_install_dismissed', String(Date.now()));
     }
-  }
-
-  onSearchInput(value: string): void {
-    this.searchInput$.next(value);
-    this.resetVisibleCounts();
   }
 
   onHeroSearch(event: Event, value: string): void {
@@ -1433,14 +1444,23 @@ export class Home implements OnInit, OnDestroy {
     this.searchQuery.set(v);
     this.searchInput$.next(v);
     this.resetVisibleCounts();
-    if (this.searchInputEl?.nativeElement) {
-      this.searchInputEl.nativeElement.value = v;
+    if (this.megaSearchInputEl?.nativeElement) {
+      this.megaSearchInputEl.nativeElement.value = v;
     }
     this.scrollToResultsPublic();
   }
 
   // ── Hero "mega search" dropdown ──────────────────────────────────────
   openHeroSearch(): void {
+    // On desktop (>768px) the trending-chip row directly under the search
+    // bar already surfaces "what to search for" - popping the full
+    // suggestions dropdown too on plain focus/click duplicated that same
+    // suggestion. Only do it there once the user has actually typed
+    // something; on mobile that chip row is hidden, so the dropdown is
+    // the only suggestions surface and should still open immediately.
+    if (!this.heroDropdownHasQuery() && typeof window !== 'undefined' && window.innerWidth > 768) {
+      return;
+    }
     this.heroSearchOpen.set(true);
   }
 
@@ -1505,10 +1525,6 @@ export class Home implements OnInit, OnDestroy {
     setTimeout(() => this.scrollToResults(), 300);
   }
 
-  isNew(post: Post): boolean {
-    return (Date.now() - new Date(post.createdAt).getTime()) < 48 * 60 * 60 * 1000;
-  }
-
   getReadingTime(post: Post): number {
     if (this.readingTimeCache.has(post._id)) return this.readingTimeCache.get(post._id)!;
     const text = (post as any).content?.replace(/<[^>]*>/g, '') ?? post.description ?? '';
@@ -1533,11 +1549,10 @@ export class Home implements OnInit, OnDestroy {
   }
 
   // Centralized scroll helper - call after ANY action that changes the
-  // visible feed (search submit/clear, category/tag/sort/filter change,
-  // mobile tab switch) so the user always sees the updated results, no
-  // matter where they're currently scrolled. `.filter-wrap` sits directly
-  // above every feed section (#filtered-results, trending, most-viewed,
-  // latest, etc.), so it's a single stable anchor for "start of results"
+  // visible feed (search submit/clear, category/tag/sort/filter change) so
+  // the user always sees the updated results, no matter where they're
+  // currently scrolled. `.filter-wrap` sits directly above the single feed
+  // section (#feed-results), so it's a stable anchor for "start of results"
   // in every state. `scroll-margin-top` on `.filter-wrap` (home.css)
   // accounts for the sticky header so it isn't hidden underneath it.
   private scrollToResults(): void {
@@ -1555,8 +1570,8 @@ export class Home implements OnInit, OnDestroy {
     this.selectedReadingTime.set('');
     this.selectedSort.set('newest');
     this.searchQuery.set('');
-    if (this.searchInputEl?.nativeElement) {
-      this.searchInputEl.nativeElement.value = '';
+    if (this.megaSearchInputEl?.nativeElement) {
+      this.megaSearchInputEl.nativeElement.value = '';
     }
     this.resetVisibleCounts();
     this.setQueryParams({});
@@ -1627,30 +1642,47 @@ export class Home implements OnInit, OnDestroy {
   onSortChange(sort: string): void {
     this.selectedSort.set(sort);
     this.resetVisibleCounts();
+    this.setQueryParams(sort !== 'newest' ? { sort } : {});
     this.scrollToResults();
   }
 
-  // Switch the mobile "For You / Trending / Latest" tab and bring the feed
-  // into view - each tab shows different sections, so without this the user
-  // could be scrolled past the content the new tab actually has to show.
-  setMobileTab(tab: 'for-you' | 'trending' | 'latest'): void {
-    this.mobileTab.set(tab);
-    this.scrollToResults();
+  // ══════════════════════════════════════════════════════════════════════════
+  // Feed card upvote (Reddit-style) - reuses the existing like/unlike toggle
+  // and liked-ID persistence centralized in PostService (shared with
+  // blog-detail's like button), with a small local delta map so we don't
+  // have to mutate the (possibly large) allPosts/_fullPostPool arrays just
+  // to reflect one optimistic count change.
+  // ══════════════════════════════════════════════════════════════════════════
+  likedPostIds = signal<Set<string>>(new Set());
+  private voteDeltas = signal<Record<string, number>>({});
+
+  isPostLiked(postId: string): boolean { return this.likedPostIds().has(postId); }
+
+  displayedLikes(post: PostWithTs): number {
+    return post.likesCount + (this.voteDeltas()[post._id] ?? 0);
   }
 
-  prevPage(page: WritableSignal<number>): void {
-    if (page() > 0) { page.update(p => p - 1); scrollTo({ top: 0, behavior: 'smooth' }); }
+  toggleUpvote(post: PostWithTs, event: Event): void {
+    event.stopPropagation();
+    const nowLiked = this.postService.toggleLikedId(post._id);
+    this.applyLikedState(post._id, nowLiked);
+    this.voteDeltas.update(d => ({ ...d, [post._id]: (d[post._id] ?? 0) + (nowLiked ? 1 : -1) }));
+
+    const call = nowLiked ? this.postService.likePost(post._id) : this.postService.unlikePost(post._id);
+    call.subscribe({
+      error: () => {
+        // Revert: flip the liked-id back and undo the optimistic delta
+        this.postService.toggleLikedId(post._id);
+        this.applyLikedState(post._id, !nowLiked);
+        this.voteDeltas.update(d => ({ ...d, [post._id]: (d[post._id] ?? 0) + (nowLiked ? -1 : 1) }));
+      },
+    });
   }
 
-  nextPage(page: WritableSignal<number>, total: number): void {
-    if (page() < total - 1) {
-      page.update(p => p + 1);
-      scrollTo({ top: 0, behavior: 'smooth' });
-    }
-    // Last page of memory - transparently fetch more from server
-    if (page() >= total - 2 && this.hasMoreOnServer()) {
-      this.loadNextServerPage();
-    }
+  private applyLikedState(postId: string, liked: boolean): void {
+    const ids = new Set(this.likedPostIds());
+    if (liked) ids.add(postId); else ids.delete(postId);
+    this.likedPostIds.set(ids);
   }
 
   readBlog(id: string): void {
@@ -1705,47 +1737,6 @@ export class Home implements OnInit, OnDestroy {
     } catch { return; }
     this.patchPost(post._id, { views: post.views + 1 });
     this.postService.addView(post._id).subscribe();
-  }
-
-  private restoreLikedIds(): void {
-    if (!isPlatformBrowser(this.platformId)) return;
-    try {
-      const stored = localStorage.getItem('apna_liked_posts');
-      if (stored) this.likedPostIds.set(new Set(JSON.parse(stored)));
-    } catch { }
-  }
-
-  private persistLikedIds(ids: Set<string>): void {
-    if (!isPlatformBrowser(this.platformId)) return;
-    try { localStorage.setItem('apna_liked_posts', JSON.stringify([...ids])); } catch { }
-  }
-
-  isLiked(postId: string): boolean { return this.likedPostIds().has(postId); }
-
-  toggleLike(post: Post, event: Event): void {
-    event.stopPropagation();
-    const liked  = this.isLiked(post._id);
-    const newSet = new Set(this.likedPostIds());
-
-    if (liked) {
-      newSet.delete(post._id);
-      this.likedPostIds.set(newSet);
-      this.persistLikedIds(newSet);
-      this.patchPost(post._id, { likesCount: Math.max(0, post.likesCount - 1) });
-    } else {
-      newSet.add(post._id);
-      this.likedPostIds.set(newSet);
-      this.persistLikedIds(newSet);
-      this.patchPost(post._id, { likesCount: post.likesCount + 1 });
-      this.postService.likePost(post._id).subscribe({
-        error: () => {
-          newSet.delete(post._id);
-          this.likedPostIds.set(new Set(newSet));
-          this.persistLikedIds(newSet);
-          this.patchPost(post._id, { likesCount: post.likesCount });
-        },
-      });
-    }
   }
 
   isBookmarked(postId: string): boolean { return this.bookmarkService.isBookmarked(postId); }

@@ -3,7 +3,10 @@
   bottom: 0;
   left: 0;
   right: 0;
-  z-index: 9999;
+  /* Must stay below .wm-backdrop (z-index 2000, welcome.modal.ts) - both can
+     appear on a first visit, and the modal's bottom-sheet footer buttons on
+     mobile sit in the same space this bar occupies. */
+  z-index: 1800;
   background: var(--bg-surface);
   border-top: 1px solid var(--border);
   box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.12);

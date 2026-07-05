@@ -103,7 +103,7 @@ export class About implements OnInit, OnDestroy {
 
     this.title.setTitle('About ApnaInsights | India\'s Practical Knowledge Platform');
 
-    this.meta.updateTag({ name: 'description', content: 'ApnaInsights is India\'s practical knowledge platform. Discover expert guides across 14 categories - technology, lifestyle, health, business, career and more. Free to write, free to read.' });
+    this.meta.updateTag({ name: 'description', content: 'ApnaInsights is India\'s practical knowledge platform - expert guides across 16+ categories, from technology to career. Free to write, free to read.' });
     this.meta.updateTag({ name: 'keywords', content: 'ApnaInsights, Indian knowledge platform, write guides online India, practical knowledge India, publish articles India, expert guides platform, free writing India, knowledge platform India' });
     this.meta.updateTag({ name: 'robots', content: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' });
     this.meta.updateTag({ name: 'author', content: 'Vivek Verma, ApnaInsights' });

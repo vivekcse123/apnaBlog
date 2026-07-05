@@ -1,7 +1,11 @@
 import sanitizeHtmlLib from 'sanitize-html';
 
+// 'h1' is intentionally excluded - the page template owns the single H1 (the
+// post title). Contributor-typed h1s are downgraded to h2 (see transformTags
+// below) instead of allowed through verbatim, which used to produce 2-3 H1s
+// per page and a diluted heading hierarchy for SEO/screen readers.
 const ALLOWED_TAGS = sanitizeHtmlLib.defaults.allowedTags.concat([
-  'figure', 'figcaption', 'img', 'h1', 'h2',
+  'figure', 'figcaption', 'img', 'h2',
 ]);
 
 const ALLOWED_ATTRIBUTES = {
@@ -30,6 +34,7 @@ export function sanitizeHtml(html: string): string {
     allowedAttributes: ALLOWED_ATTRIBUTES,
     allowedSchemes: ['http', 'https', 'mailto'],
     allowProtocolRelative: true,
+    transformTags: { h1: 'h2' },
     // Discard button tags AND their inner text (e.g. inline-img-remove ✕ buttons
     // stored in older posts before source-level stripping was added).
     nonTextTags: ['style', 'script', 'textarea', 'noscript', 'button'],

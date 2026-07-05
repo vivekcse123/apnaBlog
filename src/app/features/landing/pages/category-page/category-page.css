@@ -40,6 +40,37 @@
 }
 .cat-back-btn:hover { border-color: var(--accent); color: var(--accent-text); }
 
+/* ── Search / Sign In / Write - category pages are top SEO landing pages and
+   need these reachable without first navigating back to Home ── */
+.cat-nav-icon-btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px; border-radius: 8px; flex-shrink: 0;
+  color: var(--text-secondary);
+  border: 1.5px solid var(--border);
+  transition: border-color 0.2s, color 0.2s;
+}
+.cat-nav-icon-btn:hover { border-color: var(--accent); color: var(--accent-text); }
+
+.cat-nav-signin-btn {
+  font-size: 13px; font-weight: 600; color: var(--text-secondary); text-decoration: none;
+  border: 1.5px solid var(--border); border-radius: 8px; padding: 7px 14px;
+  transition: border-color 0.2s, color 0.2s;
+  white-space: nowrap;
+}
+.cat-nav-signin-btn:hover { border-color: var(--accent); color: var(--accent-text); }
+
+.cat-nav-write-btn {
+  font-size: 13px; font-weight: 700; color: var(--text-inverse); text-decoration: none;
+  background: var(--accent); border-radius: 8px; padding: 7px 14px;
+  white-space: nowrap;
+  transition: opacity 0.2s;
+}
+.cat-nav-write-btn:hover { opacity: 0.88; }
+
+@media (max-width: 480px) {
+  .cat-nav-signin-btn { display: none; }
+}
+
 /* ── Category Switch Dropdown ── */
 .cat-switch-wrap { position: relative; }
 
@@ -192,6 +223,7 @@
 
 .cat-search-wrap:focus-within {
   border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);
 }
 
 .cat-search-icon {
