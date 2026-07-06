@@ -6,6 +6,16 @@ import { finalize } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { Post } from '../../../../core/models/post.model';
+
+// Same thresholds enforced at creation time in create-post.ts - kept here so
+// the admin list can flag posts published before that gate existed.
+const MIN_WORDS         = 500;
+const MIN_MCQ_QUESTIONS = 5;
+
+function wordCount(html: string): number {
+  const text = (html ?? '').replace(/<[^>]*>/g, ' ').replace(/&[a-z]+;/gi, ' ');
+  return text.trim().split(/\s+/).filter(Boolean).length;
+}
 import { CreatePost } from '../create-post/create-post';
 import { PostService } from '../../services/post-service';
 import { ViewPost } from '../../../../shared/view-post/view-post';
@@ -50,6 +60,7 @@ export class PostLists implements OnInit, OnDestroy {
   showTodayOnly           = signal<boolean>(false);
   showDeletionRequestOnly = signal<boolean>(false);
   showSponsoredOnly       = signal<boolean>(false);
+  showThinOnly            = signal<boolean>(false);
 
   private debounceTimer: ReturnType<typeof setTimeout> | undefined = undefined;
 
@@ -59,6 +70,21 @@ export class PostLists implements OnInit, OnDestroy {
   pendingCount         = computed(() => this.allBlogs().filter(p => p.status === 'pending').length);
   publishedCount       = computed(() => this.allBlogs().filter(p => p.status === 'published').length);
   deletionRequestCount = computed(() => this.allBlogs().filter(p => p.deleteRequested).length);
+  thinPostCount        = computed(() => this.allBlogs().filter(p => this.isThinPost(p)).length);
+
+  /** Content depth for the "Words" column - MCQ posts are measured by question count instead of body text. */
+  contentDepth(post: Post): { label: string; thin: boolean } {
+    if (post.postType === 'mcq') {
+      const n = post.mcqQuestions?.length ?? 0;
+      return { label: `${n} Q${n === 1 ? '' : 's'}`, thin: n < MIN_MCQ_QUESTIONS };
+    }
+    const words = wordCount(post.content);
+    return { label: `${words}w`, thin: words < MIN_WORDS };
+  }
+
+  isThinPost(post: Post): boolean {
+    return this.contentDepth(post).thin;
+  }
 
   filteredBlogs = computed(() => {
     let data = this.allBlogs();
@@ -68,6 +94,9 @@ export class PostLists implements OnInit, OnDestroy {
     }
     if (this.showDeletionRequestOnly()) {
       data = data.filter(p => p.deleteRequested);
+    }
+    if (this.showThinOnly()) {
+      data = data.filter(p => this.isThinPost(p));
     }
     if (this.showTodayOnly()) {
       const today = new Date();
@@ -242,19 +271,25 @@ private _fetchUserPosts(uid: string, showLoader = false): void {
 
   toggleTodayFilter(): void {
     this.showTodayOnly.update(v => !v);
-    if (this.showTodayOnly()) { this.showDeletionRequestOnly.set(false); this.showSponsoredOnly.set(false); }
+    if (this.showTodayOnly()) { this.showDeletionRequestOnly.set(false); this.showSponsoredOnly.set(false); this.showThinOnly.set(false); }
     this.currentPage.set(1);
   }
 
   toggleDeletionFilter(): void {
     this.showDeletionRequestOnly.update(v => !v);
-    if (this.showDeletionRequestOnly()) { this.showTodayOnly.set(false); this.showSponsoredOnly.set(false); }
+    if (this.showDeletionRequestOnly()) { this.showTodayOnly.set(false); this.showSponsoredOnly.set(false); this.showThinOnly.set(false); }
     this.currentPage.set(1);
   }
 
   toggleSponsoredFilter(): void {
     this.showSponsoredOnly.update(v => !v);
-    if (this.showSponsoredOnly()) { this.showTodayOnly.set(false); this.showDeletionRequestOnly.set(false); }
+    if (this.showSponsoredOnly()) { this.showTodayOnly.set(false); this.showDeletionRequestOnly.set(false); this.showThinOnly.set(false); }
+    this.currentPage.set(1);
+  }
+
+  toggleThinFilter(): void {
+    this.showThinOnly.update(v => !v);
+    if (this.showThinOnly()) { this.showTodayOnly.set(false); this.showDeletionRequestOnly.set(false); this.showSponsoredOnly.set(false); }
     this.currentPage.set(1);
   }
 

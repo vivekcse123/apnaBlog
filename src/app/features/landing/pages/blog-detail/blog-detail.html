@@ -1062,20 +1062,15 @@
   </div>
 
   <!-- Compose box -->
+  @if (isLoggedIn) {
   <div class="disc-compose" (click)="!commentDrawerOpen() && openCommentDrawer()">
     <div class="disc-compose-avatar" aria-hidden="true">
-      @if (isLoggedIn) { {{ loggedInUserName.charAt(0).toUpperCase() }}
-      } @else { ? }
+      {{ loggedInUserName.charAt(0).toUpperCase() }}
     </div>
     <div class="disc-compose-body">
       <div class="disc-identity">
-        @if (isLoggedIn) {
-          <span class="disc-identity-name">{{ loggedInUserName }}</span>
-          <span class="disc-badge disc-badge--member">Member</span>
-        } @else {
-          <span class="disc-identity-name">Anonymous</span>
-          <span class="disc-badge disc-badge--guest">Guest</span>
-        }
+        <span class="disc-identity-name">{{ loggedInUserName }}</span>
+        <span class="disc-badge disc-badge--member">Member</span>
       </div>
       <label class="visually-hidden" for="disc-textarea">Write a comment</label>
       <textarea id="disc-textarea" class="disc-textarea"
@@ -1113,6 +1108,18 @@
       }
     </div>
   </div>
+  } @else {
+  <!-- Comments require an account - no anonymous/guest posting, so every
+       comment is traceable to a real member instead of being unmoderated UGC. -->
+  <div class="disc-compose disc-compose--login">
+    <div class="disc-compose-avatar" aria-hidden="true">?</div>
+    <div class="disc-compose-body">
+      <span class="disc-login-prompt">
+        <a routerLink="/auth/login" class="disc-login-link">Log in</a> to join the discussion.
+      </span>
+    </div>
+  </div>
+  }
 
   <!-- Thread -->
   @if (commentDrawerOpen()) {

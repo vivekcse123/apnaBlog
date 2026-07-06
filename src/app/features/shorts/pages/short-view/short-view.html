@@ -83,8 +83,8 @@
         </div>
       </div>
 
-      <!-- ── AdSense unit (hidden on sponsored shorts) ── -->
-      @if (!s.isSponsored) {
+      <!-- ── AdSense unit (hidden on sponsored shorts and captionless/thin shorts) ── -->
+      @if (!s.isSponsored && hasContent()) {
         <div class="sv-ad-wrap">
           <ins class="adsbygoogle"
             style="display:block"

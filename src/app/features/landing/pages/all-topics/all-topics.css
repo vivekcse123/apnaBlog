@@ -207,6 +207,20 @@
   border-color: var(--accent);
 }
 
+/* Empty category - not a link, no hover affordance */
+.at-card--empty {
+  cursor: default;
+  opacity: 0.6;
+}
+.at-card--empty:hover {
+  transform: none;
+  box-shadow: none;
+  border-color: var(--border);
+}
+.at-card-count--soon {
+  font-style: italic;
+}
+
 .at-card-icon-box {
   width: 44px;
   height: 44px;

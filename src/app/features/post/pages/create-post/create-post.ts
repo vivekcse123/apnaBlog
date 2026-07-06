@@ -7,7 +7,9 @@ import {
   FormGroup, ReactiveFormsModule, ValidatorFn, ValidationErrors, Validators,
 } from '@angular/forms';
 
-const MIN_WORDS = 150;
+const MIN_WORDS = 500;
+const MIN_MCQ_QUESTIONS = 5;
+const MIN_EXPLANATION_WORDS = 10;
 
 function minWordCountValidator(min: number): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
@@ -1235,8 +1237,8 @@ export class CreatePost implements OnInit, OnDestroy {
 
     if (isMcq) {
       const questions = this.mcqQuestions();
-      if (questions.length === 0) {
-        this.errorMessage.set('Please add at least one question for your MCQ post.');
+      if (questions.length < MIN_MCQ_QUESTIONS) {
+        this.errorMessage.set(`Please add at least ${MIN_MCQ_QUESTIONS} questions for your MCQ post.`);
         return;
       }
       const invalid = questions.some(q =>
@@ -1244,6 +1246,13 @@ export class CreatePost implements OnInit, OnDestroy {
       );
       if (invalid) {
         this.errorMessage.set('Please fill in all question texts and option fields.');
+        return;
+      }
+      const thinExplanation = questions.some(q =>
+        q.explanation.trim().split(/\s+/).filter(Boolean).length < MIN_EXPLANATION_WORDS
+      );
+      if (thinExplanation) {
+        this.errorMessage.set(`Please add a ${MIN_EXPLANATION_WORDS}+ word explanation for every question so readers learn something from it.`);
         return;
       }
     }

@@ -115,7 +115,6 @@ export class SearchPage implements OnInit {
 
   ngOnInit(): void {
     this.titleSvc.setTitle('Search Guides & Articles - ApnaInsights');
-    setTimeout(() => this.pushAds(), 500);
     this.meta.updateTag({ name: 'description', content: 'Search thousands of articles on ApnaInsights.' });
     this.meta.updateTag({ name: 'robots', content: 'noindex, follow' });
 
@@ -207,6 +206,7 @@ export class SearchPage implements OnInit {
     if (cached.length) {
       this.allPosts.set(cached.filter(p => p.status === 'published'));
       this.isLoading.set(false);
+      setTimeout(() => this.pushAds(), 300);
       return;
     }
     this.postService.getAllPublished()
@@ -219,6 +219,7 @@ export class SearchPage implements OnInit {
         this.allPostsCache.set(published);
         this.allPosts.set(published);
         this.isLoading.set(false);
+        setTimeout(() => this.pushAds(), 300);
       });
   }
 

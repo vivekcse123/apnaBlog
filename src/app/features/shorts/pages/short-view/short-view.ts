@@ -1,5 +1,5 @@
 import {
-  AfterViewInit, ChangeDetectionStrategy, Component, OnInit, PLATFORM_ID, inject, signal
+  AfterViewInit, ChangeDetectionStrategy, Component, OnInit, PLATFORM_ID, computed, inject, signal
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
@@ -31,6 +31,13 @@ export class ShortView implements OnInit, AfterViewInit {
   isLoading = signal(true);
   notFound  = signal(false);
   ytPlaying = signal(false);
+
+  // Same "enough content" bar used for indexing - a captionless short is just
+  // a title + embedded video, so it shouldn't carry an ad slot either.
+  hasContent = computed(() => {
+    const caption = this.short()?.caption;
+    return !!caption && caption.trim().split(/\s+/).filter(Boolean).length >= 10;
+  });
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
@@ -96,10 +103,9 @@ export class ShortView implements OnInit, AfterViewInit {
     const url = `https://apnainsights.com/shorts/${s._id}`;
 
     // Shorts without a caption have only a title - thin content that shouldn't be indexed.
-    const hasContent = s.caption && s.caption.trim().split(/\s+/).filter(Boolean).length >= 10;
     this.titleSvc.setTitle(title);
     this.meta.updateTag({ name: 'description',         content: description });
-    this.meta.updateTag({ name: 'robots',              content: hasContent ? 'index, follow' : 'noindex, follow' });
+    this.meta.updateTag({ name: 'robots',              content: this.hasContent() ? 'index, follow' : 'noindex, follow' });
     this.meta.updateTag({ property: 'og:title',        content: title });
     this.meta.updateTag({ property: 'og:description',  content: description });
     this.meta.updateTag({ property: 'og:url',          content: url });

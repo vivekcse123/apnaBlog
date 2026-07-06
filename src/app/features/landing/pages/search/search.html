@@ -103,15 +103,17 @@
     </div>
   </div>
 
-  <!-- Ad unit -->
-  <div class="page-ad-wrap search-ad-wrap">
-    <ins class="adsbygoogle"
-      style="display:block"
-      data-ad-client="ca-pub-6477809641944524"
-      data-ad-slot="2024301795"
-      data-ad-format="auto"
-      data-full-width-responsive="true"></ins>
-  </div>
+  <!-- Ad unit - only shown alongside actual results, never on an empty/loading state -->
+  @if (!isLoading() && filteredResults().length > 0) {
+    <div class="page-ad-wrap search-ad-wrap">
+      <ins class="adsbygoogle"
+        style="display:block"
+        data-ad-client="ca-pub-6477809641944524"
+        data-ad-slot="2024301795"
+        data-ad-format="auto"
+        data-full-width-responsive="true"></ins>
+    </div>
+  }
 
   <!-- Posts list -->
   <main class="sp-main">

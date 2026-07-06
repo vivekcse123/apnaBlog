@@ -58,6 +58,16 @@ const COMMENT_PAGE_SIZE     = 5;
 const SESSION_COMMENT_LIMIT = 10;
 const AUTHOR_POSTS_PER_PAGE = 10;
 
+// Lightweight client-side spam guard - blocks the most common junk comment
+// patterns (links, repeated-character floods) before they ever reach the API.
+// Not a substitute for server-side moderation, but stops casual spam/UGC risk.
+const LINK_PATTERN    = /(https?:\/\/|www\.|\b[a-z0-9-]+\.(com|net|org|xyz|info|biz|ru|click)\b)/i;
+const REPEATED_PATTERN = /(.)\1{6,}/;
+
+function containsBlockedContent(text: string): boolean {
+  return LINK_PATTERN.test(text) || REPEATED_PATTERN.test(text);
+}
+
 // Valid display statuses - 'pending' posts are only visible to their owner/admin
 // via direct URL but we still render them (no 404); they just won't be indexed.
 const VISIBLE_STATUSES = new Set(['published', 'draft', 'pending']);
@@ -1439,10 +1449,18 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   }
 
   submitComment(): void {
+    if (!this.isLoggedIn) {
+      this.commentFeedback.set({ type: 'error', msg: 'Please log in to post a comment.' });
+      return;
+    }
     const text = this.commentText().trim();
     const p    = this.post();
     if (!text) {
       this.commentFeedback.set({ type: 'error', msg: 'Please write something before posting.' });
+      return;
+    }
+    if (containsBlockedContent(text)) {
+      this.commentFeedback.set({ type: 'error', msg: 'Your comment looks like spam (links or repeated characters aren\'t allowed). Please rewrite it.' });
       return;
     }
     if (this.commentLimitReached()) {

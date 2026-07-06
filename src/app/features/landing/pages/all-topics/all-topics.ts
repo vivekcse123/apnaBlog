@@ -3,7 +3,7 @@ import {
   ChangeDetectionStrategy
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { isPlatformBrowser } from '@angular/common';
+import { isPlatformBrowser, NgTemplateOutlet } from '@angular/common';
 import { DomSanitizer, Meta, SafeHtml, Title } from '@angular/platform-browser';
 import { DOCUMENT } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -56,7 +56,7 @@ const CATEGORY_META: Record<string, { emoji: string; description: string; color:
   selector: 'app-all-topics',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, MobileBottomNav],
+  imports: [RouterLink, NgTemplateOutlet, MobileBottomNav],
   templateUrl: './all-topics.html',
   styleUrl: './all-topics.css',
 })

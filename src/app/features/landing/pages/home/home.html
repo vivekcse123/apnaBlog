@@ -979,8 +979,10 @@
             }
           </div>
           @if (hasMoreFiltered()) {
-            <div class="load-more-sentinel" aria-hidden="true">
-              <span class="load-more-dots"><span></span><span></span><span></span></span>
+            <div class="load-more-wrap">
+              <button type="button" class="load-more-btn" (click)="loadMoreFiltered()">
+                Load More
+              </button>
             </div>
           } @else if (showAllLoadedBanner()) {
             <p class="all-loaded-msg">✓ All {{ filteredPosts().length }} stories shown</p>

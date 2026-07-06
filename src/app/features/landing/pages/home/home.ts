@@ -36,6 +36,10 @@ import { PushNotificationService } from '../../../../core/services/push-notifica
 
 const PAGE_SIZE   = 8;
 const FETCH_LIMIT = 20;   // posts per server page - keeps initial payload small
+// Minimum number of remaining posts required to show a "Load More" button in
+// the Latest/Trending/Most Viewed/Most Discussed feed, rather than just
+// revealing the last handful automatically.
+const LOAD_MORE_THRESHOLD = 20;
 
 const STATS_KEY    = 'apna_site_stats_v3'; // v3 - includes accurate category counts
 const STATS_TTL_MS = 30 * 60 * 1000;
@@ -311,9 +315,18 @@ export class Home implements OnInit, OnDestroy {
   });
 
   filteredPageCount    = computed(() => Math.max(1, Math.ceil(this.filteredPosts().length / PAGE_SIZE)));
-  visibleFilteredPosts = computed(() => this.filteredPosts().slice(0, this.filteredVisibleCount()));
-  hasMoreFiltered      = computed(() => this.filteredVisibleCount() < this.filteredPosts().length);
-  // Only show "all loaded" after user has scrolled past the first page of results
+  // Once fewer than LOAD_MORE_THRESHOLD posts remain beyond what's visible,
+  // just show everything at once instead of making the user click again for
+  // a handful of leftover posts.
+  visibleFilteredPosts = computed(() => {
+    const posts   = this.filteredPosts();
+    const visible = this.filteredVisibleCount();
+    return (posts.length - visible) >= LOAD_MORE_THRESHOLD ? posts.slice(0, visible) : posts;
+  });
+  // "Load More" button only appears once there's a real second page's worth
+  // (20+) of posts left - not for a trailing handful.
+  hasMoreFiltered      = computed(() => (this.filteredPosts().length - this.filteredVisibleCount()) >= LOAD_MORE_THRESHOLD);
+  // Only show "all loaded" after user has clicked past the first page of results
   showAllLoadedBanner  = computed(() => !this.hasMoreFiltered() && this.filteredPosts().length > PAGE_SIZE);
 
   filteredPosts = computed(() => {
@@ -570,19 +583,12 @@ export class Home implements OnInit, OnDestroy {
 
     this.showScrollTop.set(scrollY > 500);
 
-    // Infinite scroll: load next batch when within 400px of page bottom.
-    // The feed is now always the same always-on list (previously this only
-    // ran while isFiltering() was true), so once the currently-loaded pool
-    // is exhausted, fall through to fetching the next server page instead -
-    // this replaces the old "Latest Stories" pagination button's equivalent
-    // check (nextPage -> loadNextServerPage when near its last page).
+    // Feed reveal itself is now driven by the "Load More" button, not scroll -
+    // but keep topping up the underlying server-fetched pool near the bottom
+    // of the page so clicking Load More never has to wait on a fetch.
     const nearBottom = scrollY + window.innerHeight >= this.document.documentElement.scrollHeight - 400;
-    if (nearBottom) {
-      if (this.hasMoreFiltered()) {
-        this.filteredVisibleCount.update(n => n + PAGE_SIZE);
-      } else if (this.hasMoreOnServer() && !this.isFetchingMore()) {
-        this.loadNextServerPage();
-      }
+    if (nearBottom && this.hasMoreOnServer() && !this.isFetchingMore()) {
+      this.loadNextServerPage();
     }
 
     // Floating filter badge: show when filter-wrap has been scrolled past
@@ -1546,6 +1552,14 @@ export class Home implements OnInit, OnDestroy {
   private resetVisibleCounts(): void {
     this.filteredPage.set(0);
     this.filteredVisibleCount.set(PAGE_SIZE);
+  }
+
+  /** "Load More" click handler for the Latest/Trending/Most Viewed/Most Discussed feed. */
+  loadMoreFiltered(): void {
+    this.filteredVisibleCount.update(n => n + PAGE_SIZE);
+    if (this.hasMoreOnServer() && !this.isFetchingMore()) {
+      this.loadNextServerPage();
+    }
   }
 
   // Centralized scroll helper - call after ANY action that changes the

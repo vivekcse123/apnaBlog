@@ -59,6 +59,14 @@ export class About implements OnInit, OnDestroy {
       a: 'Sign up for a free account and click "Start Writing" to open our article editor. Write, format, and submit your guide across 16+ topics including Technology, Career, Health, Business, Finance, AI, Lifestyle, Education, Sports, Entertainment, Cooking, and more.'
     },
     {
+      q: 'Who is the founder of ApnaInsights?',
+      a: 'Vivek Verma is the Founder and Lead Engineer of ApnaInsights. He is a B.Tech graduate who built the platform end-to-end - the Angular frontend, the Node.js APIs, and the deployment pipeline - to give Indian professionals and students a free, trusted place to share what they know.'
+    },
+    {
+      q: 'Who is the CEO of ApnaInsights?',
+      a: 'Kondra Revathi Satya is the CEO (Chief Executive Officer) of ApnaInsights. She co-founded the platform and is a B.Tech graduate who oversees product direction, community operations, and day-to-day decisions.'
+    },
+    {
       q: 'Who founded ApnaInsights?',
       a: 'ApnaInsights was founded by Vivek Verma (Founder and Lead Engineer) and Kondra Revathi Satya (CEO). Both are B.Tech graduates who built the platform to give Indian professionals and students a free, trusted place to share what they know.'
     },
@@ -103,8 +111,8 @@ export class About implements OnInit, OnDestroy {
 
     this.title.setTitle('About ApnaInsights | India\'s Practical Knowledge Platform');
 
-    this.meta.updateTag({ name: 'description', content: 'ApnaInsights is India\'s practical knowledge platform - expert guides across 16+ categories, from technology to career. Free to write, free to read.' });
-    this.meta.updateTag({ name: 'keywords', content: 'ApnaInsights, Indian knowledge platform, write guides online India, practical knowledge India, publish articles India, expert guides platform, free writing India, knowledge platform India' });
+    this.meta.updateTag({ name: 'description', content: 'ApnaInsights is India\'s practical knowledge platform, founded by Vivek Verma (Founder & Lead Engineer) and Kondra Revathi Satya (CEO) - expert guides on tech, career, health & business.' });
+    this.meta.updateTag({ name: 'keywords', content: 'ApnaInsights, Indian knowledge platform, founder of ApnaInsights, CEO of ApnaInsights, Vivek Verma, Kondra Revathi Satya, write guides online India, practical knowledge India, publish articles India, expert guides platform, free writing India, knowledge platform India' });
     this.meta.updateTag({ name: 'robots', content: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' });
     this.meta.updateTag({ name: 'author', content: 'Vivek Verma, ApnaInsights' });
     this.meta.updateTag({ name: 'language', content: 'English' });
@@ -162,8 +170,22 @@ export class About implements OnInit, OnDestroy {
             foundingDate: '2024',
             foundingLocation: { '@type': 'Place', addressCountry: 'IN' },
             founders: [
-              { '@type': 'Person', name: 'Vivek Verma', jobTitle: 'Founder & Lead Engineer' },
-              { '@type': 'Person', name: 'Kondra Revathi Satya', jobTitle: 'Chief Executive Officer' }
+              {
+                '@type': 'Person',
+                '@id': 'https://apnainsights.com/about#vivek-verma',
+                name: 'Vivek Verma',
+                jobTitle: 'Founder & Lead Engineer',
+                url: 'https://apnainsights.com/about',
+                worksFor: { '@id': 'https://apnainsights.com/#organization' }
+              },
+              {
+                '@type': 'Person',
+                '@id': 'https://apnainsights.com/about#kondra-revathi-satya',
+                name: 'Kondra Revathi Satya',
+                jobTitle: 'Chief Executive Officer',
+                url: 'https://apnainsights.com/about',
+                worksFor: { '@id': 'https://apnainsights.com/#organization' }
+              }
             ],
             contactPoint: [
               { '@type': 'ContactPoint', contactType: 'customer support', email: 'supports@apnainsights.com', availableLanguage: ['English', 'Hindi'] },

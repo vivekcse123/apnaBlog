@@ -426,10 +426,10 @@
         ></div>
 
         <div class="editor-statusbar">
-          <span class="word-count" [class.word-count--warn]="wordCount() > 0 && wordCount() < 150" [class.word-count--ok]="wordCount() >= 150">
+          <span class="word-count" [class.word-count--warn]="wordCount() > 0 && wordCount() < 500" [class.word-count--ok]="wordCount() >= 500">
             {{ wordCount() }} {{ wordCount() === 1 ? 'word' : 'words' }}
-            @if (wordCount() > 0 && wordCount() < 150) {
-              <span class="word-count-hint"> · {{ 150 - wordCount() }} more for minimum</span>
+            @if (wordCount() > 0 && wordCount() < 500) {
+              <span class="word-count-hint"> · {{ 500 - wordCount() }} more for minimum</span>
             }
           </span>
           <span class="autosave-indicator" [class.visible]="autosaveStatus() !== ''">
@@ -450,8 +450,8 @@
         }
         @if (createBlogForm.get('content')?.errors?.['minWords']) {
           <small class="error editor-field-error">
-            Content must be at least 150 words to maintain quality standards.
-            You have {{ wordCount() }} word{{ wordCount() === 1 ? '' : 's' }} - {{ 150 - wordCount() }} more needed.
+            Content must be at least 500 words to maintain quality standards.
+            You have {{ wordCount() }} word{{ wordCount() === 1 ? '' : 's' }} - {{ 500 - wordCount() }} more needed.
           </small>
         }
       }
@@ -462,7 +462,7 @@
       <div class="form-field mcq-builder">
         <div class="form-section-label">
           <span class="form-section-icon">❓</span> Questions <span class="required-star">*</span>
-          <span class="field-hint-text">Add your quiz questions</span>
+          <span class="field-hint-text">Add at least 5 quiz questions, each with a short explanation</span>
         </div>
 
         @if (mcqQuestions().length === 0) {
@@ -470,7 +470,7 @@
             <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
             </svg>
-            <p>No questions yet. Click "Add Question" to get started.</p>
+            <p>No questions yet. Click "Add Question" to get started - at least 5 are required.</p>
           </div>
         }
 
@@ -508,7 +508,7 @@
 
             <div class="mcq-explanation-row">
               <input type="text" class="mcq-explanation-input"
-                placeholder="Explanation (optional) - shown after user answers"
+                placeholder="Explanation (required, 10+ words) - shown after user answers"
                 [value]="q.explanation"
                 (input)="updateMcqExplanation(qi, $any($event.target).value)" />
             </div>

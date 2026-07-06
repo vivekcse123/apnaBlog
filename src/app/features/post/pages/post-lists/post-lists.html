@@ -144,6 +144,13 @@
             <span class="ap-badge ap-badge--gold">{{ sponsorCount() }}</span>
           }
         </button>
+        <button class="ap-chip ap-chip--del" [class.ap-chip--on]="showThinOnly()" (click)="toggleThinFilter()" title="Blog posts under 500 words / MCQs under 5 questions">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L14.71 3.86a2 2 0 00-3.42 0z"/></svg>
+          Thin Content
+          @if (thinPostCount() > 0) {
+            <span class="ap-badge ap-badge--red">{{ thinPostCount() }}</span>
+          }
+        </button>
       }
     </div>
   </div>
@@ -162,6 +169,7 @@
             <th class="col-title">Blog</th>
             <th class="col-cat">Category</th>
             <th class="col-status">Status</th>
+            <th class="col-num" title="Body word count (MCQ: question count)">Words</th>
             <th class="col-num">Views</th>
             <th class="col-num">Likes</th>
             <th class="col-date">Created</th>
@@ -178,6 +186,7 @@
                 <td><div class="ap-sk" style="width:55%;height:14px"></div><div class="ap-sk" style="width:35%;height:11px;margin-top:7px"></div></td>
                 <td><div class="ap-sk" style="width:72px;height:22px;border-radius:99px"></div></td>
                 <td><div class="ap-sk" style="width:80px;height:22px;border-radius:99px"></div></td>
+                <td><div class="ap-sk" style="width:44px"></div></td>
                 <td><div class="ap-sk" style="width:36px"></div></td>
                 <td><div class="ap-sk" style="width:36px"></div></td>
                 <td><div class="ap-sk" style="width:72px"></div></td>
@@ -243,6 +252,12 @@
                   } @else {
                     <span class="ap-dash">-</span>
                   }
+                </td>
+
+                <td data-label="Words" class="ap-td-num">
+                  <span class="ap-word-count" [class.ap-word-count--thin]="isThinPost(blog)" [title]="isThinPost(blog) ? 'Below the minimum content depth' : ''">
+                    {{ contentDepth(blog).label }}
+                  </span>
                 </td>
 
                 <td data-label="Views" class="ap-td-num">
@@ -321,7 +336,7 @@
 
             @if (filteredBlogs().length === 0) {
               <tr>
-                <td colspan="8">
+                <td colspan="9">
                   <div class="ap-empty">
                     <div class="ap-empty-icon">
                       <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
@@ -330,6 +345,8 @@
                       <p>No blogs posted today</p><span>Nothing published on today's date.</span>
                     } @else if (showSponsoredOnly()) {
                       <p>No sponsored blogs</p><span>Mark a published blog as sponsored from the actions column.</span>
+                    } @else if (showThinOnly()) {
+                      <p>No thin content</p><span>Every post meets the minimum word/question count.</span>
                     } @else {
                       <p>No blogs found</p><span>Try adjusting your search or filters.</span>
                     }

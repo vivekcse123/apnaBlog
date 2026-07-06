@@ -157,7 +157,7 @@ export class AuthorPage implements OnInit, OnDestroy {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (res) => {
-          const published = (res.data ?? []).filter((p: Post) => p.status === 'published' || p.status === 'draft');
+          const published = (res.data ?? []).filter((p: Post) => p.status === 'published');
           this.posts.set(published);
           this.injectAuthorItemList(published);
           const robotsValue = published.length >= 5 ? 'index, follow' : 'noindex, follow';
