@@ -57,7 +57,7 @@
   /* Homepage section vertical rhythm - shared so feed sections (Trending,
      Browse Topics, Challenge Winners, etc.) don't each invent their own
      padding scale. */
-  --space-section-y:        48px;
+  --space-section-y:        9px;
   --space-section-y-tablet: 32px;
   --space-section-y-mobile: 24px;
 }
@@ -671,8 +671,10 @@ html { scroll-behavior: smooth; }
     min-width: 44px;
   }
 
-  /* Toggle/pill controls have fixed dimensions - exempt from the 44px rule */
-  .toggle-switch, .theme-pill, .nav-item {
+  /* Toggle/pill controls have fixed dimensions - exempt from the 44px rule.
+     .field-group label is a plain form-field caption (not a tap target
+     itself - the input below it is), so it shouldn't be stretched either. */
+  .toggle-switch, .theme-pill, .nav-item, .field-group label {
     min-height: unset !important;
     min-width: unset !important;
   }

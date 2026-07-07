@@ -1,0 +1,72 @@
+.atb {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 6px 20px 10px;
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg-surface);
+}
+
+/* Icon sits beside the number/label instead of stacked above it - keeps
+   the whole footer to one compact row instead of eating a lot of height. */
+.atb-stat {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+.atb-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-subtle);
+  color: var(--accent-text);
+  flex-shrink: 0;
+}
+
+.atb-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+  min-width: 0;
+}
+
+.atb-num {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.2px;
+  white-space: nowrap;
+}
+
+.atb-lbl {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+.atb-divider {
+  width: 1px;
+  align-self: stretch;
+  background: var(--border);
+  margin: 2px 0;
+}
+
+@media (max-width: 480px) {
+  .atb { margin: 6px 14px 12px; padding: 6px 4px; gap: 2px; }
+  .atb-stat { gap: 5px; }
+  .atb-icon { width: 19px; height: 19px; border-radius: 6px; }
+  .atb-num { font-size: 12.5px; }
+  .atb-lbl { font-size: 8px; }
+}

@@ -31,11 +31,16 @@
   z-index: 1;
 }
 
-/* ── Header ── */
+/* ── Header ──
+   Fixed dark gradient, independent of light/dark theme: the name/email/role
+   text below and the close button are hardcoded white/translucent-white,
+   so this background must always stay dark enough for them to read - it
+   used to follow var(--bg-surface-alt), which is near-white in light mode
+   and made the text unreadable. */
 .up-header {
   position: relative;
   padding: 22px 16px 20px;
-  background: var(--bg-surface-alt);
+  background: linear-gradient(135deg, #185a9d, #111827 60%);
   display: flex;
   flex-direction: column;
   align-items: center;

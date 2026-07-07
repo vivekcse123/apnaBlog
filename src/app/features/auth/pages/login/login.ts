@@ -1,5 +1,5 @@
 import {
-  ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject, signal, afterNextRender
+  ChangeDetectionStrategy, Component, DestroyRef, ElementRef, OnInit, ViewChild, inject, signal, afterNextRender
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
@@ -7,6 +7,8 @@ import { FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, 
 import { Meta } from '@angular/platform-browser';
 import { Auth } from '../../../../core/services/auth';
 import { ToastService } from '../../../../core/services/toast.service';
+import { pollUntilGoogleIdentityReady } from '../../../../core/utils/google-identity.util';
+import { AuthTrustBar } from '../../../../shared/auth-trust-bar/auth-trust-bar';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 declare const google: any;
@@ -15,9 +17,9 @@ declare const google: any;
   selector: 'app-login',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterLink, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, RouterLink, FormsModule, ReactiveFormsModule, AuthTrustBar],
   templateUrl: './login.html',
-  styleUrl: './login.css',
+  styleUrls: ['../../auth-shared.css', './login.css'],
 })
 export class Login implements OnInit {
   private fb           = inject(FormBuilder);
@@ -29,6 +31,10 @@ export class Login implements OnInit {
   private meta         = inject(Meta);
   loginForm: FormGroup = new FormGroup({});
 
+  // Google's own rendered button lives invisibly on top of our styled button
+  // (see login.html/.css) - see the comment on signInWithGoogle() for why.
+  @ViewChild('googleBtnSlot') googleBtnSlot!: ElementRef<HTMLDivElement>;
+
   isSubmitted     = signal(false);
   isLoading       = signal(false);
   isGoogleLoading = signal(false);
@@ -37,23 +43,25 @@ export class Login implements OnInit {
 
   constructor() {
     afterNextRender(() => {
-      const init = () => {
+      // One Tap's prompt() is a heuristic the browser/Google can silently
+      // skip or delay (third-party-cookie/FedCM checks, prior-dismissal
+      // cooldown, etc.) - it is NOT reliable as a direct button-click
+      // handler. Google's own rendered button doesn't have that problem:
+      // clicking it opens the real sign-in flow immediately, every time.
+      // So we render Google's actual button, invisibly, on top of our
+      // custom-styled one (see login.html/.css) - visually it's our button,
+      // but the click is always handled natively by Google's client.
+      pollUntilGoogleIdentityReady(() => {
         google.accounts.id.initialize({
           client_id: '602340491283-om39opmifq815fsvs15ju1et07kk0laq.apps.googleusercontent.com',
           callback: (response: any) => this.handleGoogleCallback(response),
         });
-      };
-      if (typeof google !== 'undefined') {
-        init();
-      } else {
-        (window as any)['onGoogleLibraryLoad'] = init;
-      }
+        const width = Math.min(400, Math.max(200, this.googleBtnSlot?.nativeElement.offsetWidth || 300));
+        google.accounts.id.renderButton(this.googleBtnSlot.nativeElement, {
+          type: 'standard', theme: 'outline', size: 'large', width, text: 'signin_with',
+        });
+      });
     });
-  }
-
-  signInWithGoogle(): void {
-    if (typeof google === 'undefined') return;
-    google.accounts.id.prompt();
   }
 
   handleGoogleCallback(response: any): void {

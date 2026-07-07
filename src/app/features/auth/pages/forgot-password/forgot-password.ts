@@ -5,14 +5,15 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { Auth } from '../../../../core/services/auth';
+import { AuthTrustBar } from '../../../../shared/auth-trust-bar/auth-trust-bar';
 
 @Component({
   selector: 'app-forgot-password',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, AuthTrustBar],
   templateUrl: './forgot-password.html',
-  styleUrls: ['./forgot-password.css']
+  styleUrls: ['../../auth-shared.css', './forgot-password.css']
 })
 export class ForgotPassword {
 

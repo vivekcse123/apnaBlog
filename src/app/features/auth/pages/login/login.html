@@ -1,17 +1,26 @@
-<div class="login-page">
+<div class="auth-page">
+  <div class="auth-card">
 
-  <div class="login-bg" aria-hidden="true">
-    <div class="orb orb-1"></div>
-    <div class="orb orb-2"></div>
-    <div class="grid-overlay"></div>
-  </div>
+    <!-- Banner -->
+    <div class="auth-banner">
+      <svg class="auth-banner-illustration" viewBox="0 0 200 160" fill="none" aria-hidden="true">
+        <circle cx="26" cy="28" r="4" fill="currentColor" opacity="0.28"/>
+        <circle cx="172" cy="22" r="5" fill="currentColor" opacity="0.22"/>
+        <circle cx="150" cy="132" r="4" fill="currentColor" opacity="0.24"/>
+        <line x1="26" y1="28" x2="70" y2="52" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3 4" opacity="0.18"/>
+        <line x1="172" y1="22" x2="128" y2="50" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3 4" opacity="0.18"/>
+        <line x1="150" y1="132" x2="128" y2="105" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3 4" opacity="0.18"/>
+        <rect x="45" y="42" width="120" height="92" rx="12" fill="currentColor" opacity="0.07"/>
+        <path d="M45 54a12 12 0 0 1 12-12h96a12 12 0 0 1 12 12v10H45z" fill="currentColor" opacity="0.16"/>
+        <circle cx="59" cy="54" r="3" fill="currentColor" opacity="0.35"/>
+        <circle cx="71" cy="54" r="3" fill="currentColor" opacity="0.35"/>
+        <circle cx="83" cy="54" r="3" fill="currentColor" opacity="0.35"/>
+        <text x="66" y="112" font-family="'DM Mono', 'Courier New', monospace" font-size="34" font-weight="700" fill="currentColor" opacity="0.3">&lt;/&gt;</text>
+        <rect x="59" y="76" width="52" height="6" rx="3" fill="currentColor" opacity="0.16"/>
+        <rect x="59" y="88" width="34" height="6" rx="3" fill="currentColor" opacity="0.16"/>
+      </svg>
 
-  <div class="login-wrap">
-
-    <!-- Left Panel -->
-    <div class="login-panel brand-panel">
-      <div class="brand-content">
-
+      <div class="auth-banner-content">
         <div class="brand-logo">
           <div class="brand-logo-icon">
             <img class="app-logo-img" src="/logo-96.png" alt="ApnaInsights" />
@@ -19,84 +28,69 @@
           <span class="brand-name">ApnaInsights</span>
         </div>
 
-        <div class="brand-headline">
-          <h3>Real knowledge.<br>Built for India.</h3>
-          <p>Career guides, tech tutorials, and practical insights written by professionals who have been there.</p>
-        </div>
+        <h1 class="auth-headline">Real knowledge.<br>Built for <span class="accent">India</span>.</h1>
+        <p class="auth-sub">Career guides, tech tutorials, and practical insights written by professionals who have been there.</p>
 
-        <div class="brand-features">
-          <div class="brand-feature">
-            <div class="feature-dot">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-            </div>
-            <div class="brand-feature-text">
+        <div class="auth-features">
+          <div class="auth-feature">
+            <span class="auth-feature-icon" aria-hidden="true">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </span>
+            <div class="auth-feature-text">
               <strong>Write &amp; publish freely</strong>
-              <span>No gatekeepers — your article goes live instantly</span>
+              <span>No gatekeepers</span>
             </div>
           </div>
-          <div class="brand-feature">
-            <div class="feature-dot">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
-            </div>
-            <div class="brand-feature-text">
+          <div class="auth-feature">
+            <span class="auth-feature-icon" aria-hidden="true">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+            </span>
+            <div class="auth-feature-text">
               <strong>Reach real readers</strong>
-              <span>12k+ professionals reading every month</span>
+              <span>Professionals across India</span>
             </div>
           </div>
-          <div class="brand-feature">
-            <div class="feature-dot">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-            </div>
-            <div class="brand-feature-text">
+          <div class="auth-feature">
+            <span class="auth-feature-icon" aria-hidden="true">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </span>
+            <div class="auth-feature-text">
               <strong>Free forever</strong>
-              <span>No subscription, no paywall — ever</span>
+              <span>No subscription, no paywall</span>
             </div>
           </div>
         </div>
-
-        <div class="brand-stats">
-          <div class="brand-stat">
-            <span class="stat-num">2.4k+</span>
-            <span class="stat-lbl">Articles</span>
-          </div>
-          <div class="brand-divider"></div>
-          <div class="brand-stat">
-            <span class="stat-num">840+</span>
-            <span class="stat-lbl">Authors</span>
-          </div>
-          <div class="brand-divider"></div>
-          <div class="brand-stat">
-            <span class="stat-num">12k+</span>
-            <span class="stat-lbl">Readers</span>
-          </div>
-        </div>
-
       </div>
     </div>
 
-    <!-- Right Panel -->
-    <div class="login-panel form-panel">
+    <!-- Form -->
+    <div class="auth-form-panel">
 
       <div class="form-header">
         <h2>Welcome Back 👋</h2>
         <p>Sign in to your account to continue</p>
       </div>
 
-      <!-- Google Sign-In -->
-      <button type="button" class="google-btn" (click)="signInWithGoogle()" [disabled]="isGoogleLoading()">
-        @if (isGoogleLoading()) {
-          <span class="google-btn-spinner"></span>
-          <span>Signing in…</span>
-        } @else {
-          <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;display:block">
-            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
-            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-          </svg>
-          <span>Continue with Google</span>
-        }
-      </button>
+      <!-- Google Sign-In - Google's real button is rendered invisibly into
+           #googleBtnSlot, stacked on top of this one, so the click is always
+           handled natively by Google (see login.ts for why). -->
+      <div class="google-btn-wrap">
+        <div class="google-btn" aria-hidden="true">
+          @if (isGoogleLoading()) {
+            <span class="google-btn-spinner"></span>
+            <span>Signing in…</span>
+          } @else {
+            <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;display:block">
+              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+            </svg>
+            <span>Continue with Google</span>
+          }
+        </div>
+        <div #googleBtnSlot class="google-btn-real" [class.google-btn-real--busy]="isGoogleLoading()"></div>
+      </div>
 
       <div class="or-divider">
         <span>or sign in with email</span>
@@ -173,6 +167,8 @@
 
       </form>
     </div>
+
+    <app-auth-trust-bar />
 
   </div>
 </div>

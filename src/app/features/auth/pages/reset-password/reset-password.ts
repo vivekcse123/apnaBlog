@@ -6,14 +6,15 @@ import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angula
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { Auth } from '../../../../core/services/auth';
 import { HttpErrorResponse } from '@angular/common/http';
+import { AuthTrustBar } from '../../../../shared/auth-trust-bar/auth-trust-bar';
 
 @Component({
   selector: 'app-reset-password',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, AuthTrustBar],
   templateUrl: './reset-password.html',
-  styleUrls: ['./reset-password.css']
+  styleUrls: ['../../auth-shared.css', './reset-password.css']
 })
 export class ResetPassword implements OnInit {
 

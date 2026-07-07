@@ -1,0 +1,407 @@
+/* ═══════════════════════════════════════════════════════════════
+   Shared layout for all auth pages (login/register/forgot/reset).
+   Mobile: banner stacked on top of the form (single column).
+   Desktop (≥768px): banner and form sit side by side ("parallel"),
+   with the stats footer spanning the full width below both.
+   Colors are all driven by the app's real theme variables
+   (styles.css) so this looks right in both light and dark mode
+   automatically.
+   ═══════════════════════════════════════════════════════════════ */
+
+.auth-page {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-base);
+  font-family: 'DM Sans', sans-serif;
+  padding: 32px 16px;
+}
+
+.auth-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 440px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 32px 72px rgba(0, 0, 0, 0.14), 0 8px 24px rgba(0, 0, 0, 0.07);
+  animation: authCardIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes authCardIn {
+  from { opacity: 0; transform: translateY(16px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ── Banner ── */
+.auth-banner {
+  position: relative;
+  overflow: hidden;
+  padding: 28px 24px 22px;
+  background: linear-gradient(180deg, var(--accent-subtle), transparent 75%);
+}
+
+.auth-banner-illustration {
+  position: absolute;
+  right: -14px;
+  bottom: -10px;
+  width: 200px;
+  height: auto;
+  color: var(--accent);
+  pointer-events: none;
+}
+
+.auth-banner-content {
+  position: relative;
+  z-index: 1;
+}
+
+.brand-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.brand-logo-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+  background: #111827;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.brand-logo-icon .app-logo-img { width: 26px; height: 26px; object-fit: contain; }
+
+.brand-name {
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: 0.1px;
+}
+
+.auth-headline {
+  font-size: 25px;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.28;
+  letter-spacing: -0.4px;
+  margin: 0 0 10px;
+  max-width: 280px;
+}
+
+.auth-headline .accent { color: var(--accent-text); }
+
+.auth-sub {
+  font-size: 13.5px;
+  color: var(--text-muted);
+  line-height: 1.6;
+  max-width: 320px;
+  margin: 0 0 18px;
+}
+
+.auth-features {
+  display: flex;
+  gap: 10px;
+}
+
+.auth-feature {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.auth-feature-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: var(--accent-subtle);
+  color: var(--accent-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.auth-feature-text { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.auth-feature-text strong { font-size: 12.5px; font-weight: 700; color: var(--text-primary); line-height: 1.25; }
+.auth-feature-text span   { font-size: 11px; color: var(--text-muted); line-height: 1.35; }
+
+/* ── Form panel ── */
+.auth-form-panel { padding: 24px 24px 4px; }
+
+.form-header { margin-bottom: 20px; }
+.form-header h2 { font-size: 22px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.3px; margin: 0 0 4px; }
+.form-header p  { font-size: 13.5px; color: var(--text-muted); margin: 0; }
+
+/* Google button - real button rendered invisibly on top, see login.ts */
+.google-btn-wrap { position: relative; width: 100%; margin-bottom: 16px; }
+
+.google-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 13px 20px;
+  border-radius: 12px;
+  border: 1.5px solid var(--input-border);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font-size: 14.5px;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  letter-spacing: 0.1px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.google-btn-wrap:hover .google-btn {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-subtle);
+  background: var(--input-bg);
+}
+
+.google-btn-real { position: absolute; inset: 0; opacity: 0; overflow: hidden; border-radius: 12px; }
+.google-btn-real--busy { pointer-events: none; }
+
+.google-btn-spinner {
+  width: 18px; height: 18px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.or-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-muted);
+  font-size: 12.5px;
+  font-weight: 500;
+  margin: 0 0 16px;
+}
+.or-divider::before, .or-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+/* ── Form ── */
+.login-form { display: flex; flex-direction: column; gap: 16px; margin-bottom: 6px; }
+
+.field-group { display: flex; flex-direction: column; gap: 6px; }
+.field-group label { font-size: 13px; font-weight: 600; color: var(--text-secondary); }
+
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+.input-wrap { position: relative; display: flex; align-items: center; }
+.input-icon { position: absolute; left: 14px; color: var(--text-muted); pointer-events: none; z-index: 1; display: flex; line-height: 1; }
+
+.input-wrap input {
+  width: 100%;
+  min-width: 0;
+  padding: 13px 14px 13px 42px;
+  border-radius: 12px;
+  border: 1.5px solid var(--input-border);
+  background: var(--input-bg);
+  color: var(--text-primary);
+  font-size: 14.5px;
+  font-family: 'DM Sans', sans-serif;
+  outline: none;
+  text-overflow: ellipsis;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+.input-wrap input::placeholder { color: var(--text-muted); font-size: 14px; }
+.input-wrap input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-subtle); }
+.input-wrap input.field-error { border-color: var(--error); box-shadow: 0 0 0 3px color-mix(in srgb, var(--error) 12%, transparent); }
+
+.eye-btn {
+  position: absolute; right: 12px;
+  background: none; border: none;
+  color: var(--text-muted);
+  cursor: pointer; display: flex; padding: 4px;
+}
+.eye-btn:hover { color: var(--text-secondary); }
+
+.error { font-size: 12px; color: var(--error); font-weight: 500; }
+
+.forgot-row { display: flex; justify-content: flex-end; margin-top: -8px; }
+.forgot-link { font-size: 13px; color: var(--accent-text); text-decoration: none; font-weight: 600; }
+.forgot-link:hover { text-decoration: underline; }
+
+.login-btn {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  background: var(--accent-hover);
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  letter-spacing: 0.2px;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  box-shadow: 0 4px 16px var(--accent-subtle);
+}
+.login-btn:hover:not(:disabled) { opacity: 0.92; transform: translateY(-1px); }
+.login-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
+
+.register-row { text-align: center; font-size: 13.5px; color: var(--text-secondary); margin: 14px 0 4px; }
+.register-row a { color: var(--accent-text); text-decoration: none; font-weight: 700; }
+.register-row a:hover { text-decoration: underline; }
+
+.terms-consent { text-align: center; font-size: 12px; line-height: 1.5; color: var(--text-muted); margin: -6px 0 4px; }
+.terms-consent a { color: var(--text-secondary); font-weight: 600; text-decoration: none; }
+.terms-consent a:hover { color: var(--accent-text); text-decoration: underline; }
+
+.form-message {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 13.5px;
+  font-weight: 500;
+  line-height: 1.4;
+  margin-bottom: 8px;
+  animation: msgIn 0.25s ease both;
+}
+@keyframes msgIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+.form-message span {
+  width: 20px; height: 20px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.form-message a { color: inherit; text-decoration: underline; opacity: 0.8; font-size: 12px; }
+
+.success-message { background: var(--success-bg); color: var(--success); border: 1px solid color-mix(in srgb, var(--success) 25%, transparent); }
+.success-message span { background: var(--success); }
+.error-message { background: var(--error-bg); color: var(--error); border: 1px solid color-mix(in srgb, var(--error) 25%, transparent); }
+.error-message span { background: var(--error); }
+
+.resend-row { text-align: center; font-size: 13px; color: var(--text-muted); margin: 8px 0; }
+.link-btn {
+  background: none; border: none; padding: 0;
+  font-size: 13px; font-family: 'DM Sans', sans-serif;
+  color: var(--accent-text); font-weight: 600; cursor: pointer;
+}
+.link-btn:hover { text-decoration: underline; }
+
+/* Password strength meter (register) */
+.pwd-strength { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+.pwd-strength-bars { display: flex; gap: 4px; flex: 1; }
+.pwd-bar { height: 5px; flex: 1; border-radius: 99px; background: var(--border); transition: background 0.35s ease; }
+.pwd-bar--weak   { background: #ef4444; }
+.pwd-bar--fair   { background: #f59e0b; }
+.pwd-bar--strong { background: #22c55e; }
+.pwd-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; min-width: 44px; }
+.pwd-label--weak   { color: #ef4444; }
+.pwd-label--fair   { color: #f59e0b; }
+.pwd-label--strong { color: #22c55e; }
+
+/* Mobile: skip the marketing content entirely (headline/subtext/features/
+   illustration) and the stats footer - there just isn't room to show all of
+   that alongside a real form without scrolling, and the form is what someone
+   on a phone actually came here to fill in. Desktop has the room, so it gets
+   the full banner (see the ≥768px block above). */
+@media (max-width: 767px) {
+  .auth-headline,
+  .auth-sub,
+  .auth-features,
+  .auth-banner-illustration,
+  app-auth-trust-bar {
+    display: none;
+  }
+
+  .auth-banner { padding: 18px 20px 14px; }
+  .brand-logo { margin-bottom: 0; }
+}
+
+@media (max-width: 480px) {
+  /* Compact enough to fit one screen without scrolling on most phones. */
+  .auth-page { padding: 12px 8px; align-items: center; }
+  .auth-card { border-radius: 18px; }
+
+  .auth-banner { padding: 16px 18px 12px; }
+
+  .auth-form-panel { padding: 12px 16px 4px; }
+  .form-header { margin-bottom: 10px; }
+  .form-header h2 { font-size: 18px; }
+  .google-btn-wrap { margin-bottom: 8px; }
+  .google-btn { padding: 10px 16px; }
+  .or-divider { margin: 0 0 8px; }
+  .login-form { gap: 10px; margin-bottom: 2px; }
+  .field-group { gap: 3px; }
+  .field-group label { font-size: 12px; }
+  .input-wrap input { padding: 10px 12px 10px 38px; font-size: 14px; }
+  .field-row { grid-template-columns: 1fr; gap: 8px; }
+  .login-btn { padding: 11px; }
+  .register-row { margin: 6px 0 2px; }
+  .terms-consent { margin: -2px 0 2px; font-size: 11px; }
+  .pwd-strength { margin-top: 5px; }
+}
+
+/* Desktop: banner + form side by side, stats footer wraps onto its own
+   full-width row underneath both. Placed last on purpose - CSS gives equal-
+   specificity rules to whichever comes later in the file regardless of
+   media query, so this has to come after the base rules above it or its
+   overrides get silently discarded. */
+@media (min-width: 768px) {
+  /* Real browser windows have chrome eating into the viewport (address bar,
+     tabs, OS taskbar) - a 768-900px display often leaves well under 700px
+     of actual usable height. Kept tight enough that register (the tallest
+     page - 4 fields + terms text) still fits on common laptop screens. */
+  .auth-page { padding: 16px 20px; }
+
+  .auth-card {
+    flex-direction: row;
+    flex-wrap: wrap;
+    max-width: 860px;
+    align-items: stretch;
+  }
+
+  .auth-banner {
+    flex: 1 1 44%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 26px 32px;
+  }
+
+  .auth-form-panel {
+    flex: 1 1 56%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 18px 40px 4px;
+  }
+
+  app-auth-trust-bar { display: block; flex: 1 1 100%; }
+
+  .auth-headline { display: block; font-size: 24px; max-width: none; margin-bottom: 6px; }
+  .auth-sub { display: block; max-width: none; margin-bottom: 12px; }
+  .auth-features { display: flex; gap: 8px; }
+  .auth-banner-illustration { display: block; }
+
+  /* Vertical rhythm inside the form column - tighter than the mobile
+     defaults so a form with 4+ fields (register) still fits one screen
+     at common laptop viewport heights without scrolling. */
+  .form-header { margin-bottom: 10px; }
+  .google-btn-wrap { margin-bottom: 6px; }
+  .or-divider { margin: 0 0 8px; }
+  .login-form { gap: 8px; margin-bottom: 0; }
+  .field-group { gap: 4px; }
+  .register-row { margin: 6px 0 2px; }
+  .terms-consent { margin: -2px 0 2px; }
+  .pwd-strength { margin-top: 4px; }
+}

@@ -1087,7 +1087,7 @@
 .skeleton-card {
   background: var(--bg-surface);
   border: 1px solid var(--border);
-  border-radius: 18px;
+  border-radius: 8px;
   overflow: hidden;
   padding: 5px;
 }

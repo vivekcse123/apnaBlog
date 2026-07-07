@@ -1,0 +1,33 @@
+@if (siteStats(); as stats) {
+  <div class="atb">
+    <div class="atb-stat">
+      <span class="atb-icon" aria-hidden="true">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      </span>
+      <span class="atb-text">
+        <span class="atb-num">{{ formatStatCount(stats.articles) }}</span>
+        <span class="atb-lbl">Articles</span>
+      </span>
+    </div>
+    <div class="atb-divider"></div>
+    <div class="atb-stat">
+      <span class="atb-icon" aria-hidden="true">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+      </span>
+      <span class="atb-text">
+        <span class="atb-num">{{ stats.topics }}+</span>
+        <span class="atb-lbl">Topics</span>
+      </span>
+    </div>
+    <div class="atb-divider"></div>
+    <div class="atb-stat">
+      <span class="atb-icon" aria-hidden="true">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      </span>
+      <span class="atb-text">
+        <span class="atb-num">{{ formatStatCount(stats.reads) }}</span>
+        <span class="atb-lbl">Reads</span>
+      </span>
+    </div>
+  </div>
+}
