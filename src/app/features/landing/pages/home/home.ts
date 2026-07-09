@@ -169,6 +169,13 @@ export class Home implements OnInit, OnDestroy {
 
   readonly APK_URL = environment.apkUrl;
   private readonly APP_INSTALLED_KEY = 'apna_app_installed';
+  // There's no browser API to detect a PWA uninstall, so the persisted flag
+  // below can't be trusted forever - it would otherwise hide install CTAs
+  // permanently for a user who installed once and later uninstalled. Expire
+  // it instead: still suppresses prompts for months after a real install,
+  // but eventually falls back to the live standalone/navigator check, which
+  // correctly reports "not installed" if the app is actually gone.
+  private readonly APP_INSTALLED_TTL_MS = 90 * 24 * 60 * 60 * 1000;
   private welcomeTimerId: ReturnType<typeof setTimeout> | null = null;
 
   // Server-side pagination state
@@ -617,7 +624,7 @@ export class Home implements OnInit, OnDestroy {
       // would otherwise keep seeing install prompts forever.
       const standalone = window.matchMedia('(display-mode: standalone)').matches
         || (navigator as any).standalone === true
-        || localStorage.getItem(this.APP_INSTALLED_KEY) === '1';
+        || this.wasRecentlyInstalled();
       this.isAppInstalled.set(standalone);
 
       if (sessionStorage.getItem('apna_install_strip_dismissed')) {
@@ -1370,8 +1377,18 @@ export class Home implements OnInit, OnDestroy {
   // happens to be running inside the installed app's own standalone shell.
   private markAppInstalled(): void {
     if (!isPlatformBrowser(this.platformId)) return;
-    localStorage.setItem(this.APP_INSTALLED_KEY, '1');
+    localStorage.setItem(this.APP_INSTALLED_KEY, String(Date.now()));
     this.isAppInstalled.set(true);
+  }
+
+  // See APP_INSTALLED_TTL_MS - treats the persisted install flag as stale
+  // after the TTL instead of trusting it forever, so a device that actually
+  // uninstalled the app eventually sees install CTAs again.
+  private wasRecentlyInstalled(): boolean {
+    const raw = localStorage.getItem(this.APP_INSTALLED_KEY);
+    if (!raw) return false;
+    const installedAt = Number(raw);
+    return Number.isFinite(installedAt) && (Date.now() - installedAt) < this.APP_INSTALLED_TTL_MS;
   }
 
   private recordPwaInstall(): void {
