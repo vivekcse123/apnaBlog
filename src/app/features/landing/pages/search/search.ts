@@ -21,8 +21,8 @@ import { MobileBottomNav } from '../../../../shared/mobile-bottom-nav/mobile-bot
 
 const ALL_CATEGORIES = [
   'Technology','Career','Health','Business','Education','Lifestyle','Sports',
-  'Finance','Productivity','AI','Cooking','Exercise','Entertainment',
-  'Social','Update','News','Quotes','Village',
+  'Finance','Productivity','AI','Exercise','Entertainment',
+  'Social','Update','News','Village',
 ];
 
 @Component({

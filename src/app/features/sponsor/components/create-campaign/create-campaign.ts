@@ -9,7 +9,7 @@ const CTA_PRESETS = ['Learn More →', 'Visit Website →', 'Shop Now →', 'Get
 
 const CATEGORIES = [
   'Technology', 'Business', 'Health', 'Education',
-  'Lifestyle', 'Entertainment', 'Sports', 'Cooking',
+  'Lifestyle', 'Entertainment', 'Sports',
   'Career', 'AI',
 ];
 

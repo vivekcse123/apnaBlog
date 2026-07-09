@@ -42,8 +42,9 @@
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 1px;
-  background: var(--accent);
-  color: #fff;
+  background: var(--accent-subtle);
+  color: var(--accent-text);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
   flex-shrink: 0;
 }
 
@@ -96,9 +97,10 @@
 .btn-primary:active { transform: scale(0.97); }
 
 .date-pill {
-  font-size: 12px;
-  color: #fff;
-  background: var(--accent);
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid var(--border);
   padding: 7px 14px;
   border-radius: 8px;
   font-weight: 500;
@@ -223,15 +225,13 @@
 
 .sk-section { display: flex; flex-direction: column; gap: 16px; }
 
-.sk-stats-row {
+.sk-kpi-row {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 14px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
 }
 
-.sk-row-2 { grid-template-columns: repeat(5, 1fr); }
-
-.sk-stat { height: 96px; border-radius: 12px; }
+.sk-kpi { height: 128px; border-radius: 16px; }
 
 .sk-body {
   display: grid;
@@ -259,163 +259,110 @@
 .sk-lb       { height: 140px; }
 
 /* ════════════════════════════
-   Stats Section
+   KPI Row - 4 consolidated cards (replaces the old 12-card stat grid).
+   Each card leads with one number, then a compact breakdown row for what
+   used to be 2-3 separate cards each.
 ════════════════════════════ */
-.stats-section {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.stats-group {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.stats-group-label {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  color: var(--text-muted);
-}
-
-.stats-row {
+.kpi-row {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
+  gap: 16px;
 }
 
-.stats-row--7 {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-
-.stats-row--wrap {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-
-.stat-card {
+.kpi-card {
   background: var(--bg-surface);
   border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 16px 18px;
+  border-radius: 16px;
+  padding: 18px 20px;
   display: flex;
-  align-items: flex-start;
-  gap: 12px;
+  flex-direction: column;
   box-shadow: var(--card-shadow);
-  position: relative;
-  overflow: hidden;
   min-width: 0;
-  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
-/* Top accent bar */
-.stat-card::before {
-  content: "";
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 3px;
-  background: var(--accent);
-}
-
-.stat-card--alert::before {
-  background: #dc2626;
-}
-
-.stat-card:hover {
+.kpi-card:hover {
   transform: translateY(-2px);
   box-shadow: var(--card-shadow-lg);
   border-color: var(--border-strong);
 }
 
-.stat-icon-wrap {
-  width: 40px;
-  height: 40px;
+.kpi-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.kpi-icon {
+  width: 36px;
+  height: 36px;
   border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  margin-top: 2px;
+}
+.kpi-icon--teal   { background: rgba(67,  206, 162, 0.12); }
+.kpi-icon--blue   { background: rgba(24,  90,  157, 0.12); }
+.kpi-icon--purple { background: rgba(127, 119, 221, 0.12); }
+.kpi-icon--amber  { background: rgba(217, 119, 6,   0.12); }
+
+.kpi-flag {
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 20px;
+  background: var(--bg-base);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.kpi-flag--alert { background: rgba(220, 38, 38, 0.1); color: #dc2626; }
+
+.kpi-value {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.1;
+  letter-spacing: -0.3px;
 }
 
-/* Icon background colours (reused from old .info-icon) */
-.blogs-icon     { background: rgba(67,  206, 162, 0.12); }
-.users-icon     { background: rgba(24,  90,  157, 0.12); }
-.published-icon { background: rgba(15,  122, 90,  0.12); }
-.drafts-icon    { background: rgba(186, 117, 23,  0.12); }
-.views-icon     { background: rgba(127, 119, 221, 0.12); }
-.comments-icon  { background: rgba(55,  138, 221, 0.12); }
-.likes-icon     { background: rgba(217, 83,  79,  0.12); }
-.active-icon    { background: rgba(92,  184, 92,  0.12); }
-.inactive-icon  { background: rgba(220, 38,  38,  0.10); }
-.followers-icon    { background: rgba(24,  90,  157, 0.12); }
-.pwa-install-icon  { background: rgba(67, 206, 162, 0.12); }
-.pending-icon   { background: rgba(220, 38,  38,  0.10); }
-
-.stat-body {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  flex: 1;
-  min-width: 0;
-}
-
-.stat-label {
-  font-size: 11px;
+.kpi-label {
+  font-size: 12px;
   color: var(--text-muted);
   font-weight: 500;
+  margin-top: 3px;
+}
+
+.kpi-breakdown {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.kpi-bd {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  color: var(--text-secondary);
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
+.kpi-bd b { color: var(--text-primary); font-weight: 700; margin-left: 1px; }
+.kpi-bd--alert b { color: #dc2626; }
 
-.stat-value {
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--text-primary);
-  line-height: 1.15;
-}
+.kpi-breakdown--week .kpi-bd { color: var(--text-muted); font-weight: 600; }
 
-.stat-chip {
+.kpi-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
   display: inline-block;
-  font-size: 10px;
-  font-weight: 500;
-  padding: 2px 7px;
-  border-radius: 20px;
-  white-space: nowrap;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin-top: 2px;
 }
-
-/* Chip colours */
-.blog-chip      { background: rgba(67,  206, 162, 0.15); color: #0f7a5a; }
-.published-chip { background: rgba(15,  122, 90,  0.12); color: #0f7a5a; }
-.drafts-chip    { background: rgba(186, 117, 23,  0.12); color: #BA7517; }
-.pending-chip   { background: rgba(220, 38,  38,  0.10); color: #dc2626; }
-.user-chip      { background: rgba(24,  90,  157, 0.12); color: #185a9d; }
-.active-chip    { background: rgba(92,  184, 92,  0.12); color: #3a7a3a; }
-.inactive-chip  { background: rgba(220, 38,  38,  0.10); color: #dc2626; }
-.views-chip     { background: rgba(127, 119, 221, 0.12); color: #534AB7; }
-.comments-chip  { background: rgba(55,  138, 221, 0.12); color: #185a9d; }
-.likes-chip     { background: rgba(217, 83,  79,  0.12); color: #c9302c; }
-.followers-chip { background: rgba(24,  90,  157, 0.12); color: #185a9d; }
-.pwa-chip       { background: rgba(67, 206, 162, 0.12); color: #0d9488; }
-
-[data-theme="dark"] .blog-chip      { color: #43cea2; }
-[data-theme="dark"] .published-chip { color: #34d399; }
-[data-theme="dark"] .drafts-chip    { color: #fbbf24; }
-[data-theme="dark"] .pending-chip   { color: #f87171; }
-[data-theme="dark"] .user-chip      { color: #60a5fa; }
-[data-theme="dark"] .active-chip    { color: #4ade80; }
-[data-theme="dark"] .inactive-chip  { color: #f87171; }
-[data-theme="dark"] .views-chip     { color: #a78bfa; }
-[data-theme="dark"] .comments-chip  { color: #60a5fa; }
-[data-theme="dark"] .likes-chip     { color: #f87171; }
-[data-theme="dark"] .followers-chip { color: #60a5fa; }
 
 /* ════════════════════════════
    2-Column Layout Body
@@ -510,12 +457,6 @@
   gap: 16px;
 }
 
-.charts-bottom-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-
 .chart-card {
   background: var(--bg-surface);
   border: 1px solid var(--border);
@@ -532,6 +473,30 @@
 .chart-card:hover {
   box-shadow: var(--card-shadow-lg);
   border-color: var(--border-strong);
+}
+
+/* Engagement + Users merged card - two panels side by side in one shell
+   instead of two separate cards for two closely-related breakdowns. Must
+   come after the base .chart-card rule above: equal-specificity CSS rules
+   are won by whichever is later in the file, regardless of media query, so
+   a modifier placed before its base class gets silently overridden by it. */
+.chart-card--split {
+  flex-direction: row;
+  padding: 20px 0;
+  gap: 0;
+}
+.chart-split-panel {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 0 20px;
+}
+.chart-split-divider {
+  width: 1px;
+  align-self: stretch;
+  background: var(--border);
+  flex-shrink: 0;
 }
 
 .chart-hd {
@@ -599,37 +564,31 @@
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
 
-/* Doughnut legend */
-.donut-legend {
+/* Doughnut legend - compact color key only; the actual numbers already
+   live in the Content KPI card above, so this doesn't repeat them. */
+.donut-legend--compact {
   display: flex;
-  flex-direction: column;
-  gap: 7px;
+  flex-wrap: wrap;
+  gap: 6px 12px;
   margin-top: 12px;
+  justify-content: center;
 }
 
-.legend-row {
-  display: flex;
+.legend-chip {
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  font-size: 12px;
+  gap: 6px;
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  white-space: nowrap;
 }
 
 .legend-dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
   flex-shrink: 0;
-}
-
-.legend-label {
-  color: var(--text-secondary);
-  flex: 1;
-}
-
-.legend-val {
-  font-weight: 600;
-  color: var(--text-primary);
-  font-size: 12px;
+  display: inline-block;
 }
 
 /* ════════════════════════════
@@ -904,72 +863,71 @@
   margin: 0;
 }
 
-/* This Week metrics */
-.metrics-list {
+/* Needs Attention */
+.attn-list {
   display: flex;
   flex-direction: column;
-  gap: 0;
+  gap: 8px;
 }
 
-.metric-row {
+.attn-row {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 9px 0;
-  border-bottom: 1px solid var(--border);
+  padding: 10px;
+  border-radius: 10px;
+  background: rgba(220, 38, 38, 0.05);
+  text-decoration: none;
+  transition: background 0.15s, transform 0.15s;
 }
 
-.metric-row:last-child { border-bottom: none; padding-bottom: 0; }
-.metric-row:first-child { padding-top: 0; }
+.attn-row:hover { transform: translateY(-1px); background: rgba(220, 38, 38, 0.09); }
 
-.metric-icon-wrap {
-  width: 28px;
-  height: 28px;
-  border-radius: 7px;
+.attn-row--clear { background: var(--bg-base); }
+.attn-row--clear:hover { background: var(--bg-base); }
+
+.attn-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  color: var(--text-muted);
+  background: var(--bg-surface);
 }
+.attn-icon--alert { color: #dc2626; }
 
-.metric-detail {
+.attn-detail {
   flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 1px;
 }
 
-.metric-label {
-  font-size: 11px;
-  color: var(--text-muted);
-  font-weight: 500;
-  white-space: nowrap;
-}
-
-.metric-track {
-  height: 3px;
-  background: var(--bg-base);
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.metric-fill {
-  height: 100%;
-  border-radius: 4px;
-  min-width: 4px;
-  transition: width 0.8s ease;
-}
-
-.metric-num {
-  font-size: 12px;
-  font-weight: 700;
+.attn-label {
+  font-size: 12.5px;
+  font-weight: 600;
   color: var(--text-primary);
+}
+
+.attn-sub {
+  font-size: 10.5px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
-  min-width: 28px;
-  text-align: right;
+}
+
+.attn-num {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-secondary);
   flex-shrink: 0;
 }
+.attn-num--alert { color: #dc2626; }
 
 /* ════════════════════════════
    Frozen Accounts (Full Width)
@@ -1131,18 +1089,13 @@
 
   .dash-body { grid-template-columns: 1fr 300px; }
 
-  .stats-row {
+  .kpi-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .stats-row--7 {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .charts-top-row { grid-template-columns: 1fr; }
 
-  .sk-stats-row { grid-template-columns: repeat(3, 1fr); }
-  .sk-row-2     { grid-template-columns: repeat(3, 1fr); }
+  .sk-kpi-row { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 900px) {
@@ -1159,7 +1112,9 @@
 
   .dash-sidebar .sidebar-section:last-child { grid-column: 1 / -1; }
 
-  .charts-bottom-row { grid-template-columns: 1fr; }
+  .chart-card--split { flex-direction: column; padding: 20px; gap: 16px; }
+  .chart-split-panel { padding: 0; }
+  .chart-split-divider { display: none; }
 
   .sk-body { grid-template-columns: 1fr; }
 
@@ -1178,13 +1133,11 @@
   .admin-header-right .btn-primary { flex: 1; justify-content: center; min-width: 0; }
   .date-pill { font-size: 11px; }
 
-  .stats-row,
-  .stats-row--7 {
+  .kpi-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .sk-stats-row,
-  .sk-row-2 {
+  .sk-kpi-row {
     grid-template-columns: repeat(2, 1fr);
   }
 
@@ -1197,9 +1150,9 @@
 @media (max-width: 560px) {
   .admin-title { font-size: 18px; }
 
-  .stat-value { font-size: 18px; }
-
-  .stat-icon-wrap { width: 34px; height: 34px; }
+  .kpi-row { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .kpi-value { font-size: 22px; }
+  .kpi-icon { width: 32px; height: 32px; }
 
   .charts-top-row { grid-template-columns: 1fr; }
 

@@ -171,7 +171,7 @@ export class ViewPost implements OnInit, OnDestroy {
   // Hydrated from localStorage cache; falls back to defaults if API not yet loaded
   private readonly FALLBACK_CATS = [
     'Update','News','Sports','Technology','Lifestyle','Education',
-    'Health','Business','Entertainment','Social','Village','Cooking','Quotes','Exercise',
+    'Health','Business','Entertainment','Social','Village','Exercise',
     'Career','AI','Finance','Productivity',
   ];
   private readonly FALLBACK_TAGS = ['Trending','Motivation','Tips','News','Opinion','Guide','Update'];
@@ -302,15 +302,14 @@ export class ViewPost implements OnInit, OnDestroy {
 
     const isMcq = p?.postType === 'mcq';
 
-    // Deep-clone questions so edits don't mutate the original signal
-    if (isMcq) {
-      this.mcqQuestions.set(
-        (p?.mcqQuestions ?? []).map(q => ({
-          ...q,
-          options: q.options.map(o => ({ ...o })),
-        }))
-      );
-    }
+    // Deep-clone questions so edits don't mutate the original signal - blog
+    // posts may also carry an optional attached quiz, not just whole-post mcq.
+    this.mcqQuestions.set(
+      (p?.mcqQuestions ?? []).map(q => ({
+        ...q,
+        options: q.options.map(o => ({ ...o })),
+      }))
+    );
 
     // Deep-clone FAQs for editing (blog posts only)
     if (!isMcq) {
@@ -783,6 +782,19 @@ export class ViewPost implements OnInit, OnDestroy {
       return;
     }
 
+    // Attached quiz on a blog post is optional, but any question that exists
+    // must be complete - whole-post mcq validation is unaffected (unchanged
+    // pre-existing behavior, out of scope here).
+    if (this.post()?.postType !== 'mcq' && this.mcqQuestions().length) {
+      const invalid = this.mcqQuestions().some(q =>
+        !q.question.trim() || q.options.some(o => !o.text.trim())
+      );
+      if (invalid) {
+        this.errorMessage.set('Please fill in all quiz question and option fields, or remove incomplete ones.');
+        return;
+      }
+    }
+
     this.isSaving.set(true);
     this.errorMessage.set('');
 
@@ -806,8 +818,10 @@ export class ViewPost implements OnInit, OnDestroy {
       payload.mcqQuestions = this.mcqQuestions();
       delete payload.content;   // MCQ posts have no rich-text content
     } else {
-      // For blog posts: include FAQs (only non-empty entries)
+      // For blog posts: include FAQs (only non-empty entries) and the
+      // optional attached quiz (may be an empty array - no quiz attached)
       payload.faqs = this.faqs().filter(f => f.question.trim() && f.answer.trim());
+      payload.mcqQuestions = this.mcqQuestions();
       payload.seriesName  = this.seriesName().trim();
       payload.seriesOrder = this.seriesOrder();
     }

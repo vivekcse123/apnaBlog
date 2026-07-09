@@ -168,6 +168,7 @@ export class Home implements OnInit, OnDestroy {
   private installPrompt: any = null;
 
   readonly APK_URL = environment.apkUrl;
+  private readonly APP_INSTALLED_KEY = 'apna_app_installed';
   private welcomeTimerId: ReturnType<typeof setTimeout> | null = null;
 
   // Server-side pagination state
@@ -240,7 +241,7 @@ export class Home implements OnInit, OnDestroy {
     },
     {
       q: 'What topics can I read about on ApnaInsights?',
-      a: 'ApnaInsights covers 16+ topics including Technology, Career, Health, Sports, Business, Entertainment, Education, Lifestyle, Finance, Productivity, AI, Cooking, Exercise, and more. All articles are written by verified contributors from across India.',
+      a: 'ApnaInsights covers 14 topics including Technology, Career, Health, Sports, Business, Entertainment, Education, Lifestyle, Finance, Productivity, AI, Exercise, and more. All articles are written by verified contributors from across India.',
     },
     {
       q: 'Can I read articles in Hindi or other Indian languages?',
@@ -259,7 +260,7 @@ export class Home implements OnInit, OnDestroy {
   // Fallback list used before taxonomy API responds (avoids empty UI flash)
   private readonly FALLBACK_CATEGORIES = [
     'Update','News','Sports','Entertainment','Health','Technology','Business',
-    'Lifestyle','Education','Exercise','Cooking','Social','Quotes','Village',
+    'Lifestyle','Education','Exercise','Social','Village',
     'Career','AI','Finance','Productivity',
   ];
 
@@ -609,9 +610,14 @@ export class Home implements OnInit, OnDestroy {
     this.loadFeaturedWinners();
 
     if (isPlatformBrowser(this.platformId)) {
-      // Detect if already running as installed PWA (standalone mode)
+      // Detect if already running as installed PWA (standalone mode), OR if
+      // we previously recorded a successful install on this device - the
+      // standalone check alone only tells us about *this* window/tab, so a
+      // user who installed the app and is now browsing in a regular tab
+      // would otherwise keep seeing install prompts forever.
       const standalone = window.matchMedia('(display-mode: standalone)').matches
-        || (navigator as any).standalone === true;
+        || (navigator as any).standalone === true
+        || localStorage.getItem(this.APP_INSTALLED_KEY) === '1';
       this.isAppInstalled.set(standalone);
 
       if (sessionStorage.getItem('apna_install_strip_dismissed')) {
@@ -660,6 +666,7 @@ export class Home implements OnInit, OnDestroy {
 
       // Track installs via browser menu "Add to Home Screen"
       window.addEventListener('appinstalled', () => {
+        this.markAppInstalled();
         this.recordPwaInstall();
       });
     }
@@ -1156,7 +1163,7 @@ export class Home implements OnInit, OnDestroy {
             name:    'What topics can I read about on ApnaInsights?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text:    'ApnaInsights covers a wide range of topics including Technology, Health, Sports, Business, Entertainment, Education, Lifestyle, Career, Social Issues, Cooking, Exercise, and more - all written by verified contributors from across India.',
+              text:    'ApnaInsights covers a wide range of topics including Technology, Health, Sports, Business, Entertainment, Education, Lifestyle, Career, Social Issues, Exercise, and more - all written by verified contributors from across India.',
             },
           },
           {
@@ -1299,6 +1306,11 @@ export class Home implements OnInit, OnDestroy {
     this.document.body.removeChild(a);
     // Show post-download install guide after the download dialog appears
     setTimeout(() => this.showAndroidSteps.set(true), 800);
+    // There's no browser API to confirm a sideloaded APK actually got
+    // installed, so treat starting the download as the best-effort signal -
+    // the alternative (nagging the user with install prompts while they're
+    // mid-install, possibly across a Settings-app detour) is worse.
+    this.markAppInstalled();
   }
 
   private async fireInstallPrompt(): Promise<void> {
@@ -1314,6 +1326,7 @@ export class Home implements OnInit, OnDestroy {
     const { outcome } = await prompt.userChoice;
     this.installPrompt = null;
     if (outcome === 'accepted') {
+      this.markAppInstalled();
       this.recordPwaInstall();
     } else if (isPlatformBrowser(this.platformId)) {
       localStorage.setItem('apna_install_dismissed', String(Date.now()));
@@ -1349,6 +1362,16 @@ export class Home implements OnInit, OnDestroy {
   // Kept for backward-compat with any other callers.
   async installApp(): Promise<void> {
     await this.installFromModal();
+  }
+
+  // Persists "this device already has the app" so install CTAs (header
+  // icons, the mobile install strip, the auto-popup banner) stay hidden on
+  // every future visit, in any regular browser tab - not just when the page
+  // happens to be running inside the installed app's own standalone shell.
+  private markAppInstalled(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    localStorage.setItem(this.APP_INSTALLED_KEY, '1');
+    this.isAppInstalled.set(true);
   }
 
   private recordPwaInstall(): void {
@@ -1674,6 +1697,12 @@ export class Home implements OnInit, OnDestroy {
 
   displayedLikes(post: PostWithTs): number {
     return post.likesCount + (this.voteDeltas()[post._id] ?? 0);
+  }
+
+  /** Below this, showing the raw count reads as "low traffic" rather than useful info - so hide it instead. */
+  private static readonly MIN_VISIBLE_VIEWS = 100;
+  hasMeaningfulViews(n: number | undefined | null): boolean {
+    return (n ?? 0) >= Home.MIN_VISIBLE_VIEWS;
   }
 
   toggleUpvote(post: PostWithTs, event: Event): void {

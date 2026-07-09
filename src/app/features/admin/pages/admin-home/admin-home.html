@@ -125,20 +125,11 @@
   <!-- ── Skeleton Loading ── -->
   @if (isLoading()) {
     <div class="sk-section" aria-hidden="true">
-      <div class="sk-stats-row">
-        <div class="sk-stat shimmer"></div>
-        <div class="sk-stat shimmer"></div>
-        <div class="sk-stat shimmer"></div>
-        <div class="sk-stat shimmer"></div>
-        <div class="sk-stat shimmer"></div>
-        <div class="sk-stat shimmer"></div>
-      </div>
-      <div class="sk-stats-row sk-row-2">
-        <div class="sk-stat shimmer"></div>
-        <div class="sk-stat shimmer"></div>
-        <div class="sk-stat shimmer"></div>
-        <div class="sk-stat shimmer"></div>
-        <div class="sk-stat shimmer"></div>
+      <div class="sk-kpi-row">
+        <div class="sk-kpi shimmer"></div>
+        <div class="sk-kpi shimmer"></div>
+        <div class="sk-kpi shimmer"></div>
+        <div class="sk-kpi shimmer"></div>
       </div>
       <div class="sk-body">
         <div class="sk-col-main">
@@ -159,209 +150,92 @@
 
   @if (!isLoading()) {
 
-    <!-- ── Stats Grid ── -->
-    <section class="stats-section" aria-label="Platform statistics">
+    <!-- ── KPI Row - 4 consolidated cards instead of a wall of single-number
+         boxes. Each card leads with the one number that matters, then a
+         compact breakdown row for the numbers that used to each get their
+         own separate card. ── -->
+    <section class="kpi-row" aria-label="Platform statistics">
 
-      <!-- Row 1: Content metrics -->
-      <div class="stats-group">
-        <span class="stats-group-label">Content</span>
-        <div class="stats-row">
-
-          <div class="stat-card">
-            <div class="stat-icon-wrap blogs-icon">
-              <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden="true">
-                <rect x="3" y="3" width="16" height="3" rx="1.5" fill="#43cea2"/>
-                <rect x="3" y="9" width="11" height="3" rx="1.5" fill="#43cea2"/>
-                <rect x="3" y="15" width="13" height="3" rx="1.5" fill="#43cea2"/>
-              </svg>
-            </div>
-            <div class="stat-body">
-              <span class="stat-label">Total Blogs</span>
-              <span class="stat-value">{{ totalBlogs() }}</span>
-              <span class="stat-chip blog-chip">+{{ newBlogs() }} this week</span>
-            </div>
+      <div class="kpi-card">
+        <div class="kpi-top">
+          <div class="kpi-icon kpi-icon--teal">
+            <svg width="18" height="18" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+              <rect x="3" y="3" width="16" height="3" rx="1.5" fill="#43cea2"/>
+              <rect x="3" y="9" width="11" height="3" rx="1.5" fill="#43cea2"/>
+              <rect x="3" y="15" width="13" height="3" rx="1.5" fill="#43cea2"/>
+            </svg>
           </div>
-
-          <div class="stat-card">
-            <div class="stat-icon-wrap published-icon">
-              <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden="true">
-                <circle cx="11" cy="11" r="8" stroke="#0f7a5a" stroke-width="2" fill="none"/>
-                <path d="M7 11l3 3 5-5" stroke="#0f7a5a" stroke-width="2"
-                  stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </div>
-            <div class="stat-body">
-              <span class="stat-label">Published</span>
-              <span class="stat-value">{{ totalPublished() }}</span>
-              <span class="stat-chip published-chip">+{{ newPublished() }} this week</span>
-            </div>
-          </div>
-
-          <div class="stat-card">
-            <div class="stat-icon-wrap drafts-icon">
-              <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden="true">
-                <rect x="3" y="3" width="16" height="16" rx="3" stroke="#BA7517"
-                  stroke-width="2" fill="none"/>
-                <path d="M7 11h8M7 7h5M7 15h6" stroke="#BA7517" stroke-width="1.5"
-                  stroke-linecap="round"/>
-              </svg>
-            </div>
-            <div class="stat-body">
-              <span class="stat-label">Drafts</span>
-              <span class="stat-value">{{ totalDrafts() }}</span>
-              <span class="stat-chip drafts-chip">Unpublished content</span>
-            </div>
-          </div>
-
-          <div class="stat-card stat-card--alert">
-            <div class="stat-icon-wrap pending-icon">
-              <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden="true">
-                <circle cx="11" cy="11" r="8" stroke="#dc2626" stroke-width="2" fill="none"/>
-                <path d="M11 7v4M11 15h.01" stroke="#dc2626" stroke-width="2"
-                  stroke-linecap="round"/>
-              </svg>
-            </div>
-            <div class="stat-body">
-              <span class="stat-label">Pending Review</span>
-              <span class="stat-value">{{ totalPending() }}</span>
-              <span class="stat-chip pending-chip">Awaiting approval</span>
-            </div>
-          </div>
-
+          @if (totalPending() > 0) {
+            <span class="kpi-flag kpi-flag--alert">{{ totalPending() }} pending</span>
+          }
+        </div>
+        <span class="kpi-value">{{ totalBlogs() }}</span>
+        <span class="kpi-label">Total Content</span>
+        <div class="kpi-breakdown">
+          <span class="kpi-bd"><i class="kpi-dot" style="background:#0f7a5a"></i>Published <b>{{ totalPublished() }}</b></span>
+          <span class="kpi-bd"><i class="kpi-dot" style="background:#BA7517"></i>Drafts <b>{{ totalDrafts() }}</b></span>
         </div>
       </div>
 
-      <!-- Row 2: Users & Engagement -->
-      <div class="stats-group">
-        <span class="stats-group-label">Users &amp; Engagement</span>
-        <div class="stats-row stats-row--wrap">
-
-          <div class="stat-card">
-            <div class="stat-icon-wrap users-icon">
-              <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden="true">
-                <circle cx="9" cy="7" r="4" fill="#185a9d"/>
-                <path d="M2 19c0-4.418 3.134-7 7-7s7 2.582 7 7" stroke="#185a9d"
-                  stroke-width="2" stroke-linecap="round" fill="none"/>
-                <circle cx="17" cy="8" r="2.5" fill="#43cea2"/>
-              </svg>
-            </div>
-            <div class="stat-body">
-              <span class="stat-label">Total Users</span>
-              <span class="stat-value">{{ totalUsers() }}</span>
-              <span class="stat-chip user-chip">+{{ newUsers() }} this week</span>
-            </div>
+      <div class="kpi-card">
+        <div class="kpi-top">
+          <div class="kpi-icon kpi-icon--blue">
+            <svg width="18" height="18" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+              <circle cx="9" cy="7" r="4" fill="#185a9d"/>
+              <path d="M2 19c0-4.418 3.134-7 7-7s7 2.582 7 7" stroke="#185a9d"
+                stroke-width="2" stroke-linecap="round" fill="none"/>
+              <circle cx="17" cy="8" r="2.5" fill="#43cea2"/>
+            </svg>
           </div>
-
-          <div class="stat-card">
-            <div class="stat-icon-wrap active-icon">
-              <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden="true">
-                <circle cx="11" cy="11" r="8" stroke="#5cb85c" stroke-width="2" fill="none"/>
-                <circle cx="11" cy="11" r="3" fill="#5cb85c"/>
-              </svg>
-            </div>
-            <div class="stat-body">
-              <span class="stat-label">Active Users</span>
-              <span class="stat-value">{{ activeUsers() }}</span>
-              <span class="stat-chip active-chip">Last 30 days</span>
-            </div>
-          </div>
-
-          <div class="stat-card">
-            <div class="stat-icon-wrap inactive-icon">
-              <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden="true">
-                <circle cx="11" cy="11" r="8" stroke="#dc2626" stroke-width="2" fill="none"/>
-                <line x1="7" y1="7" x2="15" y2="15" stroke="#dc2626" stroke-width="2"
-                  stroke-linecap="round"/>
-                <line x1="15" y1="7" x2="7" y2="15" stroke="#dc2626" stroke-width="2"
-                  stroke-linecap="round"/>
-              </svg>
-            </div>
-            <div class="stat-body">
-              <span class="stat-label">Frozen Accounts</span>
-              <span class="stat-value">{{ inactiveUsers() }}</span>
-              <span class="stat-chip inactive-chip">Suspended</span>
-            </div>
-          </div>
-
-          <div class="stat-card">
-            <div class="stat-icon-wrap views-icon">
-              <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden="true">
-                <ellipse cx="11" cy="11" rx="8" ry="5" stroke="#7F77DD"
-                  stroke-width="2" fill="none"/>
-                <circle cx="11" cy="11" r="2.5" fill="#7F77DD"/>
-              </svg>
-            </div>
-            <div class="stat-body">
-              <span class="stat-label">Total Views</span>
-              <span class="stat-value">{{ totalViews() | number }}</span>
-              <span class="stat-chip views-chip">+{{ weekViews() }} this week</span>
-            </div>
-          </div>
-
-          <div class="stat-card">
-            <div class="stat-icon-wrap comments-icon">
-              <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden="true">
-                <path d="M4 4h14a2 2 0 012 2v8a2 2 0 01-2 2H8l-4 3V6a2 2 0 012-2z"
-                  stroke="#378ADD" stroke-width="2" fill="none" stroke-linejoin="round"/>
-                <path d="M8 9h6M8 12h4" stroke="#378ADD" stroke-width="1.5"
-                  stroke-linecap="round"/>
-              </svg>
-            </div>
-            <div class="stat-body">
-              <span class="stat-label">Total Comments</span>
-              <span class="stat-value">{{ totalComments() }}</span>
-              <span class="stat-chip comments-chip">+{{ weekComments() }} this week</span>
-            </div>
-          </div>
-
-          <div class="stat-card">
-            <div class="stat-icon-wrap likes-icon">
-              <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden="true">
-                <path d="M11 18s-7-4.5-7-9a4 4 0 018 0 4 4 0 018 0c0 4.5-7 9-7 9z"
-                  stroke="#d9534f" stroke-width="2" fill="none" stroke-linejoin="round"/>
-              </svg>
-            </div>
-            <div class="stat-body">
-              <span class="stat-label">Total Likes</span>
-              <span class="stat-value">{{ totalLikes() }}</span>
-              <span class="stat-chip likes-chip">+{{ weekLikes() }} this week</span>
-            </div>
-          </div>
-
-          <div class="stat-card">
-            <div class="stat-icon-wrap followers-icon">
-              <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden="true">
-                <circle cx="8" cy="7" r="3.5" stroke="#185a9d" stroke-width="2" fill="none"/>
-                <path d="M2 18c0-3.314 2.686-5 6-5s6 1.686 6 5" stroke="#185a9d"
-                  stroke-width="2" stroke-linecap="round" fill="none"/>
-                <path d="M15 10l1.5 1.5L19 9" stroke="#43cea2" stroke-width="2"
-                  stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </div>
-            <div class="stat-body">
-              <span class="stat-label">Total Follows</span>
-              <span class="stat-value">{{ totalFollows() }}</span>
-              <span class="stat-chip followers-chip">Platform connections</span>
-            </div>
-          </div>
-
-          <!-- PWA Installs -->
-          <div class="stat-card">
-            <div class="stat-icon-wrap pwa-install-icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" stroke="#43cea2" stroke-width="2" fill="none"/>
-                <path d="M12 8v8M8 13l4 4 4-4" stroke="#43cea2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </div>
-            <div class="stat-body">
-              <span class="stat-label">App Installs</span>
-              <span class="stat-value">{{ pwaInstalls() }}</span>
-              <span class="stat-chip pwa-chip">PWA Downloads</span>
-            </div>
-          </div>
-
+          <span class="kpi-flag">+{{ newUsers() }} this wk</span>
+        </div>
+        <span class="kpi-value">{{ totalUsers() }}</span>
+        <span class="kpi-label">Total Users</span>
+        <div class="kpi-breakdown">
+          <span class="kpi-bd"><i class="kpi-dot" style="background:#5cb85c"></i>Active <b>{{ activeUsers() }}</b></span>
+          <span class="kpi-bd" [class.kpi-bd--alert]="inactiveUsers() > 0"><i class="kpi-dot" style="background:#dc2626"></i>Frozen <b>{{ inactiveUsers() }}</b></span>
         </div>
       </div>
+
+      <div class="kpi-card">
+        <div class="kpi-top">
+          <div class="kpi-icon kpi-icon--purple">
+            <svg width="18" height="18" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+              <ellipse cx="11" cy="11" rx="8" ry="5" stroke="#7F77DD"
+                stroke-width="2" fill="none"/>
+              <circle cx="11" cy="11" r="2.5" fill="#7F77DD"/>
+            </svg>
+          </div>
+          <span class="kpi-flag">+{{ weekViews() }} this wk</span>
+        </div>
+        <span class="kpi-value">{{ totalViews() | number }}</span>
+        <span class="kpi-label">Total Views</span>
+        <div class="kpi-breakdown">
+          <span class="kpi-bd"><i class="kpi-dot" style="background:#378ADD"></i>{{ totalComments() }} comments</span>
+          <span class="kpi-bd"><i class="kpi-dot" style="background:#d9534f"></i>{{ totalLikes() }} likes</span>
+          <span class="kpi-bd"><i class="kpi-dot" style="background:#185a9d"></i>{{ totalFollows() }} follows</span>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-top">
+          <div class="kpi-icon kpi-icon--amber">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z" stroke="#d97706" stroke-width="2" fill="none"/>
+              <path d="M12 8v8M8 13l4 4 4-4" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <span class="kpi-flag">PWA</span>
+        </div>
+        <span class="kpi-value">{{ pwaInstalls() }}</span>
+        <span class="kpi-label">App Installs</span>
+        <div class="kpi-breakdown kpi-breakdown--week">
+          <span class="kpi-bd">+{{ newBlogs() }} blogs</span>
+          <span class="kpi-bd">+{{ weekComments() }} comments</span>
+          <span class="kpi-bd">+{{ weekLikes() }} likes</span>
+        </div>
+      </div>
+
     </section>
 
     <!-- ── Dashboard Body (2-column) ── -->
@@ -403,36 +277,21 @@
             <div class="chart-canvas" style="height:160px">
               <canvas #contentDoughnutRef></canvas>
             </div>
-            <div class="donut-legend">
-              <div class="legend-row">
-                <span class="legend-dot" style="background:#43cea2"></span>
-                <span class="legend-label">Published</span>
-                <span class="legend-val">{{ totalPublished() }}</span>
-              </div>
-              <div class="legend-row">
-                <span class="legend-dot" style="background:#BA7517"></span>
-                <span class="legend-label">Drafts</span>
-                <span class="legend-val">{{ totalDrafts() }}</span>
-              </div>
-              <div class="legend-row">
-                <span class="legend-dot" style="background:#dc2626"></span>
-                <span class="legend-label">Pending</span>
-                <span class="legend-val">{{ totalPending() }}</span>
-              </div>
-              <div class="legend-row">
-                <span class="legend-dot" style="background:#185a9d"></span>
-                <span class="legend-label">Total</span>
-                <span class="legend-val">{{ totalBlogs() }}</span>
-              </div>
+            <!-- Compact single-row legend - the numbers themselves already
+                 live in the Content KPI card above, this is just the color key. -->
+            <div class="donut-legend donut-legend--compact">
+              <span class="legend-chip"><i class="legend-dot" style="background:#43cea2"></i>Published</span>
+              <span class="legend-chip"><i class="legend-dot" style="background:#BA7517"></i>Drafts</span>
+              <span class="legend-chip"><i class="legend-dot" style="background:#dc2626"></i>Pending</span>
             </div>
           </div>
 
         </div>
 
-        <!-- Charts Bottom Row -->
-        <div class="charts-bottom-row">
-
-          <div class="chart-card">
+        <!-- Engagement + Users - one card, two panels, instead of two
+             separate cards for two closely-related breakdowns. -->
+        <div class="chart-card chart-card--split">
+          <div class="chart-split-panel">
             <div class="chart-hd">
               <div class="chart-hd-left">
                 <h3 class="chart-title">Weekly Engagement</h3>
@@ -444,7 +303,9 @@
             </div>
           </div>
 
-          <div class="chart-card">
+          <div class="chart-split-divider" aria-hidden="true"></div>
+
+          <div class="chart-split-panel">
             <div class="chart-hd">
               <div class="chart-hd-left">
                 <h3 class="chart-title">User Overview</h3>
@@ -455,7 +316,6 @@
               <canvas #userActivityRef></canvas>
             </div>
           </div>
-
         </div>
 
         <!-- ── Recent Blogs Feed ── -->
@@ -652,102 +512,45 @@
           </div>
         </section>
 
-        <!-- This Week Metrics -->
+        <!-- Needs Attention - surfaces the two action items (pending content,
+             frozen accounts) directly in the sidebar instead of only in the
+             top banner / bottom-of-page section, which are easy to scroll
+             past. -->
         <section class="sidebar-section">
           <div class="section-hd">
-            <h2 class="section-hd-title">This Week</h2>
-            <span class="section-hd-badge">snapshot</span>
+            <h2 class="section-hd-title">Needs Attention</h2>
           </div>
-          <div class="metrics-list">
-
-            <div class="metric-row">
-              <div class="metric-icon-wrap" style="background:rgba(67,206,162,0.12)">
-                <svg width="13" height="13" viewBox="0 0 22 22" fill="none" aria-hidden="true">
-                  <rect x="3" y="3" width="16" height="3" rx="1.5" fill="#43cea2"/>
-                  <rect x="3" y="9" width="11" height="3" rx="1.5" fill="#43cea2"/>
-                  <rect x="3" y="15" width="13" height="3" rx="1.5" fill="#43cea2"/>
+          <div class="attn-list">
+            <a class="attn-row" [class.attn-row--clear]="totalPending() === 0"
+               [routerLink]="['/admin', userId, 'manage-blogs']" [queryParams]="{ status: 'pending' }">
+              <div class="attn-icon" [class.attn-icon--alert]="totalPending() > 0">
+                <svg width="15" height="15" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+                  <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2" fill="none"/>
+                  <path d="M11 7v4M11 15h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                 </svg>
               </div>
-              <div class="metric-detail">
-                <span class="metric-label">New Blogs</span>
-                <div class="metric-track">
-                  <div class="metric-fill" style="background:#43cea2"
-                    [style.width.%]="getPercent(newBlogs(), totalBlogs())"></div>
-                </div>
+              <div class="attn-detail">
+                <span class="attn-label">Pending Review</span>
+                <span class="attn-sub">{{ totalPending() > 0 ? 'Blog posts awaiting approval' : 'All caught up' }}</span>
               </div>
-              <span class="metric-num">+{{ newBlogs() }}</span>
-            </div>
+              <span class="attn-num" [class.attn-num--alert]="totalPending() > 0">{{ totalPending() }}</span>
+            </a>
 
-            <div class="metric-row">
-              <div class="metric-icon-wrap" style="background:rgba(24,90,157,0.12)">
-                <svg width="13" height="13" viewBox="0 0 22 22" fill="none" aria-hidden="true">
-                  <circle cx="9" cy="7" r="4" fill="#185a9d"/>
-                  <path d="M2 19c0-4.418 3.134-7 7-7s7 2.582 7 7" stroke="#185a9d"
-                    stroke-width="2" fill="none"/>
+            <a class="attn-row" [class.attn-row--clear]="inactiveUsers() === 0"
+               [routerLink]="['/admin', userId, 'manage-users']">
+              <div class="attn-icon" [class.attn-icon--alert]="inactiveUsers() > 0">
+                <svg width="15" height="15" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+                  <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2" fill="none"/>
+                  <line x1="7" y1="7" x2="15" y2="15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <line x1="15" y1="7" x2="7" y2="15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                 </svg>
               </div>
-              <div class="metric-detail">
-                <span class="metric-label">New Users</span>
-                <div class="metric-track">
-                  <div class="metric-fill" style="background:#185a9d"
-                    [style.width.%]="getPercent(newUsers(), totalUsers())"></div>
-                </div>
+              <div class="attn-detail">
+                <span class="attn-label">Frozen Accounts</span>
+                <span class="attn-sub">{{ inactiveUsers() > 0 ? 'Suspended user accounts' : 'No frozen accounts' }}</span>
               </div>
-              <span class="metric-num">+{{ newUsers() }}</span>
-            </div>
-
-            <div class="metric-row">
-              <div class="metric-icon-wrap" style="background:rgba(127,119,221,0.12)">
-                <svg width="13" height="13" viewBox="0 0 22 22" fill="none" aria-hidden="true">
-                  <ellipse cx="11" cy="11" rx="8" ry="5" stroke="#7F77DD"
-                    stroke-width="2" fill="none"/>
-                  <circle cx="11" cy="11" r="2.5" fill="#7F77DD"/>
-                </svg>
-              </div>
-              <div class="metric-detail">
-                <span class="metric-label">Views</span>
-                <div class="metric-track">
-                  <div class="metric-fill" style="background:#7F77DD"
-                    [style.width.%]="getPercent(weekViews(), totalViews())"></div>
-                </div>
-              </div>
-              <span class="metric-num">{{ weekViews() }}</span>
-            </div>
-
-            <div class="metric-row">
-              <div class="metric-icon-wrap" style="background:rgba(55,138,221,0.12)">
-                <svg width="13" height="13" viewBox="0 0 22 22" fill="none" aria-hidden="true">
-                  <path d="M4 4h14a2 2 0 012 2v8a2 2 0 01-2 2H8l-4 3V6a2 2 0 012-2z"
-                    stroke="#378ADD" stroke-width="2" fill="none"/>
-                </svg>
-              </div>
-              <div class="metric-detail">
-                <span class="metric-label">Comments</span>
-                <div class="metric-track">
-                  <div class="metric-fill" style="background:#378ADD"
-                    [style.width.%]="getPercent(weekComments(), totalComments())"></div>
-                </div>
-              </div>
-              <span class="metric-num">{{ weekComments() }}</span>
-            </div>
-
-            <div class="metric-row">
-              <div class="metric-icon-wrap" style="background:rgba(217,83,79,0.12)">
-                <svg width="13" height="13" viewBox="0 0 22 22" fill="none" aria-hidden="true">
-                  <path d="M11 18s-7-4.5-7-9a4 4 0 018 0 4 4 0 018 0c0 4.5-7 9-7 9z"
-                    stroke="#d9534f" stroke-width="2" fill="none"/>
-                </svg>
-              </div>
-              <div class="metric-detail">
-                <span class="metric-label">Likes</span>
-                <div class="metric-track">
-                  <div class="metric-fill" style="background:#d9534f"
-                    [style.width.%]="getPercent(weekLikes(), totalLikes())"></div>
-                </div>
-              </div>
-              <span class="metric-num">{{ weekLikes() }}</span>
-            </div>
-
+              <span class="attn-num" [class.attn-num--alert]="inactiveUsers() > 0">{{ inactiveUsers() }}</span>
+            </a>
           </div>
         </section>
 

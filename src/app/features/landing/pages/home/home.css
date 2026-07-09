@@ -2,8 +2,15 @@
    home.css - ApnaInsights home page - written from scratch
    ═══════════════════════════════════════════════════════════════ */
 
-/* ── Desktop-only utility ───────────────────────────────────── */
+/* ── Desktop-only / mobile-only utilities ──────────────────────
+   .write-btn.mobile-only uses a combined (2-class) selector on purpose:
+   the base .write-btn rule below also sets `display`, and a combined
+   selector's higher specificity reliably beats it regardless of source
+   order - a plain .mobile-only{display:none} would only win by accident
+   of file position, which has bitten this file more than once already. */
 .desktop-only { display: inline-flex; }
+.mobile-only  { display: none; }
+.write-btn.mobile-only { display: none; }
 
 /* ═══════════════════════════════════════════════════════════════
    HEADER  - Medium-inspired minimal
@@ -529,7 +536,8 @@
 .drawer-link-icon--violet,
 .drawer-link-icon--cyan,
 .drawer-link-icon--indigo,
-.drawer-link-icon--orange { background: var(--accent-subtle); color: var(--accent-text); }
+.drawer-link-icon--orange,
+.drawer-link-icon--teal { background: var(--accent-subtle); color: var(--accent-text); }
 
 /* ═══════════════════════════════════════════════════════════════
    FEED SORT TABS - persistent at all breakpoints, drives the single
@@ -777,54 +785,6 @@
 /* Category chips */
 
 /* CTA */
-/* ═══════════════════════════════════════════════════════════════
-   CHALLENGE STRIP
-   ═══════════════════════════════════════════════════════════════ */
-.challenge-strip {
-  display: flex; align-items: center; gap: 14px;
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 13px 24px;
-  text-decoration: none;
-  transition: background .2s;
-  width: 95%;
-  max-width: 1600px;
-  margin: 16px auto;
-}
-.challenge-strip:hover { background: var(--bg-hover); }
-
-.challenge-strip__trophy { font-size: 22px; flex-shrink: 0; }
-
-.challenge-strip__body {
-  display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0;
-}
-.challenge-strip__label {
-  font-size: 10px; font-weight: 700; letter-spacing: 1px;
-  text-transform: uppercase; color: var(--accent-text);
-}
-.challenge-strip__title {
-  font-size: 15px; font-weight: 700; color: var(--text-primary);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.challenge-strip__prize { font-size: 12px; color: var(--text-secondary); }
-
-.challenge-strip__right {
-  display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex-shrink: 0;
-}
-.challenge-strip__days    { font-size: 13px; font-weight: 700; color: var(--accent-text); }
-.challenge-strip__entries { font-size: 11px; color: var(--text-muted); }
-.challenge-strip__cta     {
-  font-size: 12px; font-weight: 700; color: var(--accent-text);
-  background: var(--accent-subtle); border-radius: 12px; padding: 3px 10px; margin-top: 2px;
-}
-
-@media (max-width: 480px) {
-  .challenge-strip { padding: 11px 14px; gap: 10px; }
-  .challenge-strip__prize,
-  .challenge-strip__entries { display: none; }
-}
-
 /* ═══════════════════════════════════════════════════════════════
    CHALLENGE WINNERS SECTION
    ═══════════════════════════════════════════════════════════════ */
@@ -2022,14 +1982,17 @@
 .im-backdrop {
   position: fixed; inset: 0;
   background: rgba(0,0,0,0.5);
-  z-index: 1200;
+  /* Must stay above .cookie-bar (z-index 1800, cookie-consent.css) - a user
+     who hasn't dismissed the cookie banner yet would otherwise see it drawn
+     on top of the install steps, hiding them. */
+  z-index: 1900;
   backdrop-filter: blur(2px);
 }
 
 .im-sheet {
   position: fixed;
   bottom: 0; left: 0; right: 0;
-  z-index: 1210;
+  z-index: 1910;
   background: var(--bg-surface);
   border-radius: 24px 24px 0 0;
   padding: 28px 24px calc(28px + var(--safe-area-bottom, env(safe-area-inset-bottom, 0px)));
@@ -2144,7 +2107,8 @@
   .theme-toggle:not(.drawer-theme-toggle) { display: none; }
   /* Search icon hidden on mobile - bottom nav already has a search/explore entry */
   .hdr-search-bar.desktop-only { display: none !important; }
-  /* Write button takes its place as a compact icon-only button */
+  /* Write button (or the Get-the-App swap-in) takes its place as a compact
+     icon-only button */
   .write-btn {
     display: flex;
     align-items: center;
@@ -2158,6 +2122,16 @@
   }
   .write-btn-label-full,
   .write-btn-label-short { display: none; }
+  /* Re-enable the mobile-only swap-in at this breakpoint - see the combined
+     selector's specificity note near .desktop-only above. */
+  .write-btn.mobile-only { display: flex; }
+  /* Install variant gets a filled accent treatment instead of the plain
+     outline icon button, so it reads as the more prominent CTA. */
+  .write-btn.install-btn-header {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
 
   
 

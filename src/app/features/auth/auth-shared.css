@@ -359,9 +359,9 @@
 @media (min-width: 768px) {
   /* Real browser windows have chrome eating into the viewport (address bar,
      tabs, OS taskbar) - a 768-900px display often leaves well under 700px
-     of actual usable height. Kept tight enough that register (the tallest
-     page - 4 fields + terms text) still fits on common laptop screens. */
-  .auth-page { padding: 16px 20px; }
+     of actual usable height. Register (the tallest page - 4 fields + terms
+     text) is the one to check when adjusting these values. */
+  .auth-page { padding: 24px 20px; }
 
   .auth-card {
     flex-direction: row;
@@ -375,7 +375,7 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 26px 32px;
+    padding: 32px 32px;
   }
 
   .auth-form-panel {
@@ -383,7 +383,7 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 18px 40px 4px;
+    padding: 26px 40px 10px;
   }
 
   app-auth-trust-bar { display: block; flex: 1 1 100%; }
@@ -393,15 +393,15 @@
   .auth-features { display: flex; gap: 8px; }
   .auth-banner-illustration { display: block; }
 
-  /* Vertical rhythm inside the form column - tighter than the mobile
-     defaults so a form with 4+ fields (register) still fits one screen
-     at common laptop viewport heights without scrolling. */
-  .form-header { margin-bottom: 10px; }
-  .google-btn-wrap { margin-bottom: 6px; }
-  .or-divider { margin: 0 0 8px; }
-  .login-form { gap: 8px; margin-bottom: 0; }
-  .field-group { gap: 4px; }
-  .register-row { margin: 6px 0 2px; }
-  .terms-consent { margin: -2px 0 2px; }
-  .pwd-strength { margin-top: 4px; }
+  /* Vertical rhythm inside the form column - a bit more relaxed than the
+     mobile defaults' tightened desktop overrides used to be, while still
+     comfortably fitting common laptop viewport heights without scrolling. */
+  .form-header { margin-bottom: 16px; }
+  .google-btn-wrap { margin-bottom: 10px; }
+  .or-divider { margin: 0 0 12px; }
+  .login-form { gap: 12px; margin-bottom: 2px; }
+  .field-group { gap: 6px; }
+  .register-row { margin: 10px 0 4px; }
+  .terms-consent { margin: -4px 0 4px; }
+  .pwd-strength { margin-top: 6px; }
 }

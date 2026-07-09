@@ -44,20 +44,24 @@
   color: var(--accent-text);
 }
 
-/* Nav */
+/* Nav - sized to its own content, not flex-grown. It used to be the flex:1
+   child, so on any screen taller than the nav-link list it stretched and
+   left a dead gap between the last link and the "SHORTCUTS" section below
+   it. min-height:0 + overflow-y:auto are kept so a genuinely long link list
+   still scrolls internally instead of overflowing the sidebar. */
 .sb-nav {
   display: flex; flex-direction: column;
-  gap: 2px;
-  padding: 12px 10px 8px;
+  gap: 6px;
+  padding: 14px 10px 10px;
   overflow-y: auto;
-  flex: 1;
+  flex: 0 1 auto;
   min-height: 0;
 }
 
 /* Links */
 .sb-link {
   display: flex; align-items: center; gap: 10px;
-  padding: 9px 12px;
+  padding: 11px 12px;
   border-radius: 10px;
   text-decoration: none;
   color: var(--text-primary);
@@ -79,8 +83,8 @@
 .sb-link--active .sb-link-icon { color: #43cea2; }
 
 .sb-link-icon {
-  width: 32px; height: 32px;
-  border-radius: 8px;
+  width: 34px; height: 34px;
+  border-radius: 9px;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
   color: var(--text-secondary);
@@ -97,31 +101,35 @@
 
 .sb-link-label { flex: 1; }
 
-/* Shortcuts section */
-.sb-section { padding: 4px 10px 8px; flex-shrink: 0; }
+/* Shortcuts section - a top border now that it sits right under the nav
+   instead of being separated from it by a large gap. */
+.sb-section { padding: 10px 10px 10px; border-top: 1px solid var(--border); flex-shrink: 0; }
 .sb-section-title {
   display: block;
   font-size: 9.5px; font-weight: 700;
   letter-spacing: 0.08em; text-transform: uppercase;
   color: var(--text-muted);
-  padding: 8px 12px 4px;
+  padding: 2px 12px 8px;
 }
 .sb-shortcut .sb-link-icon {
   width: 28px; height: 28px; border-radius: 7px;
 }
 
-/* Spacer */
-.sb-spacer { flex: 0; }
+/* Spacer - this is what should absorb the leftover height, not .sb-nav, so
+   the nav list stays compact at the top and the profile card stays pinned
+   to the bottom with a single clean gap between them instead of a dead
+   patch of empty sidebar in the middle. */
+.sb-spacer { flex: 1; }
 
 /* User card */
 .sb-user {
   display: flex; align-items: center; gap: 10px;
-  padding: 14px 14px;
+  padding: 16px 14px;
   border-top: 1px solid var(--border);
   flex-shrink: 0;
 }
 .sb-user-avatar {
-  width: 36px; height: 36px;
+  width: 38px; height: 38px;
   border-radius: 10px;
   background: var(--accent);
   color: #fff; font-size: 14px; font-weight: 700;

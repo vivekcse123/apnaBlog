@@ -456,13 +456,19 @@
         }
       }
       </div>
-      } @else {
+      }
 
-      <!-- ── MCQ Builder ── -->
+      <!-- ── MCQ / Attached-Quiz Builder (required for MCQ posts, optional
+           add-on for blog posts) ── -->
       <div class="form-field mcq-builder">
         <div class="form-section-label">
-          <span class="form-section-icon">❓</span> Questions <span class="required-star">*</span>
-          <span class="field-hint-text">Add at least 5 quiz questions, each with a short explanation</span>
+          @if (postType() === 'mcq') {
+            Questions <span class="required-star">*</span>
+            <span class="field-hint-text">Add at least 5 quiz questions, each with a short explanation</span>
+          } @else {
+            Questions (optional)
+            <span class="field-hint-text">Attach a short quiz shown after the article to test readers' understanding</span>
+          }
         </div>
 
         @if (mcqQuestions().length === 0) {
@@ -470,7 +476,11 @@
             <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
             </svg>
-            <p>No questions yet. Click "Add Question" to get started - at least 5 are required.</p>
+            @if (postType() === 'mcq') {
+              <p>No questions yet. Click "Add Question" to get started - at least 5 are required.</p>
+            } @else {
+              <p>No quiz yet. Click "Add Question" to optionally attach one.</p>
+            }
           </div>
         }
 
@@ -508,7 +518,7 @@
 
             <div class="mcq-explanation-row">
               <input type="text" class="mcq-explanation-input"
-                placeholder="Explanation (required, 10+ words) - shown after user answers"
+                [placeholder]="postType() === 'mcq' ? 'Explanation (required, 10+ words) - shown after user answers' : 'Explanation (optional) - shown after user answers'"
                 [value]="q.explanation"
                 (input)="updateMcqExplanation(qi, $any($event.target).value)" />
             </div>
@@ -520,8 +530,6 @@
           Add Question
         </button>
       </div>
-
-      }
 
       <!-- ── FAQ Builder (optional, blog posts only) ── -->
       @if (postType() === 'blog') {

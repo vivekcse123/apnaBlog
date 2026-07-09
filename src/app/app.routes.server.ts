@@ -2,8 +2,7 @@ import { RenderMode, ServerRoute } from '@angular/ssr';
 
 const CATEGORIES = [
   'update', 'news', 'sports', 'entertainment', 'health', 'technology',
-  'business', 'lifestyle', 'education', 'exercise', 'cooking', 'social',
-  'quotes', 'village',
+  'business', 'lifestyle', 'education', 'exercise', 'social', 'village',
 ];
 
 export const serverRoutes: ServerRoute[] = [

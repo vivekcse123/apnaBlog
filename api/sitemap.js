@@ -1,5 +1,6 @@
 import { SitemapStream, streamToPromise } from 'sitemap';
 import { Readable } from 'stream';
+import { isIndexablePost } from './_lib/indexable.js';
 
 export default async function handler(req, res) {
   try {
@@ -71,7 +72,7 @@ export default async function handler(req, res) {
       clearTimeout(timeout);
     }
 
-    // Static routes
+    // Static routes (non-category)
     const staticLinks = [
       { url: '/',               changefreq: 'daily',   priority: 1.0, lastmod: new Date().toISOString() },
       { url: '/about',          changefreq: 'monthly', priority: 0.8, lastmod: '2026-01-01T00:00:00.000Z' },
@@ -83,41 +84,70 @@ export default async function handler(req, res) {
       { url: '/terms',          changefreq: 'yearly',  priority: 0.3, lastmod: '2026-04-01T00:00:00.000Z' },
       { url: '/disclaimer',        changefreq: 'yearly',  priority: 0.3, lastmod: '2026-04-24T00:00:00.000Z' },
       { url: '/editorial-policy', changefreq: 'yearly',  priority: 0.5, lastmod: '2026-06-01T00:00:00.000Z' },
-      { url: '/category/update',        changefreq: 'daily',  priority: 0.6, lastmod: new Date().toISOString() },
-      { url: '/category/news',          changefreq: 'daily',  priority: 0.6, lastmod: new Date().toISOString() },
-      { url: '/category/sports',        changefreq: 'weekly', priority: 0.6, lastmod: new Date().toISOString() },
-      { url: '/category/entertainment', changefreq: 'weekly', priority: 0.6, lastmod: new Date().toISOString() },
-      { url: '/category/health',        changefreq: 'weekly', priority: 0.6, lastmod: new Date().toISOString() },
-      { url: '/category/technology',    changefreq: 'weekly', priority: 0.6, lastmod: new Date().toISOString() },
-      { url: '/category/business',      changefreq: 'weekly', priority: 0.6, lastmod: new Date().toISOString() },
-      { url: '/category/lifestyle',     changefreq: 'weekly', priority: 0.6, lastmod: new Date().toISOString() },
-      { url: '/category/education',     changefreq: 'weekly', priority: 0.6, lastmod: new Date().toISOString() },
-      { url: '/category/exercise',      changefreq: 'weekly', priority: 0.6, lastmod: new Date().toISOString() },
-      { url: '/category/cooking',       changefreq: 'weekly', priority: 0.6, lastmod: new Date().toISOString() },
-      { url: '/category/social',        changefreq: 'weekly', priority: 0.6, lastmod: new Date().toISOString() },
-      { url: '/category/quotes',        changefreq: 'weekly', priority: 0.6, lastmod: new Date().toISOString() },
-      { url: '/category/village',       changefreq: 'weekly', priority: 0.6, lastmod: new Date().toISOString() },
-      { url: '/category/career',        changefreq: 'weekly', priority: 0.6, lastmod: new Date().toISOString() },
-      { url: '/category/ai',            changefreq: 'weekly', priority: 0.6, lastmod: new Date().toISOString() },
-      { url: '/category/finance',       changefreq: 'weekly', priority: 0.6, lastmod: new Date().toISOString() },
-      { url: '/category/productivity',  changefreq: 'weekly', priority: 0.6, lastmod: new Date().toISOString() },
     ];
 
-    // Dynamic blog routes — published posts with enough description to indicate substantive content.
-    // Posts with fewer than 15 description words are likely thin/stub articles that will be noindexed
-    // by the page itself, so submitting them here creates a sitemap/robots conflict.
-    const hasSubstantiveDesc = (post) => {
-      const desc = (post.description ?? '').trim();
-      return desc.split(/\s+/).filter(Boolean).length >= 15;
+    // Category slugs this site has pages for, with their crawl metadata.
+    // Whether a slug actually makes it into the sitemap is decided below by
+    // real published-post counts — see categoryCounts.
+    const CATEGORY_META = {
+      update:        { changefreq: 'daily',  priority: 0.6 },
+      news:          { changefreq: 'daily',  priority: 0.6 },
+      sports:        { changefreq: 'weekly', priority: 0.6 },
+      entertainment: { changefreq: 'weekly', priority: 0.6 },
+      health:        { changefreq: 'weekly', priority: 0.6 },
+      technology:    { changefreq: 'weekly', priority: 0.6 },
+      business:      { changefreq: 'weekly', priority: 0.6 },
+      lifestyle:     { changefreq: 'weekly', priority: 0.6 },
+      education:     { changefreq: 'weekly', priority: 0.6 },
+      exercise:      { changefreq: 'weekly', priority: 0.6 },
+      social:        { changefreq: 'weekly', priority: 0.6 },
+      village:       { changefreq: 'weekly', priority: 0.6 },
+      career:        { changefreq: 'weekly', priority: 0.6 },
+      ai:            { changefreq: 'weekly', priority: 0.6 },
+      finance:       { changefreq: 'weekly', priority: 0.6 },
+      productivity:  { changefreq: 'weekly', priority: 0.6 },
     };
+
+    // Dynamic blog routes — a post is only submitted if it will actually
+    // render `index` on the live page (see api/_lib/indexable.js), so the
+    // sitemap never hands Google a URL that immediately turns out to be
+    // noindexed (a "Submitted URL marked noindex" Search Console error).
     const publishedPosts = allPosts.filter(post =>
-      post.status === 'published' && post.title && hasSubstantiveDesc(post)
+      post.status === 'published' && post.title && isIndexablePost(post)
     );
 
-    // Collect unique tags and author post counts
+    // Category page count must be computed from ALL published posts (not just
+    // the indexable subset above) to match category-page.ts, which counts
+    // every published post in that category regardless of individual post
+    // length when deciding whether the category page itself stays indexed.
+    const categoryCounts = new Map();
+    for (const post of allPosts) {
+      if (post.status !== 'published') continue;
+      for (const cat of (post.categories ?? [])) {
+        const slug = cat.toLowerCase();
+        categoryCounts.set(slug, (categoryCounts.get(slug) ?? 0) + 1);
+      }
+    }
+    // Threshold must match category-page.ts's noindex cutoff (count >= 5) so
+    // the sitemap never submits a category URL that renders noindex.
+    const categoryLinks = Object.entries(CATEGORY_META)
+      .filter(([slug]) => (categoryCounts.get(slug) ?? 0) >= 5)
+      .map(([slug, meta]) => ({
+        url: `/category/${slug}`,
+        changefreq: meta.changefreq,
+        priority: meta.priority,
+        lastmod: new Date().toISOString(),
+      }));
+
+    // Collect unique tags and author post counts — from ALL published posts
+    // (not the word-count-filtered `publishedPosts` above), to match
+    // tag-page.ts / author-page.ts, which count every published post
+    // regardless of individual post length when deciding whether the tag or
+    // author page itself stays indexed. Same reasoning as categoryCounts above.
     const tagCounts = new Map();
     const authorCounts = new Map();
-    for (const post of publishedPosts) {
+    for (const post of allPosts) {
+      if (post.status !== 'published') continue;
       for (const tag of (post.tags ?? [])) {
         tagCounts.set(tag, (tagCounts.get(tag) ?? 0) + 1);
       }
@@ -171,7 +201,7 @@ export default async function handler(req, res) {
     });
 
     const xmlData = await streamToPromise(
-      Readable.from([...staticLinks, ...tagLinks, ...authorLinks, ...postLinks, ...shortLinks]).pipe(stream)
+      Readable.from([...staticLinks, ...categoryLinks, ...tagLinks, ...authorLinks, ...postLinks, ...shortLinks]).pipe(stream)
     );
 
     res.setHeader('Content-Type', 'application/xml');

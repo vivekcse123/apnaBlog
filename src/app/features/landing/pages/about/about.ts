@@ -56,7 +56,7 @@ export class About implements OnInit, OnDestroy {
     },
     {
       q: 'How do I start writing on ApnaInsights?',
-      a: 'Sign up for a free account and click "Start Writing" to open our article editor. Write, format, and submit your guide across 16+ topics including Technology, Career, Health, Business, Finance, AI, Lifestyle, Education, Sports, Entertainment, Cooking, and more.'
+      a: 'Sign up for a free account and click "Start Writing" to open our article editor. Write, format, and submit your guide across 14 topics including Technology, Career, Health, Business, Finance, AI, Lifestyle, Education, Sports, Entertainment, and more.'
     },
     {
       q: 'Who is the founder of ApnaInsights?',
@@ -72,7 +72,7 @@ export class About implements OnInit, OnDestroy {
     },
     {
       q: 'What topics can I read or write about on ApnaInsights?',
-      a: 'ApnaInsights covers 16+ topics: Technology, Career, AI, Finance, Health, Business, Lifestyle, Education, Sports, Entertainment, Cooking, Exercise, Social Issues, Productivity, News, Updates, and more. Each topic has its own feed and trending articles.'
+      a: 'ApnaInsights covers 14 topics: Technology, Career, AI, Finance, Health, Business, Lifestyle, Education, Sports, Entertainment, Exercise, Social Issues, Productivity, News, Updates, and more. Each topic has its own feed and trending articles.'
     },
     {
       q: 'Is my content safe and private on ApnaInsights?',

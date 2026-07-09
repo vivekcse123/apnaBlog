@@ -26,6 +26,7 @@ import { ShortsService }  from '../../../shorts/services/shorts.service';
 import { sanitizeHtml }   from '../../../../shared/utils/sanitize-html';
 import { VideoShort }     from '../../../shorts/models/video-short.model';
 import { MobileBottomNav } from '../../../../shared/mobile-bottom-nav/mobile-bottom-nav';
+import { McqQuiz }        from '../../../../shared/mcq-quiz/mcq-quiz';
 
 // ── Transfer-state key: SSR writes the post here; browser reads it instantly ──
 const POST_STATE_KEY = makeStateKey<Post | null>('blogDetailPost');
@@ -76,7 +77,7 @@ const VISIBLE_STATUSES = new Set(['published', 'draft', 'pending']);
   selector:    'app-blog-detail',
   standalone:  true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports:     [RouterLink, CommonModule, FormsModule, TimeAgoPipe, MobileBottomNav],
+  imports:     [RouterLink, CommonModule, FormsModule, TimeAgoPipe, MobileBottomNav, McqQuiz],
   templateUrl: './blog-detail.html',
   styleUrl:    './blog-detail.css',
 })
@@ -245,44 +246,6 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   pickerShiftX       = signal(0); // px correction so .like-emoji-picker stays on-screen
   private pickerOpenedAt = 0; // ghost-click guard
 
-  // ── MCQ quiz state ────────────────────────────────────────────────────────
-  mcqUserAnswers    = signal<Map<number, number>>(new Map());
-  mcqSubmitted      = signal(false);
-  mcqRevealedAnswers = signal<Set<number>>(new Set());
-
-  readonly MCQ_OPTION_LABELS = ['A', 'B', 'C', 'D'];
-
-  selectMcqAnswer(questionIndex: number, optionIndex: number): void {
-    if (this.mcqSubmitted() || this.mcqRevealedAnswers().has(questionIndex)) return;
-    this.mcqUserAnswers.update(map => {
-      const next = new Map(map);
-      next.set(questionIndex, optionIndex);
-      return next;
-    });
-  }
-
-  revealMcqAnswer(qi: number): void {
-    this.mcqRevealedAnswers.update(s => new Set([...s, qi]));
-  }
-
-  submitMcqAnswers(): void {
-    this.mcqSubmitted.set(true);
-  }
-
-  resetMcqAnswers(): void {
-    this.mcqUserAnswers.set(new Map());
-    this.mcqSubmitted.set(false);
-    this.mcqRevealedAnswers.set(new Set());
-  }
-
-  mcqScore = computed(() => {
-    const p = this.post();
-    if (!p?.mcqQuestions?.length) return { correct: 0, total: 0 };
-    const answers = this.mcqUserAnswers();
-    const correct = p.mcqQuestions.filter((q, i) => answers.get(i) === q.correctIndex).length;
-    return { correct, total: p.mcqQuestions.length };
-  });
-
   // ── Comments ──────────────────────────────────────────────────────────────
   commentText           = signal('');
   commentSubmitting     = signal(false);
@@ -385,7 +348,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     return names.length ? names : [
       'Update','News','Sports','Technology','Lifestyle',
       'Education','Health','Business','Entertainment',
-      'Social','Village','Cooking','Quotes','Exercise',
+      'Social','Village','Exercise',
     ];
   });
 
@@ -1890,25 +1853,30 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
       const NEWS_CATS = new Set(['News','Sports','Business','Entertainment','Health','Science','Technology']);
       const isNews = !isMcq && post.categories?.some(c => NEWS_CATS.has(c));
 
+      // ── Shared quiz hasPart builder (used by both the whole-post Quiz schema
+      //    below and the attached-quiz sibling graph node further down) ──────
+      const buildQuizHasPart = (questions: NonNullable<Post['mcqQuestions']>) =>
+        questions.map((q, i) => ({
+          '@type':    'Question',
+          position:   i + 1,
+          text:       q.question,
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text:    q.options[q.correctIndex]?.text ?? '',
+            ...(q.explanation ? { comment: { '@type': 'Comment', text: q.explanation } } : {}),
+          },
+          suggestedAnswer: q.options
+            .filter((_, oi) => oi !== q.correctIndex)
+            .map(o => ({ '@type': 'Answer', text: o.text })),
+        }));
+
       // ── Main schema - Quiz / NewsArticle / BlogPosting ────────────────────
       let mainSchema: any;
       if (isMcq && post.mcqQuestions?.length) {
         mainSchema = {
           '@type': 'Quiz',
           ...commonFields,
-          hasPart: post.mcqQuestions.map((q, i) => ({
-            '@type':    'Question',
-            position:   i + 1,
-            text:       q.question,
-            acceptedAnswer: {
-              '@type': 'Answer',
-              text:    q.options[q.correctIndex]?.text ?? '',
-              ...(q.explanation ? { comment: { '@type': 'Comment', text: q.explanation } } : {}),
-            },
-            suggestedAnswer: q.options
-              .filter((_, oi) => oi !== q.correctIndex)
-              .map(o => ({ '@type': 'Answer', text: o.text })),
-          })),
+          hasPart: buildQuizHasPart(post.mcqQuestions),
         };
       } else if (isNews) {
         // NewsArticle - required for Top Stories carousel eligibility
@@ -1973,6 +1941,14 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
               name:    f.question,
               acceptedAnswer: { '@type': 'Answer', text: f.answer },
             })),
+          }] : []),
+          // Attached quiz on a regular post (not a whole-post mcq, which is
+          // already the mainSchema above) - sibling node, doesn't replace
+          // the article's own BlogPosting/NewsArticle typing.
+          ...(!isMcq && post.mcqQuestions?.length ? [{
+            '@type':  'Quiz',
+            '@id':    `${postUrl}#quiz`,
+            hasPart:  buildQuizHasPart(post.mcqQuestions),
           }] : []),
         ],
       };

@@ -22,13 +22,21 @@
   text-decoration: underline;
 }
 
-.dash-shell   { display: flex; min-height: 100dvh; background: var(--bg-base); }
-.dash-main    { flex: 1; min-width: 0; display: flex; flex-direction: column; background: var(--bg-base); overflow-x: hidden; }
-.dash-content { flex: 1; overflow-x: hidden; overflow-y: auto; }
+/* App shell: the shell itself is pinned to exactly the viewport height and
+   never scrolls. The sidebar is sticky/fixed (sidebar.css) and the header
+   is sticky (common-header.css) within .dash-main, so with .dash-main and
+   .dash-content both capped and only .dash-content allowed to overflow,
+   scrolling only ever moves the routed page content - header and sidebar
+   stay put. min-height:0 on the flex children is required here: without it
+   a flex item won't shrink below its content size, so overflow-y:auto on
+   .dash-content would never actually trigger. */
+.dash-shell   { display: flex; height: 100dvh; background: var(--bg-base); overflow: hidden; }
+.dash-main    { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; background: var(--bg-base); overflow: hidden; }
+.dash-content { flex: 1; min-height: 0; overflow-x: hidden; overflow-y: auto; }
 
 @media (max-width: 768px) {
   .dash-shell   { flex-direction: column; }
-  .dash-main    { width: 100%; min-height: 100dvh; }
+  .dash-main    { width: 100%; height: 100dvh; }
   .dash-content { padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
 }
 

@@ -148,8 +148,8 @@
           </div>
         }
 
-        <!-- MCQ Questions - shown only for MCQ-type posts -->
-        @if (post()?.postType === 'mcq' && post()?.mcqQuestions?.length) {
+        <!-- MCQ Questions - whole-post quiz, or an optional attached quiz on a blog post -->
+        @if (post()?.mcqQuestions?.length) {
           <div class="detail-block full">
             <span class="detail-label">MCQ Questions ({{ post()!.mcqQuestions!.length }})</span>
             <div class="mcq-list">
@@ -309,101 +309,6 @@
               @if (editForm.get('slug')?.invalid && editForm.get('slug')?.touched) {
                 <small class="error">Use only lowercase letters, numbers and hyphens (e.g. my-post-title)</small>
               }
-            </div>
-          }
-
-          <!-- ── MCQ Editor (replaces rich-text editor for MCQ posts) ── -->
-          @if (post()?.postType === 'mcq') {
-            <div class="edit-field full">
-              <div class="form-section-label">
-                <span class="form-section-icon">📝</span> MCQ Questions
-                <span class="mcq-q-count">{{ mcqQuestions().length }} question{{ mcqQuestions().length !== 1 ? 's' : '' }}</span>
-              </div>
-
-              <div class="mcq-editor-list">
-                @for (q of mcqQuestions(); track trackByIdx($index); let qi = $index) {
-                  <div class="mcq-editor-card">
-
-                    <!-- Question header -->
-                    <div class="mcq-editor-header">
-                      <span class="mcq-editor-num">Q{{ qi + 1 }}</span>
-                      <button type="button" class="mcq-remove-btn" (click)="removeMcqQuestion(qi)"
-                              title="Remove question" [disabled]="mcqQuestions().length === 1">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-                          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-                        </svg>
-                      </button>
-                    </div>
-
-                    <!-- Question text -->
-                    <textarea class="mcq-editor-input mcq-editor-question"
-                              rows="2"
-                              placeholder="Enter question…"
-                              [value]="q.question"
-                              (input)="updateMcqQuestion(qi, $any($event.target).value)"></textarea>
-
-                    <!-- Options -->
-                    <div class="mcq-editor-options-label">Options <span class="mcq-hint">- click radio to set correct answer</span></div>
-                    <div class="mcq-editor-options">
-                      @for (opt of q.options; track trackByIdx($index); let oi = $index) {
-                        <div class="mcq-editor-option" [class.mcq-editor-option--correct]="oi === q.correctIndex">
-                          <!-- Correct answer radio -->
-                          <button type="button" class="mcq-radio-btn"
-                                  [class.mcq-radio-btn--on]="oi === q.correctIndex"
-                                  (click)="setMcqCorrect(qi, oi)"
-                                  [title]="oi === q.correctIndex ? 'Correct answer' : 'Set as correct'">
-                            @if (oi === q.correctIndex) {
-                              <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="8"/></svg>
-                            }
-                          </button>
-                          <!-- Option letter -->
-                          <span class="mcq-option-ltr">{{ 'ABCDEF'[oi] }}</span>
-                          <!-- Option text -->
-                          <input type="text" class="mcq-option-input"
-                                 [placeholder]="'Option ' + 'ABCDEF'[oi]"
-                                 [value]="opt.text"
-                                 (input)="updateMcqOption(qi, oi, $any($event.target).value)"/>
-                          <!-- Remove option -->
-                          @if (q.options.length > 2) {
-                            <button type="button" class="mcq-opt-del-btn" (click)="removeMcqOption(qi, oi)" title="Remove option">
-                              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-                                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-                              </svg>
-                            </button>
-                          }
-                        </div>
-                      }
-                    </div>
-
-                    <!-- Add option -->
-                    @if (q.options.length < 6) {
-                      <button type="button" class="mcq-add-opt-btn" (click)="addMcqOption(qi)">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-                          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-                        </svg>
-                        Add option
-                      </button>
-                    }
-
-                    <!-- Explanation -->
-                    <div class="mcq-editor-exp-label">Explanation <span class="mcq-hint">optional</span></div>
-                    <textarea class="mcq-editor-input mcq-editor-exp"
-                              rows="2"
-                              placeholder="Explain why the correct answer is right…"
-                              [value]="q.explanation ?? ''"
-                              (input)="updateMcqExplanation(qi, $any($event.target).value)"></textarea>
-
-                  </div>
-                }
-              </div>
-
-              <!-- Add question -->
-              <button type="button" class="mcq-add-q-btn" (click)="addMcqQuestion()">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-                </svg>
-                Add Question
-              </button>
             </div>
           }
 
@@ -756,6 +661,105 @@
             }
           </div>
           } <!-- end @if postType !== mcq -->
+
+          <!-- ── MCQ / Attached-Quiz Editor (required editor for a whole-post
+               quiz, optional add-on editor for a blog post) ── -->
+          <div class="edit-field full">
+            <div class="form-section-label">
+              <span class="form-section-icon">📝</span>
+              @if (post()?.postType === 'mcq') {
+                MCQ Questions
+              } @else {
+                Quiz Questions (optional)
+              }
+              <span class="mcq-q-count">{{ mcqQuestions().length }} question{{ mcqQuestions().length !== 1 ? 's' : '' }}</span>
+            </div>
+
+            <div class="mcq-editor-list">
+              @for (q of mcqQuestions(); track trackByIdx($index); let qi = $index) {
+                <div class="mcq-editor-card">
+
+                  <!-- Question header -->
+                  <div class="mcq-editor-header">
+                    <span class="mcq-editor-num">Q{{ qi + 1 }}</span>
+                    <button type="button" class="mcq-remove-btn" (click)="removeMcqQuestion(qi)"
+                            title="Remove question" [disabled]="post()?.postType === 'mcq' && mcqQuestions().length === 1">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                      </svg>
+                    </button>
+                  </div>
+
+                  <!-- Question text -->
+                  <textarea class="mcq-editor-input mcq-editor-question"
+                            rows="2"
+                            placeholder="Enter question…"
+                            [value]="q.question"
+                            (input)="updateMcqQuestion(qi, $any($event.target).value)"></textarea>
+
+                  <!-- Options -->
+                  <div class="mcq-editor-options-label">Options <span class="mcq-hint">- click radio to set correct answer</span></div>
+                  <div class="mcq-editor-options">
+                    @for (opt of q.options; track trackByIdx($index); let oi = $index) {
+                      <div class="mcq-editor-option" [class.mcq-editor-option--correct]="oi === q.correctIndex">
+                        <!-- Correct answer radio -->
+                        <button type="button" class="mcq-radio-btn"
+                                [class.mcq-radio-btn--on]="oi === q.correctIndex"
+                                (click)="setMcqCorrect(qi, oi)"
+                                [title]="oi === q.correctIndex ? 'Correct answer' : 'Set as correct'">
+                          @if (oi === q.correctIndex) {
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="8"/></svg>
+                          }
+                        </button>
+                        <!-- Option letter -->
+                        <span class="mcq-option-ltr">{{ 'ABCDEF'[oi] }}</span>
+                        <!-- Option text -->
+                        <input type="text" class="mcq-option-input"
+                               [placeholder]="'Option ' + 'ABCDEF'[oi]"
+                               [value]="opt.text"
+                               (input)="updateMcqOption(qi, oi, $any($event.target).value)"/>
+                        <!-- Remove option -->
+                        @if (q.options.length > 2) {
+                          <button type="button" class="mcq-opt-del-btn" (click)="removeMcqOption(qi, oi)" title="Remove option">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                            </svg>
+                          </button>
+                        }
+                      </div>
+                    }
+                  </div>
+
+                  <!-- Add option -->
+                  @if (q.options.length < 6) {
+                    <button type="button" class="mcq-add-opt-btn" (click)="addMcqOption(qi)">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                      </svg>
+                      Add option
+                    </button>
+                  }
+
+                  <!-- Explanation -->
+                  <div class="mcq-editor-exp-label">Explanation <span class="mcq-hint">optional</span></div>
+                  <textarea class="mcq-editor-input mcq-editor-exp"
+                            rows="2"
+                            placeholder="Explain why the correct answer is right…"
+                            [value]="q.explanation ?? ''"
+                            (input)="updateMcqExplanation(qi, $any($event.target).value)"></textarea>
+
+                </div>
+              }
+            </div>
+
+            <!-- Add question -->
+            <button type="button" class="mcq-add-q-btn" (click)="addMcqQuestion()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              Add Question
+            </button>
+          </div>
 
           <!-- ── Series Editor (blog posts only) ── -->
           @if (post()?.postType !== 'mcq') {

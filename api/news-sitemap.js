@@ -2,6 +2,8 @@
 // Google News indexes within 48h; 72h window avoids gaps on slow-publish days.
 // Only fetches page 1 (newest 100 posts) — far faster than paginating all posts,
 // and sufficient since no site publishes 100+ articles per 3 days.
+import { isIndexablePost } from './_lib/indexable.js';
+
 export default async function handler(req, res) {
   try {
     let posts = [];
@@ -41,7 +43,8 @@ export default async function handler(req, res) {
       !DEVANAGARI.test(p.title) &&
       !REGIONAL.test(p.title) &&
       new Date(p.createdAt).getTime() >= threeDaysAgo &&
-      p.categories?.some(c => NEWS_CATS.has(c))
+      p.categories?.some(c => NEWS_CATS.has(c)) &&
+      isIndexablePost(p)
     );
 
     const escape = str =>

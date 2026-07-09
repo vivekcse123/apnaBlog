@@ -1,9 +1,10 @@
 import {
   AfterViewInit, Component, ElementRef, HostListener, Output, EventEmitter,
-  PLATFORM_ID, ViewChild, ChangeDetectionStrategy, inject
+  PLATFORM_ID, ViewChild, ChangeDetectionStrategy, inject, signal
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { readCachedSiteStats, formatStatCount, CachedSiteStats } from '../../../core/utils/site-stats.util';
 
 interface Feature {
   icon: string;
@@ -40,6 +41,27 @@ interface Feature {
 
           <h2 id="wm-title" class="wm-title">Welcome to ApnaInsights</h2>
           <p class="wm-sub">India's practical knowledge platform - expert guides, real insights.</p>
+
+          <!-- Real numbers only - see site-stats.util.ts. Hidden entirely
+               (not a placeholder) if there's no cached figure to show yet. -->
+          @if (siteStats(); as stats) {
+            <div class="wm-stats" role="list">
+              <div class="wm-stat" role="listitem">
+                <span class="wm-stat-num">{{ formatStatCount(stats.articles) }}</span>
+                <span class="wm-stat-lbl">Articles</span>
+              </div>
+              <div class="wm-stat-div" aria-hidden="true"></div>
+              <div class="wm-stat" role="listitem">
+                <span class="wm-stat-num">{{ stats.topics }}+</span>
+                <span class="wm-stat-lbl">Topics</span>
+              </div>
+              <div class="wm-stat-div" aria-hidden="true"></div>
+              <div class="wm-stat" role="listitem">
+                <span class="wm-stat-num">{{ formatStatCount(stats.reads) }}</span>
+                <span class="wm-stat-lbl">Reads</span>
+              </div>
+            </div>
+          }
 
           <ul class="wm-features" role="list">
             @for (f of features; track f.label) {
@@ -104,11 +126,11 @@ interface Feature {
       to   { opacity: 1; transform: translateY(0) scale(1); }
     }
 
-    /* ── Top gradient accent - always at top, never scrolls ── */
+    /* ── Top accent bar - always visible, never scrolls ── */
     .wm-top-bar {
       flex-shrink: 0;
       height: 4px;
-      background: linear-gradient(90deg, #43cea2, #185a9d);
+      background: var(--accent);
     }
 
     /* ── Header - pinned, never scrolls away ── */
@@ -174,6 +196,27 @@ interface Feature {
       line-height: 1.5; margin: 0 0 14px;
     }
 
+    /* ── Real-stats strip - social proof, real numbers only (see ngAfterViewInit) ── */
+    .wm-stats {
+      display: flex; align-items: center;
+      background: var(--bg-surface-alt);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 8px;
+      margin: 0 0 14px;
+    }
+    .wm-stat {
+      flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px;
+    }
+    .wm-stat-num {
+      font-size: 17px; font-weight: 800; color: var(--text-primary); line-height: 1;
+    }
+    .wm-stat-lbl {
+      font-size: 10px; font-weight: 600; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .wm-stat-div { width: 1px; height: 26px; background: var(--border); flex-shrink: 0; }
+
     /* ── Feature list ── */
     .wm-features {
       list-style: none; padding: 0; margin: 0 0 4px;
@@ -198,6 +241,8 @@ interface Feature {
     .wm-icon-blue   { background: rgba(24, 90, 157, 0.12); }
     .wm-icon-amber  { background: rgba(245, 158, 11, 0.12); }
     .wm-icon-purple { background: rgba(139, 92, 246, 0.12); }
+    .wm-icon-green  { background: rgba(34, 197, 94, 0.12); }
+    .wm-icon-rose   { background: rgba(244, 63, 94, 0.12); }
 
     .wm-feat-label {
       font-size: 12px; font-weight: 700;
@@ -232,7 +277,7 @@ interface Feature {
     .wm-btn-primary {
       font-size: 13px; font-weight: 700; font-family: 'DM Sans', sans-serif;
       color: #fff;
-      background: linear-gradient(135deg, #43cea2, #185a9d);
+      background: var(--accent-hover);
       border: none; border-radius: 8px;
       padding: 8px 18px; cursor: pointer;
       white-space: nowrap;
@@ -241,6 +286,35 @@ interface Feature {
     .wm-btn-primary:hover {
       opacity: 0.9; transform: translateY(-1px);
       box-shadow: 0 6px 18px rgba(67, 206, 162, 0.35);
+    }
+
+    /* ── Desktop: wider card, roomier spacing, 2-column feature grid instead
+       of a narrow single-column list - makes better use of the extra width
+       and gives the stats/features more presence. ── */
+    @media (min-width: 768px) {
+      .wm-modal { max-width: 660px; }
+      .wm-head  { padding: 20px 30px 16px; }
+      .wm-body  { padding: 24px 30px 8px; }
+      .wm-footer { padding: 16px 30px; }
+
+      .wm-title { font-size: 23px; }
+      .wm-sub   { font-size: 14.5px; margin-bottom: 18px; }
+
+      .wm-stats { padding: 16px 12px; margin-bottom: 20px; }
+      .wm-stat-num { font-size: 21px; }
+      .wm-stat-lbl { font-size: 10.5px; }
+
+      .wm-features {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      .wm-feat { padding: 12px 14px; }
+      .wm-feat-label { font-size: 12.5px; }
+      .wm-feat-desc  { font-size: 11.5px; }
+
+      .wm-btn-secondary,
+      .wm-btn-primary { padding: 9px 20px; font-size: 13.5px; }
     }
 
     /* ── Mobile: bottom sheet ── */
@@ -283,8 +357,12 @@ export class WelcomeModal implements AfterViewInit {
   @ViewChild('closeBtn') closeBtn?: ElementRef<HTMLButtonElement>;
   @Output() close = new EventEmitter<void>();
 
+  siteStats = signal<CachedSiteStats | null>(null);
+  formatStatCount = formatStatCount;
+
   ngAfterViewInit(): void {
     if (!isPlatformBrowser(this.platformId)) return;
+    this.siteStats.set(readCachedSiteStats());
     this.previouslyFocused = document.activeElement as HTMLElement;
     this.closeBtn?.nativeElement?.focus();
   }
@@ -300,7 +378,7 @@ export class WelcomeModal implements AfterViewInit {
       icon: '◈',
       colorClass: 'teal',
       label: 'Everything in one place',
-      desc: 'Browse stories across 16+ categories - from Sports to Village life.',
+      desc: 'Browse stories across 14+ categories - from Sports to Village life.',
     },
     {
       icon: '⚿',
@@ -319,6 +397,18 @@ export class WelcomeModal implements AfterViewInit {
       colorClass: 'purple',
       label: 'Easy-to-use interface',
       desc: 'Search, filters, bookmarks and keyboard shortcuts - designed to stay out of your way.',
+    },
+    {
+      icon: '✎',
+      colorClass: 'green',
+      label: 'Share what you know',
+      desc: 'Publish your own guides for free - every submission is reviewed before going live.',
+    },
+    {
+      icon: '♡',
+      colorClass: 'rose',
+      label: 'Free forever',
+      desc: 'No subscription, no paywall - reading and writing are always free.',
     },
   ];
 

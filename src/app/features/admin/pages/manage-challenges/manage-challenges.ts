@@ -86,7 +86,7 @@ export class ManageChallenges implements OnInit {
   readonly categories = [
     '', 'Update', 'News', 'Sports', 'Technology', 'Lifestyle',
     'Education', 'Health', 'Business', 'Entertainment', 'Social',
-    'Village', 'Exercise', 'Quotes', 'Cooking',
+    'Village', 'Exercise',
   ];
 
   ngOnInit(): void { this.load(); }

@@ -765,3 +765,17 @@ body > iframe[style*="display: none"] { width: 0 !important; height: 0 !importan
 .page-ad-wrap:has(ins.adsbygoogle[data-ad-status="filled"]) {
   min-height: 0;
 }
+
+/* The <ins> itself (Google's ad iframe) renders with a white background the
+   moment it's inserted, before AdSense has decided whether the slot is
+   filled or unfilled - on a dark page that's a visible white flash for
+   however long that request takes. Keep it invisible until the
+   data-ad-status attribute actually shows up (AdSense sets it once the
+   request resolves, filled or not), then fade it in instead of popping. */
+.page-ad-wrap ins.adsbygoogle {
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.page-ad-wrap ins.adsbygoogle[data-ad-status] {
+  opacity: 1;
+}

@@ -223,7 +223,7 @@ export class CreatePost implements OnInit, OnDestroy {
   // Hydrated from localStorage cache synchronously - updated after API load
   categoryOptions: string[] = this.taxonomyService.categoryNames().length
     ? this.taxonomyService.categoryNames()
-    : ['Update','News','Sports','Technology','Lifestyle','Education','Health','Business','Entertainment','Social','Village','Cooking','Quotes','Exercise','Career','AI','Finance','Productivity'];
+    : ['Update','News','Sports','Technology','Lifestyle','Education','Health','Business','Entertainment','Social','Village','Exercise','Career','AI','Finance','Productivity'];
 
   tagOptions: string[] = this.taxonomyService.tagNames().length
     ? this.taxonomyService.tagNames()
@@ -1234,20 +1234,26 @@ export class CreatePost implements OnInit, OnDestroy {
     }
 
     const isMcq = this.postType() === 'mcq';
+    const questions = this.mcqQuestions();
 
-    if (isMcq) {
-      const questions = this.mcqQuestions();
-      if (questions.length < MIN_MCQ_QUESTIONS) {
-        this.errorMessage.set(`Please add at least ${MIN_MCQ_QUESTIONS} questions for your MCQ post.`);
-        return;
-      }
+    if (isMcq && questions.length < MIN_MCQ_QUESTIONS) {
+      this.errorMessage.set(`Please add at least ${MIN_MCQ_QUESTIONS} questions for your MCQ post.`);
+      return;
+    }
+
+    // Applies to both a required whole-post quiz and an optional attached
+    // quiz on a blog post - any question that exists must be complete.
+    if (questions.length) {
       const invalid = questions.some(q =>
         !q.question.trim() || q.options.some(o => !o.trim())
       );
       if (invalid) {
-        this.errorMessage.set('Please fill in all question texts and option fields.');
+        this.errorMessage.set('Please fill in all question texts and option fields, or remove incomplete questions.');
         return;
       }
+    }
+
+    if (isMcq) {
       const thinExplanation = questions.some(q =>
         q.explanation.trim().split(/\s+/).filter(Boolean).length < MIN_EXPLANATION_WORDS
       );
@@ -1283,14 +1289,14 @@ export class CreatePost implements OnInit, OnDestroy {
     const featuredImage = allImages[0]?.url ?? '';
     const extraImages   = allImages.slice(1).map(img => img.url);
 
-    const mcqPayload: McqQuestion[] = isMcq
-      ? this.mcqQuestions().map(q => ({
-          question:     q.question,
-          options:      q.options.map(text => ({ text })),
-          correctIndex: q.correctIndex,
-          explanation:  q.explanation,
-        }))
-      : [];
+    // Populated for both a whole-post quiz and an optional attached quiz on
+    // a blog post; an empty array is harmless when no questions were added.
+    const mcqPayload: McqQuestion[] = this.mcqQuestions().map(q => ({
+      question:     q.question,
+      options:      q.options.map(text => ({ text })),
+      correctIndex: q.correctIndex,
+      explanation:  q.explanation,
+    }));
 
     const payload: Omit<Post, '_id' | 'user' | 'userId' | 'likesCount' | 'commentsCount' | 'views' | 'createdAt' | 'updatedAt'> & { user: string } = {
       title:         this.createBlogForm.value.title,

@@ -484,87 +484,7 @@
     }
 
     @if (post()!.postType === 'mcq') {
-      <!-- ── MCQ Quiz UI ── -->
-      <div class="mcq-quiz">
-
-        @if (mcqSubmitted()) {
-          <div class="mcq-score-banner" [class.mcq-score--perfect]="mcqScore().correct === mcqScore().total">
-            <div class="mcq-score-icon">
-              @if (mcqScore().correct === mcqScore().total) { 🏆 }
-              @else if (mcqScore().correct >= mcqScore().total / 2) { 👍 }
-              @else { 💪 }
-            </div>
-            <div class="mcq-score-text">
-              <strong>{{ mcqScore().correct }}/{{ mcqScore().total }}</strong> correct
-              @if (mcqScore().correct === mcqScore().total) {
-                <span> - Perfect score!</span>
-              } @else if (mcqScore().correct >= mcqScore().total / 2) {
-                <span> - Good job!</span>
-              } @else {
-                <span> - Keep practising!</span>
-              }
-            </div>
-            <button class="mcq-retry-btn" (click)="resetMcqAnswers()">Try Again</button>
-          </div>
-        }
-
-        @for (q of post()!.mcqQuestions!; track q._id ?? $index; let qi = $index) {
-          <div class="mcq-question-block">
-            <p class="mcq-question-text">
-              <span class="mcq-q-badge">Q{{ qi + 1 }}</span>
-              {{ q.question }}
-            </p>
-
-            <div class="mcq-options-list">
-              @for (opt of q.options; track $index; let oi = $index) {
-                <button class="mcq-option-btn"
-                  [class.mcq-opt--selected]="mcqUserAnswers().get(qi) === oi && !mcqSubmitted() && !mcqRevealedAnswers().has(qi)"
-                  [class.mcq-opt--correct]="(mcqSubmitted() || mcqRevealedAnswers().has(qi)) && oi === q.correctIndex"
-                  [class.mcq-opt--wrong]="(mcqSubmitted() || mcqRevealedAnswers().has(qi)) && mcqUserAnswers().get(qi) === oi && oi !== q.correctIndex"
-                  [class.mcq-opt--dimmed]="(mcqSubmitted() || mcqRevealedAnswers().has(qi)) && mcqUserAnswers().get(qi) !== oi && oi !== q.correctIndex"
-                  [disabled]="mcqSubmitted() || mcqRevealedAnswers().has(qi)"
-                  (click)="selectMcqAnswer(qi, oi)">
-                  <span class="mcq-opt-letter">{{ MCQ_OPTION_LABELS[oi] }}</span>
-                  <span class="mcq-opt-text">{{ opt.text }}</span>
-                  @if ((mcqSubmitted() || mcqRevealedAnswers().has(qi)) && oi === q.correctIndex) {
-                    <svg class="mcq-opt-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-                  } @else if ((mcqSubmitted() || mcqRevealedAnswers().has(qi)) && mcqUserAnswers().get(qi) === oi && oi !== q.correctIndex) {
-                    <svg class="mcq-opt-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                  }
-                </button>
-              }
-            </div>
-
-            @if (!mcqSubmitted() && !mcqRevealedAnswers().has(qi)) {
-              <button class="mcq-show-answer-btn" (click)="revealMcqAnswer(qi)">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                Show Answer
-              </button>
-            }
-
-            @if ((mcqSubmitted() || mcqRevealedAnswers().has(qi)) && q.explanation) {
-              <div class="mcq-explanation">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                <span>{{ q.explanation }}</span>
-              </div>
-            }
-          </div>
-        }
-
-        @if (!mcqSubmitted()) {
-          <div class="mcq-submit-row">
-            <button class="mcq-submit-btn"
-              [disabled]="mcqUserAnswers().size < (post()!.mcqQuestions?.length ?? 0)"
-              (click)="submitMcqAnswers()">
-              Submit Answers
-            </button>
-            @if (mcqUserAnswers().size < (post()!.mcqQuestions?.length ?? 0)) {
-              <span class="mcq-submit-hint">Answer all {{ post()!.mcqQuestions?.length }} questions to submit</span>
-            }
-          </div>
-        }
-
-      </div>
+      <app-mcq-quiz [questions]="post()!.mcqQuestions!" />
     } @else {
       <div class="blog-content"
            [class.fs-sm]="fontSize() === 'sm'"
@@ -641,6 +561,14 @@
           data-ad-slot="9018304148"
           data-ad-format="auto"
           data-full-width-responsive="true"></ins>
+      </div>
+    }
+
+    <!-- Attached quiz (optional, blog posts only) -->
+    @if (post()!.postType !== 'mcq' && post()!.mcqQuestions?.length) {
+      <div class="attached-quiz-section" id="quiz">
+        <h2 class="quiz-section-title">🧠 Test Your Knowledge</h2>
+        <app-mcq-quiz [questions]="post()!.mcqQuestions!" />
       </div>
     }
 

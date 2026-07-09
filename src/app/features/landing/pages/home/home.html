@@ -121,7 +121,25 @@
       <a class="hdr-signin-btn desktop-only" routerLink="/auth/login" aria-label="Sign in">Sign In</a>
     }
 
-    <a class="write-btn" [routerLink]="writeRoute" aria-label="Write a story">
+    <!-- Desktop: labeled pill next to Write Story, same install trigger as
+         mobile - doesn't replace anything, both stay visible. -->
+    @if (!isAppInstalled()) {
+      <button class="write-btn install-btn-header desktop-only" type="button"
+              (click)="triggerInstall()" aria-label="Get the Android app">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        <span class="write-btn-label-full">Get the Android App</span>
+        <span class="write-btn-label-short">Get App</span>
+      </button>
+    }
+
+    <!-- Desktop: write CTA as before. Mobile: swapped for a Get-the-App
+         install prompt instead (see the drawer's "Write a Story" link for
+         mobile write access) - unless the app is already installed, in
+         which case mobile keeps the write icon too since the install CTA
+         would no longer make sense. -->
+    <a class="write-btn desktop-only" [routerLink]="writeRoute" aria-label="Write a story">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
         <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
@@ -129,6 +147,24 @@
       <span class="write-btn-label-full">Write Story</span>
       <span class="write-btn-label-short">Write</span>
     </a>
+
+    @if (!isAppInstalled()) {
+      <button class="write-btn install-btn-header mobile-only" type="button"
+              (click)="triggerInstall()" aria-label="Get the Android app">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        <span class="write-btn-label-full">Get the App</span>
+        <span class="write-btn-label-short">Get App</span>
+      </button>
+    } @else {
+      <a class="write-btn mobile-only" [routerLink]="writeRoute" aria-label="Write a story">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+          <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+        </svg>
+      </a>
+    }
 
     <button class="hamburger" (click)="menuOpen.set(!menuOpen())" [class.open]="menuOpen()"
             [attr.aria-expanded]="menuOpen()" aria-controls="mobile-drawer" aria-label="Toggle navigation menu">
@@ -189,6 +225,12 @@
 
   <div class="drawer-divider"></div>
   <span class="drawer-section-label">Explore</span>
+  <a class="drawer-link" [routerLink]="writeRoute" (click)="menuOpen.set(false)">
+    <span class="drawer-link-icon drawer-link-icon--teal">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+    </span>
+    Write a Story
+  </a>
   <a class="drawer-link drawer-link--challenge" routerLink="/challenges" (click)="menuOpen.set(false)">
     <span class="drawer-link-icon drawer-link-icon--gold"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg></span>
     Writing Challenges
@@ -494,7 +536,9 @@
                       </span>
                       <span class="v2-mega-dd-item-body">
                         <span class="v2-mega-dd-item-title">{{ blog.title }}</span>
-                        <span class="v2-mega-dd-item-meta">{{ blog.views | formatCount }} views</span>
+                        @if (hasMeaningfulViews(blog.views)) {
+                          <span class="v2-mega-dd-item-meta">{{ blog.views | formatCount }} views</span>
+                        }
                       </span>
                       <span class="v2-mega-dd-badge">Trending</span>
                     </a>
@@ -537,7 +581,9 @@
                       <span class="v2-mega-dd-writer-avatar" aria-hidden="true">{{ w.name.charAt(0).toUpperCase() }}</span>
                       <span class="v2-mega-dd-writer-info">
                         <span class="v2-mega-dd-writer-name">{{ w.name }}</span>
-                        <span class="v2-mega-dd-writer-stat">{{ w.reads | formatCount }} reads</span>
+                        @if (hasMeaningfulViews(w.reads)) {
+                          <span class="v2-mega-dd-writer-stat">{{ w.reads | formatCount }} reads</span>
+                        }
                       </span>
                     </a>
                   }
@@ -647,8 +693,10 @@
                 <h3 class="v2-trending-card-title">{{ blog.title }}</h3>
                 <div class="v2-trending-card-meta">
                   <span>⏱ {{ getReadingTime(blog) }} min read</span>
-                  <span class="v2-trending-meta-sep" aria-hidden="true">·</span>
-                  <span>{{ blog.views | formatCount }} views</span>
+                  @if (hasMeaningfulViews(blog.views)) {
+                    <span class="v2-trending-meta-sep" aria-hidden="true">·</span>
+                    <span>{{ blog.views | formatCount }} views</span>
+                  }
                 </div>
               </div>
             </article>
@@ -1118,7 +1166,9 @@
                   <span class="v2-sb-trending-rank">{{ i + 1 }}</span>
                   <span class="v2-sb-trending-info">
                     <span class="v2-sb-trending-title">{{ blog.title }}</span>
-                    <span class="v2-sb-trending-stat">{{ blog.views | formatCount }} reads</span>
+                    @if (hasMeaningfulViews(blog.views)) {
+                      <span class="v2-sb-trending-stat">{{ blog.views | formatCount }} reads</span>
+                    }
                   </span>
                 </a>
               </li>
@@ -1139,7 +1189,9 @@
                 <div class="v2-sb-writer-avatar">{{ (blog.user.name || 'A').charAt(0).toUpperCase() }}</div>
                 <div class="v2-sb-writer-info">
                   <span class="v2-sb-writer-name">{{ blog.user.name || 'Anonymous' }}</span>
-                  <span class="v2-sb-writer-stat">{{ blog.views | formatCount }} reads</span>
+                  @if (hasMeaningfulViews(blog.views)) {
+                    <span class="v2-sb-writer-stat">{{ blog.views | formatCount }} reads</span>
+                  }
                 </div>
               </a>
             }
@@ -1203,12 +1255,11 @@
       <!-- About section -->
       <div class="v2-sb-about">
         <h2 class="v2-sb-about-title">About ApnaInsights</h2>
-        <p class="v2-sb-about-text">ApnaInsights publishes editor-reviewed guides and insights on
+        <p class="v2-sb-about-text">ApnaInsights publishes editor-reviewed guides on
           <a routerLink="/category/technology">Technology</a>,
-          <a routerLink="/category/health">Health</a>,
-          <a routerLink="/category/business">Business</a>,
-          <a routerLink="/category/sports">Sports</a> and more -
-          written by verified contributors across India.
+          <a routerLink="/category/ai">AI</a> and
+          <a routerLink="/category/career">Career</a> -
+          written by verified working professionals across India, not AI.
         </p>
         <a class="v2-sb-about-link" routerLink="/editorial-policy">Editorial Standards →</a>
       </div>
@@ -1256,29 +1307,6 @@
     </section>
   }
 
-
-  <!-- ══ ACTIVE CHALLENGE BANNER ══════════════════════════════════════════ -->
-  @if (activeChallenge()) {
-    <a class="challenge-strip" routerLink="/challenges" aria-label="View writing challenge">
-      <span class="challenge-strip__trophy"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg></span>
-      <div class="challenge-strip__body">
-        <span class="challenge-strip__label">{{ activeChallenge()!.winnersDeclared ? 'Winners Announced' : 'Active Challenge' }}</span>
-        <span class="challenge-strip__title">{{ activeChallenge()!.title }}</span>
-        @if (activeChallenge()!.prize) {
-          <span class="challenge-strip__prize">🏅 {{ activeChallenge()!.prize }}</span>
-        }
-      </div>
-      <div class="challenge-strip__right">
-        @if (activeChallenge()!.winnersDeclared) {
-          <span class="challenge-strip__cta">View Winners →</span>
-        } @else {
-          <span class="challenge-strip__days">{{ challengeDaysLeft(activeChallenge()!.endDate) }}d left</span>
-          <span class="challenge-strip__entries">{{ activeChallenge()!.submissionCount }} entries</span>
-          <span class="challenge-strip__cta">Participate →</span>
-        }
-      </div>
-    </a>
-  }
 
   <!-- ══ CHALLENGE WINNERS ════════════════════════════════════════════════ -->
   @if (featuredWinners().length > 0) {
@@ -1381,7 +1409,7 @@
         Every article on ApnaInsights is written by a real person: a working professional, a domain expert, or a practitioner who has lived the topic they write about. We do not publish AI-generated content. Our editorial team reviews every submission for accuracy, originality, and practical value before it goes live.
       </p>
       <p class="v2-mission-body">
-        We cover Technology, Career, Health, Business, Education, Finance, Lifestyle, and more, with a specific focus on what is useful for people in India. No paywalls, no sponsored articles disguised as editorial content, and no clickbait.
+        We focus on Technology, AI, and Career - practical, in-depth guides for people building a career in India. No paywalls, no sponsored articles disguised as editorial content, and no clickbait.
       </p>
       <a class="v2-mission-link" routerLink="/editorial-policy">Read our editorial policy →</a>
     </div>

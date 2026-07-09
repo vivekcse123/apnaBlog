@@ -87,7 +87,11 @@
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
-  width: 400px;
+  /* Match .ch-search's actual rendered width exactly (it flexes up to
+     520px) instead of a fixed width that ends up narrower than the input
+     it's attached to. */
+  width: 100%;
+  min-width: 340px;
   max-height: 480px;
   overflow-y: auto;
   background: var(--bg-surface);
