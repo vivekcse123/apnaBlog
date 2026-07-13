@@ -148,6 +148,12 @@
                   <label>Bio</label>
                   <span>{{ u.bio || '-' }}</span>
                 </div>
+                <div class="info-item">
+                  <label>Website / LinkedIn</label>
+                  @if (u.website) {
+                    <a [href]="u.website" target="_blank" rel="noopener">{{ u.website }}</a>
+                  } @else { <span>-</span> }
+                </div>
               </div>
               <div class="form-actions">
                 <button class="btn-primary" (click)="startEdit()">
@@ -177,6 +183,10 @@
                 <div class="form-group">
                   <label>Bio</label>
                   <input type="text" [(ngModel)]="editForm.bio" name="bio" placeholder="Your bio" />
+                </div>
+                <div class="form-group">
+                  <label>Website / LinkedIn</label>
+                  <input type="url" [(ngModel)]="editForm.website" name="website" placeholder="https://linkedin.com/in/you" />
                 </div>
               </div>
               <div class="form-actions">

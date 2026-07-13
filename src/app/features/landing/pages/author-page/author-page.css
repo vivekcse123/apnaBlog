@@ -143,6 +143,14 @@
   color: var(--text-muted);
 }
 
+.ap-website-link {
+  width: fit-content;
+  margin-bottom: 10px;
+  color: var(--accent-text);
+  text-decoration: none;
+}
+.ap-website-link:hover { text-decoration: underline; }
+
 /* ── FOLLOW BUTTON ── */
 .ap-follow-wrap {
   padding-top: 14px;

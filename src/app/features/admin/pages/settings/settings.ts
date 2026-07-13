@@ -378,7 +378,8 @@ export class Settings implements OnInit {
       dob:      this.editForm.dob,
       location: this.editForm.location,
       role:     this.editForm.role?.toLowerCase(),
-      bio:      this.editForm.bio
+      bio:      this.editForm.bio,
+      website:  this.editForm.website,
     };
 
     this.userService.updateUser(id, payload)

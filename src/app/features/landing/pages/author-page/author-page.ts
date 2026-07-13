@@ -75,6 +75,19 @@ export class AuthorPage implements OnInit, OnDestroy {
   get joinedDate(): string    { return (this.author() as any)?.createdAt ?? ''; }
   get authorEmail(): string   { return (this.author() as any)?.email    ?? ''; }
 
+  // Surfaces an author's LinkedIn/portfolio/company link as a visible
+  // credential on their public profile - an E-E-A-T signal for reviewers,
+  // not just internal sponsor bookkeeping (the `website` field already
+  // exists on every user, previously only shown in the admin sponsor view).
+  get authorWebsite(): string {
+    const site = ((this.author() as any)?.website ?? '').trim();
+    if (!site) return '';
+    return /^https?:\/\//i.test(site) ? site : `https://${site}`;
+  }
+  get authorWebsiteLabel(): string {
+    return this.authorWebsite.replace(/^https?:\/\//i, '').replace(/\/$/, '');
+  }
+
   currentYear = new Date().getFullYear();
   protected readonly Math = Math;
 
@@ -259,7 +272,9 @@ export class AuthorPage implements OnInit, OnDestroy {
             contentUrl: avatar,
           },
           description:  bio,
-          sameAs:       [url],
+          // External credential (LinkedIn/portfolio) strengthens the E-E-A-T
+          // signal beyond just linking back to our own profile URL.
+          sameAs:       this.authorWebsite ? [url, this.authorWebsite] : [url],
           worksFor:     { '@id': `${environment.siteUrl}/#organization` },
         },
         {
