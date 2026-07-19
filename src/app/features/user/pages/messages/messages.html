@@ -1,0 +1,106 @@
+<div class="msg-page">
+
+  <!-- Conversation list -->
+  <aside class="msg-list" [class.msg-list--hidden-mobile]="selectedPartner()">
+    <div class="msg-list-header">
+      <h2 class="msg-title">Messages</h2>
+    </div>
+
+    @if (loadingConversations()) {
+      <div class="msg-loading"><span></span><span></span><span></span></div>
+    } @else if (!hasConversations()) {
+      <div class="msg-empty">
+        <span class="msg-empty-icon">💬</span>
+        <p>No conversations yet.</p>
+        <p class="msg-empty-sub">Message an author from their profile page to start one.</p>
+      </div>
+    } @else {
+      @for (c of conversations(); track c.otherUser._id) {
+        <button class="msg-convo" type="button"
+                [class.msg-convo--active]="selectedPartner()?._id === c.otherUser._id"
+                (click)="selectConversation(c)">
+          @if (c.otherUser.avatar) {
+            <img class="msg-convo-avatar" [src]="c.otherUser.avatar" [alt]="c.otherUser.name" width="42" height="42" />
+          } @else {
+            <span class="msg-convo-avatar msg-convo-avatar--fallback">{{ c.otherUser.name.charAt(0).toUpperCase() }}</span>
+          }
+          <span class="msg-convo-body">
+            <span class="msg-convo-row">
+              <span class="msg-convo-name">{{ c.otherUser.name }}</span>
+              <span class="msg-convo-time">{{ timeAgo(c.lastMessageAt) }}</span>
+            </span>
+            <span class="msg-convo-preview">
+              @if (c.lastMessageIsMine) { <span class="msg-convo-you">You:</span> }
+              {{ c.lastMessage }}
+            </span>
+          </span>
+          @if (c.unreadCount > 0) {
+            <span class="msg-convo-badge">{{ c.unreadCount }}</span>
+          }
+        </button>
+      }
+    }
+  </aside>
+
+  <!-- Thread -->
+  <section class="msg-thread-pane" [class.msg-thread-pane--visible]="selectedPartner()">
+    @if (!selectedPartner()) {
+      <div class="msg-thread-placeholder">
+        <span class="msg-empty-icon">✉️</span>
+        <p>Select a conversation to view messages.</p>
+      </div>
+    } @else {
+      <div class="msg-thread-header">
+        <button class="msg-back-btn" type="button" (click)="selectedPartner.set(null)" aria-label="Back to conversations">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
+        </button>
+        @if (selectedPartner()!.avatar) {
+          <img class="msg-thread-avatar" [src]="selectedPartner()!.avatar!" [alt]="selectedPartner()!.name" width="34" height="34" />
+        } @else {
+          <span class="msg-thread-avatar msg-thread-avatar--fallback">{{ selectedPartner()!.name.charAt(0).toUpperCase() }}</span>
+        }
+        <span class="msg-thread-name">{{ selectedPartner()!.name }}</span>
+        <button class="msg-clear-btn" type="button" (click)="clearChat()" [disabled]="clearingChat()"
+                aria-label="Clear this chat" title="Clear chat">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+        </button>
+      </div>
+
+      <div class="msg-thread-body" #threadEl>
+        @if (loadingThread()) {
+          <div class="msg-loading"><span></span><span></span><span></span></div>
+        } @else if (thread().length === 0) {
+          <p class="msg-thread-empty">No messages yet - say hello 👋</p>
+        } @else {
+          @for (m of thread(); track m._id) {
+            <div class="msg-bubble-row" [class.msg-bubble-row--mine]="m.sender === currentUserId()">
+              <div class="msg-bubble">{{ m.content }}</div>
+            </div>
+          }
+        }
+      </div>
+
+      @if (errorMsg()) {
+        <p class="msg-error">{{ errorMsg() }}</p>
+      }
+
+      <form class="msg-composer" (submit)="$event.preventDefault(); send()">
+        <textarea class="msg-input" placeholder="Write a message…" rows="1" maxlength="2000"
+                  [value]="draft()" (input)="draft.set($any($event.target).value)"
+                  (keydown.enter)="onEnterKey($event)"></textarea>
+        <button class="msg-send-btn" type="submit" [disabled]="sending() || !draft().trim()">
+          {{ sending() ? 'Sending…' : 'Send' }}
+        </button>
+      </form>
+    }
+  </section>
+
+  <app-confirm-modal
+    [show]="showClearConfirm()"
+    title="Clear this chat?"
+    [message]="'Clear your chat with ' + (selectedPartner()?.name ?? '') + '? This only removes it from your inbox — they will still see the full conversation.'"
+    confirmText="Clear chat"
+    (confirmed)="confirmClearChat()"
+    (cancelled)="showClearConfirm.set(false)" />
+
+</div>

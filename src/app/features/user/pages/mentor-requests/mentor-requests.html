@@ -1,0 +1,119 @@
+<div class="mr-page">
+
+  <div class="mr-header">
+    <div>
+      <h1 class="mr-title">📞 My Mentor Requests</h1>
+      <p class="mr-sub">Callback requests assigned to you, with full history for each.</p>
+    </div>
+    <button class="mr-refresh" (click)="load()">↻ Refresh</button>
+  </div>
+
+  <div class="mr-filters">
+    <button type="button" class="mr-filter-chip" [class.active]="statusFilter() === ''" (click)="setFilter('')">All</button>
+    @for (s of statuses; track s) {
+      <button type="button" class="mr-filter-chip" [class.active]="statusFilter() === s" (click)="setFilter(s)">{{ s }}</button>
+    }
+  </div>
+
+  @if (isLoading()) {
+    <div class="mr-loading">
+      @for (_ of [1,2,3]; track $index) { <div class="mr-skeleton"></div> }
+    </div>
+  } @else if (error()) {
+    <div class="mr-error">{{ error() }}</div>
+  } @else if (requests().length === 0) {
+    <div class="mr-empty">
+      <span class="mr-empty__icon">📭</span>
+      <p>No requests here yet.</p>
+    </div>
+  } @else {
+    <div class="mr-list">
+      @for (r of requests(); track trackById($index, r)) {
+        <div class="mr-row">
+          <div class="mr-row__head" (click)="toggleExpand(r._id)">
+            <div class="mr-row__info">
+              <span class="mr-status" [attr.data-status]="r.status">{{ r.status }}</span>
+              <span class="mr-user">{{ r.userName }}</span>
+              @if (r.userIsPremium) {
+                <span class="mr-premium-badge" title="Premium member">💎 Premium</span>
+              }
+              <span class="mr-topic">{{ r.topic }}</span>
+            </div>
+            <div class="mr-row__meta">
+              <span class="mr-type-chip" [class.mr-type-chip--booking]="r.type === 'booking'">
+                {{ r.type === 'booking' ? '🎥 Session' : '📞 Callback' }}{{ r.type === 'booking' && r.duration ? ' · ' + r.duration + ' min' : '' }}
+              </span>
+              <span>{{ r.preferredDate }} · {{ r.preferredTime }}</span>
+              <span class="mr-chevron">{{ expandedId() === r._id ? '▲' : '▼' }}</span>
+            </div>
+          </div>
+
+          @if (expandedId() === r._id) {
+            <div class="mr-row__body">
+              <div class="mr-detail-grid">
+                <div><span class="mr-detail-lbl">User Email</span><span class="mr-detail-val">{{ r.userEmail }}</span></div>
+                <div><span class="mr-detail-lbl">Phone</span><span class="mr-detail-val">{{ r.userPhone || '—' }}</span></div>
+                <div><span class="mr-detail-lbl">Category</span><span class="mr-detail-val">{{ r.category || '—' }}</span></div>
+                <div><span class="mr-detail-lbl">Created</span><span class="mr-detail-val">{{ r.createdAt | date:'MMM d, y, h:mm a' }}</span></div>
+                <div>
+                  <span class="mr-detail-lbl">Membership</span>
+                  <span class="mr-detail-val">
+                    @if (r.userIsPremium) {
+                      💎 Premium @if (r.userPremiumSince) { <span class="mr-detail-sub">since {{ r.userPremiumSince | date:'MMM d, y' }}</span> }
+                    } @else {
+                      Free
+                    }
+                  </span>
+                </div>
+                <div>
+                  <span class="mr-detail-lbl">Connected For</span>
+                  <span class="mr-detail-val">{{ r.type === 'booking' ? (r.duration + '-min booked session') : 'Callback request' }} — {{ r.topic }}</span>
+                </div>
+              </div>
+
+              @if (r.message) {
+                <p class="mr-message"><strong>Message:</strong> {{ r.message }}</p>
+              }
+
+              @if (r.status === 'completed' && r.feedback?.rating; as rating) {
+                <div class="mr-feedback">
+                  <span class="mr-detail-lbl">Requester Feedback</span>
+                  <div class="mr-feedback-stars">
+                    @for (i of [1,2,3,4,5]; track i) {
+                      <span [class.filled]="i <= rating">★</span>
+                    }
+                  </div>
+                  @if (r.feedback!.comment) {
+                    <p class="mr-feedback-comment">"{{ r.feedback!.comment }}"</p>
+                  }
+                </div>
+              }
+
+              <div class="mr-actions">
+                <button class="mr-action mr-action--accept" [disabled]="updating().has(r._id) || !canDecide(r.status)" (click)="updateStatus(r._id, 'accepted')">Accept</button>
+                <button class="mr-action mr-action--reject" [disabled]="updating().has(r._id) || !canDecide(r.status)" (click)="updateStatus(r._id, 'rejected')">Reject</button>
+                <button class="mr-action" [disabled]="updating().has(r._id) || !canDecide(r.status)" (click)="updateStatus(r._id, 'scheduled')">Schedule</button>
+                <button class="mr-action mr-action--complete" [disabled]="updating().has(r._id) || !canComplete(r.status)" (click)="updateStatus(r._id, 'completed')">Mark Completed</button>
+              </div>
+              @if (canComplete(r.status)) {
+                <p class="mr-hint">Contact {{ r.userName }} at {{ r.userPhone || r.userEmail }}, then mark this completed once the session is done.</p>
+              }
+
+              @if (r.activityLog.length) {
+                <div class="mr-timeline">
+                  <span class="mr-detail-lbl">History</span>
+                  <ul>
+                    @for (entry of r.activityLog; track $index) {
+                      <li>{{ entry.action }} <span class="mr-timeline-meta">({{ entry.byRole }}, {{ entry.at | date:'MMM d, h:mm a' }})</span></li>
+                    }
+                  </ul>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+
+</div>

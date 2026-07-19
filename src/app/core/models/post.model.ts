@@ -42,6 +42,14 @@ export interface Post {
   title: string;
   description: string;
   content: string;
+  // Precomputed by the backend (~200 wpm from `content`) — list endpoints
+  // exclude the full `content` body for payload size, so list views must
+  // use this instead of computing reading time from content client-side.
+  readingTimeMinutes?: number;
+  // Exact word count, precomputed alongside readingTimeMinutes — needed
+  // wherever precision matters (e.g. the admin thin-content audit), since
+  // reversing readingTimeMinutes back into words loses precision.
+  wordCount?: number;
   categories: string[];
   tags: string[];
   featuredImage: string;

@@ -100,9 +100,11 @@ export class Settings implements OnInit {
 
   editForm: Partial<User> = {};
 
-  avatarInitial = computed(() =>
-    this.user()?.name?.charAt(0).toUpperCase() ?? 'A'
-  );
+  avatarInitial = computed(() => {
+    const name = this.user()?.name ?? '';
+    const initials = name.split(' ').filter(Boolean).map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    return initials || 'A';
+  });
 
   avatarUrl = computed(() =>
     this.avatarPreview() ?? this.user()?.avatar ?? null

@@ -42,7 +42,7 @@ export class Onboarding implements OnInit {
       emoji: '📖',
       title: 'Real Stories from Real People',
       subtitle: 'Discover authentic blogs written by everyday people across India and the world.',
-      accent: '#43cea2',
+      accent: '#2563EB',
       bg: 'linear-gradient(160deg, #071e42 0%, #0d4a36 100%)',
       features: ['14+ topics to explore', '2,400+ published stories', 'Updated daily'],
     },

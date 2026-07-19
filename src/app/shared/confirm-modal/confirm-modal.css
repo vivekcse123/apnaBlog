@@ -1,0 +1,86 @@
+.cm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2100;
+  animation: cmFadeIn 0.2s ease;
+  padding: 16px;
+}
+
+@keyframes cmFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.cm-box {
+  width: 100%;
+  max-width: 340px;
+  background: var(--bg-surface);
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  box-shadow: var(--card-shadow-lg);
+  overflow: hidden;
+  animation: cmPopIn 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes cmPopIn {
+  from { transform: scale(0.85); opacity: 0; }
+  to   { transform: scale(1);    opacity: 1; }
+}
+
+.cm-accent-bar { height: 5px; background: var(--border); }
+.cm-box.danger .cm-accent-bar { background: var(--error); }
+
+.cm-content {
+  padding: 26px 24px 22px;
+  text-align: center;
+}
+
+.cm-content h2 {
+  margin: 0 0 8px;
+  font-size: 16.5px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.cm-content p {
+  margin: 0 0 22px;
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.cm-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.cm-cancel-btn, .cm-confirm-btn {
+  flex: 1;
+  padding: 11px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.cm-cancel-btn {
+  border: 1.5px solid var(--border);
+  background: var(--bg-surface-alt);
+  color: var(--text-secondary);
+}
+.cm-cancel-btn:hover { opacity: 0.85; }
+
+.cm-confirm-btn {
+  border: none;
+  color: #ffffff;
+  background: var(--accent-hover);
+}
+.cm-box.danger .cm-confirm-btn { background: var(--error); }
+.cm-confirm-btn:hover { opacity: 0.88; }

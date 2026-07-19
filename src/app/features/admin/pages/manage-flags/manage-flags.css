@@ -62,7 +62,7 @@
 .mf-btn:disabled { opacity: .5; cursor: not-allowed; }
 .mf-btn--view    { background: rgba(255,255,255,.1); color: #e8eaf0; }
 .mf-btn--view:hover { background: rgba(255,255,255,.18); }
-.mf-btn--resolve { background: #43cea2; color: #0d1b2a; }
+.mf-btn--resolve { background: #2563EB; color: #0d1b2a; }
 .mf-btn--resolve:hover:not(:disabled) { opacity: .85; }
 .mf-chevron { font-size: 11px; color: #64748b; min-width: 12px; }
 
@@ -75,7 +75,7 @@
 .mf-flag-item__top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
 .mf-reason-badge {
   font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 600;
-  background: rgba(67,206,162,.15); color: #43cea2;
+  background: rgba(37, 99, 235, .15); color: #2563EB;
 }
 .mf-reporter { font-size: 12px; color: #8fa3b1; }
 .mf-date     { font-size: 11px; color: #64748b; margin-left: auto; }

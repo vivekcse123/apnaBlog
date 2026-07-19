@@ -48,7 +48,7 @@ export class ManageUsers implements OnInit, OnDestroy {
 
   activeCount   = computed(() => this.allUsers().filter(u => u.status === 'active').length);
   inactiveCount = computed(() => this.allUsers().filter(u => u.status !== 'active').length);
-  adminCount    = computed(() => this.allUsers().filter(u => u.role === 'admin' || u.role === 'super_admin').length);
+  premiumCount  = computed(() => this.allUsers().filter(u => u.isPremium).length);
   sponsorCount  = computed(() => this.allUsers().filter(u => u.role === 'sponsor').length);
 
   todayCount = computed(() => {
@@ -233,6 +233,7 @@ export class ManageUsers implements OnInit, OnDestroy {
     req.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         user.status = isActive ? 'inactive' : 'active';
+        this.allUsers.update(users => [...users]);
         this.toastService.show(
           isActive ? `${user.name} has been frozen.` : `${user.name} has been unfrozen.`,
           'success'
@@ -249,6 +250,29 @@ export class ManageUsers implements OnInit, OnDestroy {
   }
 
   cancelToggle(): void { this.showConfirm.set(false); this.pendingUser.set(null); }
+
+  // Lower-stakes than freeze (no loss of account access), so this is a
+  // direct toggle + toast rather than a confirm dialog.
+  togglePremium(user: any): void {
+    const nextValue = !user.isPremium;
+    this.adminService.setPremium(user._id, nextValue)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          user.isPremium = nextValue;
+          this.allUsers.update(users => [...users]);
+          this.toastService.show(
+            nextValue ? `Premium granted to ${user.name}.` : `Premium revoked from ${user.name}.`,
+            'success'
+          );
+          this.dashboardCache.invalidateAdminUsers();
+          this.dashboardCache.invalidateRawUsers();
+        },
+        error: err => {
+          this.toastService.show(err?.error?.message || 'Something went wrong.', 'error');
+        },
+      });
+  }
 
   deleteUser(user: any): void { this.pendingDeleteUser.set(user); this.showDeleteConfirm.set(true); }
 
@@ -291,7 +315,7 @@ export class ManageUsers implements OnInit, OnDestroy {
   }
 
   avatarColor(name: string): string {
-    const colors = ['#43cea2','#185a9d','#f59e0b','#8b5cf6','#ef4444','#06b6d4','#10b981','#f97316'];
+    const colors = ['#2563EB','#14B8A6','#f59e0b','#8b5cf6','#ef4444','#06b6d4','#10b981','#f97316'];
     let hash = 0;
     for (const c of name ?? '') hash = c.charCodeAt(0) + ((hash << 5) - hash);
     return colors[Math.abs(hash) % colors.length];

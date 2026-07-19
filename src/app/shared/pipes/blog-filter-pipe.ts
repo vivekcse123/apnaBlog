@@ -11,8 +11,10 @@ export class BlogFilterPipe implements PipeTransform {
     if (!blogs) return [];
 
     if (search) {
+      const s = search.toLowerCase();
       blogs = blogs.filter(b =>
-        b.title.toLowerCase().includes(search.toLowerCase())
+        b.title.toLowerCase().includes(s) ||
+        ((b.user as any)?.name ?? '').toLowerCase().includes(s)
       );
     }
 

@@ -1,9 +1,10 @@
 import {
-  ChangeDetectionStrategy, Component, signal
+  ChangeDetectionStrategy, Component, OnInit, signal
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import { Meta } from '@angular/platform-browser';
 import { Auth } from '../../../../core/services/auth';
 import { AuthTrustBar } from '../../../../shared/auth-trust-bar/auth-trust-bar';
 
@@ -15,7 +16,7 @@ import { AuthTrustBar } from '../../../../shared/auth-trust-bar/auth-trust-bar';
   templateUrl: './forgot-password.html',
   styleUrls: ['../../auth-shared.css', './forgot-password.css']
 })
-export class ForgotPassword {
+export class ForgotPassword implements OnInit {
 
   // ── Signals - matches login pattern ──
   isLoading    = signal(false);
@@ -32,7 +33,11 @@ export class ForgotPassword {
     ])
   });
 
-  constructor(private authService: Auth) {}
+  constructor(private authService: Auth, private meta: Meta) {}
+
+  ngOnInit(): void {
+    this.meta.updateTag({ name: 'robots', content: 'noindex, nofollow' });
+  }
 
   onSubmit() {
     this.isSubmitted.set(true);

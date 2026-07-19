@@ -102,7 +102,7 @@ export class MobileBottomNav {
       if (this.userRole === 'super_admin') return `/super-admin/${this.userId}/manage-blogs`;
       return `/user/${this.userId}/manage-blogs`;
     }
-    return '/search';
+    return '/blog';
   }
 
   get writeRoute(): string {

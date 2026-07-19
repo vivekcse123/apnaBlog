@@ -1,4 +1,8 @@
-/* Hidden on desktop - shown only on mobile */
+/* Hidden on desktop - shown only on mobile.
+   Redesigned as a floating rounded pill (part of the homepage visual
+   refresh) with a blurred glass background and larger touch targets -
+   structure/selectors are unchanged so mobile-bottom-nav.ts/.html (shared
+   across 4 modes app-wide) don't need to change. */
 :host {
   display: block;
   height: 0;
@@ -14,16 +18,18 @@
     align-items: center;
     justify-content: space-around;
     position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
+    left: 10px;
+    right: 10px;
+    bottom: calc(10px + env(safe-area-inset-bottom, 0px));
     z-index: 1100;
-    height: calc(64px + env(safe-area-inset-bottom, 0px));
-    background: var(--bg-surface, #fff);
-    border-top: 1px solid var(--border, #e5e7eb);
-    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.08);
-    padding: 0 4px;
-    padding-bottom: env(safe-area-inset-bottom, 0px);
+    height: 66px;
+    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.82);
+    -webkit-backdrop-filter: blur(18px) saturate(1.6);
+    backdrop-filter: blur(18px) saturate(1.6);
+    border: 1px solid var(--border, rgba(0, 0, 0, 0.06));
+    box-shadow: 0 8px 30px rgba(15, 23, 42, 0.14), 0 2px 8px rgba(15, 23, 42, 0.06);
+    padding: 0 6px;
     gap: 0;
     /* iOS PWA: force GPU compositing layer before first paint so position is
        resolved immediately - prevents the nav from appearing above the screen
@@ -40,14 +46,12 @@
      without the old bottom:-100px hack that misaligned dashboard content padding. */
   @media (display-mode: standalone) {
     .mob-nav {
-      bottom: 0;
-      height: calc(64px + var(--safe-area-bottom, env(safe-area-inset-bottom, 0px)));
-      padding-bottom: var(--safe-area-bottom, env(safe-area-inset-bottom, 0px));
-      transition: height 0.15s ease, padding-bottom 0.15s ease;
+      bottom: calc(10px + var(--safe-area-bottom, env(safe-area-inset-bottom, 0px)));
+      transition: bottom 0.15s ease;
     }
   }
 
-  /* ── Nav item base ── */
+  /* ── Nav item base - larger touch target (full pill height) ── */
   .mob-nav-item {
     display: flex;
     flex-direction: column;
@@ -56,46 +60,32 @@
     gap: 3px;
     flex: 1;
     height: 100%;
+    min-width: 44px;
     color: var(--text-tertiary, #9ca3af);
     text-decoration: none;
     transition: color 0.18s, transform 0.1s;
     position: relative;
     -webkit-tap-highlight-color: transparent;
-    min-width: 0;
   }
 
   .mob-nav-item:not(.mob-nav-item--fab):active {
     transform: scale(0.9);
   }
 
-  /* ── Active top-bar indicator ── */
+  /* ── Active indicator - a soft pill behind the icon+label instead of a
+     top bar, better suited to the floating-pill container ── */
   .mob-nav-item--active::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 32px;
-    height: 3px;
-    border-radius: 0 0 4px 4px;
-    background: var(--accent);
-    animation: navIndicatorSlide 0.2s ease;
+    display: none;
   }
 
-  @keyframes navIndicatorSlide {
-    from { width: 0; opacity: 0; }
-    to   { width: 32px; opacity: 1; }
-  }
-
-  /* ── Active pill bg around icon ── */
   .mob-nav-item--active .mob-nav-icon {
     background: var(--accent-subtle);
-    border-radius: 12px;
-    padding: 5px 11px;
+    border-radius: 14px;
+    padding: 6px 13px;
   }
 
   .mob-nav-item--active {
-    color: #43cea2;
+    color: #2563EB;
   }
 
   .mob-nav-item--active .mob-nav-icon svg {
@@ -104,18 +94,18 @@
 
   .mob-nav-item--active .mob-nav-label {
     font-weight: 700;
-    color: #43cea2;
+    color: #2563EB;
   }
 
-  /* ── Icon wrapper ── */
+  /* ── Icon wrapper - bigger tap target ── */
   .mob-nav-icon {
     display: flex;
     align-items: center;
     justify-content: center;
     line-height: 1;
     transition: background 0.18s, padding 0.18s, border-radius 0.18s;
-    border-radius: 10px;
-    padding: 4px 8px;
+    border-radius: 12px;
+    padding: 6px 10px;
   }
 
   /* ── User initial avatar (public mode, logged in) ── */
@@ -123,8 +113,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 26px;
-    height: 26px;
+    width: 27px;
+    height: 27px;
     border-radius: 50%;
     background: var(--accent);
     color: #fff;
@@ -135,7 +125,7 @@
   }
 
   .mob-nav-item--active .mob-nav-avatar {
-    box-shadow: 0 0 0 2px #43cea2;
+    box-shadow: 0 0 0 2px #2563EB;
   }
 
   /* ── Label ── */
@@ -151,7 +141,7 @@
 
   /* ── Hover state ── */
   .mob-nav-item:not(.mob-nav-item--fab):hover {
-    color: #43cea2;
+    color: #2563EB;
   }
 
   /* ══ Centre FAB (admin / user dashboard modes) ══ */
@@ -167,19 +157,20 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 50px;
-    height: 50px;
+    width: 52px;
+    height: 52px;
     border-radius: 50%;
     background: var(--accent);
     color: #fff;
-    box-shadow: 0 2px 8px rgba(67, 206, 162, 0.25), 0 1px 3px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.32), 0 1px 4px rgba(0,0,0,0.12);
     transition: transform 0.15s, box-shadow 0.15s;
-    margin-top: -14px;
+    margin-top: -20px;
+    border: 3px solid var(--bg-base, #F8FAFC);
   }
 
   .mob-nav-item--fab:active .mob-nav-fab-ring {
     transform: scale(0.9);
-    box-shadow: 0 1px 4px rgba(67, 206, 162, 0.18);
+    box-shadow: 0 1px 4px rgba(37, 99, 235, 0.18);
   }
 
   /* ══ Shorts item (public mode) - flat, same treatment as other items ══ */
@@ -192,8 +183,8 @@
     align-items: center;
     justify-content: center;
     line-height: 1;
-    border-radius: 10px;
-    padding: 4px 8px;
+    border-radius: 12px;
+    padding: 6px 10px;
     transition: background 0.18s, padding 0.18s, border-radius 0.18s;
   }
 
@@ -203,38 +194,33 @@
 
   /* Shorts active state - mirrors .mob-nav-item--active */
   .mob-nav-item--shorts-active {
-    color: #43cea2;
+    color: #2563EB;
   }
 
   .mob-nav-item--shorts-active .mob-nav-shorts-pill {
     background: var(--accent-subtle);
-    border-radius: 12px;
-    padding: 5px 11px;
+    border-radius: 14px;
+    padding: 6px 13px;
   }
 
   .mob-nav-item--shorts-active .mob-nav-label {
     font-weight: 700;
-    color: #43cea2;
+    color: #2563EB;
   }
 
   .mob-nav-item--shorts-active::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 32px;
-    height: 3px;
-    border-radius: 0 0 4px 4px;
-    background: var(--accent);
-    animation: navIndicatorSlide 0.2s ease;
+    display: none;
   }
 
   /* ── Dark mode ── */
   [data-theme="dark"] .mob-nav {
-    background: var(--bg-surface, #1a1a2e);
-    border-top-color: var(--border, #2a2a3e);
-    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.3);
+    background: rgba(30, 41, 59, 0.78);
+    border-color: var(--border, rgba(255, 255, 255, 0.08));
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45), 0 2px 8px rgba(0, 0, 0, 0.25);
+  }
+
+  [data-theme="dark"] .mob-nav-fab-ring {
+    border-color: var(--bg-base, #0F172A);
   }
 
   [data-theme="dark"] .mob-nav-item--active .mob-nav-icon {

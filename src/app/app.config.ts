@@ -1,4 +1,4 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZonelessChangeDetection } from '@angular/core';
+import { ApplicationConfig, ErrorHandler, provideBrowserGlobalErrorListeners, provideZonelessChangeDetection } from '@angular/core';
 import {
   provideRouter,
   withPreloading,
@@ -9,15 +9,18 @@ import {
 import { routes } from './app.routes';
 import { provideClientHydration, withEventReplay, withHttpTransferCacheOptions } from '@angular/platform-browser';
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
-import { loaderInterceptor } from './core/interceptors/loader-interceptor';
 import { authInterceptor } from './core/interceptors/auth-interceptor';
 import { dedupeInterceptor } from './core/interceptors/dedupe-interceptor';
+import { errorLoggingInterceptor } from './core/interceptors/error-logging-interceptor';
 import { SelectivePreloadingStrategy } from './core/services/selective-preloading-strategy';
+import { GlobalErrorHandler } from './core/services/global-error-handler';
+import { environment } from '../environments/environment';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideZonelessChangeDetection(),
+    { provide: ErrorHandler, useClass: GlobalErrorHandler },
     provideRouter(
       routes,
       withPreloading(SelectivePreloadingStrategy),
@@ -43,14 +46,42 @@ export const appConfig: ApplicationConfig = {
       // verbatim to every visitor until the next deploy. A time-bound resource
       // like the active monthly challenge must always be re-checked against
       // the live API on hydration, or an ended challenge keeps showing on the
-      // static shell indefinitely.
+      // static shell indefinitely. `/shorts?...limit=...` (the homepage's
+      // Shorts rail) has the exact same prerender-staleness problem, so it's
+      // excluded the same way.
+      //
+      // `getUserById` (`/api/user/<id>`, no further path segments) carries
+      // `isFollowing`/`followersCount` for the requesting user - but the auth
+      // token lives in localStorage, which doesn't exist during SSR, so the
+      // server always issues this request anonymously (isFollowing: false).
+      // Without this exclusion, that anonymous SSR response gets replayed
+      // verbatim on hydration instead of being re-fetched with the real
+      // token, so the author-card Follow button always resets to "Follow"
+      // on a full page reload even when the user is actually following.
+      // This one applies in dev too - SSR never has the token regardless of
+      // build mode - unlike the prerender-staleness exclusions below.
+      //
+      // The prerender-staleness exclusions (`/post?...limit=`, `/shorts?...limit=`,
+      // `/challenge`) only apply in production. They exist because `ng build`
+      // bakes Prerender routes (home, /blog, /category/*) into static HTML
+      // once at deploy time, so the browser must always re-fetch live data on
+      // hydration or it'd replay the same frozen response to every visitor
+      // until the next deploy. In `ng serve`, there's no such build-time
+      // snapshot - every reload is a genuinely fresh SSR render for that
+      // exact request, so excluding these here only forces a redundant
+      // duplicate fetch on hydration and makes local reloads feel slow.
       withHttpTransferCacheOptions({
         filter: (req) => !(
-          (req.url.includes('/post?') && req.url.includes('limit=')) ||
-          req.url.includes('/challenge')
+          (environment.production && (
+            (req.url.includes('/post?') && req.url.includes('limit=')) ||
+            (req.url.includes('/shorts?') && req.url.includes('limit=')) ||
+            req.url.includes('/challenge') ||
+            req.url.includes('/post/sponsored')
+          )) ||
+          /\/api\/user\/[^/?]+(\?.*)?$/.test(req.url)
         ),
       }),
     ),
-    provideHttpClient(withFetch(), withInterceptors([dedupeInterceptor, loaderInterceptor, authInterceptor])),
+    provideHttpClient(withFetch(), withInterceptors([dedupeInterceptor, errorLoggingInterceptor, authInterceptor])),
   ]
 };

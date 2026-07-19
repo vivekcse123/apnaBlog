@@ -27,8 +27,9 @@ export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, ne
           showSessionToast();
           setTimeout(() => { sessionExpiredToastShown = false; }, 5000);
         }
+        const returnUrl = router.url;
         authService.logout();
-        router.navigate(['/auth/login'], { queryParams: { reason: 'session_expired' } });
+        router.navigate(['/auth/login'], { queryParams: { reason: 'session_expired', returnUrl } });
       }
       return throwError(() => error);
     })

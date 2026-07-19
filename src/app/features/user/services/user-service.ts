@@ -65,8 +65,18 @@ export class UserService {
     );
   }
 
+  /** Resolves a Career Guides expert slug to the real mentor's user id, if one exists. */
+  getUserByMentorSlug(slug: string): Observable<{ status: number; data?: { _id: string; name: string } }> {
+    return this.http.get<{ status: number; data?: { _id: string; name: string } }>(`${this.endPoint}by-mentor-slug/${slug}`);
+  }
+
   getFollowers(userId: string): Observable<{ status: number; data: any[] }> {
     return this.http.get<{ status: number; data: any[] }>(`${this.endPoint}${userId}/followers`);
+  }
+
+  /** Bulk real follower counts for every approved mentor, keyed by mentorSlug. */
+  getMentorFollowerCounts(): Observable<{ status: number; data: { expertSlug: string; followersCount: number }[] }> {
+    return this.http.get<{ status: number; data: { expertSlug: string; followersCount: number }[] }>(`${this.endPoint}mentor-followers`);
   }
 
   followUser(authorId: string): Observable<{ status: number; data: { followersCount: number; isFollowing: boolean } }> {

@@ -1,0 +1,477 @@
+<div class="bl">
+
+  <app-site-header></app-site-header>
+
+  <!-- ══ BREADCRUMB + HERO ══ -->
+  <nav class="bl-breadcrumb" aria-label="Breadcrumb">
+    <ol itemscope itemtype="https://schema.org/BreadcrumbList">
+      <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a routerLink="/" itemprop="item"><span itemprop="name">Home</span></a>
+        <meta itemprop="position" content="1" />
+      </li>
+      <span class="sep" aria-hidden="true">/</span>
+      <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <span itemprop="name" aria-current="page">Blog</span>
+        <meta itemprop="position" content="2" />
+      </li>
+    </ol>
+  </nav>
+
+  <section class="bl-hero">
+    <div class="bl-hero-text">
+      <h1>All Blogs</h1>
+      <p>Discover premium stories on Technology, AI, Career, Business, Health and more &mdash; written by people who've done the work.</p>
+    </div>
+    <svg class="bl-hero-art" viewBox="0 0 126 104" width="110" height="90" aria-hidden="true" focusable="false">
+      <rect x="14" y="18" width="70" height="76" rx="9" fill="var(--bg-surface)" stroke="var(--border)" stroke-width="2"/>
+      <line x1="26" y1="36" x2="72" y2="36" stroke="var(--accent-subtle)" stroke-width="5" stroke-linecap="round"/>
+      <line x1="26" y1="50" x2="72" y2="50" stroke="var(--border)" stroke-width="5" stroke-linecap="round"/>
+      <line x1="26" y1="64" x2="58" y2="64" stroke="var(--border)" stroke-width="5" stroke-linecap="round"/>
+      <g transform="rotate(28 92 46)">
+        <rect x="86" y="10" width="10" height="66" rx="5" fill="var(--accent)"/>
+        <path d="M86 10 L96 10 L91 0 Z" fill="var(--accent-2)"/>
+      </g>
+      <circle cx="106" cy="78" r="9" fill="var(--accent-subtle)"/>
+    </svg>
+  </section>
+
+  <!-- CATEGORY CHIPS (tablet/mobile only - desktop uses the sidebar list) -->
+  <div class="bl-cat-scroll tablet-mobile-only" role="tablist" aria-label="Filter by category">
+    <button type="button" class="bl-cat-chip" [class.active]="selectedCategory() === 'All'" (click)="selectCategory('All')">
+      <span class="bl-cat-chip-icon bl-cat-chip-icon--all">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.6"/></svg>
+      </span>
+      <span class="name">All</span>
+    </button>
+    @for (row of categoryRows(); track row.slug) {
+      <button type="button" class="bl-cat-chip" [class.active]="selectedCategory() === row.name" (click)="selectCategory(row.name)">
+        <span class="bl-cat-chip-icon" [style.background]="categoryColor(row.name)" [innerHTML]="getCategoryIcon(row.name)"></span>
+        <span class="name">{{ row.name }}</span>
+      </button>
+    }
+  </div>
+
+  <!-- ══ LAYOUT ══ -->
+  <div class="bl-layout">
+
+    <!-- LEFT SIDEBAR (desktop only) -->
+    <aside class="bl-side bl-side-left desktop-only">
+      <div class="bl-card">
+        <h3>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.6"/></svg>
+          Categories
+        </h3>
+        <div class="bl-cat-list">
+          <button class="bl-cat-item" [class.active]="selectedCategory() === 'All'" (click)="selectCategory('All')">
+            <span class="bl-swatch bl-swatch--all">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.6"/></svg>
+            </span>
+            <span class="name">All Categories</span>
+            <span class="count">{{ totalPublishedCount() }}</span>
+          </button>
+          @for (row of categoryRows(); track row.slug) {
+            <button class="bl-cat-item" [class.active]="selectedCategory() === row.name" (click)="selectCategory(row.name)">
+              <span class="bl-swatch" [style.background]="categoryColor(row.name)" [innerHTML]="getCategoryIcon(row.name)"></span>
+              <span class="name">{{ row.name }}</span>
+              <span class="count">{{ row.count }}</span>
+            </button>
+          }
+        </div>
+      </div>
+
+      @if (popularTags().length) {
+        <div class="bl-card">
+          <h3>Popular Tags</h3>
+          <div class="bl-tag-row">
+            @for (tag of popularTags(); track tag.name) {
+              <a class="bl-tag-chip" [routerLink]="['/tag', tag.name.toLowerCase()]">{{ tag.name }}</a>
+            }
+          </div>
+        </div>
+      }
+
+      <div class="bl-card">
+        <h3>Filter by</h3>
+        <div class="bl-subheading">Reading Time</div>
+        <label class="bl-check-row">
+          <input type="checkbox" [checked]="readingBuckets().has('0-5')" (change)="toggleReadingBucket('0-5')" />
+          <span>0 &ndash; 5 min</span><span class="cnt">{{ readingTimeCounts()['0-5'] }}</span>
+        </label>
+        <label class="bl-check-row">
+          <input type="checkbox" [checked]="readingBuckets().has('5-15')" (change)="toggleReadingBucket('5-15')" />
+          <span>5 &ndash; 15 min</span><span class="cnt">{{ readingTimeCounts()['5-15'] }}</span>
+        </label>
+        <label class="bl-check-row">
+          <input type="checkbox" [checked]="readingBuckets().has('15-30')" (change)="toggleReadingBucket('15-30')" />
+          <span>15 &ndash; 30 min</span><span class="cnt">{{ readingTimeCounts()['15-30'] }}</span>
+        </label>
+        <label class="bl-check-row">
+          <input type="checkbox" [checked]="readingBuckets().has('30+')" (change)="toggleReadingBucket('30+')" />
+          <span>30+ min</span><span class="cnt">{{ readingTimeCounts()['30+'] }}</span>
+        </label>
+
+        <div class="bl-subheading" style="margin-top:14px">Sort by</div>
+        <div class="bl-sort-wrap">
+          <button class="bl-sort-select" (click)="showSortDropdown.set(!showSortDropdown())">
+            <span>
+              @switch (sortBy()) {
+                @case ('latest') { Latest First }
+                @case ('trending') { Trending }
+                @case ('liked') { Most Liked }
+                @case ('viewed') { Most Viewed }
+              }
+            </span>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          @if (showSortDropdown()) {
+            <div class="bl-sort-dropdown" role="menu">
+              <button role="menuitem" [class.active]="sortBy()==='latest'" (click)="setSort('latest')">Latest First</button>
+              <button role="menuitem" [class.active]="sortBy()==='trending'" (click)="setSort('trending')">Trending</button>
+              <button role="menuitem" [class.active]="sortBy()==='liked'" (click)="setSort('liked')">Most Liked</button>
+              <button role="menuitem" [class.active]="sortBy()==='viewed'" (click)="setSort('viewed')">Most Viewed</button>
+            </div>
+          }
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="bl-main" id="main-content">
+      <div class="bl-tabbar" id="blog-grid-top">
+        <!-- Desktop: all sort options sit in one row, no dropdown -->
+        <div class="bl-sort-row desktop-only" role="tablist" aria-label="Sort posts">
+          <button type="button" class="bl-sort-chip" [class.active]="sortBy()==='latest'" (click)="setSort('latest')">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>
+            Latest
+          </button>
+          <button type="button" class="bl-sort-chip" [class.active]="sortBy()==='trending'" (click)="setSort('trending')">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5s5 4.6 5 9.5a5 5 0 1 1-10 0c0-1.4.6-2.4 1.3-3.3.2 1 .9 1.6 1.6 1.6-.4-2.6.7-4.8 2.1-6.3-.3 1.6.4 2.7 0 4.1.7-.6 1.5-2 0-5.6Z"/></svg>
+            Trending
+          </button>
+          <button type="button" class="bl-sort-chip" [class.active]="sortBy()==='liked'" (click)="setSort('liked')">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20.2S3.5 15.3 3.5 9.4A4.6 4.6 0 0 1 12 6.7a4.6 4.6 0 0 1 8.5 2.7c0 5.9-8.5 10.8-8.5 10.8Z"/></svg>
+            Most Liked
+          </button>
+          <button type="button" class="bl-sort-chip" [class.active]="sortBy()==='viewed'" (click)="setSort('viewed')">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.2 12S5.6 5.5 12 5.5 21.8 12 21.8 12 18.4 18.5 12 18.5 2.2 12 2.2 12Z"/><circle cx="12" cy="12" r="2.8"/></svg>
+            Most Viewed
+          </button>
+        </div>
+
+        <!-- Tablet/Mobile: compact dropdown (not enough width for a full row) -->
+        <div class="bl-sort-menu-wrap tablet-mobile-only" (click)="$event.stopPropagation()">
+          <button type="button" class="bl-sort-menu-btn" (click)="showSortMenu.set(!showSortMenu())"
+                  aria-haspopup="true" [attr.aria-expanded]="showSortMenu()">
+            @switch (sortBy()) {
+              @case ('latest') {
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>
+                <span>Latest</span>
+              }
+              @case ('trending') {
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5s5 4.6 5 9.5a5 5 0 1 1-10 0c0-1.4.6-2.4 1.3-3.3.2 1 .9 1.6 1.6 1.6-.4-2.6.7-4.8 2.1-6.3-.3 1.6.4 2.7 0 4.1.7-.6 1.5-2 0-5.6Z"/></svg>
+                <span>Trending</span>
+              }
+              @case ('liked') {
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20.2S3.5 15.3 3.5 9.4A4.6 4.6 0 0 1 12 6.7a4.6 4.6 0 0 1 8.5 2.7c0 5.9-8.5 10.8-8.5 10.8Z"/></svg>
+                <span>Most Liked</span>
+              }
+              @case ('viewed') {
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.2 12S5.6 5.5 12 5.5 21.8 12 21.8 12 18.4 18.5 12 18.5 2.2 12 2.2 12Z"/><circle cx="12" cy="12" r="2.8"/></svg>
+                <span>Most Viewed</span>
+              }
+            }
+            <svg class="bl-sort-menu-chev" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          @if (showSortMenu()) {
+            <div class="bl-sort-menu-dropdown" role="menu">
+              <button role="menuitem" [class.active]="sortBy()==='latest'" (click)="setSort('latest')">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>
+                Latest
+              </button>
+              <button role="menuitem" [class.active]="sortBy()==='trending'" (click)="setSort('trending')">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5s5 4.6 5 9.5a5 5 0 1 1-10 0c0-1.4.6-2.4 1.3-3.3.2 1 .9 1.6 1.6 1.6-.4-2.6.7-4.8 2.1-6.3-.3 1.6.4 2.7 0 4.1.7-.6 1.5-2 0-5.6Z"/></svg>
+                Trending
+              </button>
+              <button role="menuitem" [class.active]="sortBy()==='liked'" (click)="setSort('liked')">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20.2S3.5 15.3 3.5 9.4A4.6 4.6 0 0 1 12 6.7a4.6 4.6 0 0 1 8.5 2.7c0 5.9-8.5 10.8-8.5 10.8Z"/></svg>
+                Most Liked
+              </button>
+              <button role="menuitem" [class.active]="sortBy()==='viewed'" (click)="setSort('viewed')">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.2 12S5.6 5.5 12 5.5 21.8 12 21.8 12 18.4 18.5 12 18.5 2.2 12 2.2 12Z"/><circle cx="12" cy="12" r="2.8"/></svg>
+                Most Viewed
+              </button>
+            </div>
+          }
+        </div>
+        <div class="bl-filter-wrap" (click)="$event.stopPropagation()">
+          <button class="bl-filter-btn" [class.active]="showFilterPanel()"
+                  (click)="showFilterPanel.set(!showFilterPanel())"
+                  aria-haspopup="true" [attr.aria-expanded]="showFilterPanel()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="10" y1="18" x2="14" y2="18"/></svg>
+            <span class="bl-filter-label">Filter</span>
+            @if (hasActiveFilters()) { <span class="bl-filter-dot"></span> }
+          </button>
+
+          @if (showFilterPanel()) {
+            <div class="bl-filter-drawer">
+              <div class="bl-subheading">Reading Time</div>
+              <div class="bl-drawer-row">
+                @for (b of ['0-5','5-15','15-30','30+']; track b) {
+                  <button class="bl-drawer-chip" [class.active]="readingBuckets().has($any(b))" (click)="toggleReadingBucket($any(b))">{{ b }} min</button>
+                }
+              </div>
+              <div class="bl-subheading" style="margin-top:12px">Sort by</div>
+              <div class="bl-drawer-row">
+                <button class="bl-drawer-chip" [class.active]="sortBy()==='latest'" (click)="setSort('latest')">Latest</button>
+                <button class="bl-drawer-chip" [class.active]="sortBy()==='trending'" (click)="setSort('trending')">Trending</button>
+                <button class="bl-drawer-chip" [class.active]="sortBy()==='liked'" (click)="setSort('liked')">Most Liked</button>
+                <button class="bl-drawer-chip" [class.active]="sortBy()==='viewed'" (click)="setSort('viewed')">Most Viewed</button>
+              </div>
+              <button class="bl-reset-btn" (click)="resetFilters()">Reset Filters</button>
+            </div>
+          }
+        </div>
+      </div>
+
+      @if (isLoading()) {
+        <div class="bl-grid">
+          @for (_ of [1,2,3,4,5,6]; track $index) {
+            <div class="bl-card-skel">
+              <div class="skel skel--media"></div>
+              <div class="skel skel--line w90"></div>
+              <div class="skel skel--line w60"></div>
+            </div>
+          }
+        </div>
+      } @else if (pagedPosts().length === 0) {
+        <div class="bl-empty">
+          <div class="bl-empty-icon" aria-hidden="true">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="12" height="15" rx="2"/><circle cx="17" cy="17" r="4"/><line x1="20" y1="20" x2="22.5" y2="22.5"/></svg>
+          </div>
+          <h2>No blogs found</h2>
+          <p>Try widening your filters or searching a different topic.</p>
+          <button class="bl-reset-btn" (click)="resetFilters()">Reset Filters</button>
+        </div>
+      } @else {
+        <div class="bl-grid">
+          @for (post of pagedPosts(); track post._id) {
+            <article class="bl-post-card">
+              <a class="bl-post-media" [routerLink]="['/blog', post.slug || post._id]" tabindex="-1" aria-hidden="true">
+                @if (post.featuredImage) {
+                  <img [src]="post.featuredImage" [alt]="post.title" loading="lazy" width="380" height="220" />
+                } @else {
+                  <div class="bl-post-media-fallback">{{ post.title.charAt(0).toUpperCase() }}</div>
+                }
+                @if (post.categories[0]) {
+                  <span class="bl-post-badge" [style.background]="categoryColor(post.categories[0])">{{ post.categories[0] }}</span>
+                }
+                <button class="bl-post-save" [class.saved]="isBookmarked(post._id)"
+                        (click)="toggleBookmark(post._id, $event)"
+                        [attr.aria-label]="(isBookmarked(post._id) ? 'Remove bookmark' : 'Bookmark') + ': ' + post.title"
+                        [attr.aria-pressed]="isBookmarked(post._id)">
+                  <svg width="14" height="14" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" [attr.fill]="isBookmarked(post._id) ? 'currentColor' : 'none'"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
+                </button>
+              </a>
+              <div class="bl-post-body">
+                <h4><a [routerLink]="['/blog', post.slug || post._id]">{{ post.title }}</a></h4>
+                <p>{{ post.description }}</p>
+                <div class="bl-post-author">
+                  <span class="bl-avatar-mini" aria-hidden="true">{{ getAuthorInitial(post) }}</span>
+                  @if (getAuthorId(post)) {
+                    <a class="who" [routerLink]="['/author', getAuthorId(post)]">{{ getAuthorName(post) }}</a>
+                  } @else {
+                    <span class="who">{{ getAuthorName(post) }}</span>
+                  }
+                  <span class="bl-post-meta">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>
+                    {{ readingTime(post) }} min read
+                  </span>
+                </div>
+                <div class="bl-post-stats">
+                  <span class="stat">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.2 12S5.6 5.5 12 5.5 21.8 12 21.8 12 18.4 18.5 12 18.5 2.2 12 2.2 12Z"/><circle cx="12" cy="12" r="2.8"/></svg>
+                    {{ fmtCount(post.views) }}
+                  </span>
+                  <span class="stat">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20.2S3.5 15.3 3.5 9.4A4.6 4.6 0 0 1 12 6.7a4.6 4.6 0 0 1 8.5 2.7c0 5.9-8.5 10.8-8.5 10.8Z"/></svg>
+                    {{ fmtCount(post.likesCount) }}
+                  </span>
+                  <button class="stat stat-save" [class.saved]="isBookmarked(post._id)" (click)="toggleBookmark(post._id, $event)" aria-label="Bookmark">
+                    <svg width="15" height="15" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" [attr.fill]="isBookmarked(post._id) ? 'currentColor' : 'none'"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
+                  </button>
+                </div>
+              </div>
+            </article>
+          }
+        </div>
+
+        @if (totalPages() > 1) {
+          <nav class="bl-pagination" aria-label="Pagination">
+            <button class="bl-pg-btn bl-pg-nav" [disabled]="currentPage()===1" (click)="goToPage(currentPage()-1)" aria-label="Previous page">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            @for (p of pageNumbers(); track $index) {
+              @if (p === '…') {
+                <span class="bl-pg-dots">&hellip;</span>
+              } @else {
+                <button class="bl-pg-btn" [class.active]="p === currentPage()" (click)="goToPage($any(p))">{{ p }}</button>
+              }
+            }
+            <button class="bl-pg-btn bl-pg-nav" [disabled]="currentPage()===totalPages()" (click)="goToPage(currentPage()+1)" aria-label="Next page">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </nav>
+        }
+      }
+    </main>
+
+    <!-- RIGHT SIDEBAR (desktop only) -->
+    <aside class="bl-side bl-side-right desktop-only">
+
+      @if (trendingSidebarPosts().length) {
+        <div class="bl-card">
+          <h3>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5s5 4.6 5 9.5a5 5 0 1 1-10 0c0-1.4.6-2.4 1.3-3.3.2 1 .9 1.6 1.6 1.6-.4-2.6.7-4.8 2.1-6.3-.3 1.6.4 2.7 0 4.1.7-.6 1.5-2 0-5.6Z"/></svg>
+            Trending Now
+          </h3>
+          <ol class="bl-trend-list">
+            @for (post of trendingSidebarPosts(); track post._id; let i = $index) {
+              <li class="bl-trend-item">
+                <span class="bl-trend-rank">{{ i + 1 }}</span>
+                <a class="bl-trend-body" [routerLink]="['/blog', post.slug || post._id]">
+                  <span class="bl-trend-title">{{ post.title }}</span>
+                  <span class="bl-trend-meta">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.2 12S5.6 5.5 12 5.5 21.8 12 21.8 12 18.4 18.5 12 18.5 2.2 12 2.2 12Z"/><circle cx="12" cy="12" r="2.8"/></svg>
+                    {{ fmtCount(post.views) }}
+                  </span>
+                </a>
+              </li>
+            }
+          </ol>
+        </div>
+      }
+
+      @if (topAuthors().length) {
+        <div class="bl-card">
+          <h3>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Top Authors
+          </h3>
+          <div class="bl-author-list">
+            @for (author of topAuthors(); track author.id) {
+              <a class="bl-author-item" [routerLink]="['/author', author.id]">
+                @if (author.avatar) {
+                  <img class="bl-author-avatar" [src]="author.avatar" [alt]="author.name" loading="lazy" width="32" height="32" />
+                } @else {
+                  <span class="bl-author-avatar bl-author-avatar--fallback">{{ author.name.charAt(0).toUpperCase() }}</span>
+                }
+                <span class="bl-author-info">
+                  <span class="name">{{ author.name }}</span>
+                  <span class="cnt">{{ author.postCount }} {{ author.postCount === 1 ? 'post' : 'posts' }}</span>
+                </span>
+              </a>
+            }
+          </div>
+        </div>
+      }
+
+      <div class="bl-card bl-digest-card">
+        <h3>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M21 6l-9 6-9-6"/></svg>
+          The ApnaInsights Digest
+        </h3>
+        <p class="bl-digest-sub">One sharp email, every Sunday. The best stories, no spam.</p>
+        @if (digestSuccess()) {
+          <div class="bl-digest-success" role="alert">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="var(--accent)" stroke-width="2"/><path d="M7 12l4 4 6-6" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            {{ digestMessage() }}
+          </div>
+        } @else {
+          <form class="bl-digest-form" (ngSubmit)="onDigestSubscribe()" novalidate>
+            <label class="visually-hidden" for="bl-digest-email">Email address</label>
+            <input id="bl-digest-email" name="bl-digest-email" type="email"
+                   class="bl-digest-input" placeholder="you@email.com"
+                   [(ngModel)]="digestEmail" (ngModelChange)="onDigestEmailInput($event)"
+                   required autocomplete="email" [disabled]="digestSubscribing()"
+                   [class.bl-digest-input--invalid]="digestEmailError()" />
+            <button type="submit" class="bl-digest-btn" [disabled]="digestSubscribing() || !digestEmail.trim() || !!digestEmailError()">
+              @if (digestSubscribing()) { <span class="bl-digest-spinner"></span> } @else { Subscribe }
+            </button>
+          </form>
+          @if (digestEmailError()) {
+            <p class="bl-digest-error">{{ digestEmailError() }}</p>
+          } @else if (digestError()) {
+            <p class="bl-digest-error">{{ digestError() }}</p>
+          }
+        }
+      </div>
+
+      @if (recentlyViewed().length) {
+        <div class="bl-card">
+          <h3>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>
+            Recently Viewed
+          </h3>
+          <div class="bl-recent-list">
+            @for (entry of recentlyViewed(); track entry.id) {
+              <a class="bl-recent-item" [routerLink]="['/blog', entry.slug || entry.id]">
+                <span class="bl-recent-title">{{ entry.title }}</span>
+                @if (entry.categories[0]) {
+                  <span class="bl-recent-cat">{{ entry.categories[0] }}</span>
+                }
+              </a>
+            }
+          </div>
+        </div>
+      }
+
+      <div class="bl-card bl-streak-card">
+        <h3>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5s5 4.6 5 9.5a5 5 0 1 1-10 0c0-1.4.6-2.4 1.3-3.3.2 1 .9 1.6 1.6 1.6-.4-2.6.7-4.8 2.1-6.3-.3 1.6.4 2.7 0 4.1.7-.6 1.5-2 0-5.6Z"/></svg>
+          Your Reading Streak
+        </h3>
+        @if (readingStreak() > 0) {
+          <div class="bl-streak-value">🔥 <strong>{{ readingStreak() }}</strong>-day streak</div>
+          <p class="bl-streak-hint">Keep it going — read something today.</p>
+        } @else {
+          <p class="bl-streak-hint">Read an article today to start your streak.</p>
+        }
+      </div>
+
+    </aside>
+  </div>
+
+  <!-- AdSense - hidden on empty result sets to avoid low-value-content ad density -->
+  @if (!isLoading() && pagedPosts().length > 0) {
+    <div class="page-ad-wrap">
+      <ins class="adsbygoogle"
+        style="display:block"
+        data-ad-client="ca-pub-6477809641944524"
+        data-ad-slot="2024301795"
+        data-ad-format="auto"
+        data-full-width-responsive="true"></ins>
+    </div>
+  }
+
+  <!-- FOOTER -->
+  <footer class="bl-footer">
+    <div class="bl-footer-inner">
+      <a routerLink="/" class="bl-footer-logo">
+        <img src="/logo-96.png" alt="ApnaInsights" width="20" height="20" loading="lazy" />
+        <span>ApnaInsights</span>
+      </a>
+      <nav class="bl-footer-links" aria-label="Footer links">
+        <a routerLink="/">Home</a>
+        <span aria-hidden="true">&middot;</span>
+        <a [routerLink]="writeRoute">Write for Us</a>
+        <span aria-hidden="true">&middot;</span>
+        <a routerLink="/about">About</a>
+        <span aria-hidden="true">&middot;</span>
+        <a routerLink="/privacy-policy">Privacy Policy</a>
+      </nav>
+      <p class="bl-footer-copy">&copy; {{ currentYear }} ApnaInsights &middot; Made with ❤️ in India</p>
+    </div>
+  </footer>
+
+  <app-mobile-bottom-nav></app-mobile-bottom-nav>
+</div>

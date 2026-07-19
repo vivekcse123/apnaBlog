@@ -14,12 +14,15 @@ import { AllPostsCache } from '../../../../core/services/all-posts-cache';
 import { Post } from '../../../../core/models/post.model';
 import { TimeAgoPipe } from '../../../../shared/pipes/time-ago-pipe';
 import { MobileBottomNav } from '../../../../shared/mobile-bottom-nav/mobile-bottom-nav';
+import { SiteHeader } from '../../../../shared/site-header/site-header';
+import { Auth } from '../../../../core/services/auth';
+import { BookmarkService } from '../../../../core/services/bookmark.service';
 
 @Component({
   selector: 'app-tag-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, CommonModule, DatePipe, TimeAgoPipe, MobileBottomNav],
+  imports: [RouterLink, CommonModule, DatePipe, TimeAgoPipe, MobileBottomNav, SiteHeader],
   templateUrl: './tag-page.html',
   styleUrl: './tag-page.css',
 })
@@ -33,6 +36,19 @@ export class TagPage implements OnInit, OnDestroy {
   private meta        = inject(Meta);
   private titleSvc    = inject(Title);
   private document    = inject(DOCUMENT);
+  private auth        = inject(Auth);
+  bookmarkService      = inject(BookmarkService);
+
+  get writeRoute(): string {
+    if (!this.auth.isAuthorized()) return '/auth/login';
+    const id   = this.auth.userId();
+    const role = this.auth.userRole();
+    if (!id) return '/auth/login';
+    if (role === 'admin')       return `/admin/${id}`;
+    if (role === 'super_admin') return `/super-admin/${id}`;
+    if (role === 'sponsor')     return `/sponsor/${id}`;
+    return `/user/${id}`;
+  }
 
   tagSlug  = signal('');
   allPosts = signal<Post[]>([]);
@@ -259,11 +275,23 @@ export class TagPage implements OnInit, OnDestroy {
     return (post.user as any)?._id ?? null;
   }
 
+  getAuthorInitial(post: Post): string {
+    return this.getAuthorName(post).charAt(0).toUpperCase();
+  }
+
+  isBookmarked(postId: string): boolean { return this.bookmarkService.isBookmarked(postId); }
+
+  toggleBookmark(postId: string, event: Event): void {
+    event.stopPropagation();
+    event.preventDefault();
+    this.bookmarkService.toggle(postId);
+  }
+
   private rtCache = new Map<string, number>();
   readingTime(post: Post): number {
     const id = post._id;
     if (this.rtCache.has(id)) return this.rtCache.get(id)!;
-    const mins = Math.max(1, Math.ceil(
+    const mins = post.readingTimeMinutes ?? Math.max(1, Math.ceil(
       (post.content ?? '').replace(/<[^>]*>/g, '').trim().split(/\s+/).length / 200
     ));
     this.rtCache.set(id, mins);

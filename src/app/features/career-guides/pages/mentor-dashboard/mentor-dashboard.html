@@ -1,0 +1,120 @@
+<app-site-header></app-site-header>
+
+<div class="md">
+
+  @if (showAlreadyMentorNotice()) {
+    <div class="md-notice">
+      <span>You are already an approved mentor.</span>
+      <button type="button" (click)="dismissNotice()" aria-label="Dismiss">✕</button>
+    </div>
+  }
+
+  <header class="md-hero">
+    <div>
+      <h1>Welcome back, {{ mentorName().split(' ')[0] || 'Mentor' }} 👋</h1>
+      <p>Here's what's happening with your mentorship requests today.</p>
+      @if (avgRating(); as avg) {
+        <p class="md-avg-rating">⭐ {{ avg }} average from {{ ratedCount() }} rated session{{ ratedCount() === 1 ? '' : 's' }}</p>
+      }
+    </div>
+    <div class="md-hero-actions">
+      <a class="md-btn md-btn--outline" routerLink="/career-guides/explore">Browse Experts</a>
+      @if (mentorSlug()) {
+        <a class="md-btn md-btn--outline" [routerLink]="['/career-guides', mentorSlug()]">View Public Profile</a>
+      }
+      <a class="md-btn md-btn--primary" [routerLink]="mentorRequestsLink()">View All Requests</a>
+    </div>
+  </header>
+
+  @if (isLoading()) {
+    <div class="md-skel-row">
+      @for (_ of [1,2,3,4]; track $index) { <div class="md-skel"></div> }
+    </div>
+  } @else if (error()) {
+    <div class="md-error">{{ error() }}</div>
+  } @else {
+    <div class="md-stats">
+      <div class="md-stat">
+        <strong>{{ today().length }}</strong>
+        <span>Today's Sessions</span>
+      </div>
+      <div class="md-stat">
+        <strong>{{ upcoming().length }}</strong>
+        <span>Upcoming</span>
+      </div>
+      <div class="md-stat md-stat--pending">
+        <strong>{{ pending().length }}</strong>
+        <span>Pending Requests</span>
+      </div>
+      <div class="md-stat md-stat--complete">
+        <strong>{{ completed().length }}</strong>
+        <span>Completed</span>
+      </div>
+    </div>
+
+    <section class="md-section">
+      <h2>Today's Schedule</h2>
+      @if (today().length === 0) {
+        <p class="md-empty-line">Nothing scheduled for today.</p>
+      } @else {
+        <div class="md-list">
+          @for (r of today(); track trackById($index, r)) {
+            <a class="md-item" [routerLink]="mentorRequestsLink()">
+              <span class="md-item-time">{{ r.preferredTime }}</span>
+              <span class="md-item-name">{{ r.userName }}</span>
+              <span class="md-item-topic">{{ r.topic }}</span>
+              <span class="md-status" [attr.data-status]="r.status">{{ r.status }}</span>
+            </a>
+          }
+        </div>
+      }
+    </section>
+
+    <section class="md-section">
+      <h2>Pending Requests</h2>
+      @if (pending().length === 0) {
+        <p class="md-empty-line">You're all caught up - no pending requests.</p>
+      } @else {
+        <div class="md-list">
+          @for (r of pending().slice(0, 5); track trackById($index, r)) {
+            <a class="md-item" [routerLink]="mentorRequestsLink()">
+              <span class="md-item-time">{{ r.preferredDate }} · {{ r.preferredTime }}</span>
+              <span class="md-item-name">{{ r.userName }}</span>
+              <span class="md-item-topic">{{ r.topic }}</span>
+              <span class="md-status" data-status="pending">pending</span>
+            </a>
+          }
+        </div>
+        @if (pending().length > 5) {
+          <a class="md-view-all" [routerLink]="mentorRequestsLink()">View all {{ pending().length }} pending requests →</a>
+        }
+      }
+    </section>
+
+    <section class="md-section">
+      <h2>Recent Reviews</h2>
+      @if (recentReviews().length === 0) {
+        <p class="md-empty-line">No reviews yet - they'll show up here once requesters rate a completed session.</p>
+      } @else {
+        <div class="md-reviews">
+          @for (r of recentReviews(); track trackById($index, r)) {
+            <div class="md-review">
+              <div class="md-review-head">
+                <span class="md-review-stars">
+                  @for (s of [1,2,3,4,5]; track s) {
+                    <span [class.filled]="s <= r.feedback!.rating">★</span>
+                  }
+                </span>
+                <span class="md-review-name">{{ r.userName }}</span>
+              </div>
+              @if (r.feedback!.comment) { <p class="md-review-comment">"{{ r.feedback!.comment }}"</p> }
+            </div>
+          }
+        </div>
+      }
+    </section>
+  }
+
+</div>
+
+<app-mobile-bottom-nav></app-mobile-bottom-nav>

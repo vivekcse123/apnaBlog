@@ -6,6 +6,7 @@ import { environment } from '../../../../../environments/environment';
 import { CommonModule, DatePipe, isPlatformBrowser } from '@angular/common';
 import { Meta, Title } from '@angular/platform-browser';
 import { DOCUMENT } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { PostService } from '../../../post/services/post-service';
 import { UserService } from '../../../user/services/user-service';
@@ -16,12 +17,38 @@ import { User } from '../../../user/models/user.mode';
 import { VideoShort } from '../../../shorts/models/video-short.model';
 import { TimeAgoPipe } from '../../../../shared/pipes/time-ago-pipe';
 import { MobileBottomNav } from '../../../../shared/mobile-bottom-nav/mobile-bottom-nav';
+import { SiteHeader } from '../../../../shared/site-header/site-header';
+import { BookmarkService } from '../../../../core/services/bookmark.service';
+import { MessageComposerModal } from '../message-composer.modal';
+
+// Emoji + accent colour for the expertise chips - derived from each author's
+// own post categories (real data) rather than a fabricated skills list.
+// Keep in sync with the category set used across the site (home/blog-list).
+const CATEGORY_META: Record<string, { emoji: string; color: string }> = {
+  Technology:    { emoji: '💻', color: '#2563EB' },
+  Health:        { emoji: '❤️', color: '#EF4444' },
+  Sports:        { emoji: '🏏', color: '#F59E0B' },
+  Business:      { emoji: '💼', color: '#7C3AED' },
+  AI:            { emoji: '🤖', color: '#7C3AED' },
+  Career:        { emoji: '💼', color: '#0F766E' },
+  Finance:       { emoji: '💰', color: '#16A34A' },
+  Lifestyle:     { emoji: '🌿', color: '#0D9488' },
+  Education:     { emoji: '🎓', color: '#2563EB' },
+  Entertainment: { emoji: '🎬', color: '#DB2777' },
+  Village:       { emoji: '🏡', color: '#65A30D' },
+  Social:        { emoji: '🌐', color: '#0EA5E9' },
+  Exercise:      { emoji: '🏋️', color: '#F97316' },
+  News:          { emoji: '📰', color: '#475569' },
+  Update:        { emoji: '🔔', color: '#475569' },
+  Productivity:  { emoji: '⚡', color: '#CA8A04' },
+};
+const DEFAULT_CATEGORY_META = { emoji: '📝', color: '#64748B' };
 
 @Component({
   selector: 'app-author-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, CommonModule, DatePipe, TimeAgoPipe, MobileBottomNav],
+  imports: [RouterLink, CommonModule, DatePipe, TimeAgoPipe, MobileBottomNav, SiteHeader, MessageComposerModal],
   templateUrl: './author-page.html',
   styleUrl: './author-page.css',
 })
@@ -32,11 +59,14 @@ export class AuthorPage implements OnInit, OnDestroy {
   private userService   = inject(UserService);
   private shortsService = inject(ShortsService);
   private auth          = inject(Auth);
+  bookmarkService        = inject(BookmarkService);
+  showMessageModal = signal(false);
   private destroyRef  = inject(DestroyRef);
   private platformId  = inject(PLATFORM_ID);
   private meta        = inject(Meta);
   private titleSvc    = inject(Title);
   private document    = inject(DOCUMENT);
+  private http        = inject(HttpClient);
 
   author          = signal<User | null>(null);
   posts           = signal<Post[]>([]);
@@ -48,7 +78,26 @@ export class AuthorPage implements OnInit, OnDestroy {
   followLoading   = signal(false);
   shorts          = signal<VideoShort[]>([]);
   shortsLoading   = signal(false);
-  selectedTab     = signal<'posts' | 'shorts' | 'about'>('posts');
+  postsLoading    = signal(true);
+
+  bioExpanded      = signal(false);
+  visibleArticles  = signal(6);
+  shareCopied      = signal(false);
+
+  // Floating newsletter widget (desktop only, see author-page.css) - stays
+  // fixed to the viewport instead of a sticky sidebar item, since a sticky
+  // item's "stuck" range is bounded by the article grid and releases once
+  // scrolled past the footer. Dismissal is per-tab (sessionStorage), same
+  // pattern as the homepage welcome modal.
+  showFloatingNewsletter = signal(true);
+  private static readonly NEWSLETTER_DISMISSED_KEY = 'apna_author_newsletter_dismissed';
+
+  dismissFloatingNewsletter(): void {
+    this.showFloatingNewsletter.set(false);
+    if (isPlatformBrowser(this.platformId)) {
+      sessionStorage.setItem(AuthorPage.NEWSLETTER_DISMISSED_KEY, '1');
+    }
+  }
 
   // Accurate stats from backend
   totalViewsFromApi  = signal(0);
@@ -64,10 +113,60 @@ export class AuthorPage implements OnInit, OnDestroy {
   totalViews = computed(() => this.totalViewsFromApi() || this.posts().reduce((s, p) => s + (p.views ?? 0), 0));
   totalLikes = computed(() => this.totalLikesFromApi() || this.posts().reduce((s, p) => s + (p.likesCount ?? 0), 0));
 
+  // Comments and reading time have no per-author aggregate from the API -
+  // computed client-side from the author's own published posts, same
+  // pattern as user-home.ts's totalComments.
+  totalComments = computed(() => this.posts().reduce((s, p) => s + (p.commentsCount ?? 0), 0));
+  totalReadingMinutes = computed(() =>
+    this.posts().reduce((s, p) => s + this.readingTime(p), 0));
+  totalReadingHoursLabel = computed(() => {
+    const mins = this.totalReadingMinutes();
+    if (mins < 60) return `${mins}m`;
+    const hrs = mins / 60;
+    return `${hrs % 1 === 0 ? hrs : hrs.toFixed(1)}h`;
+  });
+
+  // Expertise chips - top categories across this author's own published
+  // posts, ranked by frequency. Real data only, no fabricated skills list.
+  expertise = computed(() => {
+    const counts = new Map<string, number>();
+    for (const p of this.posts()) {
+      for (const c of p.categories ?? []) {
+        counts.set(c, (counts.get(c) ?? 0) + 1);
+      }
+    }
+    return [...counts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8)
+      .map(([name, count]) => ({ name, count, ...(CATEGORY_META[name] ?? DEFAULT_CATEGORY_META) }));
+  });
+
+  // Featured article - the author's single highest-viewed post.
+  featuredArticle = computed(() => {
+    const top = this.topPosts();
+    if (top.length) return top[0];
+    return [...this.posts()].sort((a, b) => (b.views ?? 0) - (a.views ?? 0))[0] ?? null;
+  });
+
+  // Latest articles grid excludes whatever is already shown as the featured
+  // article, then paginates client-side (all posts are already fetched).
+  latestArticles = computed(() => {
+    const featuredId = this.featuredArticle()?._id;
+    return this.posts().filter(p => p._id !== featuredId);
+  });
+  visibleLatestArticles = computed(() => this.latestArticles().slice(0, this.visibleArticles()));
+  hasMoreArticles = computed(() => this.visibleArticles() < this.latestArticles().length);
+
+  bioIsLong = computed(() => this.authorBio.length > 220);
+  bioPreview = computed(() => this.bioIsLong() && !this.bioExpanded()
+    ? this.authorBio.slice(0, 220).trim() + '…'
+    : this.authorBio);
+
   // Same threshold as the robots tag in loadPosts() - don't show an ad on a
   // page that's mostly empty (AdSense low-value-content / ad-density risk).
   isThinPage = computed(() => !this.isLoading() && this.posts().length < 5);
 
+  get authorId(): string       { return (this.author() as any)?._id     ?? ''; }
   get authorName(): string    { return (this.author() as any)?.name     ?? 'Anonymous'; }
   get authorInitial(): string { return this.authorName.charAt(0).toUpperCase(); }
   get authorAvatar(): string  { return (this.author() as any)?.avatar   ?? ''; }
@@ -86,6 +185,15 @@ export class AuthorPage implements OnInit, OnDestroy {
   }
   get authorWebsiteLabel(): string {
     return this.authorWebsite.replace(/^https?:\/\//i, '').replace(/\/$/, '');
+  }
+
+  // Only real achievement backed by the API - the monthly writer badge
+  // already awarded via the challenge feature (core/models User.writerOfMonthBadge).
+  get writerBadgeActive(): boolean {
+    return !!(this.author() as any)?.writerOfMonthBadge?.active;
+  }
+  get writerBadgeTitle(): string {
+    return (this.author() as any)?.writerOfMonthBadge?.challengeTitle ?? 'Writer of the Month';
   }
 
   currentYear = new Date().getFullYear();
@@ -110,6 +218,10 @@ export class AuthorPage implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    if (isPlatformBrowser(this.platformId) && sessionStorage.getItem(AuthorPage.NEWSLETTER_DISMISSED_KEY)) {
+      this.showFloatingNewsletter.set(false);
+    }
+
     this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
       const id = params.get('id');
       if (!id) { this.router.navigate(['/']); return; }
@@ -122,6 +234,7 @@ export class AuthorPage implements OnInit, OnDestroy {
       this.followingCount.set(0);
       this.isFollowing.set(false);
       this.shorts.set([]);
+      this.postsLoading.set(true);
 
       this.userService.getUserById(id)
         .pipe(takeUntilDestroyed(this.destroyRef))
@@ -172,11 +285,12 @@ export class AuthorPage implements OnInit, OnDestroy {
         next: (res) => {
           const published = (res.data ?? []).filter((p: Post) => p.status === 'published');
           this.posts.set(published);
+          this.postsLoading.set(false);
           this.injectAuthorItemList(published);
           const robotsValue = published.length >= 5 ? 'index, follow' : 'noindex, follow';
           this.meta.updateTag({ name: 'robots', content: robotsValue });
         },
-        error: () => {},
+        error: () => { this.postsLoading.set(false); },
       });
   }
 
@@ -321,13 +435,83 @@ export class AuthorPage implements OnInit, OnDestroy {
     if (isPlatformBrowser(this.platformId)) window.scrollTo({ top: 0, behavior: 'instant' });
   }
 
-  readingTime(content: string): number {
-    return Math.max(1, Math.ceil(content.replace(/<[^>]*>/g, '').trim().split(/\s+/).length / 200));
+  readingTime(post: Post | undefined | null): number {
+    if (!post) return 1;
+    if (post.readingTimeMinutes) return post.readingTimeMinutes;
+    if (!post.content) return 1;
+    return Math.max(1, Math.ceil(post.content.replace(/<[^>]*>/g, '').trim().split(/\s+/).length / 200));
+  }
+
+  isBookmarked(postId: string): boolean { return this.bookmarkService.isBookmarked(postId); }
+
+  toggleBookmark(postId: string, event: Event): void {
+    event.stopPropagation();
+    event.preventDefault();
+    this.bookmarkService.toggle(postId);
   }
 
   fmtCount(n: number): string {
     if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
     if (n >= 1_000)     return (n / 1_000).toFixed(1).replace(/\.0$/, '') + 'K';
     return String(n);
+  }
+
+  toggleBio(): void { this.bioExpanded.set(!this.bioExpanded()); }
+
+  showMoreArticles(): void { this.visibleArticles.set(this.visibleArticles() + 6); }
+
+  async shareProfile(): Promise<void> {
+    const author = this.author();
+    if (!author || !isPlatformBrowser(this.platformId)) return;
+    const url = `${environment.siteUrl}/author/${(author as any)._id}`;
+    const data = { title: `${this.authorName} on ApnaInsights`, text: this.authorBio || this.authorName, url };
+    if ((navigator as any).share) {
+      try { await (navigator as any).share(data); return; } catch { /* cancelled */ }
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      this.shareCopied.set(true);
+      setTimeout(() => this.shareCopied.set(false), 2000);
+    } catch { /* ignore */ }
+  }
+
+  // Newsletter subscribe - same endpoint/pattern as the home page's inline
+  // subscribe form (features/landing/pages/home/home.ts).
+  subscribeEmail   = '';
+  subscribing      = signal(false);
+  subscribeSuccess = signal(false);
+  subscribeMessage = signal('');
+  subscribeError   = signal('');
+  emailInputError  = signal('');
+
+  private static readonly EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  onEmailInput(value: string): void {
+    this.subscribeEmail = value;
+    if (!value.trim()) { this.emailInputError.set(''); return; }
+    this.emailInputError.set(
+      AuthorPage.EMAIL_RE.test(value.trim()) ? '' : 'Please enter a valid email address'
+    );
+  }
+
+  onSubscribe(): void {
+    const email = this.subscribeEmail.trim();
+    if (!email || this.subscribing()) return;
+    this.subscribing.set(true);
+    this.subscribeError.set('');
+    this.http.post<{ status: number; message: string }>(
+      `${environment.apiUrl}/subscribers/subscribe`, { email }
+    ).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: res => {
+        this.subscribing.set(false);
+        this.subscribeSuccess.set(true);
+        this.subscribeMessage.set(res.message ?? 'Subscribed successfully!');
+        this.subscribeEmail = '';
+      },
+      error: err => {
+        this.subscribing.set(false);
+        this.subscribeError.set(err?.error?.message ?? 'Something went wrong. Please try again.');
+      },
+    });
   }
 }

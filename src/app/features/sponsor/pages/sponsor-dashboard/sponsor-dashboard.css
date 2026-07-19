@@ -40,7 +40,7 @@
   background: var(--accent);
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(67,206,162,.3);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, .3);
 }
 .sp-hero-name {
   font-size: .7rem; font-weight: 600; letter-spacing: .08em;
@@ -59,10 +59,10 @@
   padding: 9px 18px; border-radius: 10px; font-size: .82rem; font-weight: 700;
   background: var(--accent);
   color: #fff; border: none; cursor: pointer;
-  box-shadow: 0 4px 14px rgba(67,206,162,.35);
+  box-shadow: 0 4px 14px rgba(37, 99, 235, .35);
   transition: transform .15s, box-shadow .15s;
 }
-.sp-btn-campaign:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(67,206,162,.45); }
+.sp-btn-campaign:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(37, 99, 235, .45); }
 .sp-btn-campaign:active { transform: scale(.97); }
 
 .sp-btn-video {
@@ -202,12 +202,12 @@
 .sp-tab--active {
   background: var(--bg-card, #fff);
   border-color: var(--border-soft, #e2e8f0);
-  color: #185a9d; font-weight: 700;
+  color: #14B8A6; font-weight: 700;
   box-shadow: 0 2px 8px rgba(0,0,0,.06);
 }
 
 .sp-tab-count {
-  background: #185a9d; color: #fff;
+  background: #14B8A6; color: #fff;
   font-size: .65rem; font-weight: 700;
   min-width: 18px; height: 18px; padding: 0 5px;
   border-radius: 20px;
@@ -225,7 +225,7 @@
   cursor: pointer; transition: all .15s;
   box-shadow: 0 1px 4px rgba(0,0,0,.04);
 }
-.sp-export-btn:hover { border-color: #185a9d; color: #185a9d; }
+.sp-export-btn:hover { border-color: #14B8A6; color: #14B8A6; }
 
 /* ══════════════════════════════════════════
    CARD WRAPPER
@@ -274,7 +274,7 @@
   min-height: 70px;
 }
 .sp-crow:last-child { border-bottom: none; }
-.sp-crow:hover { background: rgba(24,90,157,.025); }
+.sp-crow:hover { background: rgba(20, 184, 166, .025); }
 
 /* ── Campaign cell (col 1) ── */
 .sp-crow-campaign { padding: 14px 16px 14px 0; min-width: 0; }
@@ -285,7 +285,7 @@
   cursor: pointer;
 }
 .sp-crow-link--static { cursor: default; }
-.sp-crow-link:not(.sp-crow-link--static):hover .sp-crow-title { color: #185a9d; }
+.sp-crow-link:not(.sp-crow-link--static):hover .sp-crow-title { color: #14B8A6; }
 
 .sp-crow-thumb {
   width: 58px; height: 40px; object-fit: cover;

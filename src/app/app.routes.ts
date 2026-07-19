@@ -1,4 +1,5 @@
-import { Routes } from '@angular/router';
+import { inject } from '@angular/core';
+import { Router, Routes } from '@angular/router';
 import { AuthLayout } from './layouts/auth-layout/auth-layout';
 import { MainLayout } from './layouts/main-layout/main-layout';
 import { PageNotFound } from './shared/page-not-found/page-not-found';
@@ -7,6 +8,7 @@ import { adminGuard } from './core/guards/admin-guard';
 import { superAdminGuard } from './core/guards/super-admin-guard';
 import { roleGuard } from './core/guards/role-guard';
 import { sponsorGuard } from './core/guards/sponsor-guard';
+import { mentorRedirectGuard } from './core/guards/mentor-redirect-guard';
 
 export const routes: Routes = [
     {
@@ -60,9 +62,15 @@ export const routes: Routes = [
         title: 'Advertise with Us | ApnaInsights'
     },
     {
+        path: 'write-and-earn',
+        loadComponent: () => import('./features/landing/pages/write-and-earn/write-and-earn').then(m => m.WriteAndEarn),
+        title: 'Write & Earn | ApnaInsights'
+    },
+    {
+        // /topics was retired in favor of /blog. Redirect so old links don't 404.
         path: 'topics',
-        loadComponent: () => import('./features/landing/pages/all-topics/all-topics').then(m => m.AllTopicsPage),
-        title: 'Explore All Topics | ApnaInsights'
+        redirectTo: '/blog',
+        pathMatch: 'full',
     },
     {
         path: 'category/:category',
@@ -85,9 +93,15 @@ export const routes: Routes = [
         title: 'Reading History | ApnaInsights'
     },
     {
+        // The old search/browse page was retired in favor of /blog, which now
+        // covers the same "browse everything, filter, sort" job. Redirect so
+        // old bookmarks, shared links, and the homepage's SearchAction schema
+        // still land somewhere real instead of 404ing. A plain string
+        // redirectTo drops the query string, so this preserves ?q=/?sort=
+        // by building the target UrlTree with the incoming queryParams.
         path: 'search',
-        loadComponent: () => import('./features/landing/pages/search/search').then(m => m.SearchPage),
-        title: 'Search Stories | ApnaInsights'
+        redirectTo: ({ queryParams }) => inject(Router).createUrlTree(['/blog'], { queryParams }),
+        pathMatch: 'full',
     },
     {
         path: 'challenges',
@@ -115,6 +129,11 @@ export const routes: Routes = [
         title: 'Contact Us | ApnaInsights'
     },
     {
+        path: 'blog',
+        loadComponent: () => import('./features/landing/pages/blog-list/blog-list').then(m => m.BlogListPage),
+        title: 'All Blogs | ApnaInsights'
+    },
+    {
         path: 'blog/:id',
         loadComponent: () => import('./features/landing/pages/blog-detail/blog-detail').then(m => m.BlogDetail),
         data: {
@@ -126,6 +145,42 @@ export const routes: Routes = [
         path: 'campaign/:id',
         loadComponent: () => import('./features/campaign/pages/campaign-page/campaign-page').then(m => m.CampaignPage),
         title: 'Sponsored | ApnaInsights'
+    },
+    {
+        // Approved mentors get redirected to /career-guides/dashboard by
+        // mentorRedirectGuard instead of seeing the public marketplace here.
+        path: 'career-guides',
+        loadComponent: () => import('./features/career-guides/pages/guide-list/guide-list').then(m => m.GuideList),
+        canActivate: [mentorRedirectGuard],
+        title: 'Career Guides | ApnaInsights'
+    },
+    {
+        // Same marketplace page as 'career-guides' above, but WITHOUT the
+        // mentor-redirect guard - this is the "Browse Experts" escape hatch
+        // linked from the mentor dashboard, so a mentor can still see the
+        // public listing on request without it becoming their default landing page.
+        path: 'career-guides/explore',
+        loadComponent: () => import('./features/career-guides/pages/guide-list/guide-list').then(m => m.GuideList),
+        title: 'Explore Experts | ApnaInsights'
+    },
+    {
+        path: 'career-guides/dashboard',
+        loadComponent: () => import('./features/career-guides/pages/mentor-dashboard/mentor-dashboard').then(m => m.MentorDashboard),
+        title: 'Mentor Dashboard | ApnaInsights'
+    },
+    {
+        // Must come before 'career-guides/:expertId' below - route order
+        // matters, and a dynamic :expertId segment would otherwise swallow
+        // this static path first and try to render a profile for the
+        // (nonexistent) expert slug "become-an-instructor".
+        path: 'career-guides/become-an-instructor',
+        loadComponent: () => import('./features/career-guides/pages/become-instructor/become-instructor').then(m => m.BecomeInstructor),
+        title: 'Become an Instructor | ApnaInsights'
+    },
+    {
+        path: 'career-guides/:expertId',
+        loadComponent: () => import('./features/career-guides/pages/expert-profile/expert-profile').then(m => m.ExpertProfile),
+        title: 'Expert Profile | ApnaInsights'
     },
     {
         path: 'auth',

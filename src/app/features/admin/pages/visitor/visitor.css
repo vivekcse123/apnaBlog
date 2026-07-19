@@ -1,5 +1,5 @@
 :host {
-  --primary:   #43cea2;
+  --primary:   #2563EB;
   --teal:      #43C6AC;
   --orange:    #FF9F43;
   --pink:      #FF6B6B;
@@ -162,7 +162,7 @@
   flex-shrink: 0;
 }
 
-.icon-purple { background: rgba(67,206,162,0.12); color: #43cea2; }
+.icon-purple { background: rgba(37, 99, 235, 0.12); color: #2563EB; }
 .icon-teal   { background: rgba(67,198,172,0.12);  color: #43C6AC; }
 .icon-orange { background: rgba(255,159,67,0.12);   color: #FF9F43; }
 .icon-pink   { background: rgba(255,107,107,0.12);  color: #FF6B6B; }
@@ -665,7 +665,7 @@
   border: 2px solid var(--bg-surface);
 }
 
-.dot-mobile  { background: #43cea2; }
+.dot-mobile  { background: #2563EB; }
 .dot-tablet  { background: #FFB347; }
 .dot-desktop { background: #43C6AC; }
 

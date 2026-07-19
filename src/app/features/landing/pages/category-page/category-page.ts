@@ -17,7 +17,9 @@ import { TaxonomyService } from '../../../../core/services/taxonomy.service';
 import { Post }           from '../../../../core/models/post.model';
 import { TimeAgoPipe }    from '../../../../shared/pipes/time-ago-pipe';
 import { MobileBottomNav } from '../../../../shared/mobile-bottom-nav/mobile-bottom-nav';
+import { SiteHeader } from '../../../../shared/site-header/site-header';
 import { Auth }           from '../../../../core/services/auth';
+import { BookmarkService } from '../../../../core/services/bookmark.service';
 
 const FALLBACK_CATEGORIES: string[] = [
   'Update', 'News', 'Sports', 'Entertainment', 'Health', 'Technology', 'Business',
@@ -95,7 +97,7 @@ const CATEGORY_DESCRIPTIONS: Record<string, { description: string; intro: string
 @Component({
   selector: 'app-category-page',
   standalone: true,
-  imports: [RouterLink, CommonModule, FormsModule, DatePipe, TimeAgoPipe, MobileBottomNav],
+  imports: [RouterLink, CommonModule, FormsModule, DatePipe, TimeAgoPipe, MobileBottomNav, SiteHeader],
   templateUrl: './category-page.html',
   styleUrl: './category-page.css',
 })
@@ -112,6 +114,7 @@ export class CategoryPage implements OnInit, OnDestroy {
   private titleSvc    = inject(Title);
   private document    = inject(DOCUMENT);
   private auth        = inject(Auth);
+  bookmarkService     = inject(BookmarkService);
 
   // Category pages are the site's top SEO landing pages - they need a way to
   // search or start writing without first clicking "Back to Home". Uses the
@@ -220,7 +223,8 @@ export class CategoryPage implements OnInit, OnDestroy {
     if (!q) return this.posts();
     return this.posts().filter(p =>
       p.title.toLowerCase().includes(q) ||
-      (p.description ?? '').toLowerCase().includes(q)
+      (p.description ?? '').toLowerCase().includes(q) ||
+      ((p.user as any)?.name ?? '').toLowerCase().includes(q)
     );
   });
 
@@ -424,11 +428,29 @@ export class CategoryPage implements OnInit, OnDestroy {
     return (post.user as any)?._id ?? null;
   }
 
+  getAuthorInitial(post: Post): string {
+    return this.getAuthorName(post).charAt(0).toUpperCase();
+  }
+
+  isBookmarked(postId: string): boolean { return this.bookmarkService.isBookmarked(postId); }
+
+  toggleBookmark(postId: string, event: Event): void {
+    event.stopPropagation();
+    event.preventDefault();
+    this.bookmarkService.toggle(postId);
+  }
+
+  fmtCount(n: number): string {
+    if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
+    if (n >= 1_000)     return (n / 1_000).toFixed(1).replace(/\.0$/, '') + 'K';
+    return String(n);
+  }
+
   private rtCache = new Map<string, number>();
   readingTime(post: Post): number {
     const id = post._id;
     if (this.rtCache.has(id)) return this.rtCache.get(id)!;
-    const mins = Math.max(1, Math.ceil(
+    const mins = post.readingTimeMinutes ?? Math.max(1, Math.ceil(
       (post.content ?? '').replace(/<[^>]*>/g, '').trim().split(/\s+/).length / 200
     ));
     this.rtCache.set(id, mins);

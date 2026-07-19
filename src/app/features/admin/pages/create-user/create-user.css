@@ -112,8 +112,8 @@ form input::placeholder {
 }
 
 form input:focus {
-  border-color: #43cea2;
-  box-shadow: 0 0 0 3px rgba(67, 206, 162, 0.15);
+  border-color: #2563EB;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
 /* ── Actions Row ── */
@@ -292,4 +292,4 @@ form input:focus {
   outline: none; cursor: pointer;
   transition: border-color .2s;
 }
-.role-select:focus { border-color: #43cea2; box-shadow: 0 0 0 3px rgba(67,206,162,.15); }
+.role-select:focus { border-color: #2563EB; box-shadow: 0 0 0 3px rgba(37, 99, 235, .15); }

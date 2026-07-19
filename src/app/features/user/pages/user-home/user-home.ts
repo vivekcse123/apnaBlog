@@ -11,6 +11,8 @@ import { UserService } from '../../../user/services/user-service';
 import { ShortsService } from '../../../shorts/services/shorts.service';
 import { DashboardCache } from '../../../../core/services/dashboard-cache';
 import { CreatePost } from '../../../post/pages/create-post/create-post';
+import { ReadingHistory, HistoryEntry } from '../../../../core/services/reading-history';
+import { PaymentService } from '../../../../core/services/payment.service';
 
 Chart.register(...registerables);
 
@@ -28,9 +30,11 @@ export class UserHome implements OnInit, AfterViewInit, OnDestroy {
 
   private blogGrowthChart!: Chart;
 
-  private postService    = inject(PostService);
-  private userService    = inject(UserService);
-  private shortsService  = inject(ShortsService);
+  private postService     = inject(PostService);
+  private userService     = inject(UserService);
+  private shortsService   = inject(ShortsService);
+  private readingHistory  = inject(ReadingHistory);
+  private paymentService  = inject(PaymentService);
   private destroyRef     = inject(DestroyRef);
   private route          = inject(ActivatedRoute);
   readonly router        = inject(Router);
@@ -47,6 +51,26 @@ export class UserHome implements OnInit, AfterViewInit, OnDestroy {
   followersCount  = signal<number>(0);
   isLoading       = signal<boolean>(true);
   isRefreshing    = signal<boolean>(false);
+
+  // ── Premium upgrade (Razorpay one-time purchase) — only real perk today is
+  // unlimited mentor sessions in Career Guides, see core/services/payment.service.ts ──
+  upgrading    = signal<boolean>(false);
+  upgradeError = signal<string>('');
+
+  upgradeToPremium(): void {
+    if (this.upgrading()) return;
+    this.upgrading.set(true);
+    this.upgradeError.set('');
+    this.paymentService.purchasePremium()
+      .then(() => {
+        this.upgrading.set(false);
+        this.user.update((u: any) => u ? { ...u, isPremium: true } : u);
+      })
+      .catch((err: Error) => {
+        this.upgrading.set(false);
+        if (err.message !== 'cancelled') this.upgradeError.set(err.message);
+      });
+  }
 
   shortsCount    = signal<number>(0);
 
@@ -103,6 +127,10 @@ export class UserHome implements OnInit, AfterViewInit, OnDestroy {
 
   recentBlogs   = signal<any[]>([]);
   topBlogs      = signal<any[]>([]);
+
+  recentlyViewed  = signal<HistoryEntry[]>([]);
+  bookmarks       = signal<any[]>([]);
+  bookmarksLoading = signal<boolean>(false);
   showBlogsModal     = signal(false);
   blogsModalList     = signal<any[]>([]);
   showCreateModal    = signal(false);
@@ -113,7 +141,7 @@ export class UserHome implements OnInit, AfterViewInit, OnDestroy {
   createBlogLink  = computed(() => `/user/${this.userId()}/create-blog`);
   manageBlogsLink = computed(() => `/user/${this.userId()}/manage-blogs`);
   settingsLink    = computed(() => `/user/${this.userId()}/settings`);
-  exploreLink     = computed(() => `/user/${this.userId()}/explore-blogs`);
+  exploreLink     = computed(() => `/blog`);
   myShortsLink    = computed(() => `/user/${this.userId()}/my-shorts`);
 
   private allPosts: any[] = [];
@@ -123,6 +151,9 @@ export class UserHome implements OnInit, AfterViewInit, OnDestroy {
     const uid = this.route.snapshot.params['id'];
     this.userId.set(uid);
     if (!uid) return;
+
+    this.recentlyViewed.set(this.readingHistory.getEntries().slice(0, 4));
+    this.fetchBookmarks(uid);
 
     this.shortsService.getMyShorts(1, 1)
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -242,6 +273,16 @@ export class UserHome implements OnInit, AfterViewInit, OnDestroy {
     this.writingStreak.set(streak);
   }
 
+  private fetchBookmarks(uid: string): void {
+    this.bookmarksLoading.set(true);
+    this.userService.getBookmarkedPosts(uid, 1, 4)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => { this.bookmarks.set(res.data ?? []); this.bookmarksLoading.set(false); },
+        error: () => this.bookmarksLoading.set(false),
+      });
+  }
+
   onRangeChange(range: '7d' | '14d' | '30d'): void {
     this.selectedRange = range;
     this.buildOrUpdateBlogGrowthChart();
@@ -273,12 +314,12 @@ export class UserHome implements OnInit, AfterViewInit, OnDestroy {
           {
             label: 'Published',
             data: published,
-            borderColor: '#43cea2',
-            backgroundColor: 'rgba(67,206,162,0.10)',
+            borderColor: '#2563EB',
+            backgroundColor: 'rgba(37, 99, 235, 0.10)',
             fill: true,
             tension: 0.45,
             pointRadius: 3,
-            pointBackgroundColor: '#43cea2',
+            pointBackgroundColor: '#2563EB',
             borderWidth: 2,
           },
           {

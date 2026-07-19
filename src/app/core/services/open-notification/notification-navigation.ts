@@ -51,6 +51,15 @@ export class NotificationNavigationService {
     const isAdmin      = this.authService.isAdmin();
     const isSuperAdmin = this.authService.isSuperAdmin();
 
+    // Personal messages go to the user's own dashboard regardless of admin role.
+    if (event.type === 'MESSAGE_RECEIVED') {
+      const userId = this.authService.getCurrentUser()?.id;
+      if (userId) {
+        this.router.navigate(['/user', userId, 'messages'], { queryParams: { with: event.resourceId } });
+      }
+      return;
+    }
+
     if (isAdmin) {
       const adminId = this.authService.getCurrentUser()?.id;
       if (!adminId) return;

@@ -183,7 +183,7 @@ ${keyPointsHtml}
 
 <p style="margin-top:2em;padding-top:1em;border-top:1px solid #e5e7eb;">
   <a href="${item.link}" target="_blank" rel="noopener noreferrer nofollow"
-     style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:8px;background:linear-gradient(135deg,#43cea2,#185a9d);color:#fff;font-size:13.5px;font-weight:600;text-decoration:none;">
+     style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:8px;background:linear-gradient(135deg,#2563EB,#14B8A6);color:#fff;font-size:13.5px;font-weight:600;text-decoration:none;">
     Read Full Article ↗
   </a>
 </p>

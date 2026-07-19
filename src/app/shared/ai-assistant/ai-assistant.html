@@ -1,0 +1,107 @@
+@if (!isHidden()) {
+
+  <!-- ── Floating trigger button - hidden while the panel is open, since
+       the panel header has its own close button and the FAB (bottom-right)
+       would otherwise overlap the panel's composer/send button. ── -->
+  @if (!isOpen()) {
+    <button
+      class="ai-fab"
+      type="button"
+      (click)="toggle()"
+      [attr.aria-expanded]="isOpen()"
+      aria-label="Open ApnaInsights guide">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M12 2a7 7 0 00-7 7c0 2.4 1.2 4.5 3 5.8V18a1 1 0 001 1h6a1 1 0 001-1v-3.2c1.8-1.3 3-3.4 3-5.8a7 7 0 00-7-7z"
+          stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" fill="none"/>
+        <path d="M9.5 21h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        <circle cx="12" cy="9" r="1.6" fill="currentColor"/>
+      </svg>
+    </button>
+  }
+
+  @if (isOpen()) {
+    <!-- Mobile scrim -->
+    <div class="ai-scrim" (click)="close()"></div>
+
+    <div class="ai-panel" role="dialog" aria-label="ApnaInsights guide">
+      <div class="ai-panel-drag" aria-hidden="true"></div>
+
+      <header class="ai-panel-hd">
+        <div class="ai-panel-hd-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 2a7 7 0 00-7 7c0 2.4 1.2 4.5 3 5.8V18a1 1 0 001 1h6a1 1 0 001-1v-3.2c1.8-1.3 3-3.4 3-5.8a7 7 0 00-7-7z"
+              stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" fill="none"/>
+            <circle cx="12" cy="9" r="1.6" fill="currentColor"/>
+          </svg>
+        </div>
+        <div class="ai-panel-hd-text">
+          <h2>ApnaInsights Guide</h2>
+          <p>Find articles, categories &amp; features</p>
+        </div>
+        @if (messages().length > 1) {
+          <button class="ai-close-btn" type="button" (click)="clearChat()" aria-label="Clear chat" title="Clear chat">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        }
+        <button class="ai-close-btn" type="button" (click)="close()" aria-label="Close">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </header>
+
+      <div class="ai-messages" #scrollEl>
+        @for (msg of messages(); track $index) {
+          @if (msg.from === 'user') {
+            <div class="ai-msg ai-msg--user"><p>{{ msg.text }}</p></div>
+          } @else {
+            <div class="ai-msg ai-msg--bot">
+              @if (msg.text) { <p>{{ msg.text }}</p> }
+
+              @if (msg.results && msg.results.length > 0) {
+                <div class="ai-results">
+                  @for (r of msg.results; track r.id) {
+                    <button class="ai-result-card" type="button" (click)="onResultClick(r)">
+                      <span class="ai-result-title">{{ r.title }}</span>
+                      @if (r.excerpt) { <span class="ai-result-excerpt">{{ r.excerpt }}</span> }
+                      <span class="ai-result-meta">
+                        @if (r.category) { <span class="ai-result-cat">{{ r.category }}</span> }
+                        @if (formatViews(r.views); as v) { <span>{{ v }}</span> }
+                      </span>
+                    </button>
+                  }
+                </div>
+              }
+
+              @if (msg.chips && msg.chips.length > 0) {
+                <div class="ai-chips">
+                  @for (chip of msg.chips; track chip.label) {
+                    <button class="ai-chip" type="button" (click)="onChipClick(chip)">{{ chip.label }}</button>
+                  }
+                </div>
+              }
+            </div>
+          }
+        }
+
+        @if (isTyping()) {
+          <div class="ai-msg ai-msg--bot ai-msg--typing">
+            <span class="ai-typing-dot"></span><span class="ai-typing-dot"></span><span class="ai-typing-dot"></span>
+          </div>
+        }
+      </div>
+
+      <form class="ai-composer" (ngSubmit)="submit()">
+        <input
+          type="text"
+          placeholder="Ask about articles, categories, or how something works…"
+          [ngModel]="query()"
+          (ngModelChange)="query.set($event)"
+          name="aiQuery"
+          autocomplete="off" />
+        <button type="submit" class="ai-send-btn" [disabled]="!query().trim()" aria-label="Send">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 20l16-8L4 4v6l10 2-10 2v6z" fill="currentColor"/></svg>
+        </button>
+      </form>
+    </div>
+  }
+
+}

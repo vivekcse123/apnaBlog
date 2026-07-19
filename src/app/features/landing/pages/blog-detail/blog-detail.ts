@@ -272,6 +272,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   // ── Reading / ToC ─────────────────────────────────────────────────────────
   tableOfContents = signal<TableOfContentsItem[]>(this._initProcessed?.toc ?? []);
   activeHeadingId = signal<string>('');
+  private headingObserver: IntersectionObserver | null = null;
   readingProgress  = signal(0);
   readingTime      = signal(0);
   contentWordCount = signal(0);
@@ -402,6 +403,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   // ── Author profile modal ──────────────────────────────────────────────────
   showAuthorModal  = signal(false);
   authorTotalPosts = signal(0);
+  authorTotalViews = signal(0);
 
   // ── Author posts modal ────────────────────────────────────────────────────
   private allAuthorPostsData = signal<Post[]>([]);
@@ -736,6 +738,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
         this.showAuthorModal.set(false);
         this.showAuthorPostsModal.set(false);
         this.authorTotalPosts.set(0);
+        this.authorTotalViews.set(0);
         this.replyingToId.set(null);
         this.replyText.set('');
         this.sessionCommentCount.set(0);
@@ -780,7 +783,6 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
         .pipe(throttleTime(100), takeUntilDestroyed(this.destroyRef))
         .subscribe(() => {
           this.updateReadingProgress();
-          this.updateActiveHeading();
           this.updateHeaderVisibility();
           const nearBottom = (host.scrollTop + host.clientHeight) >= (host.scrollHeight - 160);
           this.showScrollTop.set(host.scrollTop > 400 && !nearBottom);
@@ -826,6 +828,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     this.stopCarousel();
     this.lockScroll(false);
     this.saveReadingProgress();
+    this.headingObserver?.disconnect();
     if (isPlatformBrowser(this.platformId)) {
       this.document.body.classList.remove('blog-detail-active');
       this.document.querySelector('link[data-blog-preload]')?.remove();
@@ -1099,6 +1102,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     this.addContentImageLightbox();
     this.pushAdSense();
     this.updateReactionStrips();
+    this.setupHeadingObserver();
   }
 
   private _stripEdgeNodes(): void {
@@ -1996,7 +2000,21 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   }
 
   scrollToHeading(id: string): void {
-    this.document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (!isPlatformBrowser(this.platformId)) return;
+    const el = this.document.getElementById(id);
+    if (!el) return;
+    // Manual scrollTop math on the host, rather than el.scrollIntoView():
+    // scrollIntoView asks the browser to find "the nearest scrollable
+    // ancestor" and can pick the wrong one (or do nothing) once there are
+    // position:sticky siblings and a CSS Grid ancestor involved, as there
+    // now are with the TOC/article/author-sidebar 3-column layout. Computing
+    // the target scrollTop directly against the host - which we already
+    // know is the one true scroll container - removes that ambiguity.
+    const host = this.elementRef.nativeElement as HTMLElement;
+    const headerClearance = 84;
+    const delta = el.getBoundingClientRect().top - host.getBoundingClientRect().top;
+    const target = Math.max(0, host.scrollTop + delta - headerClearance);
+    host.scrollTo({ top: target, behavior: 'smooth' });
   }
 
   scrollToComments(): void {
@@ -2016,14 +2034,33 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     this.readingProgress.set(Math.min(Math.max(pct, 0), 100));
   }
 
-  private updateActiveHeading(): void {
-    if (!isPlatformBrowser(this.platformId)) return;
-    let active = '';
-    this.document.querySelectorAll('.blog-content h2, .blog-content h3').forEach((h: Element) => {
-      const rect = h.getBoundingClientRect();
-      if (rect.top <= 150 && rect.top >= -100) active = h.id;
-    });
-    this.activeHeadingId.set(active);
+  // IntersectionObserver-based scroll-spy - replaces an earlier manual
+  // getBoundingClientRect()-on-every-scroll-event approach that depended on
+  // the host's 'scroll' event firing exactly as expected. IntersectionObserver
+  // is the browser's purpose-built API for "is this element visible within
+  // this scrolling container's viewport" and works correctly regardless of
+  // how the scrolling actually happens (wheel, touch, programmatic, or via
+  // an ancestor) - there's no scroll-event-timing or wrong-element ambiguity
+  // to get wrong.
+  private setupHeadingObserver(): void {
+    if (!isPlatformBrowser(this.platformId) || !this.contentEl) return;
+    this.headingObserver?.disconnect();
+    const headings = this.contentEl.querySelectorAll('h2, h3');
+    if (!headings.length) return;
+    const host = this.elementRef.nativeElement as HTMLElement;
+    // rootMargin carves the observation zone down to a thin band starting
+    // 84px below the host's top edge (clearing the sticky header) and
+    // ending 75% of the way down - a heading is "active" once it crosses
+    // into the top quarter of the visible area, and stays active (no reset)
+    // until the next heading crosses that same line.
+    this.headingObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          this.activeHeadingId.set((entry.target as HTMLElement).id);
+        }
+      });
+    }, { root: host, rootMargin: '-84px 0px -75% 0px', threshold: 0 });
+    headings.forEach((h) => this.headingObserver!.observe(h));
   }
 
   private updateHeaderVisibility(): void {
@@ -2444,8 +2481,13 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   // ══════════════════════════════════════════════════════════════════════════
 
   get currentUser(): User | null   { return this.currentUserData(); }
-  get isLoggedIn(): boolean        { return this.auth.isAuthorized() && !!this.currentUserData(); }
-  get loggedInUserName(): string   { return this.currentUserData()?.name ?? 'Anonymous'; }
+  // Deliberately independent of currentUserData - that's a secondary profile
+  // fetch (fetchCurrentUser()) that runs once with no retry. If it ever fails
+  // or races, isLoggedIn must not get stuck false for a session that's
+  // actually authenticated (auth.token() is the source of truth, populated
+  // synchronously from localStorage).
+  get isLoggedIn(): boolean        { return this.auth.isAuthorized(); }
+  get loggedInUserName(): string   { return this.currentUserData()?.name ?? this.auth.userName() ?? 'Anonymous'; }
 
   private fetchCurrentUser(): void {
     const userId = this.auth.userId();
@@ -2471,6 +2513,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
           this.isFollowingAuthor.set(res.isFollowing ?? false);
           const totalBlogs = (res as any).totalBlogs ?? 0;
           if (totalBlogs > 0) this.authorTotalPosts.set(totalBlogs);
+          this.authorTotalViews.set(res.totalViews ?? 0);
         },
         error: () => { /* non-critical */ },
       });

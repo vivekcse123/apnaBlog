@@ -1,0 +1,207 @@
+<app-site-header></app-site-header>
+
+<div class="bi">
+
+  <nav class="bi-breadcrumb" aria-label="Breadcrumb">
+    <a routerLink="/career-guides">Career Guides</a>
+    <span class="sep">/</span>
+    <span aria-current="page">Become an Instructor</span>
+  </nav>
+
+  @if (!isLoggedIn()) {
+    <!-- ══ LOGIN REQUIRED (whole-page gate, not a modal - there's nothing
+         behind it worth showing until the visitor is signed in) ══ -->
+    <div class="bi-gate">
+      <span class="bi-gate-icon" aria-hidden="true">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      </span>
+      <h1>Sign in to apply</h1>
+      <p>Please sign in to connect with career experts and apply to become a mentor.</p>
+      <div class="bi-gate-actions">
+        <button class="cg-btn cg-btn--primary" type="button" (click)="goToLogin()">Login</button>
+        <button class="cg-btn cg-btn--outline" type="button" (click)="goToRegister()">Create Account</button>
+      </div>
+    </div>
+  } @else if (status() === 'pending-review') {
+    <!-- ══ SUBMITTED CONFIRMATION ══ -->
+    <div class="bi-gate">
+      <span class="bi-gate-icon bi-gate-icon--success" aria-hidden="true">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      </span>
+      <h1>Application submitted</h1>
+      <p class="bi-status-badge bi-status-badge--pending">Pending Review</p>
+      <p>Thanks, {{ fullName() }}! Our team will review your application and get back to you. You can track its status from your dashboard once that section is available.</p>
+      <a class="cg-btn cg-btn--ghost" routerLink="/career-guides">Back to Career Guides</a>
+    </div>
+  } @else {
+    <!-- ══ APPLICATION FORM ══ -->
+    <header class="bi-hero">
+      <h1>Become an Instructor</h1>
+      <p>Share your expertise with thousands of learners on ApnaInsights. Apply below - our team reviews every application.</p>
+    </header>
+
+    <form class="bi-form" (ngSubmit)="submit()">
+
+      <section class="bi-card">
+        <h2>Profile</h2>
+        <div class="bi-field">
+          <label for="photo">Profile Photo</label>
+          <div class="bi-upload-row">
+            <label class="bi-upload-btn" for="photo">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Choose Photo
+            </label>
+            <input id="photo" class="bi-upload-input" type="file" accept="image/*" (change)="onPhotoSelected($event)" />
+            <span class="bi-file-name">{{ photoFileName() || 'No file selected' }}</span>
+          </div>
+        </div>
+        <div class="bi-grid-2">
+          <div class="bi-field">
+            <label for="fullName">Full Name *</label>
+            <input id="fullName" type="text" [value]="fullName()" (input)="fullName.set($any($event.target).value)" required />
+          </div>
+          <div class="bi-field">
+            <label for="role">Current Role *</label>
+            <input id="role" type="text" placeholder="e.g. Senior Angular Developer" [value]="currentRole()" (input)="currentRole.set($any($event.target).value)" required />
+          </div>
+          <div class="bi-field">
+            <label for="company">Current Company</label>
+            <input id="company" type="text" [value]="currentCompany()" (input)="currentCompany.set($any($event.target).value)" />
+          </div>
+          <div class="bi-field">
+            <label for="years">Years of Experience *</label>
+            <input id="years" type="number" min="0" max="60" [value]="yearsExperience()" (input)="yearsExperience.set($any($event.target).valueAsNumber || null)" required />
+          </div>
+        </div>
+      </section>
+
+      <section class="bi-card">
+        <h2>Expertise</h2>
+
+        <div class="bi-field">
+          <label for="skillInput">Skills *</label>
+          <div class="bi-tag-input-row">
+            <input id="skillInput" type="text" placeholder="Type a skill and press Enter"
+              [value]="skillInput()" (input)="skillInput.set($any($event.target).value)"
+              (keydown.enter)="$event.preventDefault(); addSkill()" />
+            <button type="button" class="cg-btn cg-btn--sm cg-btn--outline" (click)="addSkill()">Add</button>
+          </div>
+          <div class="bi-tag-row">
+            @for (s of skills(); track s) {
+              <span class="bi-tag">{{ s }} <button type="button" (click)="removeSkill(s)" aria-label="Remove">✕</button></span>
+            }
+          </div>
+        </div>
+
+        <div class="bi-field">
+          <label for="expertiseInput">Expertise</label>
+          <div class="bi-tag-input-row">
+            <input id="expertiseInput" type="text" placeholder="e.g. System Design, SSB Guidance"
+              [value]="expertiseInput()" (input)="expertiseInput.set($any($event.target).value)"
+              (keydown.enter)="$event.preventDefault(); addExpertise()" />
+            <button type="button" class="cg-btn cg-btn--sm cg-btn--outline" (click)="addExpertise()">Add</button>
+          </div>
+          <div class="bi-tag-row">
+            @for (s of expertise(); track s) {
+              <span class="bi-tag">{{ s }} <button type="button" (click)="removeExpertise(s)" aria-label="Remove">✕</button></span>
+            }
+          </div>
+        </div>
+
+        <div class="bi-field">
+          <label for="languageInput">Languages</label>
+          <div class="bi-tag-input-row">
+            <input id="languageInput" type="text" placeholder="e.g. English, Hindi"
+              [value]="languageInput()" (input)="languageInput.set($any($event.target).value)"
+              (keydown.enter)="$event.preventDefault(); addLanguage()" />
+            <button type="button" class="cg-btn cg-btn--sm cg-btn--outline" (click)="addLanguage()">Add</button>
+          </div>
+          <div class="bi-tag-row">
+            @for (s of languages(); track s) {
+              <span class="bi-tag">{{ s }} <button type="button" (click)="removeLanguage(s)" aria-label="Remove">✕</button></span>
+            }
+          </div>
+        </div>
+
+        <div class="bi-field">
+          <label>Teaching Categories *</label>
+          <div class="bi-chip-row">
+            @for (cat of categories; track cat.name) {
+              <button type="button" class="ep-chip" [class.active]="teachingCategories().includes(cat.name)" (click)="toggleCategory(cat.name)">{{ cat.name }}</button>
+            }
+          </div>
+        </div>
+      </section>
+
+      <section class="bi-card">
+        <h2>Links</h2>
+        <div class="bi-grid-2">
+          <div class="bi-field">
+            <label for="linkedin">LinkedIn</label>
+            <input id="linkedin" type="url" placeholder="https://linkedin.com/in/..." [value]="linkedin()" (input)="linkedin.set($any($event.target).value)" />
+          </div>
+          <div class="bi-field">
+            <label for="github">GitHub</label>
+            <input id="github" type="url" placeholder="https://github.com/..." [value]="github()" (input)="github.set($any($event.target).value)" />
+          </div>
+          <div class="bi-field">
+            <label for="portfolio">Portfolio</label>
+            <input id="portfolio" type="url" placeholder="https://..." [value]="portfolio()" (input)="portfolio.set($any($event.target).value)" />
+          </div>
+          <div class="bi-field">
+            <label for="resume">Resume Upload</label>
+            <div class="bi-upload-row">
+              <label class="bi-upload-btn" for="resume">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Choose File
+              </label>
+              <input id="resume" class="bi-upload-input" type="file" accept=".pdf,.doc,.docx" (change)="onResumeSelected($event)" />
+              <span class="bi-file-name">{{ resumeFileName() || 'No file selected' }}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="bi-card">
+        <h2>Availability</h2>
+        <div class="bi-field">
+          <label>Available Days *</label>
+          <div class="bi-chip-row">
+            @for (d of days; track d) {
+              <button type="button" class="ep-chip" [class.active]="availableDays().includes(d)" (click)="toggleDay(d)">{{ d }}</button>
+            }
+          </div>
+        </div>
+        <div class="bi-field">
+          <label for="availTime">Available Time</label>
+          <input id="availTime" type="text" placeholder="e.g. Weekday evenings, 6-9 PM IST" [value]="availableTime()" (input)="availableTime.set($any($event.target).value)" />
+        </div>
+      </section>
+
+      <section class="bi-card">
+        <h2>About You</h2>
+        <div class="bi-field">
+          <label for="bio">Bio *</label>
+          <textarea id="bio" rows="4" placeholder="Tell learners about your background and how you can help them."
+            [value]="bio()" (input)="bio.set($any($event.target).value)" required></textarea>
+        </div>
+        <div class="bi-field">
+          <label for="reason">Reason for becoming a mentor</label>
+          <textarea id="reason" rows="3" placeholder="Why do you want to mentor on ApnaInsights?"
+            [value]="reason()" (input)="reason.set($any($event.target).value)"></textarea>
+        </div>
+      </section>
+
+      <label class="bi-terms">
+        <input type="checkbox" [checked]="agreedToTerms()" (change)="agreedToTerms.set($any($event.target).checked)" />
+        <span>I agree to the <a routerLink="/terms" target="_blank">Terms of Service</a> and confirm the information above is accurate.</span>
+      </label>
+
+      <div class="bi-submit-row">
+        <button class="cg-btn cg-btn--primary" type="submit" [disabled]="!isFormValid()">Submit Application</button>
+      </div>
+    </form>
+  }
+</div>
+
+<app-mobile-bottom-nav></app-mobile-bottom-nav>

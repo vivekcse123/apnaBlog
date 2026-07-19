@@ -18,6 +18,12 @@ const ALLOWED_ATTRIBUTES = {
   td:     ['colspan', 'rowspan'],
   th:     ['colspan', 'rowspan'],
   table:  ['border', 'cellpadding', 'cellspacing'],
+  // 'id' is required on h2/h3/h4 so the ToC sidebar's scroll-to-heading and
+  // scroll-spy highlighting (blog-detail.ts _processHeadings) survive
+  // sanitization - otherwise every heading id gets stripped here.
+  h2:     ['id'],
+  h3:     ['id'],
+  h4:     ['id'],
   '*':    ['class'],
 };
 

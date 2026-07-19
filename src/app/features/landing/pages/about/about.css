@@ -178,7 +178,7 @@
   background: none; border: none; font-size: 14px; font-weight: 600;
   color: var(--text-primary); cursor: pointer; text-decoration: none;
 }
-.nav-drop-item.gradient { color: #43cea2; }
+.nav-drop-item.gradient { color: #2563EB; }
 
 /* ═══ HERO ═══ */
 .about-hero {
@@ -197,8 +197,8 @@
   opacity: 0.1;
 }
 
-.orb-1 { width: 600px; height: 600px; background: #43cea2; top: -250px; right: -150px; }
-.orb-2 { width: 500px; height: 500px; background: #185a9d; bottom: -250px; left: -100px; }
+.orb-1 { width: 600px; height: 600px; background: #2563EB; top: -250px; right: -150px; }
+.orb-2 { width: 500px; height: 500px; background: #14B8A6; bottom: -250px; left: -100px; }
 
 .hero-grid {
   position: absolute; inset: 0;
@@ -281,13 +281,13 @@
   white-space: nowrap;
   letter-spacing: 0.01em;
   transition: opacity 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
-  box-shadow: 0 4px 16px rgba(67, 206, 162, 0.3);
+  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3);
 }
 
 .hero-cta-primary:hover {
   opacity: 0.9;
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(67, 206, 162, 0.4);
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.4);
 }
 
 .hero-cta-secondary {
@@ -525,14 +525,14 @@
   font-weight: 700;
   flex-shrink: 0;
   border: 3px solid transparent;
-  box-shadow: 0 0 0 3px color-mix(in srgb, #43cea2 30%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, #2563EB 30%, transparent);
 }
 
 .avatar-lg { width: 72px; height: 72px; font-size: 22px; }
 
 .avatar-alt {
   background: var(--accent);
-  box-shadow: 0 0 0 3px color-mix(in srgb, #185a9d 30%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, #14B8A6 30%, transparent);
 }
 
 .team-badge {
@@ -627,8 +627,8 @@
   opacity: 0.06;
 }
 
-.deco-orb-1 { width: 400px; height: 400px; background: #43cea2; top: -150px; right: -100px; }
-.deco-orb-2 { width: 350px; height: 350px; background: #185a9d; bottom: -120px; left: -80px; }
+.deco-orb-1 { width: 400px; height: 400px; background: #2563EB; top: -150px; right: -100px; }
+.deco-orb-2 { width: 350px; height: 350px; background: #14B8A6; bottom: -120px; left: -80px; }
 
 .inspiration-content {
   position: relative;
@@ -653,8 +653,8 @@
   font-size: 42px;
   border: 5px solid transparent;
   box-shadow:
-    0 0 0 5px color-mix(in srgb, #43cea2 20%, transparent),
-    0 12px 40px rgba(67, 206, 162, 0.2);
+    0 0 0 5px color-mix(in srgb, #2563EB 20%, transparent),
+    0 12px 40px rgba(37, 99, 235, 0.2);
 }
 
 .avatar-inspiration { background: var(--accent); }
@@ -670,11 +670,11 @@
   padding: 8px 18px;
   border-radius: 99px;
   background: var(--accent-subtle);
-  border: 1.5px solid color-mix(in srgb, #43cea2 30%, transparent);
+  border: 1.5px solid color-mix(in srgb, #2563EB 30%, transparent);
   color: var(--accent-text);
 }
 
-.inspiration-badge svg { color: #43cea2; }
+.inspiration-badge svg { color: #2563EB; }
 
 .inspiration-right { display: flex; flex-direction: column; gap: 20px; }
 
@@ -748,18 +748,18 @@
   transform: translateY(-2px);
 }
 
-.value-pill svg { color: #43cea2; flex-shrink: 0; }
+.value-pill svg { color: #2563EB; flex-shrink: 0; }
 
 .inspiration-quote {
   margin-top: 12px;
   padding: 24px 28px;
   background: var(--accent-subtle);
-  border-left: 4px solid #43cea2;
+  border-left: 4px solid #2563EB;
   border-radius: 12px;
   position: relative;
 }
 
-.quote-icon { position: absolute; top: 16px; right: 20px; opacity: 0.15; color: #43cea2; }
+.quote-icon { position: absolute; top: 16px; right: 20px; opacity: 0.15; color: #2563EB; }
 
 .inspiration-quote p {
   font-family: 'DM Sans', sans-serif;
@@ -1178,8 +1178,8 @@ a.contact-info-value:hover { color: var(--accent-text); }
 .form-input::placeholder { color: var(--text-muted); }
 
 .form-input:focus {
-  border-color: #43cea2;
-  box-shadow: 0 0 0 3px rgba(67, 206, 162, 0.15);
+  border-color: #2563EB;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
 .form-input.error {
@@ -1217,13 +1217,13 @@ a.contact-info-value:hover { color: var(--accent-text); }
 .form-btn:hover:not(:disabled) {
   opacity: 0.9;
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(67, 206, 162, 0.3);
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.3);
 }
 
 .form-btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
 
 .form-btn:focus-visible {
-  outline: 2px solid #43cea2;
+  outline: 2px solid #2563EB;
   outline-offset: 2px;
 }
 
@@ -1252,7 +1252,7 @@ a.contact-info-value:hover { color: var(--accent-text); }
 .success-icon {
   width: 72px; height: 72px;
   border-radius: 50%;
-  background: rgba(67, 206, 162, 0.12);
+  background: rgba(37, 99, 235, 0.12);
   display: flex;
   align-items: center;
   justify-content: center;

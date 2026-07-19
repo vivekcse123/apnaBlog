@@ -31,7 +31,7 @@
   color: #fff;
   transition: opacity 0.18s, transform 0.15s;
   white-space: nowrap;
-  box-shadow: 0 2px 8px rgba(67,206,162,0.25);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
 }
 .bm-back:hover {
   opacity: 0.88;
@@ -182,7 +182,7 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: #43cea2;
+  color: #2563EB;
 }
 
 .bm-item-title {

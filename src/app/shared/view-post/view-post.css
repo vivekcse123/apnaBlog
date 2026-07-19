@@ -551,8 +551,8 @@
 }
 
 [data-theme="dark"] .pill-category {
-  background: color-mix(in srgb, #a78bfa 15%, transparent);
-  color: #a78bfa;
+  background: color-mix(in srgb, #2DD4BF 15%, transparent);
+  color: #2DD4BF;
 }
 
 [data-theme="dark"] .pill-tag {
@@ -699,8 +699,8 @@
 
 .edit-field input:focus,
 .edit-field select:focus {
-  border-color: #43cea2;
-  box-shadow: 0 0 0 3px rgba(67, 206, 162, 0.15);
+  border-color: #2563EB;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
 .edit-field small.error {
@@ -927,15 +927,15 @@
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  border: 1px solid color-mix(in srgb, #185a9d 40%, transparent);
-  background: color-mix(in srgb, #185a9d 10%, transparent);
-  color: #185a9d;
+  border: 1px solid color-mix(in srgb, #14B8A6 40%, transparent);
+  background: color-mix(in srgb, #14B8A6 10%, transparent);
+  color: #14B8A6;
   transition: background 0.2s ease, border-color 0.2s ease;
 }
 
 .btn-resubmit:hover:not(:disabled) {
-  background: color-mix(in srgb, #185a9d 18%, transparent);
-  border-color: #185a9d;
+  background: color-mix(in srgb, #14B8A6 18%, transparent);
+  border-color: #14B8A6;
 }
 
 .btn-resubmit:disabled {
@@ -1134,8 +1134,8 @@
 }
 
 .editor-wrapper:focus-within {
-  border-color: #43cea2;
-  box-shadow: 0 0 0 3px rgba(67, 206, 162, 0.15);
+  border-color: #2563EB;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
 .editor-wrapper.editor-error {
@@ -1186,11 +1186,11 @@
 }
 
 .tool-btn:hover {
-  background: rgba(67, 206, 162, 0.1);
+  background: rgba(37, 99, 235, 0.1);
   color: var(--text-primary);
 }
 
-.tool-btn.active { background: rgba(67,206,162,.18); color: #43cea2; }
+.tool-btn.active { background: rgba(37, 99, 235, .18); color: #2563EB; }
 .tool-btn--danger { color: var(--error, #dc2626); }
 .tool-btn--danger:hover { background: rgba(220,38,38,.1); color: var(--error, #dc2626); }
 
@@ -1280,7 +1280,7 @@
   color: var(--text-primary);
   font-family: 'DM Sans', sans-serif;
 }
-.inline-img-input:focus { border-color: #43cea2; }
+.inline-img-input:focus { border-color: #2563EB; }
 
 .inline-img-actions {
   display: flex;
@@ -1304,7 +1304,7 @@
   transition: border-color 0.15s, background 0.15s;
   white-space: nowrap;
 }
-.inline-img-upload-label:hover:not(.disabled) { border-color: #43cea2; color: #0f7a5a; background: rgba(67,206,162,0.06); }
+.inline-img-upload-label:hover:not(.disabled) { border-color: #2563EB; color: #0f7a5a; background: rgba(37, 99, 235, 0.06); }
 .inline-img-upload-label.disabled { opacity: 0.55; cursor: not-allowed; }
 
 .inline-img-or { font-size: 11px; color: var(--text-muted); flex-shrink: 0; }
@@ -1322,7 +1322,7 @@
   color: var(--text-primary);
   font-family: 'DM Sans', sans-serif;
 }
-.inline-img-url-input:focus { border-color: #43cea2; }
+.inline-img-url-input:focus { border-color: #2563EB; }
 
 .inline-img-insert-btn {
   height: 30px;
@@ -1515,9 +1515,9 @@
 }
 
 .file-upload-btn:hover {
-  border-color: #43cea2;
-  background: rgba(67, 206, 162, 0.06);
-  color: #43cea2;
+  border-color: #2563EB;
+  background: rgba(37, 99, 235, 0.06);
+  color: #2563EB;
 }
 
 .image-gallery {
@@ -1536,7 +1536,7 @@
 }
 
 .gallery-item:hover {
-  border-color: #43cea2;
+  border-color: #2563EB;
 }
 
 .gallery-item.uploading {
@@ -1723,10 +1723,10 @@
   height: 18px;
   pointer-events: none;
 }
-.crop-corner.tl { top: 0; left: 0;  border-top: 3px solid #43cea2; border-left: 3px solid #43cea2; }
-.crop-corner.tr { top: 0; right: 0; border-top: 3px solid #43cea2; border-right: 3px solid #43cea2; }
-.crop-corner.bl { bottom: 0; left: 0;  border-bottom: 3px solid #43cea2; border-left: 3px solid #43cea2; }
-.crop-corner.br { bottom: 0; right: 0; border-bottom: 3px solid #43cea2; border-right: 3px solid #43cea2; }
+.crop-corner.tl { top: 0; left: 0;  border-top: 3px solid #2563EB; border-left: 3px solid #2563EB; }
+.crop-corner.tr { top: 0; right: 0; border-top: 3px solid #2563EB; border-right: 3px solid #2563EB; }
+.crop-corner.bl { bottom: 0; left: 0;  border-bottom: 3px solid #2563EB; border-left: 3px solid #2563EB; }
+.crop-corner.br { bottom: 0; right: 0; border-bottom: 3px solid #2563EB; border-right: 3px solid #2563EB; }
 
 .cropper-controls {
   padding: 14px 16px;
@@ -1754,11 +1754,11 @@
   transition: border-color 0.15s, color 0.15s, background 0.15s;
   font-family: 'DM Sans', sans-serif;
 }
-.crop-aspect-btn:hover { border-color: #43cea2; color: #43cea2; }
+.crop-aspect-btn:hover { border-color: #2563EB; color: #2563EB; }
 .crop-aspect-btn.active {
-  background: rgba(67, 206, 162, 0.12);
-  border-color: #43cea2;
-  color: #43cea2;
+  background: rgba(37, 99, 235, 0.12);
+  border-color: #2563EB;
+  color: #2563EB;
 }
 
 .crop-zoom-row {
@@ -1770,7 +1770,7 @@
 
 .crop-zoom-slider {
   flex: 1;
-  accent-color: #43cea2;
+  accent-color: #2563EB;
   cursor: pointer;
   height: 4px;
 }
@@ -1812,7 +1812,7 @@
   width: 32px;
   height: 32px;
   border: 3px solid var(--border);
-  border-top-color: #43cea2;
+  border-top-color: #2563EB;
   border-radius: 50%;
   animation: postSpin 0.7s linear infinite;
 }
@@ -1937,7 +1937,7 @@
   line-height:1.5;
 }
 .mcq-num {
-  color:var(--accent, #43cea2);
+  color:var(--accent, #2563EB);
   margin-right:6px;
   font-weight:700;
 }
@@ -1984,9 +1984,9 @@
   font-size:13px;
   color:var(--text-muted);
   padding:8px 12px;
-  background:color-mix(in srgb,#43cea2 8%,transparent);
+  background:color-mix(in srgb,#2563EB 8%,transparent);
   border-radius:7px;
-  border-left:3px solid #43cea2;
+  border-left:3px solid #2563EB;
   line-height:1.5;
 }
 
@@ -1994,15 +1994,15 @@
 .mcq-edit-notice {
   display:flex; align-items:flex-start; gap:10px;
   padding:12px 14px;
-  background:color-mix(in srgb,#185a9d 8%,transparent);
-  border:1px solid color-mix(in srgb,#185a9d 25%,transparent);
+  background:color-mix(in srgb,#14B8A6 8%,transparent);
+  border:1px solid color-mix(in srgb,#14B8A6 25%,transparent);
   border-radius:9px;
   font-size:13.5px;
   color:var(--text-secondary);
   line-height:1.5;
   margin-bottom:8px;
 }
-.mcq-edit-notice svg { color:#185a9d; flex-shrink:0; margin-top:2px; }
+.mcq-edit-notice svg { color:#14B8A6; flex-shrink:0; margin-top:2px; }
 .mcq-edit-notice strong { color:var(--text-primary); }
 
 /* ── MCQ Editor ──────────────────────────────────── */
@@ -2043,7 +2043,7 @@
 .mcq-editor-num {
   font-size: 12px;
   font-weight: 700;
-  color: var(--accent, #43cea2);
+  color: var(--accent, #2563EB);
   text-transform: uppercase;
   letter-spacing: .05em;
 }
@@ -2082,8 +2082,8 @@
   transition: border-color .15s, box-shadow .15s;
 }
 .mcq-editor-input:focus {
-  border-color: var(--accent, #43cea2);
-  box-shadow: 0 0 0 3px rgba(67,206,162,.13);
+  border-color: var(--accent, #2563EB);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, .13);
 }
 .mcq-editor-question { font-weight: 500; }
 .mcq-editor-exp      { font-size: 13px; }
@@ -2216,9 +2216,9 @@
   align-self: flex-start;
 }
 .mcq-add-opt-btn:hover {
-  border-color: var(--accent, #43cea2);
-  color: var(--accent, #43cea2);
-  background: color-mix(in srgb, var(--accent, #43cea2) 6%, transparent);
+  border-color: var(--accent, #2563EB);
+  color: var(--accent, #2563EB);
+  background: color-mix(in srgb, var(--accent, #2563EB) 6%, transparent);
 }
 
 /* Add question button */
@@ -2240,9 +2240,9 @@
   transition: border-color .15s, color .15s, background .15s;
 }
 .mcq-add-q-btn:hover {
-  border-color: var(--accent, #43cea2);
-  color: var(--accent, #43cea2);
-  background: color-mix(in srgb, var(--accent, #43cea2) 5%, transparent);
+  border-color: var(--accent, #2563EB);
+  color: var(--accent, #2563EB);
+  background: color-mix(in srgb, var(--accent, #2563EB) 5%, transparent);
 }
 
 /* ── Table insert picker ─────────────────────────── */
@@ -2300,8 +2300,8 @@
   box-sizing: border-box;
 }
 .tbl-picker-input:focus {
-  border-color: #43cea2;
-  box-shadow: 0 0 0 2px rgba(67,206,162,.15);
+  border-color: #2563EB;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, .15);
 }
 .tbl-insert-btn {
   display: flex;
@@ -2345,7 +2345,7 @@
 }
 .content-editable td:focus,
 .content-editable th:focus {
-  outline: 2px solid #43cea2;
+  outline: 2px solid #2563EB;
   outline-offset: -2px;
 }
 

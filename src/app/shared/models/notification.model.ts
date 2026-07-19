@@ -7,6 +7,7 @@ export type NotificationType =
   | 'SHORT_PUBLISHED' | 'SHORT_LIKED' | 'SHORT_COMMENTED' | 'SHORT_APPROVED' | 'SHORT_REJECTED'
   | 'USER_FROZEN' | 'USER_UNFROZEN' | 'USER_UPDATED' | 'USER_DELETED'
   | 'USER_DELETION_REQUESTED' | 'USER_DELETION_CANCELLED'
+  | 'MESSAGE_RECEIVED'
   | 'info' | 'warning' | 'success' | 'error';
 
 export interface Notification {
@@ -61,6 +62,7 @@ export const NOTIFICATION_META: Record<NotificationType, { icon: string; color: 
   USER_DELETED:                { icon: '❌', color: '#ef4444', label: 'Account Deleted'    },
   USER_DELETION_REQUESTED:     { icon: '⚠️', color: '#f59e0b', label: 'Deletion Requested' },
   USER_DELETION_CANCELLED:     { icon: '✅', color: '#10b981', label: 'Deletion Cancelled' },
+  MESSAGE_RECEIVED:            { icon: '💬', color: '#2563eb', label: 'New Message'        },
   SUBSCRIBER_ADDED:            { icon: '🔔', color: '#8b5cf6', label: 'New Subscriber'     },
   SHORT_PUBLISHED:             { icon: '🎬', color: '#6366f1', label: 'Short Published'    },
   SHORT_LIKED:                 { icon: '❤️', color: '#ec4899', label: 'Short Liked'        },

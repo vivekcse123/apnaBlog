@@ -28,8 +28,8 @@
           transform="rotate(-90 18 18)"/>
         <defs>
           <linearGradient id="hdrProgressGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stop-color="#43cea2"/>
-            <stop offset="100%" stop-color="#185a9d"/>
+            <stop offset="0%" stop-color="#2563EB"/>
+            <stop offset="100%" stop-color="#14B8A6"/>
           </linearGradient>
         </defs>
       </svg>
@@ -113,65 +113,39 @@
 
 } @else if (post()) {
 
-  <!-- Floating actions -->
-  <div class="floating-actions">
-    @if (tableOfContents().length > 0) {
-      <button class="float-btn" (click)="toggleToc()" [class.active]="showToc()" title="Table of Contents">
-        <span class="float-icon">📋</span>
-      </button>
-    }
-    <button class="float-btn" (click)="toggleBookmark()"
-      [class.bookmarked]="isBookmarked()"
-      [title]="isBookmarked() ? 'Remove bookmark' : 'Bookmark'">
-      <svg class="float-icon float-icon--svg" width="19" height="19" viewBox="0 0 24 24" stroke="currentColor"
-           stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"
-           [attr.fill]="isBookmarked() ? 'currentColor' : 'none'">
-        <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/>
-      </svg>
-    </button>
-    <button class="float-btn" (click)="printArticle()" title="Print">
-      <span class="float-icon">🖨️</span>
-    </button>
-    @if (isLoggedIn && !isPostOwner()) {
-      <button class="float-btn float-btn--flag"
-        [class.flagged]="hasFlagged()"
-        [title]="hasFlagged() ? 'Already reported' : 'Report this post'"
-        (click)="openFlagModal()">
-        <span class="float-icon">🚩</span>
-      </button>
-    }
-    <button class="float-btn" (click)="nativeSharePost()" [class.active]="shareMenuOpen()" title="Share">
-      <span class="float-icon">↗</span>
-    </button>
-    @if (shareMenuOpen()) {
-      <div class="share-menu">
-        <div class="share-menu-header">
-          <span>Share this article</span>
-          <button class="share-menu-close" (click)="shareMenuOpen.set(false)">✕</button>
-        </div>
-        <button class="share-option" (click)="shareOnTwitter()"><span class="share-option-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.748l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></span><span>Twitter / X</span></button>
-        <button class="share-option" (click)="shareOnFacebook()"><span class="share-option-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></span><span>Facebook</span></button>
-        <button class="share-option" (click)="shareOnLinkedIn()"><span class="share-option-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg></span><span>LinkedIn</span></button>
-        <button class="share-option" (click)="shareOnWhatsApp()"><span class="share-option-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span><span>WhatsApp</span></button>
-        <button class="share-option" (click)="copyLink()">
-          <span class="share-option-icon">@if (copyLinkSuccess()) {<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>} @else {<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>}</span>
-          <span>{{ copyLinkSuccess() ? 'Copied!' : 'Copy Link' }}</span>
-        </button>
+  <!-- Share popover state (shareMenuOpen) is still used as the fallback when
+       nativeSharePost() has no OS share sheet to open - triggered from the
+       action-row Share pill now, not a floating button. -->
+  @if (shareMenuOpen()) {
+    <div class="share-menu share-menu--anchored">
+      <div class="share-menu-header">
+        <span>Share this article</span>
+        <button class="share-menu-close" (click)="shareMenuOpen.set(false)" aria-label="Close share menu">✕</button>
       </div>
-    }
-  </div>
+      <button class="share-option" (click)="shareOnTwitter()"><span class="share-option-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.748l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></span><span>Twitter / X</span></button>
+      <button class="share-option" (click)="shareOnFacebook()"><span class="share-option-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></span><span>Facebook</span></button>
+      <button class="share-option" (click)="shareOnLinkedIn()"><span class="share-option-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg></span><span>LinkedIn</span></button>
+      <button class="share-option" (click)="shareOnWhatsApp()"><span class="share-option-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span><span>WhatsApp</span></button>
+      <button class="share-option" (click)="copyLink()">
+        <span class="share-option-icon">@if (copyLinkSuccess()) {<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>} @else {<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>}</span>
+        <span>{{ copyLinkSuccess() ? 'Copied!' : 'Copy Link' }}</span>
+      </button>
+    </div>
+  }
 
   <!-- Mobile bottom article action bar - replaces floating-actions on small screens -->
   <div class="mob-article-bar">
-    <!-- Mobile like button -->
-    <div class="mob-like-wrap">
-      <button class="mob-art-btn" [class.mob-art-btn--liked]="isLiked(post()!._id)"
-              (click)="toggleLikePicker($event)"
-              [attr.aria-label]="'Like this article, ' + post()!.likesCount + ' likes'">
-        <span class="mob-art-btn-icon" aria-hidden="true">{{ getPostEmoji(post()!._id) }}</span>
-        <span class="mob-art-btn-label">{{ post()!.likesCount }}</span>
-      </button>
-    </div>
+    <!-- Mobile like button - simple like/unlike toggle, no emoji picker -->
+    <button class="mob-art-btn" [class.mob-art-btn--liked]="isLiked(post()!._id)"
+            (click)="toggleLike(post()!, $event)"
+            [attr.aria-label]="(isLiked(post()!._id) ? 'Unlike' : 'Like') + ' this article, ' + post()!.likesCount + ' likes'">
+      <svg width="19" height="19" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"
+           [attr.fill]="isLiked(post()!._id) ? 'currentColor' : 'none'">
+        <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/>
+      </svg>
+      <span class="mob-art-btn-label">{{ post()!.likesCount }}</span>
+    </button>
     <button class="mob-art-btn" (click)="openCommentDrawer()"
             [attr.aria-label]="'Open comments, ' + post()!.commentsCount + ' comments'">
       <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -201,51 +175,236 @@
     </button>
   </div>
 
-  <!-- Mobile emoji picker - OUTSIDE mob-article-bar (backdrop-filter fix) -->
-  @if (showLikePicker()) {
-    <!-- Transparent backdrop - ghost-click guard built in -->
-    <div class="mob-like-backdrop" (click)="closeMobLikePicker($event)"></div>
+  <!-- Structured-data BreadcrumbList is injected separately via JSON-LD
+       (injectArticleSchema() in blog-detail.ts) - this is just the visible
+       back-navigation, no microdata needed here. -->
+  <div class="blog-back-wrap">
+    <a class="blog-back-link" routerLink="/blog">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+      Back to Blogs
+    </a>
+  </div>
 
-    <!-- Picker - spans full viewport width so it never clips on iOS -->
-    <div class="mob-like-picker-wrap" (click)="$event.stopPropagation()">
-      <div class="mob-like-picker">
-        @for (emoji of LIKE_EMOJIS; track emoji) {
-          <button class="mob-like-emoji"
-                  [class.mob-like-emoji--active]="postReactions().get(post()!._id) === emoji && isLiked(post()!._id)"
-                  (click)="selectReaction(post()!, emoji, $event)">
-            <span class="mob-like-emoji-icon">{{ emoji }}</span>
-            <span class="mob-like-emoji-count">{{ (postEmojiCounts()[emoji] ?? 0) > 0 ? postEmojiCounts()[emoji] : '' }}</span>
-          </button>
+  <div class="bd2-layout">
+    <aside class="bd2-left">
+
+      <!-- Inline TOC trigger - the only TOC trigger below 1100px (the old
+           floating-actions button is hidden there, see .float-btn--toc rule) -->
+      @if (tableOfContents().length > 0) {
+        <button class="toc-inline-trigger" (click)="toggleToc()" [class.open]="showToc()">
+          <span class="toc-inline-trigger__icon">📋</span>
+          <span>Table of Contents</span>
+          <span class="toc-inline-trigger__count">{{ tableOfContents().length }} Sections</span>
+          <svg class="toc-inline-trigger__chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+      }
+
+      <!-- Everything below is ONE sticky unit (mirrors .bd2-right-inner) so
+           the TOC card, stat card and share row move together as a single
+           block instead of the sidebar sticking while its siblings scroll
+           past underneath it. -->
+      <div class="bd2-left-inner">
+
+        <!-- TOC sidebar - mounts whenever there are headings (not gated on
+             showToc()) so it can render as a persistent sidebar at desktop
+             widths; showToc() only controls the mobile/tablet slide-in
+             "open" state via the class binding below. -->
+        @if (tableOfContents().length > 0) {
+          <div class="toc-sidebar" [class.open]="showToc()">
+            <div class="toc-header">
+              <h3 class="toc-title">📋 Contents</h3>
+            </div>
+            <nav class="toc-nav">
+              @for (item of tableOfContents(); track item.id; let i = $index) {
+                <a class="toc-item"
+                  [class.level-2]="item.level === 2"
+                  [class.level-3]="item.level === 3"
+                  [class.active]="activeHeadingId() === item.id"
+                  (click)="scrollToHeading(item.id)"><b class="toc-item__num">{{ i + 1 }}.</b>{{ item.text }}</a>
+              }
+            </nav>
+          </div>
+          <div class="toc-backdrop" [class.open]="showToc()" (click)="showToc.set(false)"></div>
+        }
+
+        <!-- "On this page" stat card + share icons: desktop only (≥1100px),
+             hidden below that per plan Decision C -->
+        <div class="toc-stat-card">
+          <div class="toc-stat-card__head">On this page</div>
+          <div class="toc-stat-row"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg>{{ tableOfContents().length }} Sections</div>
+          <div class="toc-stat-row"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>{{ contentWordCount() }} words</div>
+          <div class="toc-stat-row"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>{{ readingTime() }} min read</div>
+        </div>
+        <div class="toc-share-card">
+          <div class="toc-stat-card__head">Share this article</div>
+          <div class="toc-share-row">
+            <button class="toc-share-btn" (click)="shareOnTwitter()" aria-label="Share on X"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.748l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></button>
+            <button class="toc-share-btn" (click)="shareOnFacebook()" aria-label="Share on Facebook"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></button>
+            <button class="toc-share-btn" (click)="shareOnLinkedIn()" aria-label="Share on LinkedIn"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg></button>
+            <button class="toc-share-btn toc-share-btn--whatsapp" (click)="shareOnWhatsApp()" aria-label="Share on WhatsApp"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.39 1.26 4.81L2.05 22l5.4-1.42a9.9 9.9 0 0 0 4.59 1.14h.005c5.46 0 9.91-4.45 9.91-9.91C21.955 6.45 17.5 2 12.04 2zm5.8 14.02c-.245.69-1.42 1.32-1.96 1.4-.5.08-1.13.11-1.82-.12-.42-.13-.96-.31-1.65-.61-2.9-1.25-4.79-4.16-4.94-4.35-.145-.19-1.18-1.57-1.18-3 0-1.43.75-2.13 1.02-2.42.27-.29.58-.36.78-.36.195 0 .39.002.56.01.18.008.42-.068.655.5.245.59.83 2.04.9 2.19.07.15.115.325.02.52-.09.19-.14.31-.28.475-.14.165-.29.365-.415.49-.14.14-.28.29-.12.57.16.28.71 1.17 1.53 1.9 1.05.94 1.94 1.23 2.22 1.37.28.14.445.12.61-.07.165-.19.7-.815.885-1.095.185-.28.375-.235.63-.14.255.095 1.62.765 1.9.905.28.14.465.21.535.325.07.115.07.665-.175 1.355z"/></svg></button>
+            <button class="toc-share-btn" (click)="copyLink()" [attr.aria-label]="copyLinkSuccess() ? 'Copied' : 'Copy link'">
+              @if (copyLinkSuccess()) {<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>}
+              @else {<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>}
+            </button>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+  <article class="blog-detail-container bd2-center" id="main-content">
+
+    <header class="blog-header">
+      <div class="category-pills">
+        @for (cat of post()!.categories; track cat) {
+          <button type="button" class="category-pill" (click)="filterByTag(cat)">{{ cat }}</button>
         }
       </div>
-    </div>
-  }
 
-  <!-- Visual breadcrumb - matches JSON-LD BreadcrumbList for structured-data consistency -->
-  <nav class="blog-breadcrumb" aria-label="Breadcrumb">
-    <ol class="blog-breadcrumb-list" itemscope itemtype="https://schema.org/BreadcrumbList">
-      <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
-        <a routerLink="/" itemprop="item" class="breadcrumb-home"><span itemprop="name">Home</span></a>
-        <meta itemprop="position" content="1" />
-      </li>
-      @if (post()!.categories.length) {
-        <span class="breadcrumb-sep" aria-hidden="true">›</span>
-        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
-          <a [routerLink]="['/category', post()!.categories[0].toLowerCase()]" itemprop="item">
-            <span itemprop="name">{{ post()!.categories[0] }}</span>
-          </a>
-          <meta itemprop="position" content="2" />
-        </li>
+      @if (isWinner) {
+        <div class="winner-rank-badge">{{ winnerRankLabel }}</div>
       }
-      <span class="breadcrumb-sep" aria-hidden="true">›</span>
-      <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
-        <span itemprop="name" class="breadcrumb-current" aria-current="page">{{ post()!.title }}</span>
-        <meta [attr.content]="post()!.categories.length ? '3' : '2'" itemprop="position" />
-      </li>
-    </ol>
-  </nav>
 
-  <article class="blog-detail-container" id="main-content">
+      @if (postChallenge) {
+        <a class="challenge-badge" routerLink="/challenges">
+          <span class="challenge-badge__icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg></span>
+          <span class="challenge-badge__text">Part of: <strong>{{ postChallenge.title }}</strong></span>
+          @if (!postChallenge.isActive) { <span class="challenge-badge__ended">Ended</span> }
+        </a>
+      }
+
+      <h1 class="blog-title">{{ translation()?.title || post()!.title }}</h1>
+
+      <p class="blog-description">{{ translation()?.description || post()!.description }}</p>
+
+      <!-- Byline row - avatar + name + stats on the left, Like/Save/Share pinned to the right end -->
+      <div class="byline-row">
+        <div class="author-block">
+          <button class="author-avatar-btn" (click)="openAuthorModal()" type="button"
+            [attr.aria-label]="'View profile of ' + authorName">
+            <div class="author-avatar-sm">
+              @if (authorAvatar) {
+                <img [src]="authorAvatar" class="author-avatar-img" [alt]="authorName" width="40" height="40" />
+              } @else {
+                {{ authorInitial }}
+              }
+            </div>
+          </button>
+
+          <div class="author-info">
+            <button class="author-chip" (click)="openAuthorModal()" type="button"
+              [attr.aria-label]="'View profile of ' + authorName">
+              <span class="author-chip-name">{{ authorName }}</span>
+            </button>
+
+            <div class="author-chip-meta">
+              <span class="meta-item">
+                <span class="meta-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
+                {{ post()!.createdAt | date:'MMM d, y' }}
+              </span>
+              <span class="meta-item">
+                <span class="meta-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
+                {{ readingTime() }} min read
+              </span>
+              <span class="meta-item">
+                <span class="meta-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></span>
+                {{ post()!.views }} views
+              </span>
+              <button class="meta-item meta-comments-link" type="button" (click)="openCommentDrawer()" title="Open comments">
+                <span class="meta-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+                {{ post()!.commentsCount }} comment{{ post()!.commentsCount === 1 ? '' : 's' }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action row - Like / Save / Share, pinned to the right end -->
+        <div class="action-row">
+          <button class="like-btn-main" [class.liked]="isLiked(post()!._id)"
+                  (click)="toggleLike(post()!, $event)"
+                  [attr.aria-label]="(isLiked(post()!._id) ? 'Unlike' : 'Like') + ' this article'">
+            <svg class="like-icon" width="15" height="15" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"
+                 [attr.fill]="isLiked(post()!._id) ? 'currentColor' : 'none'">
+              <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/>
+            </svg>
+            <span class="like-count">{{ post()!.likesCount }}</span>
+          </button>
+
+          <button class="action-pill" [class.action-pill--active]="isBookmarked()"
+                  (click)="toggleBookmark()"
+                  [attr.aria-label]="isBookmarked() ? 'Remove bookmark' : 'Save for later'">
+            <svg width="15" height="15" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"
+                 [attr.fill]="isBookmarked() ? 'currentColor' : 'none'">
+              <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/>
+            </svg>
+            <span>{{ isBookmarked() ? 'Saved' : 'Save' }}</span>
+          </button>
+
+          <button class="action-pill" (click)="nativeSharePost()" aria-label="Share this article">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+            </svg>
+            <span>Share</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ── Series navigation bar ─────────────────────────────────────────── -->
+      @if (post()!.seriesName && seriesPosts().length > 1) {
+        <nav class="series-nav" aria-label="Article series">
+          <div class="series-nav__header">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 10h16M4 14h10"/></svg>
+            <span class="series-nav__label">Series: <strong>{{ post()!.seriesName }}</strong></span>
+            <span class="series-nav__count">{{ seriesPosts().length }} parts</span>
+          </div>
+          <ol class="series-nav__list">
+            @for (part of seriesPosts(); track part._id) {
+              <li class="series-nav__item" [class.series-nav__item--active]="part._id === post()!._id">
+                @if (part._id === post()!._id) {
+                  <span class="series-nav__part-num">{{ $index + 1 }}</span>
+                  <span class="series-nav__part-title">{{ part.title }}</span>
+                } @else {
+                  <span class="series-nav__part-num">{{ $index + 1 }}</span>
+                  <a class="series-nav__part-title series-nav__part-link" [routerLink]="['/blog', part.slug || part._id]">{{ part.title }}</a>
+                }
+              </li>
+            }
+          </ol>
+        </nav>
+      }
+
+      <!-- Language + text-size bar -->
+      <div class="lang-bar">
+        <span class="lang-bar-label">Read in:</span>
+        <button class="lang-btn"
+          [class.lang-btn--active]="activeLang() === 'en'"
+          [disabled]="translating()"
+          title="English"
+          (click)="readIn('en')">English</button>
+        @for (l of LANGUAGES; track l.code) {
+          <button class="lang-btn"
+            [class.lang-btn--active]="activeLang() === l.code"
+            [disabled]="translating()"
+            [title]="l.english"
+            (click)="readIn(l.code)">{{ l.label }}</button>
+        }
+        @if (translating()) {
+          <span class="lang-translating">Translating…</span>
+        }
+
+        <!-- Text resize -->
+        <div class="font-size-btns" aria-label="Text size">
+          <button class="fs-btn" [class.fs-active]="fontSize() === 'sm'" (click)="setFontSize('sm')" title="Small text">A<sup>−</sup></button>
+          <button class="fs-btn" [class.fs-active]="fontSize() === 'md'" (click)="setFontSize('md')" title="Default text">A</button>
+          <button class="fs-btn fs-btn--lg" [class.fs-active]="fontSize() === 'lg'" (click)="setFontSize('lg')" title="Large text">A<sup>+</sup></button>
+        </div>
+      </div>
+
+    </header>
 
     @if (carouselImages().length === 1) {
       <div class="featured-image-wrap">
@@ -299,177 +458,6 @@
         </div>
       </div>
     }
-
-    <header class="blog-header">
-      <div class="category-pills">
-        @for (cat of post()!.categories; track cat) {
-          <button type="button" class="category-pill" (click)="filterByTag(cat)">{{ cat }}</button>
-        }
-      </div>
-
-      @if (isWinner) {
-        <div class="winner-rank-badge">{{ winnerRankLabel }}</div>
-      }
-
-      @if (postChallenge) {
-        <a class="challenge-badge" routerLink="/challenges">
-          <span class="challenge-badge__icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg></span>
-          <span class="challenge-badge__text">Part of: <strong>{{ postChallenge.title }}</strong></span>
-          @if (!postChallenge.isActive) { <span class="challenge-badge__ended">Ended</span> }
-        </a>
-      }
-
-      <h1 class="blog-title">{{ translation()?.title || post()!.title }}</h1>
-
-      <!-- TOC sidebar - placed after the H1 in reading order so screen-reader
-           heading navigation meets the article title before this sidebar widget -->
-      @if (showToc() && tableOfContents().length > 0) {
-        <div class="toc-sidebar open">
-          <div class="toc-header">
-            <h3 class="toc-title">📋 Contents</h3>
-            <button class="toc-close" (click)="showToc.set(false)" aria-label="Close table of contents">✕</button>
-          </div>
-          <nav class="toc-nav">
-            @for (item of tableOfContents(); track item.id) {
-              <a class="toc-item"
-                [class.level-2]="item.level === 2"
-                [class.level-3]="item.level === 3"
-                [class.active]="activeHeadingId() === item.id"
-                (click)="scrollToHeading(item.id)">{{ item.text }}</a>
-            }
-          </nav>
-        </div>
-        <div class="toc-backdrop" (click)="showToc.set(false)"></div>
-      }
-
-      <p class="blog-description">{{ translation()?.description || post()!.description }}</p>
-
-      <!-- Author chip -->
-      <button class="author-chip" (click)="openAuthorModal()" type="button"
-        [attr.aria-label]="'Written by ' + authorName">
-        <div class="author-avatar-sm">
-          @if (authorAvatar) {
-            <img [src]="authorAvatar" class="author-avatar-img" [alt]="authorName" width="32" height="32" />
-          } @else {
-            {{ authorInitial }}
-          }
-        </div>
-        <div class="author-chip-text">
-          <span class="author-chip-label">Written by</span>
-          <span class="author-chip-name">{{ authorName }}</span>
-        </div>
-        <span class="author-chip-arrow" aria-hidden="true">›</span>
-      </button>
-
-      <!-- ── Series navigation bar ─────────────────────────────────────────── -->
-      @if (post()!.seriesName && seriesPosts().length > 1) {
-        <nav class="series-nav" aria-label="Article series">
-          <div class="series-nav__header">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 10h16M4 14h10"/></svg>
-            <span class="series-nav__label">Series: <strong>{{ post()!.seriesName }}</strong></span>
-            <span class="series-nav__count">{{ seriesPosts().length }} parts</span>
-          </div>
-          <ol class="series-nav__list">
-            @for (part of seriesPosts(); track part._id) {
-              <li class="series-nav__item" [class.series-nav__item--active]="part._id === post()!._id">
-                @if (part._id === post()!._id) {
-                  <span class="series-nav__part-num">{{ $index + 1 }}</span>
-                  <span class="series-nav__part-title">{{ part.title }}</span>
-                } @else {
-                  <span class="series-nav__part-num">{{ $index + 1 }}</span>
-                  <a class="series-nav__part-title series-nav__part-link" [routerLink]="['/blog', part.slug || part._id]">{{ part.title }}</a>
-                }
-              </li>
-            }
-          </ol>
-        </nav>
-      }
-
-      <div class="blog-meta">
-        <div class="meta-stats">
-          <span class="meta-item">
-            <span class="meta-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
-            Published {{ post()!.createdAt | date:'MMM d, y' }}
-          </span>
-          @if (post()!.updatedAt && post()!.updatedAt !== post()!.createdAt) {
-            <span class="meta-item meta-updated">
-              <span class="meta-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></span>
-              Updated {{ post()!.updatedAt | date:'MMM d, y' }}
-            </span>
-          }
-          <span class="meta-item"><span class="meta-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>{{ readingTime() }} min read</span>
-          <span class="meta-item"><span class="meta-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></span>{{ post()!.views }} views</span>
-          <button class="meta-item meta-comments-link" (click)="openCommentDrawer()" title="Open comments">
-            <span class="meta-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>{{ post()!.commentsCount }} comment{{ post()!.commentsCount === 1 ? '' : 's' }}
-          </button>
-        </div>
-        <div class="meta-right">
-          <!-- Text resize -->
-          <div class="font-size-btns" aria-label="Text size">
-            <button class="fs-btn" [class.fs-active]="fontSize() === 'sm'" (click)="setFontSize('sm')" title="Small text">A<sup>−</sup></button>
-            <button class="fs-btn" [class.fs-active]="fontSize() === 'md'" (click)="setFontSize('md')" title="Default text">A</button>
-            <button class="fs-btn fs-btn--lg" [class.fs-active]="fontSize() === 'lg'" (click)="setFontSize('lg')" title="Large text">A<sup>+</sup></button>
-          </div>
-          <!-- Desktop like button with emoji picker on hover -->
-          <div class="like-reaction-wrap"
-               (mouseenter)="showEmojiPicker()"
-               (mouseleave)="showLikePicker.set(false)">
-            @if (showLikePicker()) {
-              <div class="like-emoji-picker" [style.--picker-shift]="pickerShiftX() + 'px'">
-                @for (emoji of LIKE_EMOJIS; track emoji) {
-                  <button class="like-emoji-btn"
-                          [class.like-emoji-selected]="postReactions().get(post()!._id) === emoji && isLiked(post()!._id)"
-                          (click)="selectReaction(post()!, emoji, $event)"
-                          [title]="emoji">
-                    {{ emoji }}
-                  </button>
-                }
-              </div>
-            }
-            <button class="like-btn-main" [class.liked]="isLiked(post()!._id)"
-                    (click)="toggleLikePicker($event)">
-              <span class="like-icon">{{ getPostEmoji(post()!._id) }}</span>
-              <span class="like-count">{{ post()!.likesCount }}</span>
-            </button>
-          </div>
-
-          <!-- Emoji breakdown strip -->
-          @if (post()!.likesCount > 0) {
-            <div class="emoji-count-strip">
-              @for (emoji of LIKE_EMOJIS; track emoji) {
-                @if ((postEmojiCounts()[emoji] ?? 0) > 0) {
-                  <span class="emoji-count-chip"
-                        [class.emoji-count-chip--mine]="postReactions().get(post()!._id) === emoji && isLiked(post()!._id)">
-                    {{ emoji }} {{ postEmojiCounts()[emoji] }}
-                  </span>
-                }
-              }
-            </div>
-          }
-        </div>
-      </div>
-
-      <!-- Language bar -->
-      <div class="lang-bar">
-        <span class="lang-bar-label">Read in:</span>
-        <button class="lang-btn"
-          [class.lang-btn--active]="activeLang() === 'en'"
-          [disabled]="translating()"
-          title="English"
-          (click)="readIn('en')">English</button>
-        @for (l of LANGUAGES; track l.code) {
-          <button class="lang-btn"
-            [class.lang-btn--active]="activeLang() === l.code"
-            [disabled]="translating()"
-            [title]="l.english"
-            (click)="readIn(l.code)">{{ l.label }}</button>
-        }
-        @if (translating()) {
-          <span class="lang-translating">Translating…</span>
-        }
-      </div>
-
-    </header>
 
     <!-- AdSense - top of article (600+ words only) -->
     @if (!isThinPost() && !isShortPost()) {
@@ -611,98 +599,6 @@
       </details>
     }
 
-    <!-- Author card -->
-    <div class="author-card">
-      <button class="author-card-avatar" type="button" (click)="openAuthorModal()"
-        [attr.aria-label]="'View profile of ' + authorName">
-        @if (authorAvatar) {
-          <img [src]="authorAvatar" class="author-card-avatar-img" [alt]="authorName" width="64" height="64" />
-        } @else {
-          {{ authorInitial }}
-        }
-      </button>
-      <div class="author-card-body">
-        <span class="author-card-label">About the author</span>
-        <a class="author-card-name" [routerLink]="['/author', authorId()]">
-          {{ authorName }}
-          @if (authorWOM?.active && challengeEnded) {
-            <span class="wom-badge" [title]="'Writer of the Month - ' + (authorWOM?.challengeTitle || '')">👑 Writer of the Month</span>
-          }
-        </a>
-        @if (authorBio) {
-          <p class="author-card-bio">{{ authorBio }}</p>
-        } @else {
-          <p class="author-card-bio author-card-bio--empty">
-            <a [routerLink]="['/author', authorId()]">View full profile</a>
-          </p>
-        }
-      </div>
-      <div class="author-card-right">
-        <div class="author-card-stat">
-          <span class="author-stat-value">{{ authorTotalPosts() }}</span>
-          <span class="author-stat-label">Blogs</span>
-        </div>
-        <div class="author-card-stat">
-          <span class="author-stat-value">{{ authorFollowersCount() }}</span>
-          <span class="author-stat-label">Followers</span>
-        </div>
-        @if (authorKarma > 0) {
-          <div class="author-card-stat author-karma-stat" title="Writer karma - earned from published posts, likes and comments">
-            <span class="author-stat-value author-stat-karma">⚡ {{ authorKarma }}</span>
-            <span class="author-stat-label">Karma</span>
-          </div>
-        }
-        @if (isLoggedIn && currentUser?._id !== authorId()) {
-          <button class="author-card-follow-btn"
-            [class.following]="isFollowingAuthor()"
-            [disabled]="followLoading()"
-            (click)="toggleFollow()" type="button">
-            @if (followLoading()) {
-              <span class="btn-spinner"></span>
-            } @else if (isFollowingAuthor()) {
-              ✓ Following
-            } @else {
-              + Follow
-            }
-          </button>
-        }
-      </div>
-    </div>
-
-    <!-- Trending / Most Read -->
-    @if (trendingPosts().length > 0) {
-      <section class="trending-section">
-        <h2 class="trending-title">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-               stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
-            <polyline points="16 7 22 7 22 13"/>
-          </svg>
-          Most Read
-        </h2>
-        <ol class="trending-list">
-          @for (tp of trendingPosts(); track tp._id; let i = $index) {
-            <li class="trending-item">
-              <span class="trending-rank">{{ i + 1 }}</span>
-              <div class="trending-body">
-                @if (tp.categories.length) {
-                  <span class="trending-cat">{{ tp.categories[0] }}</span>
-                }
-                <p class="trending-heading">
-                  <a class="trending-link" [routerLink]="['/blog', tp.slug || tp._id]">{{ tp.title }}</a>
-                </p>
-                <div class="trending-meta">
-                  <span>{{ tp.views | number }} views</span>
-                  <span>·</span>
-                  <span>{{ tp.createdAt | timeAgo }}</span>
-                </div>
-              </div>
-            </li>
-          }
-        </ol>
-      </section>
-    }
-
     <!-- ── Shorts Recommendation ── -->
     @if (relatedShorts().length > 0) {
       <section class="shorts-rec-section">
@@ -750,35 +646,155 @@
       </section>
     }
 
-    <!-- Related Stories -->
-    @if (relatedPosts().length > 0) {
-      <section class="related-section">
-        <h2 class="related-title"><span class="related-icon">✨</span> Related Stories</h2>
-        <div class="related-grid">
-          @for (rp of relatedPosts(); track rp._id) {
-            <article class="related-card">
-              @if (rp.featuredImage) {
-                <img [src]="rp.featuredImage" [alt]="rp.title"
-                  class="related-img" loading="lazy" width="280" height="160"/>
-              } @else {
-                <div class="related-no-img">
-                  <span class="related-letter">{{ rp.title.charAt(0).toUpperCase() }}</span>
-                </div>
-              }
-              <div class="related-content">
-                <span class="related-cat">{{ rp.categories[0] }}</span>
-                <h3 class="related-card-title">
-                  <a class="related-card-link" [routerLink]="['/blog', rp.slug || rp._id]">{{ rp.title }}</a>
-                </h3>
-                <p class="related-desc">{{ rp.description }}</p>
-              </div>
-            </article>
-          }
-        </div>
-      </section>
-    }
+    <!-- Print / Flag - moved out of the old bottom-right floating stack,
+         Save and Share already live in the action row under the byline. -->
+    <div class="article-utility-row">
+      <button class="utility-btn" (click)="printArticle()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M6 9V3.5h12V9M6 18H4.5a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1h15a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H18"/><rect x="6" y="14.5" width="12" height="6" rx=".6"/>
+        </svg>
+        <span>Print</span>
+      </button>
+      @if (isLoggedIn && !isPostOwner()) {
+        <button class="utility-btn utility-btn--flag" [class.is-flagged]="hasFlagged()"
+                [disabled]="hasFlagged()"
+                (click)="openFlagModal()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M4 15s1.5-1 4-1 3.5 2 6 2 4-1 4-1V4s-1.5 1-4 1-3.5-2-6-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="4"/>
+          </svg>
+          <span>{{ hasFlagged() ? 'Reported' : 'Report' }}</span>
+        </button>
+      }
+    </div>
 
   </article>
+
+    <aside class="bd2-right">
+      <div class="bd2-right-inner">
+
+        <!-- Author card -->
+        <div class="author-card">
+          <span class="author-card-label">About the author</span>
+          <button class="author-card-avatar" type="button" (click)="openAuthorModal()"
+            [attr.aria-label]="'View profile of ' + authorName">
+            @if (authorAvatar) {
+              <img [src]="authorAvatar" class="author-card-avatar-img" [alt]="authorName" width="64" height="64" />
+            } @else {
+              {{ authorInitial }}
+            }
+          </button>
+          <div class="author-card-body">
+            <a class="author-card-name" [routerLink]="['/author', authorId()]">
+              {{ authorName }}
+              @if (authorWOM?.active && challengeEnded) {
+                <span class="wom-badge" [title]="'Writer of the Month - ' + (authorWOM?.challengeTitle || '')">👑 Writer of the Month</span>
+              }
+            </a>
+            @if (authorBio) {
+              <p class="author-card-bio">{{ authorBio }}</p>
+            } @else {
+              <p class="author-card-bio author-card-bio--empty">
+                <a [routerLink]="['/author', authorId()]">View full profile</a>
+              </p>
+            }
+          </div>
+          <div class="author-card-right">
+            <div class="author-card-stat">
+              <span class="author-stat-value">{{ authorTotalPosts() }}</span>
+              <span class="author-stat-label">Blogs</span>
+            </div>
+            <div class="author-card-stat">
+              <span class="author-stat-value">{{ authorFollowersCount() }}</span>
+              <span class="author-stat-label">Followers</span>
+            </div>
+            @if (authorKarma > 0) {
+              <div class="author-card-stat author-karma-stat" title="Writer karma - earned from published posts, likes and comments">
+                <span class="author-stat-value author-stat-karma">⚡ {{ authorKarma }}</span>
+                <span class="author-stat-label">Karma</span>
+              </div>
+            }
+            @if (isLoggedIn && auth.userId() !== authorId()) {
+              <button class="author-card-follow-btn"
+                [class.following]="isFollowingAuthor()"
+                [disabled]="followLoading()"
+                (click)="toggleFollow()" type="button">
+                @if (followLoading()) {
+                  <span class="btn-spinner"></span>
+                } @else if (isFollowingAuthor()) {
+                  ✓ Following
+                } @else {
+                  + Follow
+                }
+              </button>
+            }
+          </div>
+        </div>
+
+        <!-- Trending / Most Read -->
+        @if (trendingPosts().length > 0) {
+          <section class="trending-section">
+            <h2 class="trending-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
+                <polyline points="16 7 22 7 22 13"/>
+              </svg>
+              Most Read
+            </h2>
+            <ol class="trending-list">
+              @for (tp of trendingPosts(); track tp._id; let i = $index) {
+                <li class="trending-item">
+                  <span class="trending-rank">{{ i + 1 }}</span>
+                  <div class="trending-body">
+                    @if (tp.categories.length) {
+                      <span class="trending-cat">{{ tp.categories[0] }}</span>
+                    }
+                    <p class="trending-heading">
+                      <a class="trending-link" [routerLink]="['/blog', tp.slug || tp._id]">{{ tp.title }}</a>
+                    </p>
+                    <div class="trending-meta">
+                      <span>{{ tp.views | number }} views</span>
+                      <span>·</span>
+                      <span>{{ tp.createdAt | timeAgo }}</span>
+                    </div>
+                  </div>
+                </li>
+              }
+            </ol>
+          </section>
+        }
+
+        <!-- Related Stories -->
+        @if (relatedPosts().length > 0) {
+          <section class="related-section">
+            <h2 class="related-title"><span class="related-icon">✨</span> Related Stories</h2>
+            <div class="related-grid">
+              @for (rp of relatedPosts(); track rp._id) {
+                <article class="related-card">
+                  @if (rp.featuredImage) {
+                    <img [src]="rp.featuredImage" [alt]="rp.title"
+                      class="related-img" loading="lazy" width="280" height="160"/>
+                  } @else {
+                    <div class="related-no-img">
+                      <span class="related-letter">{{ rp.title.charAt(0).toUpperCase() }}</span>
+                    </div>
+                  }
+                  <div class="related-content">
+                    <span class="related-cat">{{ rp.categories[0] }}</span>
+                    <h3 class="related-card-title">
+                      <a class="related-card-link" [routerLink]="['/blog', rp.slug || rp._id]">{{ rp.title }}</a>
+                    </h3>
+                    <p class="related-desc">{{ rp.description }}</p>
+                  </div>
+                </article>
+              }
+            </div>
+          </section>
+        }
+
+      </div>
+    </aside>
+  </div>
 
   <!-- ════════════════════════════════════
        Author Profile Modal
@@ -788,27 +804,55 @@
       [attr.aria-label]="'Author profile: ' + authorName">
       <div class="author-modal" (click)="$event.stopPropagation()">
 
-        <!-- Pinned close-button row - always visible at top -->
-        <div class="apm-modal-header">
-          <button class="modal-close-btn" (click)="closeAuthorModal()" aria-label="Close author profile">✕</button>
+        <!-- Gradient cover banner - close button floats over it -->
+        <div class="apm-cover">
+          <button class="modal-close-btn" (click)="closeAuthorModal()" aria-label="Close author profile">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+
+        <!-- Avatar overlapping the cover's bottom edge - sits outside the scrollable
+             body so it isn't clipped by .apm-scroll-body's overflow-y: auto -->
+        <div class="apm-avatar-wrap">
+          <div class="apm-avatar">
+            @if (authorAvatar) {
+              <img [src]="authorAvatar" class="apos-avatar-img" [alt]="authorName" width="72" height="72" />
+            } @else {
+              {{ authorInitial }}
+            }
+          </div>
         </div>
 
         <!-- Scrollable body -->
         <div class="apm-scroll-body">
 
-          <!-- Hero: large avatar + identity -->
+          <!-- Hero: identity -->
           <div class="apm-hero">
-            <div class="apm-avatar">
-              @if (authorAvatar) {
-                <img [src]="authorAvatar" class="apos-avatar-img" [alt]="authorName" width="72" height="72" />
-              } @else {
-                {{ authorInitial }}
-              }
-            </div>
             <div class="apm-identity">
-              <h2 class="apm-name">{{ authorName }}</h2>
+              <div class="apm-name-row">
+                <h2 class="apm-name">{{ authorName }}</h2>
+                @if (authorWOM?.active && challengeEnded) {
+                  <span class="apm-badge apm-badge--gold" [title]="'Writer of the Month - ' + (authorWOM?.challengeTitle || '')">👑 Writer of the Month</span>
+                }
+              </div>
               <span class="apm-role">Author · ApnaInsights</span>
             </div>
+
+            <!-- Follow button (only shown to logged-in users who are not the author) -->
+            @if (isLoggedIn && auth.userId() !== authorId()) {
+              <button class="follow-btn"
+                [class.following]="isFollowingAuthor()"
+                [disabled]="followLoading()"
+                (click)="toggleFollow()" type="button">
+                @if (followLoading()) {
+                  <span class="btn-spinner"></span>
+                } @else if (isFollowingAuthor()) {
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> Following
+                } @else {
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Follow
+                }
+              </button>
+            }
           </div>
 
           <div class="apm-stats">
@@ -823,59 +867,48 @@
             </div>
             <div class="apm-stat-div"></div>
             <div class="apm-stat">
-              <span class="apm-stat-val">{{ post()!.views }}</span>
+              <span class="apm-stat-val">{{ authorTotalViews() }}</span>
               <span class="apm-stat-lbl">Views</span>
             </div>
+            @if (authorKarma > 0) {
+              <div class="apm-stat-div"></div>
+              <div class="apm-stat">
+                <span class="apm-stat-val apm-stat-val--karma">⚡ {{ authorKarma }}</span>
+                <span class="apm-stat-lbl">Karma</span>
+              </div>
+            }
           </div>
-
-          <!-- Follow button (only shown to logged-in users who are not the author) -->
-          @if (isLoggedIn && currentUser?._id !== authorId()) {
-            <button class="follow-btn"
-              [class.following]="isFollowingAuthor()"
-              [disabled]="followLoading()"
-              (click)="toggleFollow()" type="button">
-              @if (followLoading()) {
-                <span class="btn-spinner"></span>
-              } @else if (isFollowingAuthor()) {
-                ✓ Following
-              } @else {
-                + Follow
-              }
-            </button>
-          }
 
           <div class="apm-info">
             @if (authorBio) {
               <div class="apm-row">
-                <span class="apm-row-icon">📝</span>
+                <span class="apm-row-icon apm-row-icon--bio"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span>
                 <div><span class="apm-row-lbl">Bio</span><p class="apm-row-val bio">{{ authorBio }}</p></div>
               </div>
             }
             @if (authorEmail) {
               <div class="apm-row">
-                <span class="apm-row-icon">✉️</span>
-                <div><span class="apm-row-lbl">Email: </span><span class="apm-row-val">{{ authorEmail }}</span></div>
+                <span class="apm-row-icon apm-row-icon--mail"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v16H4z"/><polyline points="22 6 12 13 2 6"/></svg></span>
+                <div><span class="apm-row-lbl">Email</span><span class="apm-row-val">{{ authorEmail }}</span></div>
               </div>
             }
             @if (authorJoinedDate) {
               <div class="apm-row">
-                <span class="apm-row-icon">🗓️</span>
-                <div><span class="apm-row-lbl">Member since: </span><span class="apm-row-val">{{ authorJoinedDate | date:'MMMM yyyy' }}</span></div>
+                <span class="apm-row-icon apm-row-icon--cal"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
+                <div><span class="apm-row-lbl">Member since</span><span class="apm-row-val">{{ authorJoinedDate | date:'MMMM yyyy' }}</span></div>
               </div>
             }
-            <div class="apm-row">
-              <span class="apm-row-icon">📌</span>
-              <div><span class="apm-row-lbl">Latest post: </span><span class="apm-row-val">{{ post()!.title }}</span></div>
-            </div>
           </div>
 
           <div class="apm-actions">
             <!-- Primary action first -->
             <button class="apm-view-btn" (click)="openAuthorPostsModal()" type="button">
-              View all blogs by {{ authorName }} →
+              View all blogs by {{ authorName }}
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
             </button>
             <button class="apm-profile-btn" (click)="closeAuthorModal(); navigateToAuthor()" type="button">
-              View full profile →
+              View full profile
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
             </button>
             <button class="apm-cancel-btn" (click)="closeAuthorModal()" type="button">Dismiss</button>
           </div>

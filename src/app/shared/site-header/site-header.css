@@ -1,0 +1,396 @@
+/* `display: contents` (not `block`) - this component's host element has no
+   styling of its own (background/padding/border all live on .sh-header),
+   so giving it a real box only gets in the way: since it would shrink-wrap
+   to exactly .sh-header's height, it becomes .sh-header's containing block
+   for `position: sticky` purposes, and a containing block exactly as tall
+   as its sticky child leaves zero room for the "stuck" effect to ever be
+   visible - the header silently never stuck. `display: contents` removes
+   the host from the box tree entirely, so .sh-header's containing block
+   becomes its real ancestor (the page wrapper) instead, which is properly
+   page-height. */
+:host { display: contents; }
+
+.desktop-only        { display: flex; }
+.tablet-mobile-only   { display: none; }
+/* Matches home.html's .hp-nav/.desktop-only cutoff (home.css) exactly, so
+   the header - including the Categories mega-menu - collapses to the
+   hamburger drawer at the same viewport width on every page instead of
+   home showing the full desktop nav while /blog, /author etc. have already
+   dropped to mobile. */
+@media (max-width: 860px) {
+  .desktop-only { display: none !important; }
+  .tablet-mobile-only { display: flex !important; }
+}
+
+.sh-header {
+  position: sticky; top: 0; z-index: var(--z-sticky, 100);
+  display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 20px;
+  padding: 14px 28px;
+  background: color-mix(in srgb, var(--bg-surface) 80%, transparent);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border-bottom: 1px solid var(--border);
+}
+@media (max-width: 768px) { .sh-header { padding: 12px 16px; gap: 12px; } }
+
+@media (max-width: 860px) {
+  /* Nav + desktop search drop out of the grid entirely - fall back to a
+     plain flex row so logo/actions stay pinned to opposite edges instead of
+     depending on grid auto-placement to fill the now-empty middle tracks.
+     Must come after the base .sh-header rule above: same specificity, so
+     source order decides, and the unconditional rule was winning the
+     `display` property even inside this matching media query. */
+  .sh-header { display: flex; justify-content: space-between; }
+}
+
+/* font-size/weight/letter-spacing match home.css's .hp-logo-word exactly so
+   the "ApnaInsights" wordmark is the same size in every header. */
+.sh-logo { display: flex; align-items: center; gap: 8px; color: var(--text-primary); flex: none; }
+.sh-logo span { font-size: 19px; font-weight: 800; letter-spacing: -0.02em; }
+.sh-logo img { border-radius: 7px; }
+.sh-logo i { font-style: normal; color: var(--accent); }
+
+.sh-nav { display: flex; align-items: center; justify-content: center; gap: 22px; font-size: 13.5px; font-weight: 600; color: var(--text-secondary); min-width: 0; }
+.sh-nav a, .sh-nav-link {
+  display: flex; align-items: center; gap: 4px; color: var(--text-secondary); white-space: nowrap;
+  transition: color .15s; background: none; border: 0; padding: 0; font: inherit; cursor: pointer;
+}
+.sh-nav a:hover, .sh-nav-link:hover { color: var(--text-primary); }
+.sh-nav a.active, .sh-nav-link.active { color: var(--accent); }
+
+.hp-new-pill {
+  background: var(--accent-2, #14B8A6);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  padding: 2px 7px;
+  border-radius: 999px;
+  text-transform: uppercase;
+}
+
+.hp-nav-link {
+  position: relative; display: inline-flex; align-items: center; gap: 5px;
+  background: none; border: none; cursor: pointer; font-family: inherit;
+  font-size: 14.5px; font-weight: 600; color: var(--text-secondary); text-decoration: none;
+  padding: 6px 0; transition: color 0.15s ease;
+}
+.hp-nav-link:hover { color: var(--text-primary); }
+.hp-nav-link--active { color: var(--accent); }
+.hp-nav-chevron { transition: transform 0.18s ease; }
+.hp-nav-chevron--open { transform: rotate(180deg); }
+
+.nav-cat-wrap { position: relative; padding-bottom: 12px; margin-bottom: -12px; }
+
+/* Mega-menu: wide multi-column grid of category cards, replacing the old
+   single-column list dropdown. */
+.cat-mega {
+  position: absolute;
+  top: calc(100% + 16px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 560px;
+  max-width: calc(100vw - 32px);
+  max-height: 420px;
+  overflow-y: auto;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--card-shadow-lg);
+  padding: 14px;
+  z-index: var(--z-dropdown, 500);
+  animation: hp-dropdown-in 0.15s ease;
+}
+@keyframes hp-dropdown-in {
+  from { opacity: 0; transform: translate(-50%, -6px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
+}
+.cat-mega-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  padding: 2px 6px 12px; border-bottom: 1px solid var(--border); margin-bottom: 12px;
+}
+.cat-mega-title { font-size: 13px; font-weight: 700; color: var(--text-primary); }
+.cat-mega-total { font-size: 12px; font-weight: 600; color: var(--text-tertiary, var(--text-secondary)); }
+.cat-mega-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.cat-mega-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-align: left;
+  text-decoration: none;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+.cat-mega-item:hover {
+  background: var(--bg-hover);
+  border-color: var(--border);
+  transform: translateY(-1px);
+}
+.cat-mega-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px; height: 22px;
+  border-radius: 7px;
+  color: #fff;
+  flex-shrink: 0;
+}
+/* Icon glyph lives in its own inner wrapper, separate from the colored
+   outer badge - keeps the gap between the glyph and the badge's edge an
+   explicit, fixed value instead of leaning on flex-centering a bare svg. */
+.cat-mega-icon-inner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 12px; height: 12px;
+  color: #fff;
+}
+.cat-mega-icon-inner svg { width: 12px; height: 12px; display: block; }
+.cat-mega-text { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.cat-mega-name {
+  font-size: 13.5px; font-weight: 700; color: var(--text-primary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.cat-mega-count { font-size: 11.5px; font-weight: 500; color: var(--text-secondary); }
+
+/* Icon-triggered search dropdown - the wrap is the positioning anchor for
+   the popover card; without position:relative here the popover falls back
+   to positioning against some other ancestor, which is what was pushing the
+   other header icons around. */
+.sh-search-wrap { position: relative; }
+.sh-search-popover {
+  /* Fixed to the viewport, not absolute relative to the trigger - some
+     ancestor between here and <body> has overflow-x:hidden (to stop
+     horizontal scroll on mobile), which clips an absolutely-positioned
+     popover the moment it's wide enough to poke past that ancestor's edge.
+     position:fixed escapes that clipping entirely; right edge stays near
+     the icon cluster the same way absolute positioning did. */
+  position: fixed; top: 78px; right: 16px; z-index: var(--z-dropdown, 500);
+  width: 380px; max-width: calc(100vw - 32px); padding: 14px;
+  background: var(--bg-surface); border: 1px solid var(--border); border-radius: 20px;
+  box-shadow: var(--card-shadow-lg);
+}
+.sh-search-popover .sh-search-results-panel { position: static; width: auto; max-width: none; padding: 0; border: 0; box-shadow: none; background: none; }
+.sh-search-field {
+  display: flex; align-items: center; gap: 10px; padding: 12px 14px;
+  background: var(--bg-surface-alt); border: 1px solid var(--border); border-radius: 14px; color: var(--text-muted);
+}
+.sh-search-field input {
+  flex: 1; min-width: 0; border: 0; background: none; font-size: 14px; color: var(--text-primary);
+  outline: none; appearance: none; -webkit-appearance: none; box-shadow: none;
+}
+.sh-search-field input::placeholder { color: var(--text-muted); }
+.sh-search-field input::-webkit-search-cancel-button,
+.sh-search-field input::-webkit-search-decoration { -webkit-appearance: none; appearance: none; display: none; }
+.sh-search-clear { display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; color: var(--text-muted); flex: none; }
+.sh-search-clear:hover { background: var(--bg-hover); color: var(--text-primary); }
+
+.sh-search-results-panel {
+  position: absolute; top: calc(100% + 10px); right: 0; z-index: var(--z-dropdown, 500);
+  width: 400px; max-width: calc(100vw - 32px); padding: 14px;
+  background: var(--bg-surface); border: 1px solid var(--border); border-radius: 20px;
+  box-shadow: var(--card-shadow-lg);
+}
+
+.sh-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; flex: none; }
+.sh-icon-btn {
+  width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center;
+  color: var(--text-secondary); background: var(--bg-surface); border: 1px solid var(--border);
+  font-size: 15px; cursor: pointer; transition: background .15s, color .15s, border-color .15s;
+}
+.sh-icon-btn:hover { background: var(--bg-hover); color: var(--accent); border-color: var(--accent); }
+.sh-icon-btn.active { background: var(--accent-subtle); color: var(--accent); border-color: var(--accent); }
+
+.sh-search-results { display: flex; flex-direction: column; gap: 2px; margin-top: 10px; max-height: 340px; overflow-y: auto; }
+.sh-search-result { display: flex; align-items: center; gap: 11px; padding: 8px; border-radius: 12px; }
+.sh-search-result:hover { background: var(--bg-hover); }
+.sh-search-result .thumb {
+  width: 38px; height: 38px; border-radius: 10px; flex: none; display: grid; place-items: center;
+  color: #fff; font-size: 15px; font-weight: 700;
+}
+.sh-search-result .t { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.sh-search-result .ttl {
+  font-size: 13px; font-weight: 600; color: var(--text-primary); line-height: 1.3;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.sh-search-result .sub { font-size: 11.5px; color: var(--text-muted); }
+.sh-search-footer { margin-top: 8px; padding-top: 10px; border-top: 1px solid var(--border); font-size: 11.5px; color: var(--text-muted); text-align: center; }
+.sh-search-empty { margin-top: 14px; padding: 20px 8px; text-align: center; font-size: 13px; color: var(--text-muted); }
+
+.sh-search-hint { margin-top: 12px; }
+.sh-search-popover .sh-search-hint { margin-top: 0; }
+.sh-search-hint .lbl { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 8px; }
+.sh-search-quick { display: flex; flex-wrap: wrap; gap: 7px; }
+.sh-search-quick a {
+  display: flex; align-items: center; gap: 7px; padding: 7px 12px; border-radius: 999px;
+  background: var(--bg-surface-alt); border: 1px solid var(--border); font-size: 12.5px; font-weight: 600; color: var(--text-secondary);
+}
+.sh-search-quick a:hover { border-color: var(--accent); color: var(--accent-text); }
+.sh-search-quick .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+
+.sh-avatar {
+  width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--brand-gradient); color: #fff; font-size: 12px; font-weight: 700;
+  overflow: hidden;
+}
+.sh-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+.sh-profile-menu-wrap { position: relative; }
+.sh-profile-trigger {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 1px solid var(--border); background: var(--bg-surface); border-radius: 999px;
+  cursor: pointer; padding: 3px 10px 3px 3px; color: var(--text-muted);
+  transition: border-color .15s ease, background .15s ease;
+}
+.sh-profile-trigger:hover { border-color: var(--accent); background: var(--bg-hover); }
+.sh-profile-chevron { transition: transform .18s ease; }
+.sh-profile-chevron--open { transform: rotate(180deg); }
+.sh-profile-dropdown {
+  position: absolute; top: calc(100% + 12px); right: 0; width: 220px;
+  background: var(--bg-surface); border: 1px solid var(--border); border-radius: 14px;
+  box-shadow: var(--card-shadow-lg); padding: 8px; display: grid; gap: 2px;
+  z-index: var(--z-dropdown, 500); animation: sh-dropdown-in-right .15s ease;
+}
+.sh-profile-dropdown-item {
+  display: flex; align-items: center; gap: 10px; width: 100%;
+  padding: 9px 10px; border-radius: 9px; border: none; background: none; cursor: pointer;
+  font-family: inherit; font-size: 14px; font-weight: 600; color: var(--text-primary);
+  text-align: left; text-decoration: none; transition: background .15s ease;
+}
+.sh-profile-dropdown-item:hover { background: var(--bg-hover); }
+.sh-profile-dropdown-item--danger { color: var(--error); }
+.sh-profile-dropdown-item--danger:hover { background: rgba(239,68,68,0.08); }
+.sh-signin-btn {
+  padding: 8px 16px; border-radius: 999px; background: var(--accent); color: #fff;
+  font-size: 13px; font-weight: 700;
+}
+.sh-signin-btn:hover { background: var(--accent-hover); }
+
+/* ══ Hamburger + mobile drawer (mirrors home.css's .hp-hamburger/.hp-drawer
+   so the off-canvas menu is pixel-identical wherever it appears) ══ */
+.sh-hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  width: 38px; height: 38px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg-surface);
+  cursor: pointer;
+  padding: 0;
+  flex: none;
+}
+.sh-hamburger span {
+  display: block;
+  width: 18px; height: 2px;
+  margin: 0 auto;
+  background: var(--text-primary);
+  border-radius: 2px;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+.sh-hamburger--open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+.sh-hamburger--open span:nth-child(2) { opacity: 0; }
+.sh-hamburger--open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+@media (max-width: 860px) {
+  .sh-hamburger { display: flex; }
+}
+
+.hp-drawer {
+  position: fixed;
+  top: 0;
+  right: calc(-1 * min(320px, 86vw));
+  width: min(320px, 86vw);
+  height: 100dvh;
+  background: var(--bg-surface);
+  box-shadow: -8px 0 32px rgba(0,0,0,0.14);
+  z-index: var(--z-modal, 1000);
+  padding: 18px;
+  overflow-y: auto;
+  transition: right 0.25s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.hp-drawer--open { right: 0; }
+
+.hp-drawer-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+
+.hp-drawer-user {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px; border-radius: 14px; background: var(--bg-hover);
+  text-decoration: none; margin-bottom: 8px;
+}
+.hp-drawer-user-avatar {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+  background: var(--accent); color: #fff; font-weight: 700; font-size: 12px;
+}
+.hp-drawer-user-info { display: flex; flex-direction: column; min-width: 0; }
+.hp-drawer-user-info strong { color: var(--text-primary); font-size: 14px; }
+.hp-drawer-user-info span { color: var(--accent); font-size: 12.5px; font-weight: 600; }
+
+.hp-drawer-notif-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 12px; border-radius: 12px;
+  font-weight: 600; font-size: 14.5px; color: var(--text-primary);
+  margin-bottom: 4px;
+  /* Same card treatment as .hp-drawer-user so all three account-menu rows
+     read as one consistent group instead of "Dashboard" looking like a
+     highlighted card next to two bare, unstyled-looking text rows. */
+  background: var(--bg-hover);
+}
+.hp-drawer-notif-row ::ng-deep .bell-btn {
+  width: 40px; height: 40px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 12px; border: none; background: none; color: var(--text-primary);
+  flex-shrink: 0;
+}
+.hp-drawer-icon-slot {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px; flex-shrink: 0;
+}
+.hp-drawer-logout-row {
+  display: flex; align-items: center; gap: 12px; width: 100%;
+  padding: 10px 12px; border-radius: 12px; border: none; background: var(--bg-hover);
+  color: var(--error); font-family: inherit; font-weight: 600; font-size: 14.5px;
+  text-align: left; cursor: pointer; margin-bottom: 8px;
+}
+.hp-drawer-logout-row:hover { background: rgba(239,68,68,0.08); }
+
+.hp-drawer-auth { display: flex; gap: 8px; margin-bottom: 8px; }
+.hp-drawer-auth-btn {
+  flex: 1; text-align: center; padding: 10px; border-radius: 10px;
+  border: 1.5px solid var(--border); color: var(--text-primary);
+  text-decoration: none; font-weight: 700; font-size: 13.5px;
+}
+.hp-drawer-auth-btn--primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.hp-drawer-divider { height: 1px; background: var(--border); margin: 10px 0; }
+
+.hp-drawer-link {
+  display: flex; align-items: center; gap: 8px;
+  padding: 11px 8px; border-radius: 10px;
+  color: var(--text-primary); text-decoration: none;
+  font-weight: 600; font-size: 14.5px;
+}
+.hp-drawer-link:hover { background: var(--bg-hover); }
+.hp-drawer-link.active { color: var(--accent); }
+
+.hp-drawer-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.35);
+  z-index: 999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+.hp-drawer-backdrop--open { opacity: 1; pointer-events: auto; }

@@ -26,7 +26,7 @@
             @else { {{ post()?.status | titlecase }} }
           </span>
         }
-        <button class="close-btn" (click)="closeModal()">&times;</button>
+        <button class="close-btn" (click)="closeModal()" aria-label="Close">&times;</button>
       </div>
     </div>
 
@@ -1066,7 +1066,7 @@
 
       <div class="cropper-header">
         <h3>Adjust Image</h3>
-        <button class="close-btn" (click)="closeCropper()">✕</button>
+        <button class="close-btn" (click)="closeCropper()" aria-label="Close image cropper">✕</button>
       </div>
 
       <div class="cropper-frame-wrap">

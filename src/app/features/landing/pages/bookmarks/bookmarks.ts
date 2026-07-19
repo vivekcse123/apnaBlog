@@ -102,6 +102,7 @@ export class BookmarksPage implements OnInit {
   }
 
   readingTime(post: Post): number {
+    if (post.readingTimeMinutes) return post.readingTimeMinutes;
     const text = (post.content ?? '').replace(/<[^>]*>/g, '');
     return Math.max(1, Math.ceil(text.trim().split(/\s+/).length / 200));
   }

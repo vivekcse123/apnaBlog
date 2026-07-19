@@ -78,7 +78,7 @@ export class PostLists implements OnInit, OnDestroy {
       const n = post.mcqQuestions?.length ?? 0;
       return { label: `${n} Q${n === 1 ? '' : 's'}`, thin: n < MIN_MCQ_QUESTIONS };
     }
-    const words = wordCount(post.content);
+    const words = post.wordCount ?? wordCount(post.content);
     return { label: `${words}w`, thin: words < MIN_WORDS };
   }
 
@@ -109,7 +109,10 @@ export class PostLists implements OnInit, OnDestroy {
     }
     if (this.debounceValue()) {
       const s = this.debounceValue().toLowerCase();
-      data = data.filter(p => p.title.toLowerCase().includes(s));
+      data = data.filter(p =>
+        p.title.toLowerCase().includes(s) ||
+        ((p.user as any)?.name ?? '').toLowerCase().includes(s)
+      );
     }
     if (this.selectedCategory()) {
       data = data.filter(p => p.categories?.includes(this.selectedCategory()));

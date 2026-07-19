@@ -5,7 +5,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import {
   BehaviorSubject, Observable,
-  tap, catchError, of,
+  tap, catchError, of, forkJoin, map,
 } from 'rxjs';
 import { NotificationResponse, Notification } from '../../shared/models/notification.model';
 import { Auth } from './auth';
@@ -28,6 +28,7 @@ export class NotificationService implements OnDestroy {
   private _lastFetchAt       = 0;
   private _pollTimer: ReturnType<typeof setInterval> | undefined = undefined;
   private _visibilityHandler: (() => void) | undefined = undefined;
+  private _sourceMap = new Map<string, 'admin' | 'user'>();
 
   notifications$ = this._notifications$.asObservable();
   unreadCount$   = this._unreadCount$.asObservable();
@@ -63,21 +64,35 @@ export class NotificationService implements OnDestroy {
       .set('page',  page)
       .set('limit', limit);
 
-    this.http
-      .get<NotificationResponse>(this.api, { params })
-      .pipe(catchError(() => of(null)))
-      .subscribe(res => {
-        if (res) {
-          this._apply(res);
-          this._lastFetchAt = Date.now();
-        }
+    if (this.authService.isAdmin()) {
+      // Admins receive both site-moderation alerts and their own personal
+      // notifications (e.g. someone messaged them as an author), which live
+      // on two separate endpoints — merge both into one feed.
+      forkJoin({
+        admin: this.http.get<NotificationResponse>(this.ADMIN_API, { params }).pipe(catchError(() => of(null))),
+        user:  this.http.get<NotificationResponse>(this.USER_API,  { params }).pipe(catchError(() => of(null))),
+      }).subscribe(({ admin, user }) => {
+        this._applyMerged(admin, user);
+        this._lastFetchAt = Date.now();
         this._loading$.next(false);
       });
+    } else {
+      this.http
+        .get<NotificationResponse>(this.USER_API, { params })
+        .pipe(catchError(() => of(null)))
+        .subscribe(res => {
+          if (res) {
+            this._apply(res);
+            this._lastFetchAt = Date.now();
+          }
+          this._loading$.next(false);
+        });
+    }
   }
 
   markAsRead(id: string): Observable<void> {
     return this.http
-      .patch<void>(`${this.api}/${id}/read`, {})
+      .patch<void>(`${this._apiFor(id)}/${id}/read`, {})
       .pipe(
         tap(() => this._markReadLocally(id)),
         catchError(() => of(void 0)),
@@ -85,50 +100,60 @@ export class NotificationService implements OnDestroy {
   }
 
   markAllAsRead(): Observable<void> {
-    return this.http
-      .patch<void>(`${this.api}/read-all`, {})
-      .pipe(
-        tap(() => {
-          this._notifications$.next(
-            this._notifications$.value.map(n => ({ ...n, isRead: true })),
-          );
-          this._unreadCount$.next(0);
-        }),
-        catchError(() => of(void 0)),
-      );
+    const request$ = this.authService.isAdmin()
+      ? forkJoin([
+          this.http.patch<void>(`${this.ADMIN_API}/read-all`, {}).pipe(catchError(() => of(void 0))),
+          this.http.patch<void>(`${this.USER_API}/read-all`,  {}).pipe(catchError(() => of(void 0))),
+        ]).pipe(map(() => void 0))
+      : this.http.patch<void>(`${this.USER_API}/read-all`, {}).pipe(catchError(() => of(void 0)));
+
+    return request$.pipe(
+      tap(() => {
+        this._notifications$.next(
+          this._notifications$.value.map(n => ({ ...n, isRead: true })),
+        );
+        this._unreadCount$.next(0);
+      }),
+    );
   }
 
   deleteNotification(id: string): Observable<void> {
     return this.http
-      .delete<void>(`${this.api}/${id}`)
+      .delete<void>(`${this._apiFor(id)}/${id}`)
       .pipe(
         tap(() => {
           const filtered = this._notifications$.value.filter(n => n.id !== id);
           this._notifications$.next(filtered);
           this._unreadCount$.next(filtered.filter(n => !n.isRead).length);
+          this._sourceMap.delete(id);
         }),
         catchError(() => of(void 0)),
       );
   }
 
   deleteAllNotifications(): Observable<void> {
-    return this.http
-      .delete<void>(this.api)
-      .pipe(
-        tap(() => {
-          this._notifications$.next([]);
-          this._unreadCount$.next(0);
-        }),
-        catchError(() => of(void 0)),
-      );
+    const request$ = this.authService.isAdmin()
+      ? forkJoin([
+          this.http.delete<void>(this.ADMIN_API).pipe(catchError(() => of(void 0))),
+          this.http.delete<void>(this.USER_API).pipe(catchError(() => of(void 0))),
+        ]).pipe(map(() => void 0))
+      : this.http.delete<void>(this.USER_API).pipe(catchError(() => of(void 0)));
+
+    return request$.pipe(
+      tap(() => {
+        this._notifications$.next([]);
+        this._unreadCount$.next(0);
+        this._sourceMap.clear();
+      }),
+    );
   }
 
   ngOnDestroy(): void { this._reset(); }
 
   // ─── Private ──────────────────────────────────────────────
 
-  private get api(): string {
-    return this.authService.isAdmin() ? this.ADMIN_API : this.USER_API;
+  private _apiFor(id: string): string {
+    return this._sourceMap.get(id) === 'admin' ? this.ADMIN_API : this.USER_API;
   }
 
   private _reset(): void {
@@ -185,11 +210,26 @@ export class NotificationService implements OnDestroy {
   }
 
   private _apply(res: NotificationResponse): void {
-    const normalized = (res.notifications ?? []).map(n => ({
-      ...n,
-      id: n.id ?? (n as any)._id?.toString(),
-    }));
+    const normalized = (res.notifications ?? []).map(n => this._normalize(n, 'user'));
     this._notifications$.next(normalized);
     this._unreadCount$.next(res.unreadCount ?? 0);
+  }
+
+  private _applyMerged(admin: NotificationResponse | null, user: NotificationResponse | null): void {
+    const adminList = (admin?.notifications ?? []).map(n => this._normalize(n, 'admin'));
+    const userList  = (user?.notifications ?? []).map(n => this._normalize(n, 'user'));
+
+    const merged = [...adminList, ...userList]
+      .filter((n, i, arr) => arr.findIndex(x => x.id === n.id) === i)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+    this._notifications$.next(merged);
+    this._unreadCount$.next((admin?.unreadCount ?? 0) + (user?.unreadCount ?? 0));
+  }
+
+  private _normalize(n: Notification, source: 'admin' | 'user'): Notification {
+    const id = n.id ?? (n as any)._id?.toString();
+    this._sourceMap.set(id, source);
+    return { ...n, id };
   }
 }

@@ -1,15 +1,18 @@
 import {
-  ChangeDetectionStrategy, Component, ElementRef, EventEmitter, HostListener, Input, OnInit, Output, ViewChild, inject
+  ChangeDetectionStrategy, ChangeDetectorRef, Component, DestroyRef, ElementRef, EventEmitter,
+  HostListener, Input, OnInit, Output, ViewChild, inject
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NotificationPanel } from '../components/notification-panel/notification-panel';
 import { NotificationService } from '../../core/services/notification-service';
 import { ThemeService }        from '../../core/services/theme-service';
 import { DashboardCache }      from '../../core/services/dashboard-cache';
 import { Auth }                from '../../core/services/auth';
 import { TaxonomyService }     from '../../core/services/taxonomy.service';
+import { PanelCoordinator }    from '../../core/services/panel-coordinator';
 
 interface NavItem { label: string; routerLink: string; icon?: string; }
 interface Suggestion { label: string; emoji: string; route: string; queryParams?: any; type: string; }
@@ -29,7 +32,10 @@ export class CommonHeader implements OnInit {
   @Input() avatarUrl: string | null = null;
   @Input() userRole:  string | null = null;
   @Input() navs:      NavItem[] = [];
-  @Input() set panelOpen(v: boolean) { this.profileOpen = v; }
+  @Input() set panelOpen(v: boolean) {
+    this.profileOpen = v;
+    if (v) this.coordinator.open('profile');
+  }
 
   @Output() open         = new EventEmitter<void>();
   @Output() searchChange = new EventEmitter<string>();
@@ -64,10 +70,34 @@ export class CommonHeader implements OnInit {
   private dashboardCache  = inject(DashboardCache);
   private auth            = inject(Auth);
   private taxonomyService = inject(TaxonomyService);
+  private coordinator     = inject(PanelCoordinator);
+  private cdr             = inject(ChangeDetectorRef);
+  private destroyRef      = inject(DestroyRef);
   themeService            = inject(ThemeService);
 
   ngOnInit(): void {
     this.taxonomyService.load().subscribe();
+
+    this.coordinator.active$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(active => {
+        let changed = false;
+        if (active !== 'search' && this.searchPanelOpen) {
+          this.searchPanelOpen = false;
+          this.showSuggestions = false;
+          this.searchQuery = '';
+          changed = true;
+        }
+        if (active !== 'profile' && this.profileOpen) {
+          this.profileOpen = false;
+          changed = true;
+        }
+        if (active !== 'mobile-menu' && this.menuOpen) {
+          this.menuOpen = false;
+          changed = true;
+        }
+        if (changed) this.cdr.markForCheck();
+      });
   }
 
   getRoleLabel(): string {
@@ -108,7 +138,10 @@ export class CommonHeader implements OnInit {
     const q = this.searchQuery.trim().toLowerCase();
     const posts = this.cachedPosts;
     const filtered = q
-      ? posts.filter((p: any) => p.title?.toLowerCase().includes(q))
+      ? posts.filter((p: any) =>
+          p.title?.toLowerCase().includes(q) ||
+          (p.user as any)?.name?.toLowerCase().includes(q)
+        )
       : posts.slice().sort((a: any, b: any) =>
           new Date(b.updatedAt ?? b.createdAt).getTime() - new Date(a.updatedAt ?? a.createdAt).getTime()
         );
@@ -147,7 +180,7 @@ export class CommonHeader implements OnInit {
   }
 
   private avatarColor(name: string): string {
-    const colors = ['#43cea2','#185a9d','#f59e0b','#8b5cf6','#ef4444','#06b6d4','#10b981','#f97316'];
+    const colors = ['#2563EB','#14B8A6','#f59e0b','#8b5cf6','#ef4444','#06b6d4','#10b981','#f97316'];
     let hash = 0;
     for (const c of name ?? '') hash = c.charCodeAt(0) + ((hash << 5) - hash);
     return colors[Math.abs(hash) % colors.length];
@@ -257,6 +290,7 @@ export class CommonHeader implements OnInit {
     e.stopPropagation();
     this.searchPanelOpen = !this.searchPanelOpen;
     if (this.searchPanelOpen) {
+      this.coordinator.open('search');
       setTimeout(() => this.panelInputRef?.nativeElement.focus(), 180);
     } else {
       this.showSuggestions = false;
@@ -271,11 +305,15 @@ export class CommonHeader implements OnInit {
     this.panelInputRef?.nativeElement.focus();
   }
 
-  toggleMenu(): void { this.menuOpen = !this.menuOpen; }
+  toggleMenu(): void {
+    this.menuOpen = !this.menuOpen;
+    if (this.menuOpen) this.coordinator.open('mobile-menu');
+  }
 
   openProfile(e: Event): void {
     e.stopPropagation();
     this.profileOpen = !this.profileOpen;
+    if (this.profileOpen) this.coordinator.open('profile');
     this.open.emit();
   }
 

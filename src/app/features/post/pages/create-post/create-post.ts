@@ -1385,7 +1385,7 @@ export class CreatePost implements OnInit, OnDestroy {
     document.body.appendChild(canvas);
 
     const ctx = canvas.getContext('2d')!;
-    const COLORS = ['#43cea2','#185a9d','#fe2c55','#fbbf24','#a78bfa','#f472b6'];
+    const COLORS = ['#2563EB','#14B8A6','#fe2c55','#fbbf24','#2DD4BF','#f472b6'];
     const pieces = Array.from({ length: 120 }, () => ({
       x:  Math.random() * canvas.width,
       y:  Math.random() * -canvas.height,

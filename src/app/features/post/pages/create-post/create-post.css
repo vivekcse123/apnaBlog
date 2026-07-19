@@ -140,8 +140,8 @@ form select {
 form input[type="text"]:focus,
 form textarea:focus,
 form select:focus {
-  border-color: #43cea2;
-  box-shadow: 0 0 0 3px rgba(67, 206, 162, 0.2);
+  border-color: #2563EB;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
 }
 
 /* ── File Input ── */
@@ -272,20 +272,20 @@ form input[type="file"]::file-selector-button:hover {
 }
 
 .pill-check-label:hover {
-  border-color: #43cea2;
+  border-color: #2563EB;
   color: var(--text-primary);
   transform: translateY(-1px);
 }
 
 /* Selected state via CSS :has() - no Angular binding needed */
 .pill-check:has(.pill-check-input:checked) .pill-check-label {
-  background: color-mix(in srgb, #43cea2 15%, transparent);
-  border-color: #43cea2;
+  background: color-mix(in srgb, #2563EB 15%, transparent);
+  border-color: #2563EB;
   color: #1a7a5e;
 }
 
 [data-theme="dark"] .pill-check:has(.pill-check-input:checked) .pill-check-label {
-  color: #43cea2;
+  color: #2563EB;
 }
 
 /* ── OR Divider ── */
@@ -346,15 +346,15 @@ form input[type="file"]::file-selector-button:hover {
 }
 
 .checkbox-item:hover {
-  border-color: #43cea2;
-  background: rgba(67, 206, 162, 0.08);
+  border-color: #2563EB;
+  background: rgba(37, 99, 235, 0.08);
   color: var(--text-primary);
 }
 
 .checkbox-item input[type="checkbox"] {
   width: 14px !important;
   height: 14px;
-  accent-color: #43cea2;
+  accent-color: #2563EB;
   margin: 0;
   padding: 0 !important;
   margin-bottom: 0 !important;
@@ -365,8 +365,8 @@ form input[type="file"]::file-selector-button:hover {
 }
 
 .checkbox-item:has(input:checked) {
-  border-color: #43cea2;
-  background: rgba(67, 206, 162, 0.12);
+  border-color: #2563EB;
+  background: rgba(37, 99, 235, 0.12);
   color: var(--accent-text);
   font-weight: 500;
 }
@@ -540,8 +540,8 @@ form input[type="file"]::file-selector-button:hover {
 }
 
 .editor-wrapper:focus-within {
-  border-color: #43cea2;
-  box-shadow: 0 0 0 3px rgba(67, 206, 162, 0.2);
+  border-color: #2563EB;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
 }
 
 .editor-wrapper.editor-error {
@@ -593,13 +593,13 @@ form input[type="file"]::file-selector-button:hover {
 }
 
 .tool-btn:hover {
-  background: rgba(67, 206, 162, 0.1);
+  background: rgba(37, 99, 235, 0.1);
   color: var(--text-primary);
 }
 
 .tool-btn.active {
-  background: rgba(67, 206, 162, 0.18);
-  color: #43cea2;
+  background: rgba(37, 99, 235, 0.18);
+  color: #2563EB;
 }
 
 .tool-btn svg { display: block; pointer-events: none; }
@@ -689,7 +689,7 @@ form input[type="file"]::file-selector-button:hover {
   font-family: 'DM Sans', sans-serif;
 }
 
-.inline-img-input:focus { border-color: #43cea2; }
+.inline-img-input:focus { border-color: #2563EB; }
 
 .inline-img-actions {
   display: flex;
@@ -715,9 +715,9 @@ form input[type="file"]::file-selector-button:hover {
 }
 
 .inline-img-upload-label:hover:not(.disabled) {
-  border-color: #43cea2;
+  border-color: #2563EB;
   color: #0f7a5a;
-  background: rgba(67, 206, 162, 0.06);
+  background: rgba(37, 99, 235, 0.06);
 }
 
 .inline-img-upload-label.disabled { opacity: 0.55; cursor: not-allowed; }
@@ -742,7 +742,7 @@ form input[type="file"]::file-selector-button:hover {
   font-family: 'DM Sans', sans-serif;
 }
 
-.inline-img-url-input:focus { border-color: #43cea2; }
+.inline-img-url-input:focus { border-color: #2563EB; }
 
 .inline-img-insert-btn {
   height: 30px;
@@ -860,7 +860,7 @@ form input[type="file"]::file-selector-button:hover {
 .editor-content ol { padding-left: 22px; margin: 4px 0; }
 .editor-content li { margin: 2px 0; }
 .editor-content blockquote {
-  border-left: 3px solid #43cea2;
+  border-left: 3px solid #2563EB;
   margin: 6px 0;
   padding-left: 12px;
   color: var(--text-secondary);
@@ -911,9 +911,9 @@ form input[type="file"]::file-selector-button:hover {
   transition: border-color 0.2s, background 0.2s, color 0.2s;
 }
 .file-upload-label:hover {
-  border-color: #43cea2;
-  background: rgba(67, 206, 162, 0.06);
-  color: #43cea2;
+  border-color: #2563EB;
+  background: rgba(37, 99, 235, 0.06);
+  color: #2563EB;
 }
 .file-upload-label.uploading {
   opacity: 0.7;
@@ -972,8 +972,8 @@ form input[type="file"]::file-selector-button:hover {
   display: inline-block;
   width: 14px;
   height: 14px;
-  border: 2px solid rgba(67, 206, 162, 0.3);
-  border-top-color: #43cea2;
+  border: 2px solid rgba(37, 99, 235, 0.3);
+  border-top-color: #2563EB;
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
   flex-shrink: 0;
@@ -997,8 +997,8 @@ form input[type="file"]::file-selector-button:hover {
 }
 
 .heading-btn.active {
-  background: rgba(67, 206, 162, 0.18);
-  color: #43cea2;
+  background: rgba(37, 99, 235, 0.18);
+  color: #2563EB;
   border-radius: 5px;
 }
 
@@ -1098,7 +1098,7 @@ form input[type="file"]::file-selector-button:hover {
   margin: 20px 0;
   padding: 14px 18px 14px 22px;
   background: var(--accent-subtle);
-  border-left: 4px solid #43cea2;
+  border-left: 4px solid #2563EB;
   border-radius: 0 8px 8px 0;
   font-style: italic;
   color: var(--text-secondary, #555);
@@ -1109,7 +1109,7 @@ form input[type="file"]::file-selector-button:hover {
   position: absolute;
   top: -6px; left: 8px;
   font-size: 2.8rem; line-height: 1;
-  color: #43cea2; opacity: 0.3;
+  color: #2563EB; opacity: 0.3;
   font-family: Georgia, serif; font-style: normal;
 }
 
@@ -1139,8 +1139,8 @@ form input[type="file"]::file-selector-button:hover {
 }
 /* ── Schedule field ── */
 .schedule-field {
-  background: color-mix(in srgb, #185a9d 6%, transparent);
-  border: 1px solid color-mix(in srgb, #185a9d 25%, transparent);
+  background: color-mix(in srgb, #14B8A6 6%, transparent);
+  border: 1px solid color-mix(in srgb, #14B8A6 25%, transparent);
   border-radius: 10px;
   padding: 14px 16px;
   display: flex;
@@ -1153,12 +1153,12 @@ form input[type="file"]::file-selector-button:hover {
   gap: 7px;
   font-size: 13px;
   font-weight: 700;
-  color: #185a9d;
+  color: #14B8A6;
 }
 .schedule-input {
   height: 42px;
   padding: 0 12px;
-  border: 1px solid color-mix(in srgb, #185a9d 30%, transparent);
+  border: 1px solid color-mix(in srgb, #14B8A6 30%, transparent);
   border-radius: 8px;
   background: var(--bg-surface);
   color: var(--text-primary);
@@ -1169,7 +1169,7 @@ form input[type="file"]::file-selector-button:hover {
   width: 100%;
   box-sizing: border-box;
 }
-.schedule-input:focus { border-color: #185a9d; }
+.schedule-input:focus { border-color: #14B8A6; }
 .schedule-hint {
   font-size: 11px;
   color: var(--text-muted);
@@ -1270,7 +1270,7 @@ form input[type="file"]::file-selector-button:hover {
 }
 
 .blog-img-thumb.featured {
-  border-color: #43cea2;
+  border-color: #2563EB;
 }
 
 .blog-img-thumb img {
@@ -1284,7 +1284,7 @@ form input[type="file"]::file-selector-button:hover {
   position: absolute;
   bottom: 4px;
   left: 4px;
-  background: #43cea2;
+  background: #2563EB;
   color: #fff;
   font-size: 9px;
   font-weight: 700;
@@ -1489,10 +1489,10 @@ form input[type="file"]::file-selector-button:hover {
   width: 18px; height: 18px;
   pointer-events: none;
 }
-.crop-corner.tl { top:0; left:0;   border-top:3px solid #43cea2; border-left:3px solid #43cea2; }
-.crop-corner.tr { top:0; right:0;  border-top:3px solid #43cea2; border-right:3px solid #43cea2; }
-.crop-corner.bl { bottom:0; left:0;  border-bottom:3px solid #43cea2; border-left:3px solid #43cea2; }
-.crop-corner.br { bottom:0; right:0; border-bottom:3px solid #43cea2; border-right:3px solid #43cea2; }
+.crop-corner.tl { top:0; left:0;   border-top:3px solid #2563EB; border-left:3px solid #2563EB; }
+.crop-corner.tr { top:0; right:0;  border-top:3px solid #2563EB; border-right:3px solid #2563EB; }
+.crop-corner.bl { bottom:0; left:0;  border-bottom:3px solid #2563EB; border-left:3px solid #2563EB; }
+.crop-corner.br { bottom:0; right:0; border-bottom:3px solid #2563EB; border-right:3px solid #2563EB; }
 
 .cropper-controls {
   padding: 14px 16px;
@@ -1517,13 +1517,13 @@ form input[type="file"]::file-selector-button:hover {
   font-family: inherit;
   transition: border-color .15s, color .15s, background .15s;
 }
-.crop-aspect-btn:hover   { border-color: #43cea2; color: #43cea2; }
-.crop-aspect-btn.active  { background: rgba(67,206,162,.12); border-color: #43cea2; color: #43cea2; }
+.crop-aspect-btn:hover   { border-color: #2563EB; color: #2563EB; }
+.crop-aspect-btn.active  { background: rgba(37, 99, 235, .12); border-color: #2563EB; color: #2563EB; }
 
 .crop-zoom-row {
   display: flex; align-items: center; gap: 10px; font-size: 14px;
 }
-.crop-zoom-slider { flex:1; accent-color:#43cea2; cursor:pointer; height:4px; }
+.crop-zoom-slider { flex:1; accent-color:#2563EB; cursor:pointer; height:4px; }
 .crop-zoom-val {
   font-size: 12px; color: var(--text-muted);
   min-width: 38px; text-align: right;
@@ -1775,7 +1775,7 @@ form input[type="file"]::file-selector-button:hover {
   font-size: 13px; font-family: inherit; outline: none;
   width: 100%; box-sizing: border-box;
 }
-.tbl-picker-input:focus { border-color: #43cea2; box-shadow: 0 0 0 2px rgba(67,206,162,.15); }
+.tbl-picker-input:focus { border-color: #2563EB; box-shadow: 0 0 0 2px rgba(37, 99, 235, .15); }
 .tbl-insert-btn {
   display: flex; align-items: center; justify-content: center; gap: 6px;
   height: 34px; border: none; border-radius: 8px;
@@ -1794,7 +1794,7 @@ form input[type="file"]::file-selector-button:hover {
   font-size: 0.82em; text-transform: uppercase; letter-spacing: .04em;
   color: var(--text-muted, #9ca3af);
 }
-.editor-content td:focus, .editor-content th:focus { outline: 2px solid #43cea2; outline-offset: -2px; }
+.editor-content td:focus, .editor-content th:focus { outline: 2px solid #2563EB; outline-offset: -2px; }
 
 
 /* ── Series fields ───────────────────────────────── */

@@ -13,7 +13,7 @@
   display: inline-block;
   width: 36px; height: 36px;
   border: 3px solid var(--border);
-  border-top-color: #43cea2;
+  border-top-color: #2563EB;
   border-radius: 50%;
   animation: svSpin .7s linear infinite;
 }
@@ -48,7 +48,7 @@
   flex-wrap: wrap;
 }
 .sv-breadcrumb a {
-  color: #43cea2;
+  color: #2563EB;
   text-decoration: none;
   font-weight: 500;
 }
@@ -137,15 +137,15 @@
   display: inline-block;
   padding: 3px 12px;
   border-radius: 99px;
-  background: rgba(67,206,162,.12);
-  border: 1px solid rgba(67,206,162,.35);
-  color: #1d9e78;
+  background: rgba(37, 99, 235, .12);
+  border: 1px solid rgba(37, 99, 235, .35);
+  color: #1D4ED8;
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: .06em;
 }
-[data-theme="dark"] .sv-cat { color: #43cea2; }
+[data-theme="dark"] .sv-cat { color: #2563EB; }
 
 .sv-views {
   font-size: 12px;

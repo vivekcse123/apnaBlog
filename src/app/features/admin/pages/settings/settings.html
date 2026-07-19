@@ -112,16 +112,18 @@
               <div class="avatar-info">
                 <span class="role-badge">{{ u.role }}</span>
                 <p class="joined-text">{{ u.email }}</p>
-                <button class="avatar-upload-btn" (click)="triggerAvatarUpload()"
-                  [disabled]="isUploadingAvatar() || isRemovingAvatar()">
-                  {{ isUploadingAvatar() ? 'Uploading…' : 'Change Photo' }}
-                </button>
-                @if (avatarUrl()) {
-                  <button class="avatar-remove-btn" (click)="removeAvatar()"
+                <div class="avatar-btn-row">
+                  <button class="avatar-upload-btn" (click)="triggerAvatarUpload()"
                     [disabled]="isUploadingAvatar() || isRemovingAvatar()">
-                    {{ isRemovingAvatar() ? 'Removing…' : 'Remove Photo' }}
+                    {{ isUploadingAvatar() ? 'Uploading…' : 'Change Photo' }}
                   </button>
-                }
+                  @if (avatarUrl()) {
+                    <button class="avatar-remove-btn" (click)="removeAvatar()"
+                      [disabled]="isUploadingAvatar() || isRemovingAvatar()">
+                      {{ isRemovingAvatar() ? 'Removing…' : 'Remove Photo' }}
+                    </button>
+                  }
+                </div>
                 <p class="avatar-hint">JPG, JPEG, PNG or WebP · Max 2MB</p>
               </div>
             </div>
@@ -129,30 +131,60 @@
             @if (!isEditing()) {
               <div class="info-grid">
                 <div class="info-item">
-                  <label>Full Name</label>
-                  <span>{{ u.name || '-' }}</span>
+                  <span class="info-item-icon">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  </span>
+                  <div class="info-item-body">
+                    <label>Full Name</label>
+                    <span>{{ u.name || '-' }}</span>
+                  </div>
                 </div>
                 <div class="info-item">
-                  <label>Email Address</label>
-                  <span>{{ u.email || '-' }}</span>
+                  <span class="info-item-icon">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><path d="M22 6l-10 7L2 6"/></svg>
+                  </span>
+                  <div class="info-item-body">
+                    <label>Email Address</label>
+                    <span>{{ u.email || '-' }}</span>
+                  </div>
                 </div>
                 <div class="info-item">
-                  <label>Date of Birth</label>
-                  <span>{{ u.dob ? (u.dob | date:'MMM d, yyyy') : '-' }}</span>
+                  <span class="info-item-icon">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                  </span>
+                  <div class="info-item-body">
+                    <label>Date of Birth</label>
+                    <span>{{ u.dob ? (u.dob | date:'MMM d, yyyy') : '-' }}</span>
+                  </div>
                 </div>
                 <div class="info-item">
-                  <label>Location</label>
-                  <span>{{ u.location || '-' }}</span>
+                  <span class="info-item-icon">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  </span>
+                  <div class="info-item-body">
+                    <label>Location</label>
+                    <span>{{ u.location || '-' }}</span>
+                  </div>
                 </div>
                 <div class="info-item">
-                  <label>Bio</label>
-                  <span>{{ u.bio || '-' }}</span>
+                  <span class="info-item-icon">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+                  </span>
+                  <div class="info-item-body">
+                    <label>Bio</label>
+                    <span>{{ u.bio || '-' }}</span>
+                  </div>
                 </div>
                 <div class="info-item">
-                  <label>Website / LinkedIn</label>
-                  @if (u.website) {
-                    <a [href]="u.website" target="_blank" rel="noopener">{{ u.website }}</a>
-                  } @else { <span>-</span> }
+                  <span class="info-item-icon">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+                  </span>
+                  <div class="info-item-body">
+                    <label>Website / LinkedIn</label>
+                    @if (u.website) {
+                      <a [href]="u.website" target="_blank" rel="noopener">{{ u.website }}</a>
+                    } @else { <span>-</span> }
+                  </div>
                 </div>
               </div>
               <div class="form-actions">
@@ -312,7 +344,12 @@
           <p>Protect your account and manage access</p>
         </div>
         <div class="security-card">
-          <div class="card-title">Change Password</div>
+          <div class="card-title-row">
+            <span class="card-title-icon">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+            </span>
+            <div class="card-title">Change Password</div>
+          </div>
           <div class="form-grid">
             <div class="form-group full">
               <label>Current Password</label>
@@ -352,9 +389,14 @@
         </div>
         <div class="security-card">
           <div class="twofa-row">
-            <div>
-              <div class="card-title">Two-Factor Authentication</div>
-              <p class="card-sub">Add an extra layer of security</p>
+            <div class="card-title-row">
+              <span class="card-title-icon">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              </span>
+              <div>
+                <div class="card-title">Two-Factor Authentication</div>
+                <p class="card-sub">Add an extra layer of security</p>
+              </div>
             </div>
             <button class="toggle-switch" [class.on]="twoFactor()" (click)="toggleTwoFactor()">
               <span class="switch-thumb"></span>
@@ -366,9 +408,14 @@
         </div>
         <div class="security-card">
           <div class="sessions-header" (click)="toggleSessions()">
-            <div>
-              <div class="card-title">Active Sessions</div>
-              <p class="card-sub">Devices currently logged in</p>
+            <div class="card-title-row">
+              <span class="card-title-icon">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="14" rx="2"/><path d="M8 21h8M12 18v3"/></svg>
+              </span>
+              <div>
+                <div class="card-title">Active Sessions</div>
+                <p class="card-sub">Devices currently logged in</p>
+              </div>
             </div>
             <span class="chevron" [class.open]="showSessions()">›</span>
           </div>

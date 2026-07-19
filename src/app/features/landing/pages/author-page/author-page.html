@@ -1,16 +1,6 @@
 <div class="author-page">
 
-  <!-- NAV -->
-  <header class="ap-nav">
-    <a routerLink="/" class="ap-nav-logo" aria-label="ApnaInsights">
-      <img src="/logo-96.png" alt="ApnaInsights" width="30" height="30" loading="eager" />
-      <span class="ap-nav-name">ApnaInsights</span>
-    </a>
-    <a routerLink="/" class="ap-back-btn">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
-      <span class="btn-label">Back to Home</span>
-    </a>
-  </header>
+  <app-site-header></app-site-header>
 
   <!-- BREADCRUMB -->
   <nav class="ap-breadcrumb" aria-label="Breadcrumb">
@@ -21,6 +11,8 @@
           <meta itemprop="position" content="1" />
         </li>
         <span class="ap-breadcrumb-sep" aria-hidden="true">›</span>
+        <li><span>Authors</span></li>
+        <span class="ap-breadcrumb-sep" aria-hidden="true">›</span>
         <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
           <span itemprop="name" aria-current="page">{{ author()?.name || 'Author' }}</span>
           <meta itemprop="position" content="2" />
@@ -29,12 +21,9 @@
     </div>
   </nav>
 
-  @if (isLoading()) {
-    <div class="ap-loading">
-      <div class="loading-dots"><span></span><span></span><span></span></div>
-    </div>
+  @if (!isLoading()) {
 
-  } @else if (notFound()) {
+  @if (notFound()) {
     <div class="ap-not-found">
       <span class="ap-nf-icon">👤</span>
       <h2>Author not found</h2>
@@ -44,313 +33,361 @@
 
   } @else {
 
-    <!-- ── Profile Header ── -->
-    <div class="ap-profile-header">
-
-      <!-- Cover gradient -->
+    <!-- ── HERO ── -->
+    <div class="ap-hero">
       <div class="ap-cover"></div>
 
-      <div class="ap-profile-body">
-
-        <!-- Avatar -->
+      <div class="ap-hero-card">
         <div class="ap-avatar-wrap">
           @if (authorAvatar) {
-            <img class="ap-avatar-img" [src]="authorAvatar" [alt]="authorName" width="96" height="96" />
+            <img class="ap-avatar-img" [src]="authorAvatar" [alt]="authorName" width="112" height="112" />
           } @else {
             <div class="ap-avatar-fallback">{{ authorInitial }}</div>
           }
+          <span class="ap-verified-badge" title="Verified author" aria-hidden="true">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1l2.6 2.4 3.5-.6.9 3.4 3.4.9-.6 3.5L24 13l-2.4 2.6.6 3.5-3.4.9-.9 3.4-3.5-.6L12 25l-2.6-2.4-3.5.6-.9-3.4-3.4-.9.6-3.5L0 13l2.4-2.6-.6-3.5 3.4-.9.9-3.4 3.5.6z" transform="scale(0.9)"/></svg>
+          </span>
         </div>
 
-        <!-- Identity -->
-        <div class="ap-profile-identity">
+        <div class="ap-identity">
           <div class="ap-name-row">
             <h1 class="ap-name">{{ authorName }}</h1>
             <span class="ap-badge">Author</span>
+            @if (writerBadgeActive) {
+              <span class="ap-badge ap-badge--gold" [title]="writerBadgeTitle">🏆 {{ writerBadgeTitle }}</span>
+            }
           </div>
-          <p class="ap-handle">&#64;{{ authorName.toLowerCase().replace(' ', '') }} · ApnaInsights</p>
 
           @if (authorBio) {
-            <p class="ap-bio">{{ authorBio }}</p>
+            <p class="ap-bio">
+              {{ bioPreview() }}
+              @if (bioIsLong()) {
+                <button type="button" class="ap-bio-toggle" (click)="toggleBio()">
+                  {{ bioExpanded() ? 'Show less' : 'Read more' }}
+                </button>
+              }
+            </p>
           }
 
-          @if (authorWebsite) {
-            <a class="ap-meta-chip ap-website-link" [href]="authorWebsite" target="_blank" rel="noopener noreferrer nofollow">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-              {{ authorWebsiteLabel }}
-            </a>
-          }
-
-          <div class="ap-profile-meta-row">
+          <div class="ap-meta-row">
+            @if (author()?.location) {
+              <span class="ap-meta-chip">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                {{ author()?.location }}
+              </span>
+            }
+            @if (authorWebsite) {
+              <a class="ap-meta-chip ap-website-link" [href]="authorWebsite" target="_blank" rel="noopener noreferrer nofollow">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                {{ authorWebsiteLabel }}
+              </a>
+            }
             @if (joinedDate) {
               <span class="ap-meta-chip">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                 Joined {{ joinedDate | date:'MMM yyyy' }}
               </span>
             }
-            <span class="ap-meta-chip">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-              {{ fmtCount(totalViews()) }} views
-            </span>
           </div>
-        </div>
 
-        <!-- Compact follow button - top-right of profile body -->
-        @if (!isOwnProfile()) {
-          <div class="ap-follow-wrap">
-            @if (isLoggedIn()) {
-              <button class="ap-follow-btn"
-                [class.ap-follow-btn--following]="isFollowing()"
-                [disabled]="followLoading()"
-                (click)="toggleFollow()">
-                @if (followLoading()) {
-                  <span class="ap-btn-spinner"></span>
-                } @else if (isFollowing()) {
-                  ✓ Following
-                } @else {
-                  + Follow
-                }
-              </button>
-            } @else {
-              <a routerLink="/auth/login" class="ap-follow-btn">+ Follow</a>
+          <div class="ap-hero-actions">
+            @if (!isOwnProfile()) {
+              @if (isLoggedIn()) {
+                <button class="ap-follow-btn"
+                  [class.ap-follow-btn--following]="isFollowing()"
+                  [disabled]="followLoading()"
+                  (click)="toggleFollow()">
+                  @if (followLoading()) {
+                    <span class="ap-btn-spinner"></span>
+                  } @else if (isFollowing()) {
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg> Following
+                  } @else {
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Follow
+                  }
+                </button>
+              } @else {
+                <a routerLink="/auth/login" class="ap-follow-btn">+ Follow</a>
+              }
+              @if (isLoggedIn()) {
+                <button class="ap-message-btn" type="button" (click)="showMessageModal.set(true)" [attr.aria-label]="'Message ' + authorName">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg> Message
+                </button>
+              } @else {
+                <a routerLink="/auth/login" class="ap-message-btn">Message</a>
+              }
             }
+            <button class="ap-share-btn" type="button" (click)="shareProfile()" [attr.aria-label]="'Share ' + authorName + ' profile'">
+              @if (shareCopied()) {
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg> Copied
+              } @else {
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/><line x1="15.4" y1="6.5" x2="8.6" y2="10.5"/></svg> Share
+              }
+            </button>
           </div>
-        }
-
-      </div>
-
-      <!-- ── Stats bar ── -->
-      <div class="ap-stats-bar">
-        <div class="ap-stat">
-          <strong>{{ fmtCount(totalBlogsFromApi()) }}</strong>
-          <span>Posts</span>
         </div>
-        <div class="ap-stat-div"></div>
-        <div class="ap-stat">
-          <strong>{{ fmtCount(shortsCountFromApi()) }}</strong>
-          <span>Shorts</span>
-        </div>
-        <div class="ap-stat-div"></div>
-        <div class="ap-stat">
-          <strong>{{ fmtCount(totalViews()) }}</strong>
-          <span>Views</span>
-        </div>
-        <div class="ap-stat-div"></div>
-        <div class="ap-stat">
-          <strong>{{ fmtCount(followersCount()) }}</strong>
-          <span>Followers</span>
-        </div>
-        <div class="ap-stat-div"></div>
-        <div class="ap-stat">
-          <strong>{{ fmtCount(followingCount()) }}</strong>
-          <span>Following</span>
-        </div>
-        <div class="ap-stat-div"></div>
-        <div class="ap-stat">
-          <strong>{{ fmtCount(totalLikes()) }}</strong>
-          <span>Likes</span>
-        </div>
-      </div>
-
-      <!-- ── Tab bar ── -->
-      <div class="ap-tabs">
-        <button class="ap-tab" [class.ap-tab--active]="selectedTab() === 'posts'" (click)="selectedTab.set('posts')">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-          Posts
-        </button>
-        <button class="ap-tab" [class.ap-tab--active]="selectedTab() === 'shorts'" (click)="selectedTab.set('shorts')">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-          Shorts
-        </button>
-        <button class="ap-tab" [class.ap-tab--active]="selectedTab() === 'about'" (click)="selectedTab.set('about')">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-          About
-        </button>
       </div>
     </div>
 
-    <!-- ── Posts tab ── -->
-    @if (selectedTab() === 'posts') {
-      <main class="ap-main" id="main-content">
+    <!-- ── STATS BAR (one unified card, like the mockup) ── -->
+    <section class="ap-stats-section" aria-label="Author statistics">
+      <div class="ap-stats-bar">
+        <div class="ap-stat-cell">
+          <span class="ap-stat-icon ap-stat-icon--blue"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>
+          <strong>{{ fmtCount(totalBlogsFromApi()) }}</strong>
+          <span class="ap-stat-lbl">Articles</span>
+        </div>
+        <div class="ap-stat-cell">
+          <span class="ap-stat-icon ap-stat-icon--teal"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></span>
+          <strong>{{ fmtCount(totalViews()) }}</strong>
+          <span class="ap-stat-lbl">Total Views</span>
+        </div>
+        <div class="ap-stat-cell">
+          <span class="ap-stat-icon ap-stat-icon--purple"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+          <strong>{{ fmtCount(followersCount()) }}</strong>
+          <span class="ap-stat-lbl">Followers</span>
+        </div>
+        <div class="ap-stat-cell">
+          <span class="ap-stat-icon ap-stat-icon--red"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></span>
+          <strong>{{ fmtCount(totalLikes()) }}</strong>
+          <span class="ap-stat-lbl">Likes</span>
+        </div>
+        <div class="ap-stat-cell ap-stat-cell--secondary">
+          <span class="ap-stat-icon ap-stat-icon--green"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6M23 11h-6"/><path d="M2 21v-2a4 4 0 0 1 4-4h5a4 4 0 0 1 4 4v2"/></svg></span>
+          <strong>{{ fmtCount(followingCount()) }}</strong>
+          <span class="ap-stat-lbl">Following</span>
+        </div>
+        <div class="ap-stat-cell ap-stat-cell--secondary">
+          <span class="ap-stat-icon ap-stat-icon--amber"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></span>
+          <strong>{{ fmtCount(totalComments()) }}</strong>
+          <span class="ap-stat-lbl">Comments</span>
+        </div>
+        <div class="ap-stat-cell ap-stat-cell--secondary">
+          <span class="ap-stat-icon ap-stat-icon--slate"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
+          <strong>{{ totalReadingHoursLabel() }}</strong>
+          <span class="ap-stat-lbl">Reading Time</span>
+        </div>
+      </div>
+    </section>
 
-        <!-- Top Stories -->
-        @if (topPosts().length > 0) {
-          <section class="ap-top-section">
-            <h2 class="ap-top-title">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>
-              </svg>
-              Top Stories
-            </h2>
-            <div class="ap-top-grid">
-              @for (p of topPosts(); track p._id; let i = $index) {
-                <article class="ap-top-card" (click)="navigateToBlog(p)" role="button" tabindex="0" (keydown.enter)="navigateToBlog(p)">
-                  <div class="ap-top-rank">{{ i + 1 }}</div>
-                  @if (p.featuredImage) {
-                    <img [src]="p.featuredImage" [alt]="p.title" class="ap-top-img" loading="lazy" width="64" height="64" />
-                  } @else {
-                    <div class="ap-top-img ap-top-img--empty">{{ p.title.charAt(0) }}</div>
-                  }
-                  <div class="ap-top-info">
-                    <span class="ap-top-cat">{{ p.categories[0] }}</span>
-                    <h3 class="ap-top-name">{{ p.title }}</h3>
-                    <div class="ap-top-meta">
-                      <span>{{ fmtCount(p.views) }} views</span>
-                      <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> {{ fmtCount(p.likesCount) }}</span>
-                    </div>
-                  </div>
-                </article>
+    <div class="ap-layout">
+
+      <!-- ── Expertise (top of left column on desktop, right after stats on mobile) ── -->
+      @if (expertise().length > 0) {
+        <aside class="ap-expertise-card">
+          <div class="ap-side-card">
+            <h3 class="ap-side-title">Expertise</h3>
+            <div class="ap-chip-row">
+              @for (chip of expertise(); track chip.name) {
+                <span class="ap-chip" [style.--chip-color]="chip.color">
+                  <span class="ap-chip-emoji">{{ chip.emoji }}</span> {{ chip.name }}
+                </span>
               }
             </div>
+          </div>
+        </aside>
+      }
+
+      <main class="ap-main" id="main-content">
+
+        <!-- ── Featured Article ── -->
+        @if (featuredArticle(); as f) {
+          <section class="ap-section" aria-label="Featured article">
+            <h2 class="ap-section-title">Featured Article</h2>
+            <article class="ap-featured-card" (click)="navigateToBlog(f)" role="button" tabindex="0" (keydown.enter)="navigateToBlog(f)">
+              <div class="ap-featured-media">
+                @if (f.featuredImage) {
+                  <img [src]="f.featuredImage" [alt]="f.title" loading="lazy" decoding="async" width="480" height="270" />
+                } @else {
+                  <div class="ap-featured-media-fallback">{{ f.title.charAt(0).toUpperCase() }}</div>
+                }
+                @if (f.categories[0]) {
+                  <span class="ap-featured-cat">{{ f.categories[0] }}</span>
+                }
+              </div>
+              <div class="ap-featured-body">
+                <h3 class="ap-featured-title">{{ f.title }}</h3>
+                <p class="ap-featured-desc">{{ f.description }}</p>
+                <div class="ap-featured-meta">
+                  <span>{{ f.createdAt | date:'MMM d, yyyy' }}</span>
+                  <span class="meta-dot">·</span>
+                  <span>{{ readingTime(f) }} min read</span>
+                  <span class="meta-dot">·</span>
+                  <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> {{ fmtCount(f.views) }}</span>
+                  <span class="meta-dot">·</span>
+                  <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> {{ fmtCount(f.likesCount) }}</span>
+                  <button class="ap-featured-bookmark" [class.bookmarked]="isBookmarked(f._id)"
+                          (click)="toggleBookmark(f._id, $event)"
+                          [attr.aria-label]="(isBookmarked(f._id) ? 'Remove bookmark' : 'Bookmark') + ': ' + f.title"
+                          [attr.aria-pressed]="isBookmarked(f._id)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" [attr.fill]="isBookmarked(f._id) ? 'currentColor' : 'none'"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
+                  </button>
+                </div>
+              </div>
+            </article>
           </section>
         }
 
-        @if (posts().length === 0) {
+        <!-- ── Latest Articles ── -->
+        @if (postsLoading()) {
+          <div class="ap-loading"><div class="loading-dots"><span></span><span></span><span></span></div></div>
+        } @else if (posts().length === 0) {
           <div class="ap-empty">
             <span class="ap-empty-icon">📭</span>
             <p>No published blogs by this author yet.</p>
             <a routerLink="/" class="ap-empty-btn">Browse all stories</a>
           </div>
-        } @else {
-          <div class="ap-grid">
-            @for (post of posts(); track post._id) {
-              <article class="ap-card" (click)="navigateToBlog(post)" role="button" tabindex="0"
-                (keydown.enter)="navigateToBlog(post)" [attr.aria-label]="post.title">
-                <div class="ap-card-img-wrap">
-                  @if (post.featuredImage) {
-                    <img [src]="post.featuredImage" [alt]="post.title"
-                         class="ap-card-img" loading="lazy" decoding="async" width="400" height="220" />
-                  } @else {
-                    <div class="ap-card-no-img">
-                      <span class="ap-card-letter">{{ post.title.charAt(0).toUpperCase() }}</span>
-                    </div>
-                  }
-                  @if (post.categories[0]) {
-                    <span class="ap-card-cat">{{ post.categories[0] }}</span>
-                  }
-                </div>
-                <div class="ap-card-body">
-                  <h3 class="ap-card-title">{{ post.title }}</h3>
-                  <p class="ap-card-desc">{{ post.description }}</p>
-                  <div class="ap-card-meta">
-                    <span>{{ post.createdAt | timeAgo }}</span>
-                    <span class="meta-dot">·</span>
-                    <span>{{ readingTime(post.content) }} min read</span>
-                    <span class="meta-dot">·</span>
-                    <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> {{ fmtCount(post.views) }}</span>
-                    <span class="meta-dot">·</span>
-                    <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> {{ fmtCount(post.likesCount) }}</span>
+        } @else if (latestArticles().length > 0) {
+          <section class="ap-section" aria-label="Latest articles">
+            <h2 class="ap-section-title">Latest Articles</h2>
+            <div class="cgp-grid">
+              @for (post of visibleLatestArticles(); track post._id) {
+                <article class="cgp-card" (click)="navigateToBlog(post)" role="button" tabindex="0"
+                  (keydown.enter)="navigateToBlog(post)" [attr.aria-label]="post.title">
+                  <button class="cgp-card-bookmark" [class.bookmarked]="isBookmarked(post._id)"
+                          (click)="toggleBookmark(post._id, $event)"
+                          [attr.aria-label]="(isBookmarked(post._id) ? 'Remove bookmark' : 'Bookmark') + ': ' + post.title"
+                          [attr.aria-pressed]="isBookmarked(post._id)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" [attr.fill]="isBookmarked(post._id) ? 'currentColor' : 'none'"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
+                  </button>
+                  <div class="cgp-card-media">
+                    @if (post.featuredImage) {
+                      <img [src]="post.featuredImage" [alt]="post.title" loading="lazy" decoding="async" width="320" height="180" />
+                    } @else {
+                      <div class="cgp-card-media-fallback">{{ post.title.charAt(0).toUpperCase() }}</div>
+                    }
                   </div>
-                </div>
-              </article>
+                  <div class="cgp-card-body">
+                    @if (post.categories[0]) {
+                      <span class="cgp-card-cat">{{ post.categories[0] }}</span>
+                    }
+                    <h3 class="cgp-card-title">{{ post.title }}</h3>
+                    <p class="cgp-card-desc">{{ post.description }}</p>
+                    <div class="cgp-card-meta">
+                      <span>{{ post.createdAt | timeAgo }}</span>
+                      <span class="meta-dot">·</span>
+                      <span>{{ readingTime(post) }} min</span>
+                      <span class="meta-dot">·</span>
+                      <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> {{ fmtCount(post.views) }}</span>
+                      <span class="meta-dot">·</span>
+                      <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> {{ fmtCount(post.likesCount) }}</span>
+                    </div>
+                  </div>
+                </article>
+              }
+            </div>
+            @if (hasMoreArticles()) {
+              <div class="ap-view-more-wrap">
+                <button type="button" class="ap-view-more-btn" (click)="showMoreArticles()">View More Articles</button>
+              </div>
             }
-          </div>
+          </section>
         }
-      </main>
-    }
 
-    <!-- ── Shorts tab ── -->
-    @if (selectedTab() === 'shorts') {
-      <div class="ap-main">
+        <!-- ── Shorts ── -->
         @if (shortsLoading()) {
           <div class="ap-loading"><div class="loading-dots"><span></span><span></span><span></span></div></div>
-        } @else if (shorts().length === 0) {
-          <div class="ap-empty">
-            <svg class="ap-empty-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
-            <p>No shorts by this author yet.</p>
-            <a routerLink="/shorts" class="ap-empty-btn">Browse Shorts</a>
-          </div>
-        } @else {
-          <div class="ap-shorts-grid">
-            @for (s of shorts(); track s._id) {
-              <a class="ap-short-tile" [routerLink]="['/shorts']" [fragment]="s._id" [attr.aria-label]="s.title">
-
-                <!-- Thumbnail fills the tile -->
-                @if (s.thumbnailUrl) {
-                  <img [src]="s.thumbnailUrl" [alt]="s.title" loading="lazy" decoding="async" width="280" height="158" />
-                } @else if (s.videoType === 'youtube' && s.youtubeId) {
-                  <img [src]="'https://img.youtube.com/vi/' + s.youtubeId + '/hqdefault.jpg'" [alt]="s.title" loading="lazy" decoding="async" width="280" height="158" />
-                } @else {
-                  <div class="ap-short-tile-blank">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="rgba(255,255,255,.3)"><path d="M8 5v14l11-7z"/></svg>
+        } @else if (shorts().length > 0) {
+          <section class="ap-section" aria-label="Shorts">
+            <div class="ap-section-head">
+              <h2 class="ap-section-title">Shorts</h2>
+              <a routerLink="/shorts" class="ap-view-all-link">View all</a>
+            </div>
+            <div class="ap-shorts-grid">
+              @for (s of shorts().slice(0, 9); track s._id) {
+                <a class="ap-short-tile" [routerLink]="['/shorts']" [fragment]="s._id" [attr.aria-label]="s.title">
+                  @if (s.thumbnailUrl) {
+                    <img [src]="s.thumbnailUrl" [alt]="s.title" loading="lazy" decoding="async" width="280" height="158" />
+                  } @else if (s.videoType === 'youtube' && s.youtubeId) {
+                    <img [src]="'https://img.youtube.com/vi/' + s.youtubeId + '/hqdefault.jpg'" [alt]="s.title" loading="lazy" decoding="async" width="280" height="158" />
+                  } @else {
+                    <div class="ap-short-tile-blank">
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="rgba(255,255,255,.3)"><path d="M8 5v14l11-7z"/></svg>
+                    </div>
+                  }
+                  <span class="ap-short-reels-icon">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+                  </span>
+                  <div class="ap-short-tile-overlay">
+                    <span class="ap-tile-stat">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                      {{ fmtCount(s.likesCount) }}
+                    </span>
+                    <span class="ap-tile-stat">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                      {{ fmtCount(s.views) }}
+                    </span>
                   </div>
-                }
+                </a>
+              }
+            </div>
+          </section>
+        }
+      </main>
 
-                <!-- Reels icon top-right (always visible) -->
-                <span class="ap-short-reels-icon">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
-                </span>
+      <!-- ── Right sidebar (desktop) ── -->
+      @if (topPosts().length > 0) {
+        <aside class="ap-sidebar">
+          <div class="ap-side-card">
+            <h3 class="ap-side-title">Popular Articles</h3>
+            <div class="ap-side-list">
+              @for (p of topPosts().slice(0, 4); track p._id) {
+                <a class="ap-side-item" (click)="navigateToBlog(p)" role="button" tabindex="0" (keydown.enter)="navigateToBlog(p)">
+                  @if (p.featuredImage) {
+                    <img [src]="p.featuredImage" [alt]="p.title" loading="lazy" width="52" height="52" />
+                  } @else {
+                    <div class="ap-side-item-fallback">{{ p.title.charAt(0) }}</div>
+                  }
+                  <div class="ap-side-item-info">
+                    <span class="ap-side-item-title">{{ p.title }}</span>
+                    <span class="ap-side-item-meta">{{ fmtCount(p.views) }} views</span>
+                  </div>
+                </a>
+              }
+            </div>
+          </div>
+        </aside>
+      }
 
-                <!-- Hover overlay: stats -->
-                <div class="ap-short-tile-overlay">
-                  <span class="ap-tile-stat">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-                    {{ fmtCount(s.likesCount) }}
-                  </span>
-                  <span class="ap-tile-stat">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                    {{ fmtCount(s.views) }}
-                  </span>
-                </div>
-
+      <!-- ── Extras: social links + newsletter (below Expertise on desktop, end of flow on mobile) ── -->
+      <aside class="ap-extras-sidebar">
+        @if (authorWebsite) {
+          <div class="ap-side-card">
+            <h3 class="ap-side-title">Links</h3>
+            <div class="ap-social-row">
+              <a class="ap-social-btn" [href]="authorWebsite" target="_blank" rel="noopener noreferrer nofollow" title="Website" [attr.aria-label]="'Visit ' + authorName + '\'s website'">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
               </a>
+            </div>
+          </div>
+        }
+
+        @if (showFloatingNewsletter()) {
+          <div class="ap-side-card ap-newsletter-card">
+            <button class="ap-newsletter-close" type="button"
+                    (click)="dismissFloatingNewsletter()" aria-label="Dismiss">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <h3 class="ap-side-title">Stay Updated with New Articles</h3>
+            <p class="ap-newsletter-copy">Get the latest articles and insights delivered to your inbox.</p>
+            @if (subscribeSuccess()) {
+              <p class="ap-newsletter-success">✓ {{ subscribeMessage() }}</p>
+            } @else {
+              <form class="ap-newsletter-form" (submit)="$event.preventDefault(); onSubscribe()">
+                <input type="email" placeholder="Enter your email" [value]="subscribeEmail"
+                       (input)="onEmailInput($any($event.target).value)" required />
+                @if (emailInputError()) { <span class="ap-newsletter-error">{{ emailInputError() }}</span> }
+                @if (subscribeError()) { <span class="ap-newsletter-error">{{ subscribeError() }}</span> }
+                <button type="submit" [disabled]="subscribing() || !!emailInputError()">
+                  {{ subscribing() ? 'Subscribing…' : 'Subscribe' }}
+                </button>
+              </form>
             }
           </div>
         }
-      </div>
-    }
+      </aside>
+    </div>
+  }
 
-    <!-- ── About tab ── -->
-    @if (selectedTab() === 'about') {
-      <div class="ap-about">
-        <div class="ap-about-card">
-          <h3 class="ap-about-title">About {{ authorName }}</h3>
-
-          @if (authorBio) {
-            <div class="ap-about-row">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-              <div>
-                <span class="ap-about-lbl">Bio</span>
-                <p class="ap-about-val">{{ authorBio }}</p>
-              </div>
-            </div>
-          }
-
-          @if (joinedDate) {
-            <div class="ap-about-row">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-              <div>
-                <span class="ap-about-lbl">Member since</span>
-                <p class="ap-about-val">{{ joinedDate | date:'MMMM d, yyyy' }}</p>
-              </div>
-            </div>
-          }
-
-          <div class="ap-about-row">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-            <div>
-              <span class="ap-about-lbl">Total views</span>
-              <p class="ap-about-val">{{ fmtCount(totalViews()) }}</p>
-            </div>
-          </div>
-
-          <div class="ap-about-row">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-            <div>
-              <span class="ap-about-lbl">Total likes</span>
-              <p class="ap-about-val">{{ fmtCount(totalLikes()) }}</p>
-            </div>
-          </div>
-
-          <div class="ap-about-row">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            <div>
-              <span class="ap-about-lbl">Followers</span>
-              <p class="ap-about-val">{{ fmtCount(followersCount()) }}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    }
   }
 
   <!-- AdSense - above footer (hidden on thin/empty author pages) -->
@@ -375,6 +412,49 @@
       <p class="ap-footer-copy">© {{ currentYear }} ApnaInsights · Made with ❤️ in India</p>
     </div>
   </footer>
+
+  <!-- Mobile sticky follow bar -->
+  @if (!isLoading() && !notFound() && !isOwnProfile()) {
+    <div class="ap-mobile-actionbar">
+      @if (isLoggedIn()) {
+        <button class="ap-follow-btn ap-follow-btn--full"
+          [class.ap-follow-btn--following]="isFollowing()"
+          [disabled]="followLoading()"
+          (click)="toggleFollow()">
+          @if (followLoading()) {
+            <span class="ap-btn-spinner"></span>
+          } @else if (isFollowing()) {
+            Following
+          } @else {
+            + Follow
+          }
+        </button>
+      } @else {
+        <a routerLink="/auth/login" class="ap-follow-btn ap-follow-btn--full">+ Follow</a>
+      }
+      @if (isLoggedIn()) {
+        <button class="ap-message-btn" type="button" (click)="showMessageModal.set(true)" [attr.aria-label]="'Message ' + authorName">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        </button>
+      } @else {
+        <a routerLink="/auth/login" class="ap-message-btn" aria-label="Sign in to message">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        </a>
+      }
+      <button class="ap-share-btn" type="button" (click)="shareProfile()" [attr.aria-label]="'Share ' + authorName + ' profile'">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/><line x1="15.4" y1="6.5" x2="8.6" y2="10.5"/></svg>
+      </button>
+    </div>
+  }
+
+  @if (showMessageModal()) {
+    <app-message-composer-modal
+      [recipientId]="authorId"
+      [recipientName]="authorName"
+      [recipientAvatar]="authorAvatar || null"
+      (close)="showMessageModal.set(false)">
+    </app-message-composer-modal>
+  }
 
   <app-mobile-bottom-nav></app-mobile-bottom-nav>
 

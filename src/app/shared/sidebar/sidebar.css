@@ -39,10 +39,11 @@
 }
 .sb-logo-img { border-radius: 8px; }
 .sb-logo-text {
-  font-family: 'DM Sans', sans-serif;
   font-size: 17px; font-weight: 800;
-  color: var(--accent-text);
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
 }
+.sb-logo-text i { font-style: normal; color: var(--accent); }
 
 /* Nav - sized to its own content, not flex-grown. It used to be the flex:1
    child, so on any screen taller than the nav-link list it stretched and
@@ -51,18 +52,28 @@
    still scrolls internally instead of overflowing the sidebar. */
 .sb-nav {
   display: flex; flex-direction: column;
-  gap: 6px;
-  padding: 14px 10px 10px;
+  gap: 2px;
+  padding: 10px 8px 8px;
   overflow-y: auto;
   flex: 0 1 auto;
   min-height: 0;
 }
 
+/* Group labels - printed above the first link of each distinct groupLabel */
+.sb-group-label {
+  display: block;
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.07em; text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 8px 10px 4px;
+}
+.sb-group-label--first { padding-top: 0; }
+
 /* Links */
 .sb-link {
-  display: flex; align-items: center; gap: 10px;
-  padding: 11px 12px;
-  border-radius: 10px;
+  display: flex; align-items: center; gap: 9px;
+  padding: 8px 10px;
+  border-radius: 8px;
   text-decoration: none;
   color: var(--text-primary);
   font-size: 13.5px; font-weight: 500;
@@ -70,33 +81,46 @@
   white-space: nowrap;
   cursor: pointer;
 }
+
+.sb-link[aria-label="Messages"] { border-radius: 0; }
+
+.sb-link-badge {
+  margin-left: auto;
+  flex-shrink: 0;
+  font-size: 10px; font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 100px;
+  background: var(--accent-subtle);
+  color: #1D4ED8;
+}
+[data-theme="dark"] .sb-link-badge { color: #60a5fa; }
 .sb-link:hover {
-  background: rgba(67,206,162,0.1);
+  background: rgba(37, 99, 235, 0.1);
   color: var(--text-primary);
   transform: translateX(2px);
 }
 .sb-link--active {
   background: var(--accent-subtle);
-  color: #2ea88a;
+  color: #1D4ED8;
   font-weight: 600;
 }
-.sb-link--active .sb-link-icon { color: #43cea2; }
+.sb-link--active .sb-link-icon { color: #2563EB; }
 
 .sb-link-icon {
-  width: 34px; height: 34px;
-  border-radius: 9px;
+  width: 22px; height: 22px;
+  border-radius: 6px;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
   color: var(--text-secondary);
   transition: color 0.18s, background 0.18s;
 }
 .sb-link:hover .sb-link-icon {
-  color: #43cea2;
-  background: rgba(67,206,162,0.12);
+  color: #2563EB;
+  background: rgba(37, 99, 235, 0.12);
 }
 .sb-link--active .sb-link-icon {
-  color: #43cea2;
-  background: rgba(67,206,162,0.15);
+  color: #2563EB;
+  background: rgba(37, 99, 235, 0.15);
 }
 
 .sb-link-label { flex: 1; }
@@ -112,7 +136,7 @@
   padding: 2px 12px 8px;
 }
 .sb-shortcut .sb-link-icon {
-  width: 28px; height: 28px; border-radius: 7px;
+  width: 22px; height: 22px; border-radius: 6px;
 }
 
 /* Spacer - this is what should absorb the leftover height, not .sb-nav, so
@@ -120,149 +144,6 @@
    to the bottom with a single clean gap between them instead of a dead
    patch of empty sidebar in the middle. */
 .sb-spacer { flex: 1; }
-
-/* User card */
-.sb-user {
-  display: flex; align-items: center; gap: 10px;
-  padding: 16px 14px;
-  border-top: 1px solid var(--border);
-  flex-shrink: 0;
-}
-.sb-user-avatar {
-  width: 38px; height: 38px;
-  border-radius: 10px;
-  background: var(--accent);
-  color: #fff; font-size: 14px; font-weight: 700;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0; overflow: hidden;
-}
-.sb-user-avatar-img { width:100%; height:100%; object-fit:cover; border-radius:10px; }
-.sb-user-info {
-  display: flex; flex-direction: column; gap: 1px;
-  flex: 1; min-width: 0;
-}
-.sb-user-name {
-  font-size: 13px; font-weight: 600;
-  color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.sb-user-role {
-  font-size: 10.5px; color: #43cea2; font-weight: 500;
-}
-/* ── Pro Plan card ── */
-.sb-plan-card {
-  margin: 0 10px 10px;
-  padding: 14px;
-  border-radius: 12px;
-  background: var(--accent-subtle);
-  border: 1px solid rgba(67,206,162,0.2);
-  flex-shrink: 0;
-}
-.sb-plan-header {
-  display: flex; align-items: center; gap: 7px;
-  margin-bottom: 6px;
-}
-.sb-plan-gem { font-size: 16px; line-height: 1; }
-.sb-plan-name {
-  font-size: 13px; font-weight: 700;
-  color: var(--text-primary);
-}
-.sb-plan-tagline {
-  font-size: 11.5px; font-weight: 500;
-  color: var(--text-secondary); margin-bottom: 2px;
-}
-.sb-plan-desc {
-  font-size: 10.5px; color: var(--text-muted); margin-bottom: 10px;
-}
-.sb-plan-btn {
-  display: block; width: 100%;
-  padding: 7px 12px;
-  text-align: center; text-decoration: none;
-  font-size: 12px; font-weight: 600;
-  font-family: 'DM Sans', sans-serif;
-  color: var(--text-primary);
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.18s, border-color 0.18s, color 0.18s;
-}
-.sb-plan-btn:hover {
-  border-color: rgba(67,206,162,0.5);
-  color: #43cea2;
-  background: rgba(67,206,162,0.06);
-}
-
-/* ── User card redesign ── */
-.sb-user {
-  display: flex; align-items: center; gap: 4px;
-  padding: 10px 10px;
-  border-top: 1px solid var(--border);
-  flex-shrink: 0;
-}
-
-.sb-user-main {
-  display: flex; align-items: center; gap: 9px;
-  flex: 1; min-width: 0;
-  background: transparent; border: none;
-  padding: 6px 8px; border-radius: 10px;
-  cursor: pointer; text-align: left;
-  transition: background 0.18s;
-}
-.sb-user-main:hover { background: rgba(67,206,162,0.07); }
-
-.sb-user-chevron {
-  color: var(--text-muted); flex-shrink: 0; opacity: 0.6;
-  transition: transform 0.2s;
-}
-.sb-user-main:hover .sb-user-chevron { opacity: 1; }
-
-/* Three-dots wrap & button */
-.sb-user-more-wrap { position: relative; flex-shrink: 0; }
-.sb-user-more {
-  width: 28px; height: 28px; border-radius: 7px; border: none;
-  background: transparent; color: var(--text-muted);
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer;
-  transition: background 0.18s, color 0.18s;
-}
-.sb-user-more:hover { background: var(--bg-base); color: var(--text-primary); }
-
-/* Dropdown menu */
-.sb-user-dropdown {
-  position: absolute;
-  bottom: calc(100% + 6px); right: 0;
-  min-width: 160px;
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  box-shadow: 0 8px 28px rgba(0,0,0,0.18);
-  overflow: hidden;
-  z-index: 500;
-  animation: dropUp 0.16s ease both;
-}
-@keyframes dropUp {
-  from { opacity: 0; transform: translateY(6px) scale(0.97); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
-}
-.sb-user-dropdown-item {
-  display: flex; align-items: center; gap: 9px;
-  width: 100%; padding: 9px 14px;
-  font-size: 13px; font-weight: 500;
-  color: var(--text-secondary);
-  text-decoration: none; background: transparent; border: none;
-  cursor: pointer; font-family: 'DM Sans', sans-serif;
-  transition: background 0.15s, color 0.15s;
-  text-align: left;
-}
-.sb-user-dropdown-item:hover {
-  background: rgba(67,206,162,0.07); color: var(--text-primary);
-}
-.sb-user-dropdown-item--danger { color: #ef4444; }
-.sb-user-dropdown-item--danger:hover {
-  background: rgba(239,68,68,0.08); color: #ef4444;
-}
-.sb-user-dropdown-divider { height: 1px; background: var(--border); margin: 2px 0; }
-
 
 @media (max-width: 768px) {
   .sb-backdrop { display: block; }
@@ -272,6 +153,10 @@
     top: 0; left: 0;
     height: 100dvh;
     transform: translateX(-100%);
+    /* Clear the floating mobile bottom nav (66px tall, 10px off the
+       bottom, z-index:1100 - above the sidebar's own 200) so the last
+       nav links/shortcuts don't render underneath it. */
+    padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
   }
   .sidebar--open { transform: translateX(0); }
 }

@@ -180,4 +180,16 @@ export class Auth {
     if (!userId || !role) return null;
     return { id: userId, role };
   }
+
+  // Tracks the last non-auth page the visitor was on, so login can return
+  // them there even when the "Sign In" link they clicked carries no
+  // returnUrl (e.g. header/footer links that don't know the current route).
+  recordVisitedUrl(url: string): void {
+    if (!this.isBrowser || url.startsWith('/auth/')) return;
+    sessionStorage.setItem('lastVisitedUrl', url);
+  }
+
+  getLastVisitedUrl(): string | null {
+    return this.isBrowser ? sessionStorage.getItem('lastVisitedUrl') : null;
+  }
 }

@@ -4,6 +4,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
+import { Meta } from '@angular/platform-browser';
 import { Auth } from '../../../../core/services/auth';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AuthTrustBar } from '../../../../shared/auth-trust-bar/auth-trust-bar';
@@ -21,6 +22,7 @@ export class ResetPassword implements OnInit {
   private auth = inject(Auth);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private meta = inject(Meta);
 
   isLoading    = signal(false);
   isSuccess    = signal(false);
@@ -38,6 +40,8 @@ export class ResetPassword implements OnInit {
   }, { validators: this.passwordMatchValidator });
 
   ngOnInit() {
+    this.meta.updateTag({ name: 'robots', content: 'noindex, nofollow' });
+
     const tokenFromURL = this.route.snapshot.queryParamMap.get('token');
 
     if (!tokenFromURL) {

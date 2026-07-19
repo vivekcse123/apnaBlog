@@ -127,7 +127,7 @@
   transition: border-color .2s, box-shadow .2s;
 }
 .ms-search input::placeholder { color: var(--text-muted); }
-.ms-search input:focus { border-color: #43cea2; box-shadow: 0 0 0 3px rgba(67,206,162,.15); }
+.ms-search input:focus { border-color: #2563EB; box-shadow: 0 0 0 3px rgba(37, 99, 235, .15); }
 .ms-select {
   height: 40px;
   width: 160px;
@@ -142,7 +142,7 @@
   cursor: pointer;
   transition: border-color .2s, box-shadow .2s;
 }
-.ms-select:focus { border-color: #43cea2; box-shadow: 0 0 0 3px rgba(67,206,162,.15); }
+.ms-select:focus { border-color: #2563EB; box-shadow: 0 0 0 3px rgba(37, 99, 235, .15); }
 
 /* ── Table ── */
 .ms-card {
@@ -302,7 +302,7 @@
 .ms-cat-badge {
   padding: 3px 9px;
   border-radius: 99px;
-  background: color-mix(in srgb, #43cea2 12%, transparent);
+  background: color-mix(in srgb, #2563EB 12%, transparent);
   color: #0f7a5e;
   font-size: 11px;
   font-weight: 600;
@@ -318,7 +318,7 @@
   white-space: nowrap;
 }
 .ms-type-badge--yt {
-  background: color-mix(in srgb, #43cea2 12%, transparent);
+  background: color-mix(in srgb, #2563EB 12%, transparent);
   color: #0f7a5e;
 }
 
@@ -407,7 +407,7 @@
   -webkit-tap-highlight-color: transparent;
 }
 .ms-action-btn svg { flex-shrink: 0; }
-.ms-action-btn--preview:hover { background: color-mix(in srgb, #43cea2 12%, transparent); border-color: #43cea2; color: #43cea2; }
+.ms-action-btn--preview:hover { background: color-mix(in srgb, #2563EB 12%, transparent); border-color: #2563EB; color: #2563EB; }
 .ms-action-btn--delete:hover  { background: color-mix(in srgb, #ef4444 12%, transparent); border-color: #ef4444; color: #ef4444; }
 .ms-action-btn--approve       { color: #16a34a; border-color: rgba(22,163,74,.35); background: rgba(22,163,74,.08); }
 .ms-action-btn--approve:hover { background: rgba(22,163,74,.18); border-color: #16a34a; }
@@ -721,7 +721,7 @@
   outline: none;
   transition: border-color .15s;
 }
-.ms-edit-input:focus, .ms-edit-select:focus { border-color: #43cea2; }
+.ms-edit-input:focus, .ms-edit-select:focus { border-color: #2563EB; }
 .ms-req { color: #ef4444; }
 
 /* Today + Sponsored button row */

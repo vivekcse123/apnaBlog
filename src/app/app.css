@@ -1,3 +1,12 @@
+/* Custom elements have no default `display` in the UA stylesheet, so
+   without this `<app-root>` computes as `display: inline` - an inline box
+   doesn't establish a normal containing block, which silently breaks
+   `position: sticky` for every sticky element anywhere in the app (the
+   header included) even though the page still looks fine at rest. */
+:host {
+  display: block;
+}
+
 .skip-to-content {
   position: fixed;
   top: 8px;

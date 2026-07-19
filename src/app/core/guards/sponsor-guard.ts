@@ -2,12 +2,13 @@ import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { Auth } from '../services/auth';
 
-export const sponsorGuard: CanActivateFn = () => {
+export const sponsorGuard: CanActivateFn = (_route, state) => {
   const auth   = inject(Auth);
   const router = inject(Router);
 
-  if (!auth.isAuthorized()) {
-    router.navigate(['/auth/login']);
+  if (!auth.isAuthorized() || auth.isTokenExpired()) {
+    if (auth.isTokenExpired()) auth.logout();
+    router.navigate(['/auth/login'], { queryParams: { returnUrl: state.url } });
     return false;
   }
 

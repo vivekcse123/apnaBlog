@@ -1,0 +1,86 @@
+<div class="cr">
+  <header class="cr-head">
+    <h1>Career Guides &middot; Callback Requests</h1>
+    <p>Track the callback requests you've sent to career experts.</p>
+  </header>
+
+  @if (isLoading()) {
+    <div class="cr-skel-list">
+      @for (_ of [1,2,3]; track $index) {
+        <div class="cr-skel"></div>
+      }
+    </div>
+  } @else if (error()) {
+    <div class="cr-empty">
+      <p>{{ error() }}</p>
+      <button class="cr-btn" type="button" (click)="load()">Retry</button>
+    </div>
+  } @else if (requests().length === 0) {
+    <div class="cr-empty">
+      <p>You haven't requested any callbacks yet.</p>
+      <a class="cr-btn" routerLink="/career-guides">Browse Experts</a>
+    </div>
+  } @else {
+    <div class="cr-list">
+      @for (r of requests(); track trackById($index, r)) {
+        <article class="cr-card">
+          <div class="cr-card-top">
+            <div>
+              <strong>{{ r.expertName }}</strong>
+              <span class="cr-topic">{{ r.topic }}</span>
+            </div>
+            <span class="cr-status" [attr.data-status]="r.status">{{ statusLabel(r.status) }}</span>
+          </div>
+          <div class="cr-meta-row">
+            <span>📅 {{ r.preferredDate }}</span>
+            <span>🕐 {{ r.preferredTime }}</span>
+            <span>Updated {{ r.updatedAt | date:'MMM d, y, h:mm a' }}</span>
+          </div>
+          @if (r.message) { <p class="cr-message">{{ r.message }}</p> }
+          @if (r.status === 'pending') {
+            <div class="cr-actions">
+              <button class="cr-btn cr-btn--outline" type="button" [disabled]="cancelling().has(r._id)" (click)="cancel(r._id)">
+                {{ cancelling().has(r._id) ? 'Cancelling…' : 'Cancel Request' }}
+              </button>
+            </div>
+          }
+
+          @if (r.status === 'completed') {
+            @if (r.feedback?.rating) {
+              <div class="cr-feedback cr-feedback--done">
+                <span class="cr-feedback-stars">
+                  @for (s of stars; track s) {
+                    <span [class.filled]="s <= r.feedback!.rating">★</span>
+                  }
+                </span>
+                @if (r.feedback!.comment) { <p class="cr-feedback-comment">"{{ r.feedback!.comment }}"</p> }
+              </div>
+            } @else if (feedbackOpenId() === r._id) {
+              <div class="cr-feedback">
+                <p class="cr-feedback-prompt">How was your session with {{ r.expertName }}?</p>
+                <span class="cr-feedback-stars cr-feedback-stars--input">
+                  @for (s of stars; track s) {
+                    <button type="button" [class.filled]="s <= feedbackRating()" (click)="feedbackRating.set(s)" [attr.aria-label]="s + ' stars'">★</button>
+                  }
+                </span>
+                <textarea class="cr-feedback-textarea" rows="2" placeholder="Anything you'd like to add? (optional)"
+                  [value]="feedbackComment()" (input)="feedbackComment.set($any($event.target).value)"></textarea>
+                @if (feedbackError()) { <p class="cr-feedback-error">{{ feedbackError() }}</p> }
+                <div class="cr-actions">
+                  <button class="cr-btn cr-btn--outline" type="button" (click)="closeFeedback()">Cancel</button>
+                  <button class="cr-btn" type="button" [disabled]="!feedbackRating() || feedbackSubmitting()" (click)="submitFeedback(r._id)">
+                    {{ feedbackSubmitting() ? 'Submitting…' : 'Submit Feedback' }}
+                  </button>
+                </div>
+              </div>
+            } @else {
+              <div class="cr-actions">
+                <button class="cr-btn" type="button" (click)="openFeedback(r._id)">Leave Feedback</button>
+              </div>
+            }
+          }
+        </article>
+      }
+    </div>
+  }
+</div>

@@ -1,0 +1,22 @@
+@if (show()) {
+  <div class="cm-overlay" (click)="cancel()">
+
+    <div class="cm-box" [class.danger]="danger()" (click)="$event.stopPropagation()"
+         role="alertdialog" aria-modal="true" aria-labelledby="cm-title">
+
+      <div class="cm-accent-bar"></div>
+
+      <div class="cm-content">
+        <h2 id="cm-title">{{ title() }}</h2>
+        <p>{{ message() }}</p>
+
+        <div class="cm-actions">
+          <button class="cm-cancel-btn" type="button" (click)="cancel()">{{ cancelText() }}</button>
+          <button #confirmBtn class="cm-confirm-btn" type="button" (click)="confirm()">{{ confirmText() }}</button>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+}

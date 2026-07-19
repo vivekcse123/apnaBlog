@@ -43,7 +43,7 @@ const isLoopback = (host: string) =>
 // serving the SPA shell so Angular can render the PageNotFound UI.
 const KNOWN_STATIC_PATHS = new Set([
   '', 'about', 'advertise', 'privacy-policy', 'terms', 'disclaimer',
-  'editorial-policy', 'topics', 'search', 'challenges', 'shorts',
+  'editorial-policy', 'search', 'topics', 'challenges', 'shorts',
   'history', 'bookmarks', 'welcome', 'contact', 'splash', 'onboarding',
 ]);
 
@@ -206,6 +206,14 @@ app.use(
     maxAge: '1y',
     index: false,
     redirect: false,
+    // mime-db has no entry for .apk, so express.static would otherwise send
+    // no Content-Type at all - some Android browsers need the correct type
+    // to recognize the download as an installable package.
+    setHeaders: (res, path) => {
+      if (path.endsWith('.apk')) {
+        res.setHeader('Content-Type', 'application/vnd.android.package-archive');
+      }
+    },
   }),
 );
 
@@ -311,7 +319,7 @@ app.use((err: unknown, req: Request, res: Response, _next: NextFunction) => {
  */
 if (isMainModule(import.meta.url) || process.env['pm_id']) {
   const port = process.env['PORT'] || 4000;
-  app.listen(port, (error) => {
+  app.listen(port, (error?: Error) => {
     if (error) {
       throw error;
     }

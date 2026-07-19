@@ -1,0 +1,117 @@
+<div class="mcr-page">
+
+  <div class="mcr-header">
+    <div>
+      <h1 class="mcr-title">📞 Career Guides &middot; Callback Requests</h1>
+      <p class="mcr-sub">All callback requests across every expert. {{ total() }} total.</p>
+    </div>
+    <button class="mcr-refresh" (click)="load()">↻ Refresh</button>
+  </div>
+
+  <div class="mcr-filters">
+    <select class="mcr-select" [(ngModel)]="statusFilter" (change)="applyFilters()">
+      <option value="">All Statuses</option>
+      @for (s of statuses; track s) { <option [value]="s">{{ s }}</option> }
+    </select>
+
+    <select class="mcr-select" [(ngModel)]="expertFilter" (change)="applyFilters()">
+      <option value="">All Experts</option>
+      @for (e of experts; track e.slug) { <option [value]="e.slug">{{ e.name }}</option> }
+    </select>
+
+    <select class="mcr-select" [(ngModel)]="categoryFilter" (change)="applyFilters()">
+      <option value="">All Categories</option>
+      @for (c of categories; track c.name) { <option [value]="c.name">{{ c.name }}</option> }
+    </select>
+
+    <label class="mcr-date-field">From
+      <input type="date" [(ngModel)]="fromFilter" (change)="applyFilters()" />
+    </label>
+    <label class="mcr-date-field">To
+      <input type="date" [(ngModel)]="toFilter" (change)="applyFilters()" />
+    </label>
+
+    <button class="mcr-reset" type="button" (click)="resetFilters()">Reset</button>
+    <button class="mcr-reset" type="button" (click)="exportCsv()">⬇ Export CSV</button>
+  </div>
+
+  @if (isLoading()) {
+    <div class="mcr-loading">
+      @for (_ of [1,2,3,4]; track $index) { <div class="mcr-skeleton"></div> }
+    </div>
+  } @else if (error()) {
+    <div class="mcr-error">{{ error() }}</div>
+  } @else if (requests().length === 0) {
+    <div class="mcr-empty">
+      <span class="mcr-empty__icon">📭</span>
+      <p>No callback requests match these filters.</p>
+    </div>
+  } @else {
+    <div class="mcr-list">
+      @for (r of requests(); track trackById($index, r)) {
+        <div class="mcr-row">
+          <div class="mcr-row__head" (click)="toggleExpand(r._id)">
+            <div class="mcr-row__info">
+              <span class="mcr-status" [attr.data-status]="r.status">{{ r.status }}</span>
+              <span class="mcr-user">{{ r.userName }}</span>
+              <span class="mcr-arrow">→</span>
+              <span class="mcr-expert">{{ r.expertName }}</span>
+              <span class="mcr-topic">{{ r.topic }}</span>
+            </div>
+            <div class="mcr-row__meta">
+              <span>{{ r.preferredDate }} · {{ r.preferredTime }}</span>
+              <span class="mcr-chevron">{{ expandedId() === r._id ? '▲' : '▼' }}</span>
+            </div>
+          </div>
+
+          @if (expandedId() === r._id) {
+            <div class="mcr-row__body">
+              <div class="mcr-detail-grid">
+                <div><span class="mcr-detail-lbl">Request ID</span><span class="mcr-detail-val">{{ r._id }}</span></div>
+                <div><span class="mcr-detail-lbl">User Email</span><span class="mcr-detail-val">{{ r.userEmail }}</span></div>
+                @if (r.userPhone) {
+                  <div><span class="mcr-detail-lbl">Phone</span><span class="mcr-detail-val">{{ r.userPhone }}</span></div>
+                }
+                <div><span class="mcr-detail-lbl">Category</span><span class="mcr-detail-val">{{ r.category || '—' }}</span></div>
+                <div><span class="mcr-detail-lbl">Created</span><span class="mcr-detail-val">{{ r.createdAt | date:'MMM d, y, h:mm a' }}</span></div>
+                <div><span class="mcr-detail-lbl">Last Updated</span><span class="mcr-detail-val">{{ r.updatedAt | date:'MMM d, y, h:mm a' }}</span></div>
+              </div>
+
+              @if (r.message) {
+                <p class="mcr-message"><strong>Message:</strong> {{ r.message }}</p>
+              }
+
+              <div class="mcr-actions">
+                <button class="mcr-action mcr-action--accept" [disabled]="updating().has(r._id) || !canDecide(r.status)" (click)="updateStatus(r._id, 'accepted')">Accept</button>
+                <button class="mcr-action mcr-action--reject" [disabled]="updating().has(r._id) || !canDecide(r.status)" (click)="updateStatus(r._id, 'rejected')">Reject</button>
+                <button class="mcr-action" [disabled]="updating().has(r._id) || !canDecide(r.status)" (click)="updateStatus(r._id, 'scheduled')">Schedule</button>
+                <button class="mcr-action mcr-action--complete" [disabled]="updating().has(r._id) || !canComplete(r.status)" (click)="updateStatus(r._id, 'completed')">Mark Completed</button>
+                <button class="mcr-action mcr-action--cancel" [disabled]="updating().has(r._id) || !canCancel(r.status)" (click)="updateStatus(r._id, 'cancelled')">Cancel</button>
+              </div>
+
+              @if (r.activityLog.length) {
+                <div class="mcr-timeline">
+                  <span class="mcr-detail-lbl">Activity Timeline</span>
+                  <ul>
+                    @for (entry of r.activityLog; track $index) {
+                      <li>{{ entry.action }} <span class="mcr-timeline-meta">({{ entry.byRole }}, {{ entry.at | date:'MMM d, h:mm a' }})</span></li>
+                    }
+                  </ul>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    @if (totalPages() > 1) {
+      <div class="mcr-pagination">
+        <button class="mcr-page-btn" [disabled]="page() === 1" (click)="goToPage(page() - 1)">← Prev</button>
+        <span>Page {{ page() }} of {{ totalPages() }}</span>
+        <button class="mcr-page-btn" [disabled]="page() === totalPages()" (click)="goToPage(page() + 1)">Next →</button>
+      </div>
+    }
+  }
+
+</div>

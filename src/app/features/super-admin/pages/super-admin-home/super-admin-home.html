@@ -114,9 +114,9 @@
         </div>
         <div class="role-divider"></div>
         <div class="role-item">
-          <span class="role-dot dot-admin"></span>
-          <span class="role-count">{{ adminCount() }}</span>
-          <span class="role-label">Admins</span>
+          <span class="role-dot dot-premium"></span>
+          <span class="role-count">{{ premiumCount() }}</span>
+          <span class="role-label">Premium</span>
         </div>
         <div class="role-divider"></div>
         <div class="role-item">
@@ -146,9 +146,9 @@
           <div class="stat-card">
             <div class="stat-icon-wrap blogs-icon">
               <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden="true">
-                <rect x="3" y="3" width="16" height="3" rx="1.5" fill="#43cea2"/>
-                <rect x="3" y="9" width="11" height="3" rx="1.5" fill="#43cea2"/>
-                <rect x="3" y="15" width="13" height="3" rx="1.5" fill="#43cea2"/>
+                <rect x="3" y="3" width="16" height="3" rx="1.5" fill="#2563EB"/>
+                <rect x="3" y="9" width="11" height="3" rx="1.5" fill="#2563EB"/>
+                <rect x="3" y="15" width="13" height="3" rx="1.5" fill="#2563EB"/>
               </svg>
             </div>
             <div class="stat-body">
@@ -206,9 +206,9 @@
           <div class="stat-card">
             <div class="stat-icon-wrap users-icon">
               <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden="true">
-                <circle cx="9" cy="7" r="4" fill="#185a9d"/>
-                <path d="M2 19c0-4.418 3.134-7 7-7s7 2.582 7 7" stroke="#185a9d" stroke-width="2" stroke-linecap="round" fill="none"/>
-                <circle cx="17" cy="8" r="2.5" fill="#43cea2"/>
+                <circle cx="9" cy="7" r="4" fill="#14B8A6"/>
+                <path d="M2 19c0-4.418 3.134-7 7-7s7 2.582 7 7" stroke="#14B8A6" stroke-width="2" stroke-linecap="round" fill="none"/>
+                <circle cx="17" cy="8" r="2.5" fill="#2563EB"/>
               </svg>
             </div>
             <div class="stat-body">
@@ -253,6 +253,19 @@
             <div class="stat-body">
               <span class="stat-label">Total Likes</span>
               <span class="stat-value">{{ totalLikes() }}</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon-wrap comments-icon">
+              <svg width="20" height="20" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+                <path d="M4 4h14a2 2 0 012 2v8a2 2 0 01-2 2H8l-4 3V6a2 2 0 012-2z"
+                  stroke="#378ADD" stroke-width="2" fill="none"/>
+              </svg>
+            </div>
+            <div class="stat-body">
+              <span class="stat-label">Total Comments</span>
+              <span class="stat-value">{{ totalComments() }}</span>
             </div>
           </div>
 
@@ -373,6 +386,79 @@
       </section>
 
     </div>
+
+    <!-- ── Categories + Frozen Accounts ── -->
+    <div class="dash-body dash-body--secondary">
+      <section class="sidebar-section">
+        <div class="section-hd">
+          <h2 class="section-hd-title">Categories</h2>
+          <span class="section-hd-sub">by post count</span>
+        </div>
+        <div class="cat-list">
+          @for (cat of categoryCounts(); track cat.name) {
+            <div class="cat-row">
+              <span class="cat-name">{{ cat.name }}</span>
+              <div class="cat-track"><span class="cat-fill" [style.width.%]="(cat.count / (categoryCounts()[0]?.count || 1)) * 100"></span></div>
+              <span class="cat-count">{{ cat.count }}</span>
+            </div>
+          }
+          @if (categoryCounts().length === 0) {
+            <p class="empty-list">No categorized posts yet</p>
+          }
+        </div>
+      </section>
+
+      <section class="sidebar-section">
+        <div class="section-hd">
+          <h2 class="section-hd-title">Frozen Accounts</h2>
+          <a [routerLink]="['/super-admin', userId, 'manage-users']" class="view-all-link">Manage →</a>
+        </div>
+        <div class="user-list">
+          @for (user of inactiveList(); track user._id) {
+            <div class="user-row">
+              <div class="user-avatar user-avatar--frozen">{{ getInitials(user.name) }}</div>
+              <div class="user-info">
+                <span class="user-name">{{ user.name }}</span>
+                <span class="user-email">{{ user.email }}</span>
+              </div>
+              <span class="role-pill pill-frozen">Frozen</span>
+            </div>
+          }
+          @if (inactiveList().length === 0) {
+            <p class="empty-list">No frozen accounts</p>
+          }
+        </div>
+      </section>
+    </div>
+
+    <!-- ── Traffic Snapshot ── -->
+    <section class="sidebar-section">
+      <div class="section-hd">
+        <h2 class="section-hd-title">Traffic Snapshot</h2>
+        <a [routerLink]="['/super-admin', userId, 'visitor']" class="view-all-link">Full report →</a>
+      </div>
+      <div class="traffic-row">
+        <div class="traffic-stats">
+          <div><span class="traffic-val">{{ trafficToday() | number }}</span><span class="traffic-lbl">Today</span></div>
+          <div><span class="traffic-val">{{ trafficWeek() | number }}</span><span class="traffic-lbl">This Week</span></div>
+          <div><span class="traffic-val">{{ trafficMonth() | number }}</span><span class="traffic-lbl">This Month</span></div>
+          @if (trafficTopPage()) {
+            <div><span class="traffic-val traffic-val--text">{{ trafficTopPage() }}</span><span class="traffic-lbl">Top Page</span></div>
+          }
+        </div>
+        @if (sourceStats().length > 0) {
+          <div class="source-bars">
+            @for (src of sourceStats(); track src.source) {
+              <div class="src-row">
+                <span class="src-lbl">{{ src.source | titlecase }}</span>
+                <div class="src-track"><span class="src-fill" [style.width.%]="src.percent"></span></div>
+                <span class="src-pct">{{ src.percent }}%</span>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </section>
 
   }
 

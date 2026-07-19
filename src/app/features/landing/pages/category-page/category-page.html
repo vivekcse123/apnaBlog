@@ -1,76 +1,10 @@
-<div class="cat-page">
+<div class="cgp">
 
-  <!-- NAV -->
-  <header class="cat-nav">
-    <a routerLink="/" class="cat-nav-logo" aria-label="ApnaInsights">
-      <img src="/logo-96.png" alt="ApnaInsights" width="30" height="30" loading="eager" />
-      <span class="cat-nav-name">ApnaInsights</span>
-    </a>
+  <app-site-header></app-site-header>
 
-    <div class="cat-nav-right">
-      <!-- Categories dropdown -->
-      <div class="cat-switch-wrap">
-        <button class="cat-switch-btn"
-                (click)="toggleCatDropdown()"
-                [class.active]="showCatDropdown()"
-                aria-haspopup="true"
-                [attr.aria-expanded]="showCatDropdown()">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/>
-            <circle cx="7" cy="7" r="1.5" fill="currentColor" stroke="none"/>
-          </svg>
-          <span>{{ categoryName() }}</span>
-          <svg class="switch-chevron" [class.open]="showCatDropdown()"
-               width="11" height="11" viewBox="0 0 24 24" fill="none"
-               stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-            <path d="M6 9l6 6 6-6"/>
-          </svg>
-        </button>
-
-        @if (showCatDropdown()) {
-          <div class="cat-switch-dropdown" role="menu">
-            <div class="cat-switch-header">Switch Category</div>
-            <div class="cat-switch-list">
-              @for (cat of ALL_CATEGORIES(); track cat) {
-                <button class="cat-switch-item"
-                        role="menuitem"
-                        [class.active]="cat === categoryName()"
-                        (click)="switchCategory(cat)">
-                  @if (cat === categoryName()) {
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
-                         stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-                      <polyline points="20 6 9 17 4 12"/>
-                    </svg>
-                  }
-                  {{ cat }}
-                </button>
-              }
-            </div>
-          </div>
-        }
-      </div>
-
-      <a routerLink="/search" class="cat-nav-icon-btn" aria-label="Search stories">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-      </a>
-
-      @if (!isLoggedIn) {
-        <a class="cat-nav-signin-btn" routerLink="/auth/login" aria-label="Sign in">Sign In</a>
-      }
-
-      <a class="cat-nav-write-btn" [routerLink]="writeRoute" aria-label="Write a story">Write</a>
-
-      <a routerLink="/" class="cat-back-btn">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
-        <span class="btn-label">Back to Home</span>
-      </a>
-    </div>
-  </header>
-
-  <!-- BREADCRUMB -->
-  <nav class="cat-breadcrumb" aria-label="Breadcrumb">
-    <ol class="cat-breadcrumb-list" itemscope itemtype="https://schema.org/BreadcrumbList">
+  <!-- BREADCRUMB (SEO only, visually minimal) -->
+  <nav class="cgp-breadcrumb" aria-label="Breadcrumb">
+    <ol class="cgp-breadcrumb-list" itemscope itemtype="https://schema.org/BreadcrumbList">
       <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
         <a routerLink="/" itemprop="item"><span itemprop="name">Home</span></a>
         <meta itemprop="position" content="1" />
@@ -84,27 +18,25 @@
   </nav>
 
   <!-- HERO -->
-  <section class="cat-hero">
-    <span class="cat-hero-icon" aria-hidden="true" [innerHTML]="getCategoryIcon()"></span>
-    <h1 class="cat-title">{{ categoryName() }}</h1>
+  <section class="cgp-hero">
+    <span class="cgp-hero-icon" aria-hidden="true" [innerHTML]="getCategoryIcon()"></span>
+    <h1 class="cgp-title">{{ categoryName() }}</h1>
     @if (categoryIntro()) {
-      <p class="cat-intro">{{ categoryIntro() }}</p>
+      <p class="cgp-intro">{{ categoryIntro() }}</p>
     }
-    <p class="cat-subtitle">
+    <p class="cgp-subtitle">
       @if (!isLoading()) {
-        {{ posts().length }} blog{{ posts().length === 1 ? '' : 's' }} in this category
+        {{ posts().length }} stor{{ posts().length === 1 ? 'y' : 'ies' }} in this category
       } @else {
         Exploring stories…
       }
     </p>
 
     @if (showSearch()) {
-      <div class="cat-search-wrap">
-        <span class="cat-search-icon" aria-hidden="true">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        </span>
+      <div class="cgp-search-wrap">
+        <svg class="cgp-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input
-          class="cat-search-input"
+          class="cgp-search-input"
           type="search"
           [placeholder]="'Search in ' + categoryName() + '…'"
           [value]="searchQuery()"
@@ -112,8 +44,8 @@
           aria-label="Search within category"
           autocomplete="off" />
         @if (searchQuery()) {
-          <button class="cat-search-clear" aria-label="Clear search" (click)="searchQuery.set(''); displayCount.set(PAGE_SIZE)">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          <button class="cgp-search-clear" aria-label="Clear search" (click)="searchQuery.set(''); displayCount.set(PAGE_SIZE)">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
         }
       </div>
@@ -121,74 +53,81 @@
   </section>
 
   <!-- GRID -->
-  <main class="cat-main" id="main-content">
+  <main class="cgp-main" id="main-content">
 
     @if (isLoading()) {
-      <div class="cat-list">
+      <div class="cgp-grid">
         @for (_ of [1,2,3,4,5,6]; track $index) {
-          <div class="cat-list-item cat-list-item--skel">
-            <div class="cat-skel-body">
-              <div class="skel skel-title"></div>
-              <div class="skel skel-desc"></div>
-              <div class="skel skel-meta"></div>
+          <div class="cgp-card cgp-card--skel">
+            <div class="cgp-skel cgp-skel--media"></div>
+            <div class="cgp-card-body">
+              <div class="cgp-skel cgp-skel--title"></div>
+              <div class="cgp-skel cgp-skel--desc"></div>
+              <div class="cgp-skel cgp-skel--meta"></div>
             </div>
-            <div class="skel skel-thumb"></div>
           </div>
         }
       </div>
 
     } @else if (posts().length === 0) {
-      <div class="cat-empty">
-        <span class="cat-empty-icon">📭</span>
-        <h2>No blogs found</h2>
-        <p>No published blogs in the <strong>{{ categoryName() }}</strong> category yet.</p>
-        <a routerLink="/" class="cat-empty-btn">Browse all stories</a>
+      <div class="cgp-empty">
+        <span class="cgp-empty-icon" aria-hidden="true">📭</span>
+        <h2>No stories yet</h2>
+        <p>No published stories in <strong>{{ categoryName() }}</strong> yet.</p>
+        <a routerLink="/" class="cgp-empty-btn">Browse all stories</a>
       </div>
 
     } @else if (filteredPosts().length === 0 && searchQuery()) {
-      <div class="cat-empty">
-        <span class="cat-empty-icon">🔍</span>
+      <div class="cgp-empty">
+        <span class="cgp-empty-icon" aria-hidden="true">🔍</span>
         <h2>No results found</h2>
-        <p>No blogs in <strong>{{ categoryName() }}</strong> match "<strong>{{ searchQuery() }}</strong>".</p>
-        <button class="cat-empty-btn" (click)="searchQuery.set('')">Clear search</button>
+        <p>No stories in <strong>{{ categoryName() }}</strong> match "<strong>{{ searchQuery() }}</strong>".</p>
+        <button class="cgp-empty-btn" (click)="searchQuery.set('')">Clear search</button>
       </div>
 
     } @else {
-      <div class="cat-list">
+      <div class="cgp-grid">
         @for (post of visiblePosts(); track post._id) {
-          <article class="cat-list-item">
+          <article class="cgp-card">
+            <button class="cgp-card-bookmark" [class.bookmarked]="isBookmarked(post._id)"
+                    (click)="toggleBookmark(post._id, $event)"
+                    [attr.aria-label]="(isBookmarked(post._id) ? 'Remove bookmark' : 'Bookmark') + ': ' + post.title"
+                    [attr.aria-pressed]="isBookmarked(post._id)">
+              <svg width="14" height="14" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" [attr.fill]="isBookmarked(post._id) ? 'currentColor' : 'none'"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
+            </button>
 
-            <div class="cat-list-body">
-              <h2 class="cat-list-title">
-                <a class="cat-list-link" [routerLink]="['/blog', post.slug || post._id]">{{ post.title }}</a>
+            <a class="cgp-card-media" [routerLink]="['/blog', post.slug || post._id]" tabindex="-1" aria-hidden="true">
+              @if (post.featuredImage) {
+                <img [src]="post.featuredImage" [alt]="post.title" loading="lazy" width="320" height="180" />
+              } @else {
+                <div class="cgp-card-media-fallback">{{ post.title.charAt(0).toUpperCase() }}</div>
+              }
+            </a>
+
+            <div class="cgp-card-body">
+              <h2 class="cgp-card-title">
+                <a class="cgp-card-link" [routerLink]="['/blog', post.slug || post._id]">{{ post.title }}</a>
               </h2>
-              <p class="cat-list-desc">{{ post.description }}</p>
-              <div class="cat-list-meta">
+              <p class="cgp-card-desc">{{ post.description }}</p>
+              <div class="cgp-card-meta">
+                <span class="cgp-avatar" aria-hidden="true">{{ getAuthorInitial(post) }}</span>
                 @if (getAuthorId(post)) {
-                  <a class="cat-meta-author" [routerLink]="['/author', getAuthorId(post)]">{{ getAuthorName(post) }}</a>
+                  <a class="cgp-meta-author" [routerLink]="['/author', getAuthorId(post)]">{{ getAuthorName(post) }}</a>
                 } @else {
-                  <span class="cat-meta-author">{{ getAuthorName(post) }}</span>
+                  <span class="cgp-meta-author">{{ getAuthorName(post) }}</span>
                 }
                 <span class="meta-dot" aria-hidden="true">·</span>
                 <time [attr.datetime]="post.createdAt | date:'yyyy-MM-dd'">{{ post.createdAt | timeAgo }}</time>
                 <span class="meta-dot" aria-hidden="true">·</span>
-                <span>{{ readingTime(post) }} min read</span>
+                <span>{{ readingTime(post) }} min</span>
               </div>
             </div>
-
-            @if (post.featuredImage) {
-              <div class="cat-list-thumb">
-                <img [src]="post.featuredImage" [alt]="post.title"
-                     loading="lazy" width="160" height="107" />
-              </div>
-            }
-
           </article>
         }
       </div>
       @if (hasMorePosts()) {
-        <div class="cat-load-more-wrap">
-          <button class="cat-load-more-btn" (click)="loadMore()">Load more stories</button>
+        <div class="cgp-load-more-wrap">
+          <button class="cgp-load-more-btn" (click)="loadMore()">Load more stories</button>
         </div>
       }
     }
@@ -208,26 +147,24 @@
   }
 
   <!-- FOOTER -->
-  <footer class="cat-footer">
-    <div class="cat-footer-inner">
-      <a routerLink="/" class="cat-footer-logo">
-        <img src="/logo-96.png" alt="ApnaInsights" width="22" height="22" loading="lazy" />
+  <footer class="cgp-footer">
+    <div class="cgp-footer-inner">
+      <a routerLink="/" class="cgp-footer-logo">
+        <img src="/logo-96.png" alt="ApnaInsights" width="20" height="20" loading="lazy" />
         <span>ApnaInsights</span>
       </a>
-      <nav class="cat-footer-links" aria-label="Footer links">
+      <nav class="cgp-footer-links" aria-label="Footer links">
         <a routerLink="/">Home</a>
         <span aria-hidden="true">·</span>
-        <a routerLink="/search">Search</a>
+        <a routerLink="/blog">Blog</a>
         <span aria-hidden="true">·</span>
         <a [routerLink]="writeRoute">Write for Us</a>
         <span aria-hidden="true">·</span>
         <a routerLink="/about">About</a>
         <span aria-hidden="true">·</span>
         <a routerLink="/privacy-policy">Privacy Policy</a>
-        <span aria-hidden="true">·</span>
-        <a routerLink="/disclaimer">Disclaimer</a>
       </nav>
-      <p class="cat-footer-copy">© {{ currentYear }} ApnaInsights · Made with ❤️ in India</p>
+      <p class="cgp-footer-copy">© {{ currentYear }} ApnaInsights · Made with ❤️ in India</p>
     </div>
   </footer>
 

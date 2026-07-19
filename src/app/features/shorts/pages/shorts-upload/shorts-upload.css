@@ -77,13 +77,13 @@
   transition: background .2s, border-color .2s, color .2s;
 }
 .up-step--active {
-  border-color: #43cea2;
+  border-color: #2563EB;
   background: var(--accent);
   color: #fff;
 }
 .up-step--done {
-  border-color: #43cea2;
-  background: #43cea2;
+  border-color: #2563EB;
+  background: #2563EB;
   color: #fff;
 }
 .up-step-line {
@@ -93,7 +93,7 @@
   background: #e5e7eb;
   transition: background .2s;
 }
-.up-step-line--done { background: #43cea2; }
+.up-step-line--done { background: #2563EB; }
 .up-step-label {
   font-size: 12px;
   font-weight: 700;
@@ -139,7 +139,7 @@
   width: 64px; height: 64px;
   border-radius: 50%;
   background: var(--accent-subtle);
-  border: 1.5px solid rgba(67,206,162,.3);
+  border: 1.5px solid rgba(37, 99, 235, .3);
   display: flex; align-items: center; justify-content: center;
   margin-bottom: 4px;
 }
@@ -156,8 +156,8 @@
 }
 .up-upload-ring {
   width: 40px; height: 40px;
-  border: 3px solid rgba(67,206,162,.2);
-  border-top-color: #43cea2;
+  border: 3px solid rgba(37, 99, 235, .2);
+  border-top-color: #2563EB;
   border-radius: 50%;
   animation: spin .8s linear infinite;
   flex-shrink: 0;
@@ -193,11 +193,11 @@
   width: 52px; height: 52px;
   border-radius: 50%;
   background: var(--accent-subtle);
-  border: 2px solid rgba(67,206,162,.4);
+  border: 2px solid rgba(37, 99, 235, .4);
   display: flex; align-items: center; justify-content: center;
 }
 .up-done-name { font-size: 13px; font-weight: 600; color: #111; text-align: center; word-break: break-all; }
-.up-done-sub  { font-size: 12px; color: #43cea2; font-weight: 600; }
+.up-done-sub  { font-size: 12px; color: #2563EB; font-weight: 600; }
 
 /* ═══════════════════════════════════════════════════════
    TRIM STEP
@@ -470,7 +470,7 @@
   background: #fafafa;
   transition: border-color .15s, background .15s;
 }
-.up-input:focus { border-color: #43cea2; background: #fff; }
+.up-input:focus { border-color: #2563EB; background: #fff; }
 .up-input::placeholder { color: #9ca3af; }
 .up-field-hint { font-size: 11px; color: #9ca3af; text-align: right; margin-top: -2px; }
 .up-field-error { font-size: 12px; color: #ef4444; font-weight: 600; }
@@ -539,7 +539,7 @@
   width: 68px; height: 68px;
   border-radius: 50%;
   background: var(--accent-subtle);
-  border: 2px solid rgba(67,206,162,.35);
+  border: 2px solid rgba(37, 99, 235, .35);
   display: flex; align-items: center; justify-content: center;
   animation: up-pop .35s cubic-bezier(.34,1.56,.64,1);
 }

@@ -13,4 +13,5 @@ export const environment = {
   apiUploadEndpoint:      'https://apnablogserver.onrender.com/api/upload',
   apiVideoUploadEndpoint: 'https://apnablogserver.onrender.com/api/upload/video',
   apiShortsEndpoint:      'https://apnablogserver.onrender.com/api/shorts/',
+  apiMessagesEndpoint:    'https://apnablogserver.onrender.com/api/messages/',
 };

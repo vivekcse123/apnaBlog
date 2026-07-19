@@ -141,7 +141,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 6px 20px rgba(67, 206, 162, 0.3);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.3);
   overflow: hidden;
 }
 
@@ -272,8 +272,8 @@
 }
 
 [data-theme="dark"] .role-badge.user {
-  background: color-mix(in srgb, #a78bfa 15%, transparent);
-  color: #a78bfa;
+  background: color-mix(in srgb, #2DD4BF 15%, transparent);
+  color: #2DD4BF;
 }
 
 /* ── Sponsor info section ── */
@@ -426,8 +426,8 @@
 
 .edit-field input:focus,
 .edit-field select:focus {
-  border-color: #43cea2;
-  box-shadow: 0 0 0 3px rgba(67, 206, 162, 0.15);
+  border-color: #2563EB;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
 .edit-field small.error {
@@ -515,7 +515,7 @@
   width: 28px;
   height: 28px;
   border: 3px solid var(--border);
-  border-top-color: #43cea2;
+  border-top-color: #2563EB;
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
 }

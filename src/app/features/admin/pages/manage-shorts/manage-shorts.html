@@ -16,8 +16,8 @@
   <div class="stats-bar">
 
     <div class="stat-card">
-      <div class="stat-icon-wrap" style="background:rgba(24,90,157,.12)">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#185a9d" stroke-width="2" stroke-linecap="round">
+      <div class="stat-icon-wrap" style="background:rgba(20, 184, 166, .12)">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#14B8A6" stroke-width="2" stroke-linecap="round">
           <path d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.9L15 14v-4z"/>
           <rect x="3" y="6" width="12" height="12" rx="2"/>
         </svg>
@@ -25,7 +25,7 @@
       <div class="stat-body">
         <span class="stat-label">Total Shorts</span>
         <span class="stat-value" [class.stat-value--loading]="statsLoading()">{{ globalTotal() }}</span>
-        <span class="stat-chip" style="color:#185a9d;background:rgba(24,90,157,.08)">All videos</span>
+        <span class="stat-chip" style="color:#14B8A6;background:rgba(20, 184, 166, .08)">All videos</span>
       </div>
     </div>
 
@@ -334,7 +334,7 @@
   <div class="ms-preview-backdrop" (click)="closePreview()">
     <div class="ms-preview-modal" (click)="$event.stopPropagation()">
 
-      <button class="ms-preview-close" (click)="closePreview()">
+      <button class="ms-preview-close" (click)="closePreview()" aria-label="Close preview">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
           <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
         </svg>

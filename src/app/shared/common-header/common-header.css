@@ -24,10 +24,9 @@
 /* ── Global Search ── */
 .ch-search {
   position: relative;
-  flex: 0 1 520px;   /* grows up to 520px; margin-left:auto keeps cluster right-aligned */
+  flex: 0 1 560px;   /* grows up to 560px; sits left, .ch-actions pushes right via its own margin-left:auto */
   min-width: 0;
   width: auto;
-  margin-left: auto;
   display: flex; align-items: center; gap: 10px;
   padding: 0 16px;
   height: 42px;
@@ -38,8 +37,8 @@
   cursor: text;
 }
 .ch-search:focus-within {
-  border-color: rgba(67,206,162,0.6);
-  box-shadow: 0 0 0 3px rgba(67,206,162,0.1);
+  border-color: rgba(37, 99, 235, 0.6);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
   background: var(--bg-surface);
 }
 .ch-search-ico {
@@ -47,7 +46,7 @@
   color: var(--text-muted);
   transition: color 0.2s;
 }
-.ch-search:focus-within .ch-search-ico { color: #43cea2; }
+.ch-search:focus-within .ch-search-ico { color: #2563EB; }
 .ch-search-input {
   flex: 1; min-width: 0;
   background: transparent; border: none;
@@ -88,7 +87,7 @@
   top: calc(100% + 8px);
   right: 0;
   /* Match .ch-search's actual rendered width exactly (it flexes up to
-     520px) instead of a fixed width that ends up narrower than the input
+     560px) instead of a fixed width that ends up narrower than the input
      it's attached to. */
   width: 100%;
   min-width: 340px;
@@ -168,23 +167,23 @@
 }
 
 .ch-nav-pill:hover {
-  background: color-mix(in srgb, #43cea2 10%, var(--bg-surface));
-  border-color: #43cea2;
-  color: #1d9e78;
+  background: color-mix(in srgb, #2563EB 10%, var(--bg-surface));
+  border-color: #2563EB;
+  color: #1D4ED8;
   transform: translateY(-1px);
 }
 
 .ch-nav-pill-icon {
   width: 28px; height: 28px;
   border-radius: 8px;
-  background: color-mix(in srgb, #43cea2 12%, transparent);
-  color: #43cea2;
+  background: color-mix(in srgb, #2563EB 12%, transparent);
+  color: #2563EB;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
 }
 
 .ch-nav-pill:hover .ch-nav-pill-icon {
-  background: color-mix(in srgb, #43cea2 18%, transparent);
+  background: color-mix(in srgb, #2563EB 18%, transparent);
 }
 
 .ch-nav-pill-label {
@@ -205,7 +204,7 @@
 .ch-sugg-view-all {
   font-size: 11px;
   font-weight: 600;
-  color: #43cea2;
+  color: #2563EB;
   text-decoration: none;
   transition: opacity 0.15s;
 }
@@ -230,11 +229,11 @@
   border-radius: 4px;
   font-size: 10px;
   font-weight: 600;
-  background: color-mix(in srgb, #43cea2 12%, transparent);
-  color: #1d9e78;
+  background: color-mix(in srgb, #2563EB 12%, transparent);
+  color: #1D4ED8;
 }
 .ch-meta-tag--role { background: color-mix(in srgb, #8b5cf6 12%, transparent); color: #7c3aed; }
-.ch-meta-tag--admin { background: color-mix(in srgb, #185a9d 12%, transparent); color: #1e4d9b; }
+.ch-meta-tag--admin { background: color-mix(in srgb, #14B8A6 12%, transparent); color: #1e4d9b; }
 
 .ch-status-dot {
   width: 6px; height: 6px;
@@ -289,7 +288,7 @@
   transition: background 0.12s, color 0.12s;
 }
 .ch-suggestion-item:hover {
-  background: rgba(67,206,162,0.07);
+  background: rgba(37, 99, 235, 0.07);
   color: var(--text-primary);
 }
 .ch-suggestion-icon {
@@ -297,8 +296,8 @@
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0; font-size: 14px;
 }
-.ch-suggestion-icon--nav  { background: rgba(67,206,162,0.12); color: #43cea2; }
-.ch-suggestion-icon--cat  { background: rgba(24,90,157,0.12);  color: #185a9d; }
+.ch-suggestion-icon--nav  { background: rgba(37, 99, 235, 0.12); color: #2563EB; }
+.ch-suggestion-icon--cat  { background: rgba(20, 184, 166, 0.12);  color: #14B8A6; }
 .ch-suggestion-icon--blog { background: rgba(139,92,246,0.12); color: #8b5cf6; }
 .ch-suggestion-icon--user {
   background: var(--accent);
@@ -307,7 +306,7 @@
 [data-theme="dark"] .ch-suggestion-icon--cat { color: #60a5fa; background: rgba(96,165,250,0.12); }
 
 .ch-suggestion-badge--blog { background: rgba(139,92,246,0.1); color: #8b5cf6; border-color: rgba(139,92,246,0.25); }
-.ch-suggestion-badge--user { background: rgba(67,206,162,0.1); color: #1d9e78; border-color: rgba(67,206,162,0.25); }
+.ch-suggestion-badge--user { background: rgba(37, 99, 235, 0.1); color: #1D4ED8; border-color: rgba(37, 99, 235, 0.25); }
 .ch-suggestion-body { flex: 1; min-width: 0; }
 .ch-suggestion-label {
   display: block;
@@ -329,12 +328,12 @@
 .ch-suggestion-search {
   display: flex; align-items: center; gap: 12px;
   padding: 10px 14px;
-  font-size: 13px; color: #43cea2;
+  font-size: 13px; color: #2563EB;
   cursor: pointer; text-decoration: none;
   transition: background 0.12s;
   font-weight: 500;
 }
-.ch-suggestion-search:hover { background: rgba(67,206,162,0.07); }
+.ch-suggestion-search:hover { background: rgba(37, 99, 235, 0.07); }
 .ch-suggestion-search svg { flex-shrink: 0; opacity: 0.7; }
 
 /* ── Theme toggle - desktop only ── */
@@ -345,9 +344,9 @@
    in the file and would win a single-class specificity race. */
 .ch-icon-btn.ch-search-toggle { display: none; }
 .ch-search-toggle--active {
-  background: rgba(67,206,162,0.12);
-  border-color: rgba(67,206,162,0.45);
-  color: #43cea2;
+  background: rgba(37, 99, 235, 0.12);
+  border-color: rgba(37, 99, 235, 0.45);
+  color: #2563EB;
 }
 
 /* ══ Mobile search panel ══════════════════════════════════════════════════ */
@@ -433,14 +432,14 @@
   background: var(--text-secondary); border-radius: 2px;
   transition: background 0.2s;
 }
-.ch-hamburger:hover { background: rgba(67,206,162,0.08); border-color: rgba(67,206,162,0.4); }
-.ch-hamburger:hover span { background: #43cea2; }
+.ch-hamburger:hover { background: rgba(37, 99, 235, 0.08); border-color: rgba(37, 99, 235, 0.4); }
+.ch-hamburger:hover span { background: #2563EB; }
 
 /* Right actions */
-.ch-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.ch-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; margin-left: auto; }
 
 .ch-icon-btn {
-  width: 36px; height: 36px; border-radius: 50%;
+  width: 36px; height: 36px; border-radius: 10px;
   border: 1.5px solid var(--border);
   background: var(--bg-base);
   color: var(--text-secondary);
@@ -450,9 +449,9 @@
   transition: background 0.2s, border-color 0.2s, transform 0.2s;
 }
 .ch-icon-btn:hover {
-  background: rgba(67,206,162,0.08);
-  border-color: rgba(67,206,162,0.4);
-  color: #43cea2;
+  background: rgba(37, 99, 235, 0.08);
+  border-color: rgba(37, 99, 235, 0.4);
+  color: #2563EB;
   transform: rotate(18deg) scale(1.05);
 }
 
@@ -460,26 +459,40 @@
   position: relative;
 }
 
-.ch-avatar-btn {
-  width: 36px; height: 36px; border-radius: 50%;
-  border: 2px solid var(--border);
-  background: var(--accent);
-  color: #fff; font-size: 14px; font-weight: 700;
+.ch-profile-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--bg-base);
+  border: 1.5px solid transparent;
+  border-radius: 999px;
+  padding: 3px 8px 3px 3px;
   cursor: pointer;
+  color: var(--text-muted);
+  transition: border-color 0.2s, background 0.2s;
+}
+.ch-profile-trigger:hover {
+  border-color: #2563EB;
+  background: rgba(37, 99, 235, 0.06);
+}
+
+.ch-avatar-btn {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), #06B6D4);
+  color: #fff; font-size: 13px; font-weight: 700;
   display: flex; align-items: center; justify-content: center;
   overflow: hidden; padding: 0;
-  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+  transition: transform 0.2s;
 }
-.ch-avatar-btn:hover {
-  border-color: #43cea2;
-  box-shadow: 0 0 0 3px rgba(67,206,162,0.25);
+.ch-profile-trigger:hover .ch-avatar-btn,
+.ch-profile-trigger.ch-avatar-btn--open .ch-avatar-btn {
   transform: scale(1.06);
 }
-.ch-avatar-btn--open {
-  border-color: #43cea2;
-  box-shadow: 0 0 0 3px rgba(67,206,162,0.3);
-}
-.ch-avatar-img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+.ch-avatar-img { width:100%; height:100%; object-fit:cover; }
+
+.ch-profile-chevron { transition: transform 0.18s ease, color 0.15s ease; flex-shrink: 0; }
+.ch-profile-trigger:hover .ch-profile-chevron { color: var(--text-primary); }
+.ch-profile-chevron--open { transform: rotate(180deg); }
 
 /* Mobile drawer (only shown on small screens) */
 .ch-drawer {
@@ -515,10 +528,10 @@
 .ch-drawer-user-info { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1; }
 .ch-drawer-user-name { font-size: 14px; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 .ch-role-badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
-.ch-role--user  { background: rgba(67,206,162,0.1); color: #43cea2; border: 1px solid rgba(67,206,162,0.3); }
-.ch-role--admin { background: rgba(24,90,157,0.1); color: #185a9d; border: 1px solid rgba(24,90,157,0.3); }
+.ch-role--user  { background: rgba(37, 99, 235, 0.1); color: #2563EB; border: 1px solid rgba(37, 99, 235, 0.3); }
+.ch-role--admin { background: rgba(20, 184, 166, 0.1); color: #14B8A6; border: 1px solid rgba(20, 184, 166, 0.3); }
 .ch-role--super { background: #d97706; color:#fff; }
-[data-theme="dark"] .ch-role--user  { color:#43cea2; border-color:rgba(67,206,162,0.25); }
+[data-theme="dark"] .ch-role--user  { color:#2563EB; border-color:rgba(37, 99, 235, 0.25); }
 [data-theme="dark"] .ch-role--admin { color:#60a5fa; border-color:rgba(96,165,250,0.25); background:rgba(96,165,250,0.08); }
 .ch-drawer-nav { display: flex; flex-direction: column; gap: 2px; padding: 8px; }
 .ch-drawer-link {
@@ -526,8 +539,8 @@
   font-size: 13.5px; font-weight: 500; color: var(--text-secondary); text-decoration: none;
   transition: background 0.18s, color 0.18s;
 }
-.ch-drawer-link:hover { background: rgba(67,206,162,0.07); color: var(--text-primary); }
-.ch-drawer-link--active { background: rgba(67,206,162,0.1); color: #43cea2; font-weight: 600; }
+.ch-drawer-link:hover { background: rgba(37, 99, 235, 0.07); color: var(--text-primary); }
+.ch-drawer-link--active { background: rgba(37, 99, 235, 0.1); color: #2563EB; font-weight: 600; }
 .ch-drawer-link-label { flex: 1; }
 .ch-drawer-footer { padding: 8px; border-top: 1px solid var(--border); }
 .ch-drawer-theme {
@@ -537,7 +550,7 @@
   cursor: pointer; font-family: 'DM Sans', sans-serif; text-align: left;
   transition: background 0.2s, border-color 0.2s;
 }
-.ch-drawer-theme:hover { background: rgba(67,206,162,0.08); border-color: rgba(67,206,162,0.4); color: #43cea2; }
+.ch-drawer-theme:hover { background: rgba(37, 99, 235, 0.08); border-color: rgba(37, 99, 235, 0.4); color: #2563EB; }
 .ch-backdrop {
   display: none; position: fixed; inset: 0;
   background: rgba(0,0,0,0.25); backdrop-filter: blur(2px);
@@ -557,7 +570,7 @@
   /* Theme toggle hidden on mobile - available inside the profile panel */
   .ch-icon-btn.ch-theme-btn    { display: none; }
   /* Search toggle visible; actions auto-margin pushes everything right */
-  .ch-icon-btn.ch-search-toggle { display: flex; }
+  .ch-icon-btn.ch-search-toggle { display: flex; border-radius: 50%; }
   .ch-actions { margin-left: auto; gap: 6px; }
 
   /* Drawer drops below the 58 px mobile header */
@@ -609,12 +622,17 @@
     object-fit: contain;
   }
 
+  /* font-size/weight/letter-spacing match home.css's .hp-logo-word so the
+     "ApnaInsights" wordmark is the same size in every header. Two-tone
+     color treatment matches the desktop sidebar logo (.sb-logo-text) and
+     the public site-header (.sh-logo) - "Apna" in default text color,
+     "Insights" in accent. */
   .ch-mob-logo-text {
-    font-size: 15px;
+    font-size: 19px;
     font-weight: 800;
-    font-family: 'DM Sans', sans-serif;
-    color: var(--accent-text);
-    letter-spacing: -0.3px;
+    letter-spacing: -0.02em;
     white-space: nowrap;
+    color: var(--text-primary);
   }
+  .ch-mob-logo-text i { font-style: normal; color: var(--accent); }
 }

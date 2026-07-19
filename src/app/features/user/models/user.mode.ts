@@ -24,4 +24,10 @@ export interface User {
   karma?:          number;
   digestEnabled?:  boolean;
   writerOfMonthBadge?: { active: boolean; awardedAt?: string; challengeTitle?: string };
+  isMentor?: boolean;
+  mentorSlug?: string | null;
+  isPremium?: boolean;
+  premiumSince?: string | null;
+  /** 1 year after premiumSince - see blogApp's utils/premium.js and jobs/premiumExpiryScheduler.js. */
+  premiumExpiresAt?: string | null;
 }

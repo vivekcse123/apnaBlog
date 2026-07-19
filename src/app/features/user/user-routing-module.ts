@@ -5,8 +5,10 @@ import { UserHome } from './pages/user-home/user-home';
 import { PostLists } from '../post/pages/post-lists/post-lists';
 import { CreatePost } from '../post/pages/create-post/create-post';
 import { Settings } from '../admin/pages/settings/settings';
-import { Home } from '../landing/pages/home/home';
 import { MyShorts } from './pages/my-shorts/my-shorts';
+import { Messages } from './pages/messages/messages';
+import { CallbackRequests } from './pages/callback-requests/callback-requests';
+import { MentorRequests } from './pages/mentor-requests/mentor-requests';
 
 const routes: Routes = [
   {
@@ -34,15 +36,29 @@ const routes: Routes = [
         title: 'ApnaInsights - My Shorts'
       },
       {
+        path: 'messages',
+        component: Messages,
+        title: 'ApnaInsights - Messages'
+      },
+      {
         path: 'settings',
         component: Settings,
         title: 'ApnaInsights - Settings'
       },
       {
         path: 'explore-blogs',
-        component: Home,
-        data: { standalone: false },
-        title: 'ApnaInsights - Explore Blogs'
+        redirectTo: '/blog',
+        pathMatch: 'full'
+      },
+      {
+        path: 'career-guides/callback-requests',
+        component: CallbackRequests,
+        title: 'ApnaInsights - Callback Requests'
+      },
+      {
+        path: 'career-guides/mentor-requests',
+        component: MentorRequests,
+        title: 'ApnaInsights - My Mentor Requests'
       }
     ]
   },

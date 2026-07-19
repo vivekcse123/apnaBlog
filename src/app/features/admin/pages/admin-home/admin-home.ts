@@ -69,6 +69,7 @@ export class AdminHome implements OnInit, AfterViewInit, OnDestroy {
   totalFollows   = signal<number>(0);
   activeUsers    = signal<number>(0);
   inactiveUsers  = signal<number>(0);
+  premiumUsers   = signal<number>(0);
 
   newBlogs      = signal<number>(0);
   newUsers      = signal<number>(0);
@@ -84,6 +85,21 @@ export class AdminHome implements OnInit, AfterViewInit, OnDestroy {
   recentBlogs  = signal<any[]>([]);
   recentUsers  = signal<any[]>([]);
   inactiveList = signal<any[]>([]);
+
+  topPosts = signal<any[]>([]);
+
+  // ── Moderation queue (top unresolved flagged posts) ───────
+  moderationQueue = signal<{ postId: string; postTitle: string; reasons: string; }[]>([]);
+  flaggedCount    = signal<number>(0);
+
+  // ── Traffic snapshot (preview of the visitor/ page) ───────
+  trafficToday   = signal<number>(0);
+  trafficWeek    = signal<number>(0);
+  trafficTopPage = signal<string>('');
+
+  // ── Sponsored snapshot (preview of the sponsored-report/ page) ──
+  sponsoredActive = signal<number>(0);
+  sponsoredViews  = signal<number>(0);
 
   isLoading           = signal<boolean>(true);
   isRefreshing        = signal<boolean>(false);
@@ -106,6 +122,9 @@ export class AdminHome implements OnInit, AfterViewInit, OnDestroy {
     this.loadDashboardData();
     this.loadPendingShortsCount();
     this.loadPwaInstalls();
+    this.loadModerationQueue();
+    this.loadTrafficSnapshot();
+    this.loadSponsoredSnapshot();
     document.addEventListener('visibilitychange', this._onVisibilityChange);
   }
 
@@ -156,6 +175,64 @@ export class AdminHome implements OnInit, AfterViewInit, OnDestroy {
     this.http.get<{ pwaInstalls: number }>(`${environment.apiUrl}/visitor/pwa-stats`)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({ next: res => this.pwaInstalls.set(res.pwaInstalls ?? 0), error: () => {} });
+  }
+
+  private loadModerationQueue(): void {
+    this.http.get<any>(`${environment.apiUrl}/flag`)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          const flags: any[] = (res?.data ?? res ?? []).filter((f: any) => !f.resolved && f.post);
+
+          const byPost = new Map<string, { postId: string; postTitle: string; reasons: Set<string> }>();
+          for (const f of flags) {
+            const pid = f.post._id;
+            if (!byPost.has(pid)) {
+              byPost.set(pid, { postId: pid, postTitle: f.post.title, reasons: new Set() });
+            }
+            byPost.get(pid)!.reasons.add(f.reason);
+          }
+
+          this.flaggedCount.set(byPost.size);
+          this.moderationQueue.set(
+            Array.from(byPost.values())
+              .slice(0, 3)
+              .map(g => ({ postId: g.postId, postTitle: g.postTitle, reasons: Array.from(g.reasons).join(', ') }))
+          );
+        },
+        error: () => {},
+      });
+  }
+
+  private loadTrafficSnapshot(): void {
+    this.http.get<{ today: number; thisWeek: number }>(`${environment.apiUrl}/visitor/stats`)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          this.trafficToday.set(res.today ?? 0);
+          this.trafficWeek.set(res.thisWeek ?? 0);
+        },
+        error: () => {},
+      });
+
+    this.http.get<{ _id: string; count: number }[]>(`${environment.apiUrl}/visitor/top-pages`)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => this.trafficTopPage.set(res?.[0]?._id ?? ''),
+        error: () => {},
+      });
+  }
+
+  private loadSponsoredSnapshot(): void {
+    this.http.get<{ stats?: { active: number; totalViews: number } }>(`${environment.apiUrl}/shorts/admin/sponsored-report`)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          this.sponsoredActive.set(res.stats?.active ?? 0);
+          this.sponsoredViews.set(res.stats?.totalViews ?? 0);
+        },
+        error: () => {},
+      });
   }
 
   private fetchFresh(showLoader: boolean): void {
@@ -236,16 +313,24 @@ export class AdminHome implements OnInit, AfterViewInit, OnDestroy {
     const active           = allUsers.filter((u: any) => u.status !== 'inactive');
     const inactive         = allUsers.filter((u: any) => u.status === 'inactive');
     const newUsersThisWeek = allUsers.filter((u: any) => new Date(u.createdAt) >= weekAgo);
+    const premium          = allUsers.filter((u: any) => u.isPremium);
 
     this.totalUsers.set(allUsers.length);
     this.newUsers.set(newUsersThisWeek.length);
     this.activeUsers.set(active.length);
     this.inactiveUsers.set(inactive.length);
+    this.premiumUsers.set(premium.length);
 
     this.recentBlogs.set(
       [...allPosts]
         .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
         .slice(0, 5)
+    );
+
+    this.topPosts.set(
+      [...published]
+        .sort((a: any, b: any) => (b.views ?? 0) - (a.views ?? 0))
+        .slice(0, 3)
     );
 
     this.recentUsers.set(
@@ -298,12 +383,12 @@ export class AdminHome implements OnInit, AfterViewInit, OnDestroy {
           {
             label: 'Published',
             data: published,
-            borderColor: '#43cea2',
-            backgroundColor: 'rgba(67,206,162,0.10)',
+            borderColor: '#2563EB',
+            backgroundColor: 'rgba(37, 99, 235, 0.10)',
             fill: true,
             tension: 0.45,
             pointRadius: 3,
-            pointBackgroundColor: '#43cea2',
+            pointBackgroundColor: '#2563EB',
             borderWidth: 2,
           },
           {
@@ -353,7 +438,7 @@ export class AdminHome implements OnInit, AfterViewInit, OnDestroy {
 
     const data   = [this.totalPublished(), this.totalDrafts(), this.totalPending()];
     const labels = ['Published', 'Drafts', 'Pending'];
-    const colors = ['#43cea2', '#BA7517', '#dc2626'];
+    const colors = ['#2563EB', '#BA7517', '#dc2626'];
 
     if (this.contentDoughnut) {
       this.contentDoughnut.data.datasets[0].data = data;
@@ -466,7 +551,7 @@ export class AdminHome implements OnInit, AfterViewInit, OnDestroy {
       this.inactiveUsers(),
       this.newUsers(),
     ];
-    const colors = ['#185a9d', '#43cea2', '#dc2626', '#7F77DD'];
+    const colors = ['#14B8A6', '#2563EB', '#dc2626', '#7F77DD'];
 
     if (this.userActivityBar) {
       this.userActivityBar.data.datasets[0].data = data;

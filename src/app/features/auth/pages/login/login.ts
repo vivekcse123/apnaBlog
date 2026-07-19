@@ -81,16 +81,40 @@ export class Login implements OnInit {
             return;
           }
           this.toastService.show('Welcome to ApnaInsights!', 'success');
-          if (role === 'super_admin')     this.router.navigate(['/super-admin', userId]);
-          else if (role === 'admin')      this.router.navigate(['/admin', userId]);
-          else if (role === 'sponsor')    this.router.navigate(['/sponsor', userId]);
-          else                            this.router.navigate(['/user', userId]);
+          this.redirectAfterLogin(userId, role);
         },
         error: (err) => {
           this.isGoogleLoading.set(false);
           this.errorMessage.set(err?.error?.message || 'Google sign-in failed. Please try again.');
         },
       });
+  }
+
+  // Sends the visitor back to the page they were on (or the page a guard
+  // redirected them away from) instead of always landing on the dashboard.
+  private redirectAfterLogin(userId: string, role: string): void {
+    const returnUrl = this.getReturnUrl();
+    if (returnUrl) {
+      this.router.navigateByUrl(returnUrl);
+      return;
+    }
+
+    if (role === 'super_admin')     this.router.navigate(['/super-admin', userId]);
+    else if (role === 'admin')      this.router.navigate(['/admin', userId]);
+    else if (role === 'sponsor')    this.router.navigate(['/sponsor', userId]);
+    else                            this.router.navigate(['/user', userId]);
+  }
+
+  private getReturnUrl(): string | null {
+    const fromQuery = this.route.snapshot.queryParamMap.get('returnUrl');
+    const candidate = fromQuery || this.authService.getLastVisitedUrl();
+    return this.isSafeReturnUrl(candidate) ? candidate : null;
+  }
+
+  // Only allow same-app relative paths - never let a query param or stored
+  // value send the browser off to an external host.
+  private isSafeReturnUrl(url: string | null): url is string {
+    return !!url && url.startsWith('/') && !url.startsWith('//') && !url.startsWith('/auth/');
   }
 
   ngOnInit(): void {
@@ -140,16 +164,7 @@ export class Login implements OnInit {
           }
 
           this.toastService.show('Welcome to ApnaInsights!', 'success');
-
-          if (role === 'super_admin') {
-            this.router.navigate(['/super-admin', userId]);
-          } else if (role === 'admin') {
-            this.router.navigate(['/admin', userId]);
-          } else if (role === 'sponsor') {
-            this.router.navigate(['/sponsor', userId]);
-          } else {
-            this.router.navigate(['/user', userId]);
-          }
+          this.redirectAfterLogin(userId, role);
         },
         error: (err) => {
           this.isLoading.set(false);

@@ -1,0 +1,379 @@
+<app-site-header></app-site-header>
+
+<div class="ep">
+
+  @if (!expert()) {
+    <div class="ep-not-found">
+      <h1>Expert not found</h1>
+      <p>This profile doesn't exist or may have moved.</p>
+      <a class="cg-btn cg-btn--primary" routerLink="/career-guides">Back to Career Guides</a>
+    </div>
+  } @else {
+    <nav class="ep-breadcrumb" aria-label="Breadcrumb">
+      <a routerLink="/career-guides">Career Guides</a>
+      <span class="sep">/</span>
+      <span aria-current="page">{{ expert()!.name }}</span>
+    </nav>
+
+    <!-- ══ BANNER + IDENTITY ══ -->
+    <section class="ep-hero">
+      <div class="ep-banner"></div>
+      <div class="ep-hero-card">
+        <div class="ep-avatar-wrap">
+          <div class="ep-avatar" [style.background]="expert()!.avatarColor">
+            {{ expert()!.avatarInitial }}
+            @if (expert()!.verified) {
+              <span class="ep-verified" title="Verified expert">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.9 1.5 3.2-.5 1 3.1 2.4 2.1-1.5 2.9 1.5 2.9-2.4 2.1-1 3.1-3.2-.5L12 22l-2.9-1.5-3.2.5-1-3.1-2.4-2.1 1.5-2.9-1.5-2.9 2.4-2.1 1-3.1 3.2.5z"/><path d="M9 12l2 2 4-4" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+            }
+          </div>
+        </div>
+
+        <div class="ep-identity">
+          <h1>{{ expert()!.name }}</h1>
+          <p class="ep-title">{{ expert()!.title }} &middot; {{ expert()!.company }}</p>
+          @if (expert()!.specialBadge) {
+            <span class="ep-special-badge">🎖 {{ expert()!.specialBadge }}</span>
+          }
+          <div class="ep-rating-row">
+            @if (realAvgRating(); as avg) {
+              <span class="ep-stars">
+                @for (filled of avgRatingStars(); track $index) {
+                  <svg width="14" height="14" viewBox="0 0 24 24" [attr.fill]="filled ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M12 2l3 6 6.5.9-4.7 4.6 1.1 6.5L12 17l-5.9 3 1.1-6.5L2.5 8.9 9 8z"/></svg>
+                }
+              </span>
+              <strong>{{ avg }}</strong>
+              <span class="ep-muted">({{ realReviewCount() }} review{{ realReviewCount() === 1 ? '' : 's' }})</span>
+            } @else {
+              <span class="ep-muted">No reviews yet</span>
+            }
+            <span class="ep-dot">&middot;</span>
+            <span class="ep-muted">{{ expert()!.responseTime }}</span>
+          </div>
+        </div>
+
+        <div class="ep-hero-actions">
+          <button class="cg-btn cg-btn--ghost" type="button" [class.ep-following]="isFollowing()"
+            [disabled]="!hasRealAccount() || followLoading()"
+            [title]="hasRealAccount() ? '' : 'Following isn\'t available for this expert yet.'"
+            (click)="onFollowClick()">
+            {{ isFollowing() ? '✓ Following' : '+ Follow' }}
+          </button>
+          <button class="cg-btn cg-btn--outline" type="button" id="message" (click)="onMessageClick()">Message</button>
+          <button class="cg-btn cg-btn--outline" type="button" (click)="onCallbackClick()">Request Callback</button>
+          <button class="cg-btn cg-btn--primary" type="button" id="book" (click)="onBookClick()">Book Session</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ STATS ══ -->
+    <div class="ep-stats-row">
+      <div class="ep-stat"><strong>{{ expert()!.yearsExperience }}+</strong><span>Years Exp.</span></div>
+      <div class="ep-stat"><strong>{{ sessionsGuided() }}</strong><span>Sessions Guided</span></div>
+      <div class="ep-stat"><strong>{{ hasRealAccount() ? followersCount() : '—' }}</strong><span>Followers</span></div>
+      @if (hasRealAccount()) {
+        <a class="ep-stat ep-stat--link" [routerLink]="['/author', mentorUserId()]">
+          <strong>{{ expert()!.articlesWritten }}</strong><span>Articles</span>
+        </a>
+      } @else {
+        <div class="ep-stat"><strong>{{ expert()!.articlesWritten }}</strong><span>Articles</span></div>
+      }
+    </div>
+
+    <!-- ══ MAIN LAYOUT ══ -->
+    <div class="ep-layout">
+      <main class="ep-main">
+
+        <section class="ep-card">
+          <h2>About</h2>
+          <p class="ep-bio">{{ expert()!.bio }}</p>
+        </section>
+
+        <section class="ep-card">
+          <h2>Skills</h2>
+          <div class="ep-skill-row">
+            @for (skill of expert()!.skills; track trackBySkill($index, skill)) {
+              <span class="ep-skill-chip">{{ skill }}</span>
+            }
+          </div>
+          <h3 class="ep-sub">Languages</h3>
+          <div class="ep-skill-row">
+            @for (lang of expert()!.languages; track lang) {
+              <span class="ep-skill-chip ep-skill-chip--muted">{{ lang }}</span>
+            }
+          </div>
+        </section>
+
+        <section class="ep-card">
+          <h2>Experience</h2>
+          <ol class="ep-timeline">
+            @for (item of expert()!.experience; track item.title) {
+              <li>
+                <span class="ep-tl-dot"></span>
+                <div>
+                  <strong>{{ item.title }}</strong>
+                  <span class="ep-muted">{{ item.org }}</span>
+                  <span class="ep-tl-period">{{ item.period }}</span>
+                </div>
+              </li>
+            }
+          </ol>
+        </section>
+
+        <section class="ep-card">
+          <h2>Education</h2>
+          <ol class="ep-timeline">
+            @for (item of expert()!.education; track item.title) {
+              <li>
+                <span class="ep-tl-dot"></span>
+                <div>
+                  <strong>{{ item.title }}</strong>
+                  <span class="ep-muted">{{ item.org }}</span>
+                  <span class="ep-tl-period">{{ item.period }}</span>
+                </div>
+              </li>
+            }
+          </ol>
+          @if (expert()!.certifications.length) {
+            <h3 class="ep-sub">Certifications</h3>
+            <ul class="ep-cert-list">
+              @for (cert of expert()!.certifications; track cert) {
+                <li>{{ cert }}</li>
+              }
+            </ul>
+          }
+        </section>
+
+        <section class="ep-card">
+          <h2>Reviews <span class="ep-muted">({{ realReviewCount() }})</span></h2>
+          @if (realReviewCount() === 0) {
+            <p class="ep-muted">No reviews yet - be the first to book a session and leave feedback.</p>
+          } @else {
+            <div class="ep-review-list">
+              @for (review of realReviews(); track trackByReview($index, review)) {
+                <div class="ep-review">
+                  <div class="ep-review-head">
+                    <strong>{{ review.userName }}</strong>
+                    <span class="ep-review-stars">
+                      @for (i of [0,1,2,3,4]; track i) {
+                        <svg width="11" height="11" viewBox="0 0 24 24" [attr.fill]="i < review.rating ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M12 2l3 6 6.5.9-4.7 4.6 1.1 6.5L12 17l-5.9 3 1.1-6.5L2.5 8.9 9 8z"/></svg>
+                      }
+                    </span>
+                    <span class="ep-muted ep-review-date">{{ review.submittedAt | date:'MMM d, y' }}</span>
+                  </div>
+                  @if (review.comment) { <p>{{ review.comment }}</p> }
+                </div>
+              }
+            </div>
+          }
+        </section>
+      </main>
+
+      <!-- ══ SIDEBAR ══ -->
+      <aside class="ep-side">
+        <div class="ep-card">
+          <h3 class="ep-sub ep-sub--first">Availability</h3>
+          <p class="ep-muted ep-avail-text">Typically available for calls on weekday evenings and weekends.</p>
+          <button class="cg-btn cg-btn--primary ep-full" type="button" (click)="onBookClick()">Book a Session</button>
+          <button class="cg-btn cg-btn--outline ep-full" type="button" (click)="onMessageClick()">Send a Message</button>
+        </div>
+
+        <div class="ep-card">
+          <h3 class="ep-sub ep-sub--first">Share this profile</h3>
+          <div class="ep-share-row">
+            <button class="ep-share-btn" type="button" aria-label="Copy profile link">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+            </button>
+            <span class="ep-muted">Share via link</span>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- ══ MESSAGE MODAL (local prototype only) ══ -->
+    @if (showMessageBox()) {
+      <div class="ep-modal-backdrop" (click)="showMessageBox.set(false)">
+        <div class="ep-modal" (click)="$event.stopPropagation()">
+          <h3>Message {{ expert()!.name }}</h3>
+          @if (hasUsedFreeSession()) {
+            <div class="ep-modal-success">
+              <p>Your free mentorship attempt has already been used. Upgrade to Premium for unlimited mentor sessions, valid for 1 year.</p>
+              @if (upgradeError()) {
+                <p class="ep-form-error">{{ upgradeError() }}</p>
+              }
+              <div class="ep-modal-actions">
+                <button class="cg-btn cg-btn--ghost" type="button" (click)="showMessageBox.set(false)">Close</button>
+                <button class="cg-btn cg-btn--primary" type="button" [disabled]="upgrading()" (click)="upgradeToPremium()">
+                  {{ upgrading() ? 'Opening checkout…' : 'Upgrade to Premium' }}
+                </button>
+              </div>
+            </div>
+          } @else if (messageSent()) {
+            <div class="ep-modal-success">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              <p>Message sent! {{ expert()!.name.split(' ')[0] }} usually replies within {{ expert()!.responseTime.toLowerCase() }}.</p>
+              <button class="cg-btn cg-btn--ghost" type="button" (click)="showMessageBox.set(false)">Close</button>
+            </div>
+          } @else {
+            <textarea class="ep-textarea" rows="5" placeholder="Introduce yourself and ask your question..."
+              [value]="messageText()" (input)="messageText.set($any($event.target).value)"></textarea>
+            <div class="ep-modal-actions">
+              <button class="cg-btn cg-btn--ghost" type="button" (click)="showMessageBox.set(false)">Cancel</button>
+              <button class="cg-btn cg-btn--primary" type="button" [disabled]="!messageText().trim()" (click)="sendMessage()">Send Message</button>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- ══ BOOK SESSION MODAL (local prototype only) ══ -->
+    @if (showBookDialog()) {
+      <div class="ep-modal-backdrop" (click)="closeBookDialog()">
+        <div class="ep-modal" (click)="$event.stopPropagation()">
+          <h3>Book a session with {{ expert()!.name }}</h3>
+          @if (hasUsedFreeSession()) {
+            <div class="ep-modal-success">
+              <p>Your free mentorship attempt has already been used. Upgrade to Premium for unlimited mentor sessions, valid for 1 year.</p>
+              @if (upgradeError()) {
+                <p class="ep-form-error">{{ upgradeError() }}</p>
+              }
+              <div class="ep-modal-actions">
+                <button class="cg-btn cg-btn--ghost" type="button" (click)="closeBookDialog()">Close</button>
+                <button class="cg-btn cg-btn--primary" type="button" [disabled]="upgrading()" (click)="upgradeToPremium()">
+                  {{ upgrading() ? 'Opening checkout…' : 'Upgrade to Premium' }}
+                </button>
+              </div>
+            </div>
+          } @else if (bookSubmitted()) {
+            <div class="ep-modal-success">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              <p>Request sent! {{ expert()!.name.split(' ')[0] }} will accept or reschedule your {{ bookDuration() }}-minute session soon.</p>
+              <button class="cg-btn cg-btn--ghost" type="button" (click)="closeBookDialog()">Close</button>
+            </div>
+          } @else {
+            @if (bookError()) {
+              <p class="ep-form-error">{{ bookError() }}</p>
+            }
+            <div class="ep-form-row">
+              <label>Date<input type="date" [value]="bookDate()" (input)="bookDate.set($any($event.target).value)" /></label>
+              <label>Time<input type="time" [value]="bookTime()" (input)="bookTime.set($any($event.target).value)" /></label>
+            </div>
+
+            <label class="ep-form-label">Contact Phone Number</label>
+            <input class="ep-phone-input" type="tel" placeholder="e.g. +91 98765 43210"
+              [value]="bookPhone()" (input)="bookPhone.set($any($event.target).value)" />
+
+            <label class="ep-form-label">Duration</label>
+            <div class="ep-chip-row">
+              @for (d of durations; track d) {
+                <button type="button" class="ep-chip" [class.active]="bookDuration() === d" (click)="bookDuration.set(d)">{{ d }} min</button>
+              }
+            </div>
+
+            <label class="ep-form-label">Topic</label>
+            <div class="ep-chip-row">
+              @for (t of topics; track t) {
+                <button type="button" class="ep-chip" [class.active]="bookTopic() === t" (click)="bookTopic.set(t)">{{ t }}</button>
+              }
+            </div>
+
+            <label class="ep-form-label">Notes (optional)</label>
+            <textarea class="ep-textarea" rows="3" placeholder="Anything specific you'd like to cover?"
+              [value]="bookNotes()" (input)="bookNotes.set($any($event.target).value)"></textarea>
+
+            <div class="ep-modal-actions">
+              <button class="cg-btn cg-btn--ghost" type="button" (click)="closeBookDialog()">Cancel</button>
+              <button class="cg-btn cg-btn--primary" type="button"
+                [disabled]="!bookDate() || !bookTime() || !bookPhone().trim() || bookSubmitting()"
+                (click)="submitBooking()">
+                {{ bookSubmitting() ? 'Submitting…' : 'Submit Request' }}
+              </button>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- ══ REQUEST CALLBACK MODAL ══ -->
+    @if (showCallbackDialog()) {
+      <div class="ep-modal-backdrop" (click)="closeCallbackDialog()">
+        <div class="ep-modal" (click)="$event.stopPropagation()">
+          <h3>Request a callback from {{ expert()!.name }}</h3>
+          @if (hasUsedFreeSession()) {
+            <div class="ep-modal-success">
+              <p>Your free mentorship session has already been used. Upgrade to Premium for unlimited mentor sessions, valid for 1 year.</p>
+              @if (upgradeError()) {
+                <p class="ep-form-error">{{ upgradeError() }}</p>
+              }
+              <div class="ep-modal-actions">
+                <button class="cg-btn cg-btn--ghost" type="button" (click)="closeCallbackDialog()">Close</button>
+                <button class="cg-btn cg-btn--primary" type="button" [disabled]="upgrading()" (click)="upgradeToPremium()">
+                  {{ upgrading() ? 'Opening checkout…' : 'Upgrade to Premium' }}
+                </button>
+              </div>
+            </div>
+          } @else {
+          @if (callbackError()) {
+            <p class="ep-form-error">{{ callbackError() }}</p>
+          }
+          @if (callbackSubmitted()) {
+            <div class="ep-modal-success">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              <p>Callback request sent! {{ expert()!.name.split(' ')[0] }} will accept, reject, or reschedule your request soon.</p>
+              <button class="cg-btn cg-btn--ghost" type="button" (click)="closeCallbackDialog()">Close</button>
+            </div>
+          } @else {
+            <p class="ep-free-banner">🎉 Your first mentorship session is free!</p>
+            <div class="ep-form-row">
+              <label>Preferred Date<input type="date" [value]="callbackDate()" (input)="callbackDate.set($any($event.target).value)" /></label>
+              <label>Preferred Time<input type="time" [value]="callbackTime()" (input)="callbackTime.set($any($event.target).value)" /></label>
+            </div>
+
+            <label class="ep-form-label">Contact Phone Number</label>
+            <input class="ep-phone-input" type="tel" placeholder="e.g. +91 98765 43210"
+              [value]="callbackPhone()" (input)="callbackPhone.set($any($event.target).value)" />
+
+            <label class="ep-form-label">Topic</label>
+            <div class="ep-chip-row">
+              @for (t of topics; track t) {
+                <button type="button" class="ep-chip" [class.active]="callbackTopic() === t" (click)="callbackTopic.set(t)">{{ t }}</button>
+              }
+            </div>
+
+            <label class="ep-form-label">Message</label>
+            <textarea class="ep-textarea" rows="3" placeholder="What would you like to discuss on the call?"
+              [value]="callbackMessage()" (input)="callbackMessage.set($any($event.target).value)"></textarea>
+
+            <div class="ep-modal-actions">
+              <button class="cg-btn cg-btn--ghost" type="button" (click)="closeCallbackDialog()">Cancel</button>
+              <button class="cg-btn cg-btn--primary" type="button" [disabled]="!callbackDate() || !callbackTime() || !callbackPhone().trim() || callbackSubmitting()" (click)="submitCallback()">
+                {{ callbackSubmitting() ? 'Submitting…' : 'Submit Request' }}
+              </button>
+            </div>
+          }
+          }
+        </div>
+      </div>
+    }
+
+    <!-- ══ LOGIN-REQUIRED MODAL ══ -->
+    @if (showLoginModal()) {
+      <div class="ep-modal-backdrop" (click)="dismissLoginModal()">
+        <div class="ep-modal ep-modal--auth" (click)="$event.stopPropagation()">
+          <span class="ep-auth-icon" aria-hidden="true">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </span>
+          <h3>Sign in required</h3>
+          <p class="ep-auth-msg">Please sign in to connect with career experts.</p>
+          <div class="ep-modal-actions ep-modal-actions--stack">
+            <button class="cg-btn cg-btn--primary ep-full" type="button" (click)="goToLogin()">Login</button>
+            <button class="cg-btn cg-btn--outline ep-full" type="button" (click)="goToRegister()">Create Account</button>
+          </div>
+        </div>
+      </div>
+    }
+  }
+</div>
+
+<app-mobile-bottom-nav></app-mobile-bottom-nav>

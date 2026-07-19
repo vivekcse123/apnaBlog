@@ -1,6 +1,6 @@
 import {
   Component, OnInit, OnDestroy, HostListener,
-  ElementRef, inject, ChangeDetectionStrategy, signal
+  ElementRef, inject, ChangeDetectionStrategy, signal, effect
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
@@ -11,6 +11,9 @@ import {
 } from '../../models/notification.model';
 import { NotificationService } from '../../../core/services/notification-service';
 import { NotificationNavigationService, NON_NAVIGABLE_TYPES } from '../../../core/services/open-notification/notification-navigation';
+import { PanelCoordinator } from '../../../core/services/panel-coordinator';
+
+const PANEL_ID = 'notifications';
 
 const ADMIN_ONLY_TYPES = new Set<NotificationType>([
   'POST_APPROVED',
@@ -64,6 +67,7 @@ const ICON_MAP: Partial<Record<NotificationType, string>> = {
   COMMENT_ADDED:            'comment',
   COMMENT_DELETED:          'trash',
   COMMENT_REPLIED:          'reply',
+  MESSAGE_RECEIVED:         'comment',
   SHORT_PUBLISHED:          'video',
   SHORT_LIKED:              'heart',
   SHORT_COMMENTED:          'comment',
@@ -91,11 +95,12 @@ const ICON_MAP: Partial<Record<NotificationType, string>> = {
 })
 export class NotificationPanel implements OnInit, OnDestroy {
 
-  private svc       = inject(NotificationService);
-  private navSvc    = inject(NotificationNavigationService);
-  private elRef     = inject(ElementRef);
-  private sanitizer = inject(DomSanitizer);
-  private destroy$  = new Subject<void>();
+  private svc         = inject(NotificationService);
+  private navSvc      = inject(NotificationNavigationService);
+  private elRef       = inject(ElementRef);
+  private sanitizer   = inject(DomSanitizer);
+  private coordinator = inject(PanelCoordinator);
+  private destroy$    = new Subject<void>();
 
   notifications = signal<Notification[]>([]);
   unreadCount   = signal(0);
@@ -106,7 +111,17 @@ export class NotificationPanel implements OnInit, OnDestroy {
 
   readonly meta = NOTIFICATION_META;
 
+  constructor() {
+    effect(() => { if (this.panelOpen()) this.coordinator.open(PANEL_ID); });
+  }
+
   ngOnInit(): void {
+    this.coordinator.active$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(active => {
+        if (active !== PANEL_ID) this.panelOpen.set(false);
+      });
+
     this.svc.notifications$
       .pipe(takeUntil(this.destroy$))
       .subscribe(n => this.notifications.set(n || []));
@@ -348,6 +363,14 @@ export class NotificationPanel implements OnInit, OnDestroy {
         if (isUser)
           return `Your short${title ? ` "${title}"` : ''} is now live and visible to everyone!`;
         return n.message;
+
+      case 'MESSAGE_RECEIVED': {
+        if (isUser) {
+          const actor = n.actorName?.split(' ')[0] || 'Someone';
+          return `${actor} sent you a message.`;
+        }
+        return n.message;
+      }
 
       default:
         return n.message;

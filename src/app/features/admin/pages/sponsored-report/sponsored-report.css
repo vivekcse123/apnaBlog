@@ -18,7 +18,7 @@
   transition: color .15s, border-color .15s;
 }
 .sp-main-tab:hover { color: var(--text-primary); }
-.sp-main-tab--active { color: #185a9d; border-bottom-color: #185a9d; }
+.sp-main-tab--active { color: #14B8A6; border-bottom-color: #14B8A6; }
 .sp-new-badge {
   background: #ef4444; color: #fff;
   font-size: 10px; font-weight: 700;
@@ -57,19 +57,19 @@
 .sp-top-thumb--blog { background: #1e293b; }
 
 /* ── Inquiries table ── */
-.sp-row--new td { background: color-mix(in srgb, #185a9d 4%, transparent); }
+.sp-row--new td { background: color-mix(in srgb, #14B8A6 4%, transparent); }
 .sp-company-cell { display: flex; align-items: center; gap: 7px; }
-.sp-unread-dot { width: 7px; height: 7px; border-radius: 50%; background: #185a9d; flex-shrink: 0; }
+.sp-unread-dot { width: 7px; height: 7px; border-radius: 50%; background: #14B8A6; flex-shrink: 0; }
 .sp-company-name { font-size: 13px; font-weight: 700; color: var(--text-primary); }
 .sp-contact-cell { display: flex; flex-direction: column; gap: 2px; }
 .sp-contact-name  { font-size: 13px; font-weight: 600; color: var(--text-primary); }
-.sp-contact-email { font-size: 12px; color: #185a9d; text-decoration: none; }
+.sp-contact-email { font-size: 12px; color: #14B8A6; text-decoration: none; }
 .sp-contact-email:hover { text-decoration: underline; }
 .sp-contact-phone { font-size: 11px; color: var(--text-muted); }
 .sp-ad-badge {
   display: inline-block; padding: 3px 10px; border-radius: 99px;
-  background: color-mix(in srgb, #185a9d 10%, transparent);
-  color: #185a9d; font-size: 11px; font-weight: 600; white-space: nowrap;
+  background: color-mix(in srgb, #14B8A6 10%, transparent);
+  color: #14B8A6; font-size: 11px; font-weight: 600; white-space: nowrap;
 }
 .sp-budget { font-size: 13px; font-weight: 600; color: var(--text-primary); white-space: nowrap; }
 .sp-message-cell { max-width: 200px; }
@@ -84,7 +84,7 @@
   font-size: 12px; font-weight: 600; font-family: 'DM Sans', sans-serif;
   cursor: pointer; outline: none;
 }
-.sp-status-select:focus { border-color: #43cea2; }
+.sp-status-select:focus { border-color: #2563EB; }
 
 /* ── Message modal ── */
 .ms-modal-backdrop { position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);z-index:200;display:flex;align-items:center;justify-content:center;animation:fadeIn .2s ease; }
@@ -127,7 +127,7 @@
   font-size:13px; font-family:'DM Sans',sans-serif; cursor:pointer;
 }
 .sp-read-more {
-  display:block; font-size:11px; font-weight:600; color:#185a9d;
+  display:block; font-size:11px; font-weight:600; color:#14B8A6;
   margin-top:3px; cursor:pointer;
 }
 .sp-message-cell { cursor:pointer; }
@@ -140,7 +140,7 @@
   color:var(--text-secondary); font-size:13px; font-weight:600;
   font-family:'DM Sans',sans-serif; cursor:pointer; transition:all .15s;
 }
-.sp-export-btn:hover:not(:disabled) { border-color:#43cea2; color:#43cea2; }
+.sp-export-btn:hover:not(:disabled) { border-color:#2563EB; color:#2563EB; }
 .sp-export-btn:disabled { opacity:.4; cursor:not-allowed; }
 
 /* Stats */
@@ -206,7 +206,7 @@
 .sp-status-badge { display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:99px;font-size:11px;font-weight:700;white-space:nowrap; }
 .sp-status-badge--active    { background:rgba(22,163,74,.1);color:#16a34a; }
 .sp-status-badge--expired   { background:rgba(107,114,128,.1);color:var(--text-muted); }
-.sp-status-badge--unlimited { background:rgba(24,90,157,.1);color:#185a9d; }
+.sp-status-badge--unlimited { background:rgba(20, 184, 166, .1);color:#14B8A6; }
 
 /* Expiry action badge */
 .sp-expiry-badge { padding:3px 10px;border-radius:99px;font-size:11px;font-weight:600; }
@@ -258,7 +258,7 @@
     box-shadow:0 2px 8px rgba(0,0,0,.04);
     overflow:hidden;
   }
-  .sp-row--new { border-color:color-mix(in srgb,#185a9d 40%,var(--border)); background:color-mix(in srgb,#185a9d 4%,var(--bg-surface)); }
+  .sp-row--new { border-color:color-mix(in srgb,#14B8A6 40%,var(--border)); background:color-mix(in srgb,#14B8A6 4%,var(--bg-surface)); }
 
   .ms-table td {
     display:flex;

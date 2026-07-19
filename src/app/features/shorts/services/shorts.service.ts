@@ -66,28 +66,7 @@ export class ShortsService {
   }
 
   createShort(data: CreateShortPayload): Observable<{ status: number; data: VideoShort }> {
-    return this.http.post<{ status: number; data: VideoShort }>(this.endpoint, data).pipe(
-      catchError(() => {
-        const mock: VideoShort = {
-          _id:          `local_${Date.now()}`,
-          title:        data.title,
-          caption:      data.caption,
-          category:     data.category,
-          videoType:    data.videoType,
-          videoUrl:     data.videoUrl,
-          youtubeId:    data.youtubeId,
-          thumbnailUrl: data.thumbnailUrl,
-          likesCount:   0,
-          commentsCount: 0,
-          views:        0,
-          comments:     [],
-          user:         { _id: 'local', name: 'You' },
-          createdAt:    new Date(),
-          status:       'pending',
-        };
-        return of({ status: 200, data: mock });
-      })
-    );
+    return this.http.post<{ status: number; data: VideoShort }>(this.endpoint, data);
   }
 
   getLikes(id: string, page = 1, limit = 20): Observable<{ status: number; data: { _id: string; name: string; avatar?: string }[]; total: number; totalPages: number }> {

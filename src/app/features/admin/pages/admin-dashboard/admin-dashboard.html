@@ -4,28 +4,23 @@
     [isOpen]="sidebarOpen()"
     (close)="sidebarOpen.set(false)"
     [navLinks]="[
-      { label: 'Home',      routerLink: '/admin/' + userId(),                   icon: 'home',     exact: true  },
-      { label: 'Users',     routerLink: '/admin/' + userId() + '/manage-users', icon: 'users',    exact: false },
-      { label: 'Blogs',     routerLink: '/admin/' + userId() + '/manage-blogs',  icon: 'docs',  exact: false },
-      { label: 'News Feed',   routerLink: '/admin/' + userId() + '/news-feed',   icon: 'trend', exact: false },
-      { label: 'Challenges',  routerLink: '/admin/' + userId() + '/challenges',  icon: 'docs',  exact: false },
-      { label: 'Flags',       routerLink: '/admin/' + userId() + '/flags',       icon: 'flag',  exact: false },
-      { label: 'Shorts',    routerLink: '/admin/' + userId() + '/manage-shorts', icon: 'video', exact: false },
-      { label: 'Subscribers',  routerLink: '/admin/' + userId() + '/subscribers',     icon: 'mail',   exact: false },
-      { label: 'Sponsored',   routerLink: '/admin/' + userId() + '/sponsored-report', icon: 'trend',  exact: false },
-      { label: 'Traffic',     routerLink: '/admin/' + userId() + '/visitor',        icon: 'chart',  exact: false },
-      { label: 'Settings',  routerLink: '/admin/' + userId() + '/settings',     icon: 'settings', exact: false }
+      { label: 'Home',      routerLink: '/admin/' + userId(),                   icon: 'home',     exact: true,  groupLabel: 'Content' },
+      { label: 'Blogs',     routerLink: '/admin/' + userId() + '/manage-blogs',  icon: 'docs',  exact: false,   groupLabel: 'Content' },
+      { label: 'News Feed',   routerLink: '/admin/' + userId() + '/news-feed',   icon: 'trend', exact: false,   groupLabel: 'Content' },
+      { label: 'Challenges',  routerLink: '/admin/' + userId() + '/challenges',  icon: 'docs',  exact: false,   groupLabel: 'Content' },
+      { label: 'Shorts',    routerLink: '/admin/' + userId() + '/manage-shorts', icon: 'video', exact: false,   groupLabel: 'Content' },
+      { label: 'Users',     routerLink: '/admin/' + userId() + '/manage-users', icon: 'users',    exact: false, groupLabel: 'Users' },
+      { label: 'Subscribers',  routerLink: '/admin/' + userId() + '/subscribers',     icon: 'mail',   exact: false, groupLabel: 'Users' },
+      { label: 'Callback Requests', routerLink: '/admin/' + userId() + '/career-guides/callback-requests', icon: 'comment', exact: false, groupLabel: 'Users' },
+      { label: 'Flags',       routerLink: '/admin/' + userId() + '/flags',       icon: 'flag',  exact: false,   groupLabel: 'Moderation & Growth' },
+      { label: 'Sponsored',   routerLink: '/admin/' + userId() + '/sponsored-report', icon: 'trend',  exact: false, groupLabel: 'Moderation & Growth' },
+      { label: 'Traffic',     routerLink: '/admin/' + userId() + '/visitor',        icon: 'chart',  exact: false, groupLabel: 'Moderation & Growth' },
+      { label: 'Settings',  routerLink: '/admin/' + userId() + '/settings',     icon: 'settings', exact: false, groupLabel: 'Settings' }
     ]"
     [shortcuts]="[
       { label: 'Write a Story', routerLink: '/admin/' + userId() + '/create-blog', icon: 'write' },
       { label: 'View Site',     routerLink: '/',                                    icon: 'globe' }
-    ]"
-    [userName]="user()?.name ?? ''"
-    [userRole]="user()?.role ?? ''"
-    [avatarUrl]="avatar()"
-    [initial]="initial() ?? ''"
-    (logout)="logout()"
-    (profileClick)="openProfile()">
+    ]">
   </app-sidebar>
 
   <div class="dash-main">

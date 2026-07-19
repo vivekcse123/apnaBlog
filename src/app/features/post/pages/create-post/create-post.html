@@ -1,7 +1,7 @@
 <div class="modal-backdrop">
   <div class="modal-box" (click)="$event.stopPropagation()">
 
-    <button class="close-btn" (click)="closeModal()">&#x2715;</button>
+    <button class="close-btn" (click)="closeModal()" aria-label="Close">&#x2715;</button>
 
     <div class="heading">
       <h2>{{ postType() === 'mcq' ? 'Create MCQ Quiz' : 'Create New Blog Post' }} ✍️</h2>
@@ -781,7 +781,7 @@
 
       <div class="cropper-header">
         <h3>Adjust Image</h3>
-        <button class="close-btn" type="button" (click)="closeCropperC()">✕</button>
+        <button class="close-btn" type="button" (click)="closeCropperC()" aria-label="Close image cropper">✕</button>
       </div>
 
       <div class="cropper-frame-wrap">

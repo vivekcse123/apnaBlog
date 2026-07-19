@@ -41,7 +41,7 @@
 .orb-1 {
   width: 420px;
   height: 420px;
-  background: #43cea2;
+  background: #2563EB;
   top: -100px;
   left: -80px;
   animation-delay: 0s;
@@ -50,7 +50,7 @@
 .orb-2 {
   width: 360px;
   height: 360px;
-  background: #185a9d;
+  background: #14B8A6;
   bottom: -80px;
   right: -60px;
   animation-delay: -4s;
@@ -195,7 +195,7 @@
 
 .btn-home:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(67, 206, 162, 0.3);
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.3);
   color: #ffffff;
 }
 

@@ -193,7 +193,7 @@
   <!-- Mobile logo - visible only on mobile when hamburger is hidden -->
   <a class="ch-mob-logo" routerLink="/" aria-label="ApnaInsights home">
     <img src="/logo-96.png" alt="" width="28" height="28" class="ch-mob-logo-img" />
-    <span class="ch-mob-logo-text">ApnaInsights</span>
+    <span class="ch-mob-logo-text">Apna<i>Insights</i></span>
   </a>
 
   <!-- Global Search - desktop inline -->
@@ -268,15 +268,24 @@
     <app-notification-panel />
 
     <div class="ch-avatar-wrapper">
-      <button class="ch-avatar-btn"
+      <button class="ch-profile-trigger"
               [class.ch-avatar-btn--open]="profileOpen"
               (click)="openProfile($event)"
-              [attr.aria-label]="'Profile: ' + displayName">
-        @if (avatarUrl) {
-          <img [src]="avatarUrl" alt="" class="ch-avatar-img"/>
-        } @else {
-          <span aria-hidden="true">{{ profile?.charAt(0) }}</span>
-        }
+              [attr.aria-label]="'Profile: ' + displayName"
+              aria-haspopup="true"
+              [attr.aria-expanded]="profileOpen">
+        <span class="ch-avatar-btn">
+          @if (avatarUrl) {
+            <img [src]="avatarUrl" alt="" class="ch-avatar-img"/>
+          } @else {
+            <span aria-hidden="true">{{ profile }}</span>
+          }
+        </span>
+        <svg class="ch-profile-chevron" [class.ch-profile-chevron--open]="profileOpen"
+             width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+          <path d="M6 9l6 6 6-6"/>
+        </svg>
       </button>
       <ng-content select="[profilePanel]"></ng-content>
     </div>
@@ -326,7 +335,7 @@
       @if (avatarUrl) {
         <img [src]="avatarUrl" alt="" class="ch-drawer-avatar-img"/>
       } @else {
-        <span aria-hidden="true">{{ profile?.charAt(0) }}</span>
+        <span aria-hidden="true">{{ profile }}</span>
       }
     </div>
     <div class="ch-drawer-user-info">

@@ -1,0 +1,111 @@
+:host { display: block; background: var(--bg-base); }
+
+.bi { max-width: 760px; margin: 0 auto; padding-bottom: 60px; }
+
+/* ══ BUTTONS + CHIPS (duplicated - components don't share style rules in
+   this codebase, see guide-list.css/expert-profile.css for the same) ══ */
+.cg-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 11px 20px; border-radius: 12px;
+  font-size: 14px; font-weight: 700; font-family: inherit;
+  text-decoration: none; cursor: pointer; border: none;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, opacity 0.15s;
+}
+.cg-btn--primary { background: var(--accent); color: #fff; }
+.cg-btn--primary:hover { background: var(--accent-hover); }
+.cg-btn--ghost { background: var(--bg-surface); color: var(--text-primary); border: 1.5px solid var(--border); }
+.cg-btn--ghost:hover { border-color: var(--accent); color: var(--accent-text); }
+.cg-btn--outline { background: none; color: var(--text-secondary); border: 1.5px solid var(--border); }
+.cg-btn--outline:hover { border-color: var(--accent); color: var(--accent-text); }
+.cg-btn--sm { padding: 7px 13px; font-size: 12.5px; border-radius: 10px; }
+.cg-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.ep-chip {
+  padding: 7px 13px; border-radius: 999px; font-size: 12.5px; font-weight: 600;
+  color: var(--text-secondary); background: var(--bg-surface-alt); border: 1px solid var(--border); cursor: pointer;
+}
+.ep-chip:hover { border-color: var(--accent); }
+.ep-chip.active { background: var(--accent); color: #fff; border-color: transparent; }
+
+.bi-breadcrumb { padding: 14px 20px 0; font-size: 12.5px; color: var(--text-muted); }
+.bi-breadcrumb a { color: var(--text-muted); }
+.bi-breadcrumb a:hover { color: var(--accent); }
+.bi-breadcrumb .sep { margin: 0 6px; }
+.bi-breadcrumb [aria-current] { color: var(--text-secondary); font-weight: 600; }
+
+/* ══ GATE STATES (not logged in / submitted) ══ */
+.bi-gate { text-align: center; padding: 80px 20px; max-width: 440px; margin: 0 auto; }
+.bi-gate-icon {
+  display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;
+  width: 64px; height: 64px; border-radius: 50%;
+  background: var(--accent-subtle); color: var(--accent-text);
+}
+.bi-gate-icon--success { background: rgba(22, 163, 74, 0.12); color: #16a34a; }
+.bi-gate h1 { font-size: 21px; font-weight: 800; color: var(--text-primary); margin-bottom: 8px; }
+.bi-gate p { font-size: 13.5px; color: var(--text-secondary); line-height: 1.55; margin-bottom: 18px; }
+.bi-gate-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.bi-status-badge {
+  display: inline-block; font-size: 11px; font-weight: 800; letter-spacing: 0.03em; text-transform: uppercase;
+  padding: 4px 12px; border-radius: 999px; margin-bottom: 14px;
+}
+.bi-status-badge--pending { background: rgba(246, 201, 14, 0.15); color: #b7860b; }
+
+/* ══ FORM ══ */
+.bi-hero { padding: 24px 20px 4px; text-align: center; }
+.bi-hero h1 { font-size: 24px; font-weight: 800; color: var(--text-primary); }
+.bi-hero p { font-size: 13.5px; color: var(--text-secondary); margin-top: 6px; max-width: 52ch; margin-inline: auto; }
+
+.bi-form { padding: 20px 20px 0; display: flex; flex-direction: column; gap: 16px; }
+.bi-card { background: var(--bg-surface); border: 1px solid var(--border); border-radius: 18px; padding: 20px; box-shadow: var(--card-shadow); }
+.bi-card h2 { font-size: 15px; font-weight: 700; color: var(--text-primary); margin-bottom: 14px; }
+
+.bi-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 560px) { .bi-grid-2 { grid-template-columns: 1fr; } }
+
+.bi-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.bi-field:last-child { margin-bottom: 0; }
+.bi-field label { font-size: 12px; font-weight: 700; color: var(--text-muted); }
+.bi-field input[type="text"],
+.bi-field input[type="url"],
+.bi-field input[type="number"],
+.bi-field textarea {
+  border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px;
+  font-family: inherit; font-size: 13.5px; color: var(--text-primary); background: var(--bg-surface-alt);
+}
+.bi-field textarea { resize: vertical; }
+
+/* Custom-styled file upload - the raw native <input type="file"> control's
+   OS-drawn button/label clashes badly with every other custom-styled field
+   on this form, so it's visually hidden (not display:none, which would drop
+   it from the tab order) behind a normal-looking button label instead. */
+.bi-upload-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.bi-upload-btn {
+  display: inline-flex; align-items: center; gap: 7px; cursor: pointer;
+  padding: 9px 15px; border-radius: 10px; border: 1.5px solid var(--border);
+  background: var(--bg-surface-alt); color: var(--text-secondary);
+  font-size: 12.5px; font-weight: 700; transition: border-color 0.15s, color 0.15s;
+}
+.bi-upload-btn:hover { border-color: var(--accent); color: var(--accent-text); }
+.bi-upload-input {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+.bi-upload-row:has(.bi-upload-input:focus-visible) .bi-upload-btn { outline: 2px solid var(--accent); outline-offset: 2px; }
+.bi-file-name { font-size: 12px; color: var(--text-secondary); }
+
+.bi-tag-input-row { display: flex; gap: 8px; }
+.bi-tag-input-row input { flex: 1; }
+.bi-tag-row { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 8px; }
+.bi-tag {
+  display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600;
+  color: var(--accent-text); background: var(--accent-subtle); border-radius: 999px; padding: 5px 6px 5px 12px;
+}
+.bi-tag button { background: none; border: none; color: inherit; cursor: pointer; font-size: 11px; line-height: 1; padding: 2px; }
+
+.bi-chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.bi-terms { display: flex; align-items: flex-start; gap: 10px; padding: 0 4px; font-size: 12.5px; color: var(--text-secondary); }
+.bi-terms input { margin-top: 2px; accent-color: var(--accent); }
+.bi-terms a { color: var(--accent-text); }
+
+.bi-submit-row { display: flex; justify-content: flex-end; padding-bottom: 4px; }

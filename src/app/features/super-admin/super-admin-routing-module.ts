@@ -10,6 +10,7 @@ import { CreatePost } from '../post/pages/create-post/create-post';
 import { Settings } from '../admin/pages/settings/settings';
 import { Visitor } from '../admin/pages/visitor/visitor';
 import { ManageShorts } from '../admin/pages/manage-shorts/manage-shorts';
+import { ManageCallbackRequests } from '../admin/pages/manage-callback-requests/manage-callback-requests';
 
 const routes: Routes = [
   {
@@ -26,6 +27,7 @@ const routes: Routes = [
       { path: 'manage-taxonomy', component: ManageTaxonomy, title: 'ApnaInsights - Taxonomy Manager' },
       { path: 'settings', component: Settings, title: 'ApnaInsights - Settings' },
       { path: 'visitor', component: Visitor, title: 'ApnaInsights - Visitor' },
+      { path: 'career-guides/callback-requests', component: ManageCallbackRequests, title: 'ApnaInsights - Callback Requests' },
     ]
   }
 ];

@@ -18,8 +18,12 @@
       window.__pwaPrompt = e;
     });
 
-    // Register SW on every page load so Chrome evaluates PWA installability
-    if ('serviceWorker' in navigator) {
+    // Register SW on every page load so Chrome evaluates PWA installability.
+    // Skipped on localhost: the dev server serves hundreds of tiny per-component
+    // modules for HMR, and the SW's fetch handler intercepting each one tanks
+    // dev reload performance. PWA installability only matters on the real origin.
+    var isLocalhost = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(window.location.hostname);
+    if ('serviceWorker' in navigator && !isLocalhost) {
       window.addEventListener('load', function() {
         navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function() {});
       });
@@ -102,7 +106,7 @@
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 
-  <meta name="theme-color" content="#43cea2">
+  <meta name="theme-color" content="#2563EB">
 
   <!-- ── iOS / Android PWA (Add to Home Screen) ── -->
   <!-- Tells iOS/Android to launch as a full-screen standalone app, not inside the browser -->

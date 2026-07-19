@@ -38,6 +38,10 @@ unFreezeUser(userId: string): Observable<apiResponse<User>> {
   return this.http.patch<apiResponse<User>>(`${this.endPoint}${userId}/unfreeze`,{});
 }
 
+setPremium(userId: string, isPremium: boolean): Observable<apiResponse<User>> {
+  return this.http.patch<apiResponse<User>>(`${this.endPoint}${userId}/premium`, { isPremium });
+}
+
 updateUser(userId: string, userData: Partial<User>): Observable<apiResponse<User>> {
   return this.http.put<apiResponse<User>>(`${this.endPoint}${userId}/update`, userData);
 }

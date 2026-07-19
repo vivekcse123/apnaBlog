@@ -237,8 +237,8 @@ interface Feature {
       font-size: 14px;
     }
 
-    .wm-icon-teal   { background: rgba(67, 206, 162, 0.15); }
-    .wm-icon-blue   { background: rgba(24, 90, 157, 0.12); }
+    .wm-icon-teal   { background: rgba(37, 99, 235, 0.15); }
+    .wm-icon-blue   { background: rgba(20, 184, 166, 0.12); }
     .wm-icon-amber  { background: rgba(245, 158, 11, 0.12); }
     .wm-icon-purple { background: rgba(139, 92, 246, 0.12); }
     .wm-icon-green  { background: rgba(34, 197, 94, 0.12); }
@@ -285,7 +285,7 @@ interface Feature {
     }
     .wm-btn-primary:hover {
       opacity: 0.9; transform: translateY(-1px);
-      box-shadow: 0 6px 18px rgba(67, 206, 162, 0.35);
+      box-shadow: 0 6px 18px rgba(37, 99, 235, 0.35);
     }
 
     /* ── Desktop: wider card, roomier spacing, 2-column feature grid instead

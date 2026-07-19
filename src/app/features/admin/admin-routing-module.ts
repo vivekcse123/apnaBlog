@@ -14,6 +14,7 @@ import { SponsoredReport } from './pages/sponsored-report/sponsored-report';
 import { NewsFeed }          from './pages/news-feed/news-feed';
 import { ManageChallenges } from './pages/manage-challenges/manage-challenges';
 import { ManageFlags }      from './pages/manage-flags/manage-flags';
+import { ManageCallbackRequests } from './pages/manage-callback-requests/manage-callback-requests';
 
 const routes: Routes = [
   {
@@ -84,6 +85,11 @@ const routes: Routes = [
         path: 'flags',
         component: ManageFlags,
         title: 'ApnaInsights - Community Flags'
+      },
+      {
+        path: 'career-guides/callback-requests',
+        component: ManageCallbackRequests,
+        title: 'ApnaInsights - Callback Requests'
       }
     ]
   }
