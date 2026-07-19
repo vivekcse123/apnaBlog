@@ -1,7 +1,7 @@
 import { inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { Observable, of, shareReplay, finalize, tap, forkJoin } from 'rxjs';
-import { map, switchMap } from 'rxjs/operators';
+import { map, switchMap, timeout, catchError } from 'rxjs/operators';
 import { apiResponse } from '../../../core/models/api-response.model';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Post } from '../../../core/models/post.model';
@@ -124,6 +124,12 @@ export class PostService {
           map(pages => (first.data ?? []).concat(...pages.map(p => p.data ?? []))),
         );
       }),
+      // Called from nearly every prerendered route (directly or via
+      // SiteHeader) - without a bound, a slow/cold backend during a build
+      // hangs past Angular's own SSR deadline and kills every other
+      // in-flight prerender worker along with it, not just this route.
+      timeout(10000),
+      catchError(() => of([] as Post[])),
     );
   }
 
