@@ -2,7 +2,7 @@ import { Component, ChangeDetectionStrategy, OnInit, DestroyRef, signal, compute
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { catchError, of } from 'rxjs';
+import { catchError, of, timeout, Observable } from 'rxjs';
 import { SiteHeader } from '../../../../shared/site-header/site-header';
 import { MobileBottomNav } from '../../../../shared/mobile-bottom-nav/mobile-bottom-nav';
 import { Auth } from '../../../../core/services/auth';
@@ -152,21 +152,30 @@ export class ExpertProfile implements OnInit {
     } catch { /* malformed/stale intent - ignore */ }
   }
 
+  // This page now renders in RenderMode.Server (per-request, not prerendered -
+  // see app.routes.server.ts), so a cold/slow backend blocks the actual page
+  // load instead of just the build. Cap these SSR-only at 8s (same idea as
+  // blog-detail's 25s SSR cap) - the browser gets no such limit since a slow
+  // client-side refresh is fine.
+  private ssrBound<T>(obs: Observable<T>): Observable<T> {
+    return isPlatformBrowser(this.platformId) ? obs : obs.pipe(timeout(8000));
+  }
+
   ngOnInit(): void {
     this.resumePendingIntent();
     const slug = this.expertId();
     if (!slug) return;
 
-    this.callbackRequests.reviewsFor(slug)
+    this.ssrBound(this.callbackRequests.reviewsFor(slug))
       .pipe(takeUntilDestroyed(this.destroyRef), catchError(() => of({ data: [] as ExpertReview[] })))
       .subscribe(res => this.realReviews.set(res.data ?? []));
 
-    this.callbackRequests.statsFor(slug)
+    this.ssrBound(this.callbackRequests.statsFor(slug))
       .pipe(takeUntilDestroyed(this.destroyRef), catchError(() => of({ data: { completedSessions: 0 } })))
       .subscribe(res => this.sessionsGuided.set(res.data?.completedSessions ?? 0));
 
     if (this.auth.isAuthorized()) {
-      this.callbackRequests.mine()
+      this.ssrBound(this.callbackRequests.mine())
         .pipe(takeUntilDestroyed(this.destroyRef), catchError(() => of({ data: [] as CallbackRequestRecord[] })))
         .subscribe(res => this.usedFreeSessionRaw.set(
           (res.data ?? []).some(r => FREE_SESSION_BLOCKING_STATUSES.includes(r.status))
@@ -174,19 +183,19 @@ export class ExpertProfile implements OnInit {
 
       const uid = this.auth.userId();
       if (uid) {
-        this.userService.getUserById(uid)
+        this.ssrBound(this.userService.getUserById(uid))
           .pipe(takeUntilDestroyed(this.destroyRef), catchError(() => of({ data: undefined })))
           .subscribe(res => this.isPremiumUser.set(!!(res.data as any)?.isPremium));
       }
     }
 
-    this.userService.getUserByMentorSlug(slug)
+    this.ssrBound(this.userService.getUserByMentorSlug(slug))
       .pipe(takeUntilDestroyed(this.destroyRef), catchError(() => of({ data: undefined })))
       .subscribe(res => {
         const mentorId = res.data?._id ?? null;
         this.mentorUserId.set(mentorId);
         if (!mentorId) return;
-        this.userService.getUserById(mentorId)
+        this.ssrBound(this.userService.getUserById(mentorId))
           .pipe(takeUntilDestroyed(this.destroyRef), catchError(() => of(null)))
           .subscribe(userRes => {
             if (!userRes) return;
