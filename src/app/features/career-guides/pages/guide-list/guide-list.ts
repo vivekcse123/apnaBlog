@@ -4,7 +4,7 @@ import { PLATFORM_ID } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { catchError, of } from 'rxjs';
+import { catchError, of, timeout } from 'rxjs';
 import { SiteHeader } from '../../../../shared/site-header/site-header';
 import { MobileBottomNav } from '../../../../shared/mobile-bottom-nav/mobile-bottom-nav';
 import { MOCK_EXPERTS, MOCK_CATEGORIES } from '../../data/mock-experts';
@@ -88,26 +88,30 @@ export class GuideList implements OnInit {
     // being up (same convention as scrollToExperts above).
     if (!isPlatformBrowser(this.platformId)) return;
 
+    // Bounded at 8s each - these are all supplementary overlays on top of
+    // cards that already render from mock data, but without a cap a
+    // cold/slow backend leaves them silently pending indefinitely instead
+    // of settling into their catchError fallback.
     this.callbackRequests.ratings()
-      .pipe(takeUntilDestroyed(this.destroyRef), catchError(() => of({ data: [] as ExpertRating[] })))
+      .pipe(takeUntilDestroyed(this.destroyRef), timeout(8000), catchError(() => of({ data: [] as ExpertRating[] })))
       .subscribe(res => this.ratings.set(new Map(res.data.map(r => [r.expertSlug, r]))));
 
     this.callbackRequests.sessionCounts()
-      .pipe(takeUntilDestroyed(this.destroyRef), catchError(() => of({ data: [] as ExpertSessionCount[] })))
+      .pipe(takeUntilDestroyed(this.destroyRef), timeout(8000), catchError(() => of({ data: [] as ExpertSessionCount[] })))
       .subscribe(res => this.sessionCounts.set(new Map(res.data.map(r => [r.expertSlug, r.count]))));
 
     this.userService.getMentorFollowerCounts()
-      .pipe(takeUntilDestroyed(this.destroyRef), catchError(() => of({ data: [] as { expertSlug: string; followersCount: number }[] })))
+      .pipe(takeUntilDestroyed(this.destroyRef), timeout(8000), catchError(() => of({ data: [] as { expertSlug: string; followersCount: number }[] })))
       .subscribe(res => this.followerCounts.set(new Map(res.data.map(r => [r.expertSlug, r.followersCount]))));
 
     this.mentorProfileService.getAll()
-      .pipe(takeUntilDestroyed(this.destroyRef), catchError(() => of({ data: [] as (MentorProfileRecord & { mentorSlug: string })[] })))
+      .pipe(takeUntilDestroyed(this.destroyRef), timeout(8000), catchError(() => of({ data: [] as (MentorProfileRecord & { mentorSlug: string })[] })))
       .subscribe(res => this.profileOverrides.set(new Map(res.data.map(p => [p.mentorSlug, p]))));
 
     const userId = this.auth.userId();
     if (!userId) return;
     this.userService.getUserById(userId)
-      .pipe(takeUntilDestroyed(this.destroyRef), catchError(() => of({ data: null })))
+      .pipe(takeUntilDestroyed(this.destroyRef), timeout(8000), catchError(() => of({ data: null })))
       .subscribe(res => this.isMentor.set(!!res.data?.isMentor));
   }
 

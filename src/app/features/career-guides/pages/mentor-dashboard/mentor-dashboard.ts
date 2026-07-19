@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { catchError, of } from 'rxjs';
+import { catchError, of, timeout } from 'rxjs';
 import { SiteHeader } from '../../../../shared/site-header/site-header';
 import { MobileBottomNav } from '../../../../shared/mobile-bottom-nav/mobile-bottom-nav';
 import { CallbackRequestService } from '../../services/callback-request.service';
@@ -136,16 +136,21 @@ export class MentorDashboard implements OnInit {
     const userId = this.auth.userId();
     if (!userId) { this.router.navigate(['/auth/login'], { queryParams: { returnUrl: '/career-guides/dashboard' } }); return; }
 
+    // Bounded, but on timeout/error we do NOT redirect away - that would
+    // incorrectly kick a genuine mentor off their own dashboard just because
+    // the backend was slow, conflating "request failed" with "not a mentor".
+    // Only a definitive successful response redirects.
     this.userService.getUserById(userId)
-      .pipe(takeUntilDestroyed(this.destroyRef), catchError(() => of({ data: null })))
+      .pipe(takeUntilDestroyed(this.destroyRef), timeout(8000), catchError(() => of({ data: null })))
       .subscribe(res => {
-        if (!res.data?.isMentor) { this.router.navigate(['/career-guides']); return; }
+        if (res.data === null) return;
+        if (!res.data.isMentor) { this.router.navigate(['/career-guides']); return; }
         this.mentorName.set(res.data.name ?? '');
         this.mentorSlug.set(res.data.mentorSlug ?? '');
       });
 
     this.mentorProfileService.getByUserId(userId)
-      .pipe(takeUntilDestroyed(this.destroyRef), catchError(() => of({ data: null })))
+      .pipe(takeUntilDestroyed(this.destroyRef), timeout(8000), catchError(() => of({ data: null })))
       .subscribe(res => this.profile.set(res.data ?? emptyProfile()));
 
     this.callbackRequests.ensureLive();
@@ -155,13 +160,18 @@ export class MentorDashboard implements OnInit {
   load(): void {
     this.isLoading.set(true);
     this.error.set('');
-    this.callbackRequests.forMentor().subscribe({
-      next: (res) => { this.requests.set(res.data ?? []); this.isLoading.set(false); },
-      error: (err) => {
-        this.error.set(err?.error?.message ?? 'Failed to load your dashboard.');
-        this.isLoading.set(false);
-      },
-    });
+    // Bounded so a cold/slow backend shows a retryable error instead of an
+    // indefinite skeleton - this whole page's requests list is gated on
+    // isLoading, unlike guide-list's mock-first-then-overlay approach.
+    this.callbackRequests.forMentor()
+      .pipe(timeout(10000))
+      .subscribe({
+        next: (res) => { this.requests.set(res.data ?? []); this.isLoading.set(false); },
+        error: (err) => {
+          this.error.set(err?.name === 'TimeoutError' ? 'This is taking longer than expected - please try again.' : (err?.error?.message ?? 'Failed to load your dashboard.'));
+          this.isLoading.set(false);
+        },
+      });
   }
 
   trackById(_i: number, r: CallbackRequestRecord): string { return r._id; }
