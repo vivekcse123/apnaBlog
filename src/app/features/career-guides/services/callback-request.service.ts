@@ -15,6 +15,8 @@ export interface ExpertReview { userName: string; rating: number; comment: strin
 interface ReviewsResponse { status: number; data: ExpertReview[]; }
 export interface ExpertSessionCount { expertSlug: string; count: number; }
 interface SessionCountsResponse { status: number; data: ExpertSessionCount[]; }
+export interface BookedSlot { preferredTime: string; duration: number; }
+interface BookedSlotsResponse { status: number; data: BookedSlot[]; }
 
 export interface AdminCallbackFilters {
   status?: CallbackStatus;
@@ -77,6 +79,12 @@ export class CallbackRequestService {
   /** Public real "Sessions Guided" count per expert, in bulk (for marketplace cards). */
   sessionCounts(): Observable<SessionCountsResponse> {
     return this.http.get<SessionCountsResponse>(`${environment.apiUrl}/callback-requests/session-counts`);
+  }
+
+  /** Public already-booked time+duration ranges for one expert on one day (Book Session slot calendar). */
+  bookedSlotsFor(expertSlug: string, date: string): Observable<BookedSlotsResponse> {
+    const params = new HttpParams().set('date', date);
+    return this.http.get<BookedSlotsResponse>(`${environment.apiUrl}/callback-requests/booked-slots/${expertSlug}`, { params });
   }
 
   create(payload: CreateCallbackRequestPayload): Observable<ItemResponse> {

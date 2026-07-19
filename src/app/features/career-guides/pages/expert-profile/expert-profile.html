@@ -32,7 +32,7 @@
 
         <div class="ep-identity">
           <h1>{{ expert()!.name }}</h1>
-          <p class="ep-title">{{ expert()!.title }} &middot; {{ expert()!.company }}</p>
+          <p class="ep-title">{{ displayExpert()!.title }} &middot; {{ displayExpert()!.company }}</p>
           @if (expert()!.specialBadge) {
             <span class="ep-special-badge">🎖 {{ expert()!.specialBadge }}</span>
           }
@@ -49,7 +49,7 @@
               <span class="ep-muted">No reviews yet</span>
             }
             <span class="ep-dot">&middot;</span>
-            <span class="ep-muted">{{ expert()!.responseTime }}</span>
+            <span class="ep-muted">{{ displayExpert()!.responseTime }}</span>
           </div>
         </div>
 
@@ -87,19 +87,19 @@
 
         <section class="ep-card">
           <h2>About</h2>
-          <p class="ep-bio">{{ expert()!.bio }}</p>
+          <p class="ep-bio">{{ displayExpert()!.bio }}</p>
         </section>
 
         <section class="ep-card">
           <h2>Skills</h2>
           <div class="ep-skill-row">
-            @for (skill of expert()!.skills; track trackBySkill($index, skill)) {
+            @for (skill of displayExpert()!.skills; track trackBySkill($index, skill)) {
               <span class="ep-skill-chip">{{ skill }}</span>
             }
           </div>
           <h3 class="ep-sub">Languages</h3>
           <div class="ep-skill-row">
-            @for (lang of expert()!.languages; track lang) {
+            @for (lang of displayExpert()!.languages; track lang) {
               <span class="ep-skill-chip ep-skill-chip--muted">{{ lang }}</span>
             }
           </div>
@@ -108,7 +108,7 @@
         <section class="ep-card">
           <h2>Experience</h2>
           <ol class="ep-timeline">
-            @for (item of expert()!.experience; track item.title) {
+            @for (item of displayExpert()!.experience; track item.title) {
               <li>
                 <span class="ep-tl-dot"></span>
                 <div>
@@ -124,7 +124,7 @@
         <section class="ep-card">
           <h2>Education</h2>
           <ol class="ep-timeline">
-            @for (item of expert()!.education; track item.title) {
+            @for (item of displayExpert()!.education; track item.title) {
               <li>
                 <span class="ep-tl-dot"></span>
                 <div>
@@ -135,10 +135,10 @@
               </li>
             }
           </ol>
-          @if (expert()!.certifications.length) {
+          @if (displayExpert()!.certifications.length) {
             <h3 class="ep-sub">Certifications</h3>
             <ul class="ep-cert-list">
-              @for (cert of expert()!.certifications; track cert) {
+              @for (cert of displayExpert()!.certifications; track cert) {
                 <li>{{ cert }}</li>
               }
             </ul>
@@ -212,7 +212,7 @@
           } @else if (messageSent()) {
             <div class="ep-modal-success">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-              <p>Message sent! {{ expert()!.name.split(' ')[0] }} usually replies within {{ expert()!.responseTime.toLowerCase() }}.</p>
+              <p>Message sent! {{ expert()!.name.split(' ')[0] }} usually replies within {{ displayExpert()!.responseTime.toLowerCase() }}.</p>
               <button class="cg-btn cg-btn--ghost" type="button" (click)="showMessageBox.set(false)">Close</button>
             </div>
           } @else {
@@ -255,14 +255,8 @@
             @if (bookError()) {
               <p class="ep-form-error">{{ bookError() }}</p>
             }
-            <div class="ep-form-row">
-              <label>Date<input type="date" [value]="bookDate()" (input)="bookDate.set($any($event.target).value)" /></label>
-              <label>Time<input type="time" [value]="bookTime()" (input)="bookTime.set($any($event.target).value)" /></label>
-            </div>
-
-            <label class="ep-form-label">Contact Phone Number</label>
-            <input class="ep-phone-input" type="tel" placeholder="e.g. +91 98765 43210"
-              [value]="bookPhone()" (input)="bookPhone.set($any($event.target).value)" />
+            <label class="ep-form-label">Date</label>
+            <input class="ep-phone-input" type="date" [value]="bookDate()" (input)="bookDate.set($any($event.target).value); bookTime.set('')" />
 
             <label class="ep-form-label">Duration</label>
             <div class="ep-chip-row">
@@ -270,6 +264,34 @@
                 <button type="button" class="ep-chip" [class.active]="bookDuration() === d" (click)="bookDuration.set(d)">{{ d }} min</button>
               }
             </div>
+
+            @if (bookDate() && isBookDateBlocked()) {
+              <p class="ep-form-error">This mentor is not available on the selected date. Please pick another day.</p>
+            } @else if (bookDate()) {
+              <label class="ep-form-label">Time</label>
+              <div class="ep-slot-grid">
+                @for (t of slotTimes(); track t) {
+                  <button type="button" class="ep-slot"
+                    [class.ep-slot--booked]="isSlotBooked(t)"
+                    [class.active]="bookTime() === t"
+                    [disabled]="isSlotBooked(t)"
+                    (click)="selectBookSlot(t)">
+                    {{ t }}
+                  </button>
+                }
+              </div>
+              <p class="ep-slot-legend">
+                <span class="ep-slot-legend-dot ep-slot-legend-dot--free"></span> Available
+                <span class="ep-slot-legend-dot ep-slot-legend-dot--booked"></span> Booked
+              </p>
+            }
+
+            <label class="ep-form-label">Contact Phone Number</label>
+            <input class="ep-phone-input" type="tel" placeholder="e.g. +91 98765 43210"
+              [value]="bookPhone()" (input)="bookPhone.set($any($event.target).value)" />
+            @if (bookPhone() && !isValidPhone(bookPhone())) {
+              <p class="ep-form-error">Enter a valid 10-digit mobile number.</p>
+            }
 
             <label class="ep-form-label">Topic</label>
             <div class="ep-chip-row">
@@ -285,7 +307,7 @@
             <div class="ep-modal-actions">
               <button class="cg-btn cg-btn--ghost" type="button" (click)="closeBookDialog()">Cancel</button>
               <button class="cg-btn cg-btn--primary" type="button"
-                [disabled]="!bookDate() || !bookTime() || !bookPhone().trim() || bookSubmitting()"
+                [disabled]="!bookDate() || !bookTime() || !isValidPhone(bookPhone()) || isBookDateBlocked() || bookSubmitting()"
                 (click)="submitBooking()">
                 {{ bookSubmitting() ? 'Submitting…' : 'Submit Request' }}
               </button>
@@ -325,14 +347,37 @@
             </div>
           } @else {
             <p class="ep-free-banner">🎉 Your first mentorship session is free!</p>
-            <div class="ep-form-row">
-              <label>Preferred Date<input type="date" [value]="callbackDate()" (input)="callbackDate.set($any($event.target).value)" /></label>
-              <label>Preferred Time<input type="time" [value]="callbackTime()" (input)="callbackTime.set($any($event.target).value)" /></label>
-            </div>
+
+            <label class="ep-form-label">Preferred Date</label>
+            <input class="ep-phone-input" type="date" [value]="callbackDate()" (input)="callbackDate.set($any($event.target).value); callbackTime.set('')" />
+
+            @if (callbackDate() && isCallbackDateBlocked()) {
+              <p class="ep-form-error">This mentor is not available on the selected date. Please pick another day.</p>
+            } @else if (callbackDate()) {
+              <label class="ep-form-label">Preferred Time</label>
+              <div class="ep-slot-grid">
+                @for (t of slotTimes(); track t) {
+                  <button type="button" class="ep-slot"
+                    [class.ep-slot--booked]="isCallbackSlotBooked(t)"
+                    [class.active]="callbackTime() === t"
+                    [disabled]="isCallbackSlotBooked(t)"
+                    (click)="selectCallbackSlot(t)">
+                    {{ t }}
+                  </button>
+                }
+              </div>
+              <p class="ep-slot-legend">
+                <span class="ep-slot-legend-dot ep-slot-legend-dot--free"></span> Available
+                <span class="ep-slot-legend-dot ep-slot-legend-dot--booked"></span> Booked
+              </p>
+            }
 
             <label class="ep-form-label">Contact Phone Number</label>
             <input class="ep-phone-input" type="tel" placeholder="e.g. +91 98765 43210"
               [value]="callbackPhone()" (input)="callbackPhone.set($any($event.target).value)" />
+            @if (callbackPhone() && !isValidPhone(callbackPhone())) {
+              <p class="ep-form-error">Enter a valid 10-digit mobile number.</p>
+            }
 
             <label class="ep-form-label">Topic</label>
             <div class="ep-chip-row">
@@ -347,7 +392,7 @@
 
             <div class="ep-modal-actions">
               <button class="cg-btn cg-btn--ghost" type="button" (click)="closeCallbackDialog()">Cancel</button>
-              <button class="cg-btn cg-btn--primary" type="button" [disabled]="!callbackDate() || !callbackTime() || !callbackPhone().trim() || callbackSubmitting()" (click)="submitCallback()">
+              <button class="cg-btn cg-btn--primary" type="button" [disabled]="!callbackDate() || !callbackTime() || !isValidPhone(callbackPhone()) || isCallbackDateBlocked() || callbackSubmitting()" (click)="submitCallback()">
                 {{ callbackSubmitting() ? 'Submitting…' : 'Submit Request' }}
               </button>
             </div>

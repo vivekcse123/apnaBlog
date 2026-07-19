@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, OnInit, DestroyRef, signal, computed, inject, PLATFORM_ID } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnInit, DestroyRef, signal, computed, inject, effect, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -8,10 +8,12 @@ import { MobileBottomNav } from '../../../../shared/mobile-bottom-nav/mobile-bot
 import { Auth } from '../../../../core/services/auth';
 import { MOCK_EXPERTS } from '../../data/mock-experts';
 import { Expert } from '../../models/expert.model';
-import { CallbackRequestService, ExpertReview } from '../../services/callback-request.service';
+import { CallbackRequestService, ExpertReview, BookedSlot } from '../../services/callback-request.service';
 import { CallbackRequestRecord } from '../../models/callback-request.model';
 import { UserService } from '../../../user/services/user-service';
 import { PaymentService } from '../../../../core/services/payment.service';
+import { MentorProfileService } from '../../services/mentor-profile.service';
+import { MentorProfileRecord } from '../../models/mentor-profile.model';
 
 const DURATIONS = [15, 30, 45, 60] as const;
 const TOPICS = ['Angular', 'Interview', 'Resume', 'Career Switch', 'Salary Discussion', 'Technical Guidance'] as const;
@@ -37,12 +39,38 @@ export class ExpertProfile implements OnInit {
   private callbackRequests = inject(CallbackRequestService);
   private userService = inject(UserService);
   private paymentService = inject(PaymentService);
+  private mentorProfileService = inject(MentorProfileService);
   private destroyRef = inject(DestroyRef);
 
-  // Prototype only - reads from the same MOCK_EXPERTS array the listing page
-  // uses. No /career-guides API exists yet.
+  // Base data reads from the static MOCK_EXPERTS array the listing page also
+  // uses. Real, mentor-edited fields (see mentor-dashboard.ts's profile
+  // editor) overlay on top via realProfile()/displayExpert() below.
   private expertId = signal<string>(this.route.snapshot.paramMap.get('expertId') ?? '');
   expert = computed<Expert | undefined>(() => MOCK_EXPERTS.find(e => e.slug === this.expertId()));
+
+  // Real backend-persisted profile override, if the mentor has saved one
+  // (see GET /api/mentor-profile/by-slug/:slug). Null until it loads, or if
+  // the mentor hasn't edited anything yet - both cases fall back to the
+  // mock base untouched.
+  private realProfile = signal<MentorProfileRecord | null>(null);
+  displayExpert = computed<Expert | undefined>(() => {
+    const base = this.expert();
+    if (!base) return undefined;
+    const overlay = this.realProfile();
+    if (!overlay) return base;
+    return {
+      ...base,
+      title:          overlay.title || base.title,
+      company:        overlay.company || base.company,
+      bio:            overlay.bio || base.bio,
+      responseTime:   overlay.responseTime || base.responseTime,
+      skills:         overlay.skills?.length ? overlay.skills : base.skills,
+      languages:      overlay.languages?.length ? overlay.languages : base.languages,
+      certifications: overlay.certifications?.length ? overlay.certifications : base.certifications,
+      education:      overlay.education?.length ? overlay.education : base.education,
+      experience:     overlay.experience?.length ? overlay.experience : base.experience,
+    };
+  });
 
   readonly durations = DURATIONS;
   readonly topics = TOPICS;
@@ -166,6 +194,10 @@ export class ExpertProfile implements OnInit {
     const slug = this.expertId();
     if (!slug) return;
 
+    this.ssrBound(this.mentorProfileService.getBySlug(slug))
+      .pipe(takeUntilDestroyed(this.destroyRef), catchError(() => of({ data: null })))
+      .subscribe(res => this.realProfile.set(res.data));
+
     this.ssrBound(this.callbackRequests.reviewsFor(slug))
       .pipe(takeUntilDestroyed(this.destroyRef), catchError(() => of({ data: [] as ExpertReview[] })))
       .subscribe(res => this.realReviews.set(res.data ?? []));
@@ -256,12 +288,125 @@ export class ExpertProfile implements OnInit {
   bookSubmitted = signal(false);
   bookSubmitting = signal(false);
   bookError = signal('');
+
+  // ── Slot calendar (green/available, red/booked) - see GET
+  //    /api/callback-requests/booked-slots/:slug. Fixed 9AM-8PM/30-min grid;
+  //    no per-mentor working-hours data exists yet, so this is one shared
+  //    default window rather than something mentors configure. The backend's
+  //    POST /callback-requests conflict check is the real source of truth -
+  //    this is UX sugar to avoid a doomed submit in the common case. ──
+  private bookedSlots = signal<BookedSlot[]>([]);
+
+  // Whole-day blackout dates the mentor has set (see mentor-dashboard.ts's
+  // Availability section) - sourced from the same realProfile() overlay
+  // already fetched for bio/skills/etc. The backend's POST
+  // /callback-requests check is the actual enforcement; this just avoids
+  // showing a slot grid for a day that's guaranteed to fail on submit.
+  isBookDateBlocked = computed<boolean>(() => {
+    const date = this.bookDate();
+    return !!date && !!this.realProfile()?.blockedDates?.includes(date);
+  });
+
+  private static readonly SLOT_START_MIN = 9 * 60;
+  private static readonly SLOT_END_MIN = 20 * 60;
+  private static readonly SLOT_STEP_MIN = 30;
+
+  slotTimes = computed<string[]>(() => {
+    const out: string[] = [];
+    for (let m = ExpertProfile.SLOT_START_MIN; m < ExpertProfile.SLOT_END_MIN; m += ExpertProfile.SLOT_STEP_MIN) {
+      out.push(`${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`);
+    }
+    return out;
+  });
+
+  private toMinutes(hhmm: string): number {
+    const [h, m] = hhmm.split(':').map(Number);
+    return h * 60 + m;
+  }
+  private overlapsRange(aStart: number, aDuration: number, bStart: number, bDuration: number): boolean {
+    return aStart < bStart + bDuration && bStart < aStart + aDuration;
+  }
+
+  // Depends on bookDuration() too, not just the date - a longer duration can
+  // turn an otherwise-free slot red because it would now run into a
+  // neighboring booking.
+  isSlotBooked(time: string): boolean {
+    const start = this.toMinutes(time);
+    const dur = this.bookDuration();
+    return this.bookedSlots().some(s => this.overlapsRange(start, dur, this.toMinutes(s.preferredTime), s.duration));
+  }
+
+  selectBookSlot(time: string): void {
+    if (this.isSlotBooked(time)) return;
+    this.bookTime.set(time);
+  }
+
+  private refreshBookedSlots(): void {
+    const date = this.bookDate();
+    const slug = this.expertId();
+    if (!date || !slug) return;
+    this.callbackRequests.bookedSlotsFor(slug, date)
+      .pipe(catchError(() => of({ status: 200, data: [] as BookedSlot[] })))
+      .subscribe(res => this.bookedSlots.set(res.data));
+  }
+
+  // Field initializers run in the component's injection context, so effect()
+  // is valid here without a separate constructor.
+  private _slotFetchEffect = effect(() => {
+    if (!this.showBookDialog()) return;
+    this.bookDate();
+    this.refreshBookedSlots();
+  });
+
+  // ── Same slot grid for Request Callback - fixed 15-min duration since
+  //    'callback' requests have no duration field (matches
+  //    DEFAULT_CALLBACK_DURATION_MIN in callback-request.router.js). ──
+  private static readonly CALLBACK_DURATION_MIN = 15;
+  private callbackBookedSlots = signal<BookedSlot[]>([]);
+
+  isCallbackSlotBooked(time: string): boolean {
+    const start = this.toMinutes(time);
+    return this.callbackBookedSlots().some(s =>
+      this.overlapsRange(start, ExpertProfile.CALLBACK_DURATION_MIN, this.toMinutes(s.preferredTime), s.duration)
+    );
+  }
+
+  selectCallbackSlot(time: string): void {
+    if (this.isCallbackSlotBooked(time)) return;
+    this.callbackTime.set(time);
+  }
+
+  private refreshCallbackBookedSlots(): void {
+    const date = this.callbackDate();
+    const slug = this.expertId();
+    if (!date || !slug) return;
+    this.callbackRequests.bookedSlotsFor(slug, date)
+      .pipe(catchError(() => of({ status: 200, data: [] as BookedSlot[] })))
+      .subscribe(res => this.callbackBookedSlots.set(res.data));
+  }
+
+  private _callbackSlotFetchEffect = effect(() => {
+    if (!this.showCallbackDialog()) return;
+    this.callbackDate();
+    this.refreshCallbackBookedSlots();
+  });
+
   private openBookDialog(): void { this.showBookDialog.set(true); this.bookSubmitted.set(false); this.bookError.set(''); }
   onBookClick(): void { this.requireAuth('book', () => this.openBookDialog()); }
   closeBookDialog(): void { this.showBookDialog.set(false); }
+  // Shared by both Book Session and Request Callback - requires exactly a
+  // 10-digit Indian mobile number, tolerating a leading +91/91 country code
+  // (also stripping spaces/dashes/parens first). Mirrored server-side in
+  // callback-request.router.js's POST / handler.
+  isValidPhone(value: string): boolean {
+    let digits = value.replace(/\D/g, '');
+    if (digits.length === 12 && digits.startsWith('91')) digits = digits.slice(2);
+    return digits.length === 10;
+  }
+
   submitBooking(): void {
     if (this.hasUsedFreeSession()) return;
-    if (!this.bookDate() || !this.bookTime() || !this.bookPhone().trim() || this.bookSubmitting()) return;
+    if (!this.bookDate() || !this.bookTime() || !this.isValidPhone(this.bookPhone()) || this.isBookDateBlocked() || this.bookSubmitting()) return;
     const expert = this.expert()!;
     this.bookSubmitting.set(true);
     this.bookError.set('');
@@ -284,6 +429,7 @@ export class ExpertProfile implements OnInit {
       error: (err) => {
         this.bookSubmitting.set(false);
         this.bookError.set(err?.error?.message ?? 'Could not submit your booking. Please try again.');
+        if (err?.status === 409) this.refreshBookedSlots();
       },
     });
   }
@@ -298,12 +444,20 @@ export class ExpertProfile implements OnInit {
   callbackSubmitted = signal(false);
   callbackSubmitting = signal(false);
   callbackError = signal('');
+
+  // Same whole-day blackout check as isBookDateBlocked() above, applied to
+  // the Request Callback dialog's own date field.
+  isCallbackDateBlocked = computed<boolean>(() => {
+    const date = this.callbackDate();
+    return !!date && !!this.realProfile()?.blockedDates?.includes(date);
+  });
+
   private openCallbackDialog(): void { this.showCallbackDialog.set(true); this.callbackSubmitted.set(false); this.callbackError.set(''); }
   onCallbackClick(): void { this.requireAuth('callback', () => this.openCallbackDialog()); }
   closeCallbackDialog(): void { this.showCallbackDialog.set(false); }
   submitCallback(): void {
     if (this.hasUsedFreeSession()) return;
-    if (!this.callbackDate() || !this.callbackTime() || !this.callbackPhone().trim() || this.callbackSubmitting()) return;
+    if (!this.callbackDate() || !this.callbackTime() || !this.isValidPhone(this.callbackPhone()) || this.isCallbackDateBlocked() || this.callbackSubmitting()) return;
     const expert = this.expert()!;
     this.callbackSubmitting.set(true);
     this.callbackError.set('');
@@ -324,6 +478,7 @@ export class ExpertProfile implements OnInit {
       error: (err) => {
         this.callbackSubmitting.set(false);
         this.callbackError.set(err?.error?.message ?? 'Could not submit your request. Please try again.');
+        if (err?.status === 409) this.refreshCallbackBookedSlots();
       },
     });
   }

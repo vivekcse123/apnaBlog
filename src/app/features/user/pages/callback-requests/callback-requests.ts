@@ -59,6 +59,15 @@ export class CallbackRequests implements OnInit {
     });
   }
 
+  // 30-minute grace window from submission (mirrors the backend check in
+  // callback-request.router.js's PATCH /:id/cancel, which is the real
+  // enforcement) - this just hides a button that's guaranteed to 409.
+  canCancel(r: CallbackRequestRecord): boolean {
+    if (r.status !== 'pending') return false;
+    const minutesSinceCreated = (Date.now() - new Date(r.createdAt).getTime()) / 60000;
+    return minutesSinceCreated <= 30;
+  }
+
   cancel(id: string): void {
     const set = new Set(this.cancelling());
     set.add(id);

@@ -38,11 +38,15 @@
           </div>
           @if (r.message) { <p class="cr-message">{{ r.message }}</p> }
           @if (r.status === 'pending') {
-            <div class="cr-actions">
-              <button class="cr-btn cr-btn--outline" type="button" [disabled]="cancelling().has(r._id)" (click)="cancel(r._id)">
-                {{ cancelling().has(r._id) ? 'Cancelling…' : 'Cancel Request' }}
-              </button>
-            </div>
+            @if (canCancel(r)) {
+              <div class="cr-actions">
+                <button class="cr-btn cr-btn--outline" type="button" [disabled]="cancelling().has(r._id)" (click)="cancel(r._id)">
+                  {{ cancelling().has(r._id) ? 'Cancelling…' : 'Cancel Request' }}
+                </button>
+              </div>
+            } @else {
+              <p class="cr-cancel-expired">The 30-minute window to cancel this request has passed.</p>
+            }
           }
 
           @if (r.status === 'completed') {

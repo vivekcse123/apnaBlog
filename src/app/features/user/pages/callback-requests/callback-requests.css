@@ -42,6 +42,7 @@
 
 .cr-meta-row { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 8px; font-size: 12px; color: var(--text-muted); }
 .cr-message { margin-top: 10px; font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+.cr-cancel-expired { margin-top: 10px; font-size: 12.5px; color: var(--text-muted); font-style: italic; }
 .cr-actions { margin-top: 14px; display: flex; justify-content: flex-end; gap: 12px; }
 
 .cr-feedback { margin-top: 12px; padding-top: 14px; border-top: 1px solid var(--border); }

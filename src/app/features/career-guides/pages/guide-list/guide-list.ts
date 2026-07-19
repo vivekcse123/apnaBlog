@@ -12,6 +12,8 @@ import { Expert } from '../../models/expert.model';
 import { Auth } from '../../../../core/services/auth';
 import { UserService } from '../../../user/services/user-service';
 import { CallbackRequestService, ExpertRating, ExpertSessionCount } from '../../services/callback-request.service';
+import { MentorProfileService } from '../../services/mentor-profile.service';
+import { MentorProfileRecord } from '../../models/mentor-profile.model';
 
 type SortKey = 'top-rated' | 'most-experienced' | 'newest';
 
@@ -28,6 +30,7 @@ export class GuideList implements OnInit {
   private auth = inject(Auth);
   private userService = inject(UserService);
   private callbackRequests = inject(CallbackRequestService);
+  private mentorProfileService = inject(MentorProfileService);
   private destroyRef = inject(DestroyRef);
   private document = inject(DOCUMENT);
   private platformId = inject(PLATFORM_ID);
@@ -49,6 +52,14 @@ export class GuideList implements OnInit {
   // so the card can show an honest "-" instead of a fake zero.
   private followerCounts = signal<Map<string, number>>(new Map());
   followersFor(slug: string): number | null { return this.followerCounts().get(slug) ?? null; }
+
+  // Real, mentor-edited profile overrides (see mentor-dashboard.ts's profile
+  // editor and expert-profile.ts's matching displayExpert() overlay) - keyed
+  // by mentorSlug. Fetched client-side only (see the isPlatformBrowser guard
+  // in ngOnInit below): this page is Prerender'd at build time, so baking
+  // this in server-side would only ever show whatever a mentor's profile
+  // looked like at the last deploy, not their latest edit.
+  private profileOverrides = signal<Map<string, MentorProfileRecord>>(new Map());
 
   // Real field on the User model (backend), default false for everyone until
   // an admin approval workflow exists to actually promote someone to mentor.
@@ -89,6 +100,10 @@ export class GuideList implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef), catchError(() => of({ data: [] as { expertSlug: string; followersCount: number }[] })))
       .subscribe(res => this.followerCounts.set(new Map(res.data.map(r => [r.expertSlug, r.followersCount]))));
 
+    this.mentorProfileService.getAll()
+      .pipe(takeUntilDestroyed(this.destroyRef), catchError(() => of({ data: [] as (MentorProfileRecord & { mentorSlug: string })[] })))
+      .subscribe(res => this.profileOverrides.set(new Map(res.data.map(p => [p.mentorSlug, p]))));
+
     const userId = this.auth.userId();
     if (!userId) return;
     this.userService.getUserById(userId)
@@ -102,6 +117,30 @@ export class GuideList implements OnInit {
   private allExperts = signal<Expert[]>(MOCK_EXPERTS);
   categories = MOCK_CATEGORIES;
 
+  // MOCK_EXPERTS base, overlaid with each mentor's real edited profile
+  // (title/company/bio/skills/etc.) where one exists - same only-non-empty-
+  // wins merge as expert-profile.ts's displayExpert().
+  private mergedExperts = computed<Expert[]>(() => {
+    const overrides = this.profileOverrides();
+    if (!overrides.size) return this.allExperts();
+    return this.allExperts().map(e => {
+      const o = overrides.get(e.slug);
+      if (!o) return e;
+      return {
+        ...e,
+        title:          o.title || e.title,
+        company:        o.company || e.company,
+        bio:            o.bio || e.bio,
+        responseTime:   o.responseTime || e.responseTime,
+        skills:         o.skills?.length ? o.skills : e.skills,
+        languages:      o.languages?.length ? o.languages : e.languages,
+        certifications: o.certifications?.length ? o.certifications : e.certifications,
+        education:      o.education?.length ? o.education : e.education,
+        experience:     o.experience?.length ? o.experience : e.experience,
+      };
+    });
+  });
+
   selectedCategory = signal<string>('All');
   sortBy = signal<SortKey>('top-rated');
   showSortDropdown = signal(false);
@@ -110,12 +149,12 @@ export class GuideList implements OnInit {
   setSort(key: SortKey): void { this.sortBy.set(key); this.showSortDropdown.set(false); }
 
   categoryCount(name: string): number {
-    return this.allExperts().filter(e => e.category === name).length;
+    return this.mergedExperts().filter(e => e.category === name).length;
   }
 
   filteredExperts = computed<Expert[]>(() => {
     const cat = this.selectedCategory();
-    const list = cat === 'All' ? this.allExperts() : this.allExperts().filter(e => e.category === cat);
+    const list = cat === 'All' ? this.mergedExperts() : this.mergedExperts().filter(e => e.category === cat);
     const sorted = [...list];
     switch (this.sortBy()) {
       case 'most-experienced':

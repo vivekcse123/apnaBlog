@@ -78,6 +78,24 @@
         </select>
       </div>
 
+      <div class="form-group mentor-group">
+        <label class="mentor-checkbox">
+          <input type="checkbox" formControlName="makeMentor">
+          Make this user a Career Guides mentor
+        </label>
+        @if (createUserForm.get('makeMentor')?.value) {
+          <select formControlName="mentorSlug" class="role-select">
+            <option value="" disabled>Select mentor slug&hellip;</option>
+            @for (e of expertSlugOptions(); track e.slug) {
+              <option [value]="e.slug">{{ e.name }} ({{ e.slug }})</option>
+            }
+          </select>
+          @if (expertSlugOptions().length === 0) {
+            <small class="error">No unclaimed mentor slugs left - add a new entry to mock-experts.ts first.</small>
+          }
+        }
+      </div>
+
       <div class="actions">
         <button type="button" class="cancel-btn" (click)="closeModal()">Cancel</button>
         <button type="submit" class="submit-btn">Create User</button>

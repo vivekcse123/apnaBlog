@@ -159,12 +159,6 @@
 .ep-modal--auth h3 { margin-bottom: 6px; }
 .ep-auth-msg { font-size: 13.5px; color: var(--text-secondary); margin-bottom: 18px; }
 
-.ep-form-row { display: flex; gap: 10px; margin-bottom: 14px; }
-.ep-form-row label { flex: 1; display: flex; flex-direction: column; gap: 5px; font-size: 12px; font-weight: 600; color: var(--text-muted); }
-.ep-form-row input {
-  border: 1px solid var(--border); border-radius: 10px; padding: 9px 10px;
-  font-family: inherit; font-size: 13px; color: var(--text-primary); background: var(--bg-surface-alt);
-}
 .ep-form-label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; }
 .ep-phone-input {
   width: 100%; border: 1px solid var(--border); border-radius: 10px; padding: 9px 10px;
@@ -186,3 +180,22 @@
 }
 .ep-chip:hover { border-color: var(--accent); }
 .ep-chip.active { background: var(--accent); color: #fff; border-color: transparent; }
+
+.ep-slot-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 7px;
+  max-height: 220px; overflow-y: auto; margin-bottom: 8px; padding: 2px;
+}
+.ep-slot {
+  padding: 7px 6px; border-radius: 8px; font-size: 12px; font-weight: 600; font-family: inherit;
+  color: #16a34a; background: rgba(22,163,74,0.08); border: 1px solid rgba(22,163,74,0.25); cursor: pointer;
+}
+.ep-slot:hover { border-color: #16a34a; }
+.ep-slot.active { background: var(--accent); color: #fff; border-color: transparent; }
+.ep-slot--booked {
+  color: #ef4444; background: rgba(239,68,68,0.08); border-color: rgba(239,68,68,0.25);
+  cursor: not-allowed; text-decoration: line-through; opacity: 0.75;
+}
+.ep-slot-legend { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--text-muted); margin-bottom: 14px; }
+.ep-slot-legend-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+.ep-slot-legend-dot--free { background: #16a34a; }
+.ep-slot-legend-dot--booked { background: #ef4444; margin-left: 10px; }

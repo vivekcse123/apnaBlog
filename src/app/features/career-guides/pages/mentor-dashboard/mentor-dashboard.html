@@ -115,6 +115,117 @@
     </section>
   }
 
+  <section class="md-section">
+    <div class="md-profile-head">
+      <h2>My Profile</h2>
+      @if (!isEditingProfile()) {
+        <button type="button" class="md-btn md-btn--outline" (click)="startEditingProfile()">Edit Profile</button>
+      }
+    </div>
+
+    @if (profileSaved() && !isEditingProfile()) {
+      <p class="md-profile-saved">Profile saved - changes are now live on your public profile.</p>
+    }
+
+    @if (!isEditingProfile()) {
+      <div class="md-profile-view">
+        <p><strong>{{ profile().title || 'No title set' }}</strong> @if (profile().company) { · {{ profile().company }} }</p>
+        <p class="md-empty-line">{{ profile().bio || 'No bio yet - click Edit Profile to add one.' }}</p>
+      </div>
+    } @else {
+      <form class="md-profile-form" #profileForm="ngForm" (ngSubmit)="saveProfile()">
+        <label>Title *
+          <input type="text" name="editTitle" [(ngModel)]="editTitle" required maxlength="120" placeholder="e.g. Frontend Guide & MEAN Stack Expert">
+        </label>
+        <label>Company
+          <input type="text" name="editCompany" [(ngModel)]="editCompany" maxlength="120" placeholder="e.g. Evoke Technologies">
+        </label>
+        <label>Bio * (at least 10 characters)
+          <textarea name="editBio" [(ngModel)]="editBio" required minlength="10" maxlength="1000" rows="4"></textarea>
+        </label>
+        <label>Usually replies within
+          <input type="text" name="editResponseTime" [(ngModel)]="editResponseTime" maxlength="80" placeholder="e.g. Usually replies within 2 hours">
+        </label>
+        <label>Skills (comma separated)
+          <input type="text" name="editSkills" [(ngModel)]="editSkills" placeholder="Angular, TypeScript, RxJS">
+        </label>
+        <label>Languages (comma separated)
+          <input type="text" name="editLanguages" [(ngModel)]="editLanguages" placeholder="English, Hindi">
+        </label>
+        <label>Certifications (comma separated)
+          <input type="text" name="editCertifications" [(ngModel)]="editCertifications" placeholder="MEAN Stack Certified - Udemy">
+        </label>
+
+        <div class="md-timeline-group">
+          <span class="md-timeline-label">Education</span>
+          @for (row of editEducation; track $index) {
+            <div class="md-timeline-row">
+              <input type="text" [(ngModel)]="row.title" name="eduTitle{{$index}}" maxlength="120" placeholder="Degree">
+              <input type="text" [(ngModel)]="row.org" name="eduOrg{{$index}}" maxlength="120" placeholder="Institution">
+              <input type="text" [(ngModel)]="row.period" name="eduPeriod{{$index}}" maxlength="60" placeholder="2018 - 2022">
+              <button type="button" class="md-row-remove" (click)="removeEducationRow($index)" aria-label="Remove">✕</button>
+            </div>
+          }
+          <button type="button" class="md-row-add" (click)="addEducationRow()">+ Add education</button>
+        </div>
+
+        <div class="md-timeline-group">
+          <span class="md-timeline-label">Experience</span>
+          @for (row of editExperience; track $index) {
+            <div class="md-timeline-row">
+              <input type="text" [(ngModel)]="row.title" name="expTitle{{$index}}" maxlength="120" placeholder="Role">
+              <input type="text" [(ngModel)]="row.org" name="expOrg{{$index}}" maxlength="120" placeholder="Company">
+              <input type="text" [(ngModel)]="row.period" name="expPeriod{{$index}}" maxlength="60" placeholder="2022 - 2025">
+              <button type="button" class="md-row-remove" (click)="removeExperienceRow($index)" aria-label="Remove">✕</button>
+            </div>
+          }
+          <button type="button" class="md-row-add" (click)="addExperienceRow()">+ Add experience</button>
+        </div>
+
+        @if (profileSaveError()) {
+          <p class="md-profile-error">{{ profileSaveError() }}</p>
+        }
+
+        <div class="md-profile-actions">
+          <button type="button" class="md-btn md-btn--outline" (click)="cancelEditingProfile()">Cancel</button>
+          <button type="submit" class="md-btn md-btn--primary" [disabled]="isSavingProfile() || profileForm.invalid">
+            {{ isSavingProfile() ? 'Saving…' : 'Save Profile' }}
+          </button>
+        </div>
+      </form>
+    }
+  </section>
+
+  <section class="md-section">
+    <h2>Availability</h2>
+    <p class="md-empty-line">Mark specific dates you're fully unavailable - Book Session and Request Callback will both refuse new requests on those days.</p>
+
+    <div class="md-avail-add">
+      <input type="date" [ngModel]="newBlockedDate()" (ngModelChange)="newBlockedDate.set($event)" [min]="todayForMin" name="newBlockedDate">
+      <button type="button" class="md-btn md-btn--primary" [disabled]="isBlockingDate()" (click)="addBlockedDate()">
+        {{ isBlockingDate() ? 'Marking…' : 'Mark Unavailable' }}
+      </button>
+    </div>
+    @if (blockDateError()) {
+      <p class="md-profile-error">{{ blockDateError() }}</p>
+    }
+
+    @if (blockedDates().length === 0) {
+      <p class="md-empty-line">No blocked dates - you're open every day by default.</p>
+    } @else {
+      <ul class="md-blocked-list">
+        @for (date of blockedDates(); track date) {
+          <li>
+            <span>{{ date }}</span>
+            <button type="button" class="md-row-remove" [disabled]="isRemovingDate(date)" (click)="removeBlockedDate(date)" aria-label="Mark available again">
+              {{ isRemovingDate(date) ? '…' : '✕' }}
+            </button>
+          </li>
+        }
+      </ul>
+    }
+  </section>
+
 </div>
 
 <app-mobile-bottom-nav></app-mobile-bottom-nav>
