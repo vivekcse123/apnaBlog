@@ -110,10 +110,14 @@ export class Home implements OnInit, OnDestroy {
   // a separate page before the user has typed anything.
   headerSearchOpen  = signal(false);
   headerSearchQuery = signal('');
+  // Searched against the site-wide megaMenuPublishedPosts() pool (loaded via
+  // allPostsCache), not the FETCH_LIMIT-capped allPosts() homepage rail data -
+  // otherwise an author/title only present outside the latest 20 homepage
+  // posts would silently never match here despite matching on /blog.
   headerSearchSuggestions = computed(() => {
     const q = this.headerSearchQuery().trim().toLowerCase();
     if (!q) return [];
-    return this.allPosts().filter(p =>
+    return this.megaMenuPublishedPosts().filter(p =>
       p.title.toLowerCase().includes(q) ||
       ((p.user as any)?.name ?? '').toLowerCase().includes(q)
     ).slice(0, 6);
@@ -143,6 +147,7 @@ export class Home implements OnInit, OnDestroy {
     this.headerSearchQuery.set('');
     this.readBlog(postId);
   }
+  getAuthorName(post: Post): string { return (post.user as any)?.name ?? 'Anonymous'; }
 
   homeShorts = signal<VideoShort[]>([]);
 
@@ -812,7 +817,8 @@ export class Home implements OnInit, OnDestroy {
 
   readBlog(id: string): void {
     if (isPlatformBrowser(this.platformId)) {
-      const post = this.allPosts().find(p => p._id === id || (p as any).slug === id);
+      const post = this.allPosts().find(p => p._id === id || (p as any).slug === id)
+        ?? this.megaMenuPosts().find(p => p._id === id || (p as any).slug === id);
       if (post) this.readingHistory.add(post);
     }
     this.router.navigate(['/blog', id]);

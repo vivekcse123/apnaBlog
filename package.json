@@ -8,7 +8,7 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "serve:ssr:blog-app": "node dist/blog-app/server/server.mjs",
-    "vercel-build": "ng build"
+    "vercel-build": "NG_BUILD_MAX_WORKERS=1 NODE_OPTIONS=--max-old-space-size=4096 ng build"
   },
   "prettier": {
     "printWidth": 100,

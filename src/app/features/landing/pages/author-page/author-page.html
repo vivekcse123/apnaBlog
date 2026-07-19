@@ -40,7 +40,7 @@
       <div class="ap-hero-card">
         <div class="ap-avatar-wrap">
           @if (authorAvatar) {
-            <img class="ap-avatar-img" [src]="authorAvatar" [alt]="authorName" width="112" height="112" />
+            <img class="ap-avatar-img" [src]="authorAvatar" [alt]="authorName" width="112" height="112" loading="eager" decoding="async" />
           } @else {
             <div class="ap-avatar-fallback">{{ authorInitial }}</div>
           }

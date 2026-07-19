@@ -101,9 +101,13 @@ export class PostService {
     );
   }
 
-  /** Single page fetch - caller paginates through all pages. */
+  /**
+   * Single page fetch - caller paginates through all pages.
+   * limit=150 matches the backend's public max (post.router.js) - keeps this
+   * at one round trip for catalogs up to 150 posts instead of two.
+   */
   getStatsPage(page: number): Observable<apiResponse<Post[]>> {
-    return this.http.get<apiResponse<Post[]>>(`${this.endPoint}?page=${page}&limit=100`);
+    return this.http.get<apiResponse<Post[]>>(`${this.endPoint}?page=${page}&limit=150`);
   }
 
   /**

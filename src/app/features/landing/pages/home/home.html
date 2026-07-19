@@ -148,7 +148,10 @@
                 @for (post of headerSearchSuggestions(); track post._id) {
                   <button type="button" class="hp-header-search-item" (click)="selectHeaderSuggestion(post.slug || post._id)">
                     <img class="hp-header-search-thumb" [src]="post.featuredImage | cldResize:60:60" [alt]="post.title" loading="lazy" />
-                    <span class="hp-header-search-item-title">{{ post.title }}</span>
+                    <span class="hp-header-search-item-text">
+                      <span class="hp-header-search-item-title">{{ post.title }}</span>
+                      <span class="hp-header-search-item-author">by {{ getAuthorName(post) }}</span>
+                    </span>
                   </button>
                 }
               }
@@ -439,7 +442,7 @@
         <div class="hp-author-row">
           <span class="hp-author-avatar">
             @if (fa.user.avatar) {
-              <img [src]="fa.user.avatar" [alt]="fa.user.name" width="26" height="26" />
+              <img [src]="fa.user.avatar" [alt]="fa.user.name" width="26" height="26" loading="lazy" decoding="async" />
             } @else {
               {{ (fa.user.name || 'A').charAt(0).toUpperCase() }}
             }

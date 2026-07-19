@@ -32,7 +32,7 @@
         @for (c of challenges(); track c._id) {
           <button class="ch-item" [class.ch-item--active]="selectedId() === c._id"
             (click)="selectChallenge(c._id)">
-            @if (c.banner) { <img [src]="c.banner" [alt]="c.title" class="ch-item__banner"> }
+            @if (c.banner) { <img [src]="c.banner" [alt]="c.title" class="ch-item__banner" loading="lazy" decoding="async"> }
             <div class="ch-item__body">
               <div class="ch-item__title">{{ c.title }}</div>
               <div class="ch-item__meta">
@@ -50,7 +50,7 @@
         @if (selectedChallenge(); as ch) {
 
           <div class="ch-detail">
-            @if (ch.banner) { <img [src]="ch.banner" [alt]="ch.title" class="ch-detail__banner"> }
+            @if (ch.banner) { <img [src]="ch.banner" [alt]="ch.title" class="ch-detail__banner" loading="eager" decoding="async"> }
             <h2 class="ch-detail__title">{{ ch.title }}</h2>
             <p class="ch-detail__desc">{{ ch.description }}</p>
 
@@ -92,7 +92,7 @@
                       [class.ch-lb__rank--silver]="i === 1"
                       [class.ch-lb__rank--bronze]="i === 2">#{{ i + 1 }}</span>
                     @if (post.featuredImage) {
-                      <img [src]="post.featuredImage" [alt]="post.title" class="ch-lb__thumb">
+                      <img [src]="post.featuredImage" [alt]="post.title" class="ch-lb__thumb" loading="lazy" decoding="async">
                     }
                     <div class="ch-lb__content">
                       <div class="ch-lb__title">{{ post.title }}</div>
