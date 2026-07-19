@@ -105,9 +105,14 @@ export class PostService {
    * Single page fetch - caller paginates through all pages.
    * limit=150 matches the backend's public max (post.router.js) - keeps this
    * at one round trip for catalogs up to 150 posts instead of two.
+   * Deduped - SiteHeader and the page component both request page 1 on the
+   * same cold load (before AllPostsCache is warm), so without this they'd
+   * fire two full backend queries in parallel instead of sharing one.
    */
   getStatsPage(page: number): Observable<apiResponse<Post[]>> {
-    return this.http.get<apiResponse<Post[]>>(`${this.endPoint}?page=${page}&limit=150`);
+    return this.dedupe(`stats_${page}`,
+      () => this.http.get<apiResponse<Post[]>>(`${this.endPoint}?page=${page}&limit=150`)
+    );
   }
 
   /**
@@ -116,24 +121,30 @@ export class PostService {
    * (not sequentially) - this matters most for Prerender routes (/blog,
    * /category/*) where `ng serve` live-renders the whole page, crawl
    * included, on every reload (unlike production's build-time prerender).
+   * Deduped as a whole on top of getStatsPage's own per-page dedupe, so
+   * every caller racing on a cold AllPostsCache (SiteHeader, the AI
+   * assistant, and the page component itself) shares one assembled result
+   * instead of each re-running the page-1-then-forkJoin-rest sequence.
    */
   getAllPublished(): Observable<Post[]> {
-    return this.getStatsPage(1).pipe(
-      switchMap(first => {
-        const total = first.totalPages ?? 1;
-        if (total <= 1) return of(first.data ?? []);
+    return this.dedupe('all_published', () =>
+      this.getStatsPage(1).pipe(
+        switchMap(first => {
+          const total = first.totalPages ?? 1;
+          if (total <= 1) return of(first.data ?? []);
 
-        const rest = Array.from({ length: total - 1 }, (_, i) => this.getStatsPage(i + 2));
-        return forkJoin(rest).pipe(
-          map(pages => (first.data ?? []).concat(...pages.map(p => p.data ?? []))),
-        );
-      }),
-      // Called from nearly every prerendered route (directly or via
-      // SiteHeader) - without a bound, a slow/cold backend during a build
-      // hangs past Angular's own SSR deadline and kills every other
-      // in-flight prerender worker along with it, not just this route.
-      timeout(10000),
-      catchError(() => of([] as Post[])),
+          const rest = Array.from({ length: total - 1 }, (_, i) => this.getStatsPage(i + 2));
+          return forkJoin(rest).pipe(
+            map(pages => (first.data ?? []).concat(...pages.map(p => p.data ?? []))),
+          );
+        }),
+        // Called from nearly every prerendered route (directly or via
+        // SiteHeader) - without a bound, a slow/cold backend during a build
+        // hangs past Angular's own SSR deadline and kills every other
+        // in-flight prerender worker along with it, not just this route.
+        timeout(10000),
+        catchError(() => of([] as Post[])),
+      )
     );
   }
 
