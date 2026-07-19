@@ -64,7 +64,11 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 16px 16px 14px;
+  /* .ai-panel is fixed top:0/right:0/bottom:0 (desktop/tablet right drawer,
+     ≥769px only - the ≤768px variant below becomes a bottom sheet and
+     doesn't need this), so its header row is flush against the real
+     viewport top and needs its own status-bar/Dynamic-Island clearance. */
+  padding: calc(16px + env(safe-area-inset-top, 0px)) 16px 14px;
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }

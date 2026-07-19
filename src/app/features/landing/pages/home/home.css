@@ -76,8 +76,12 @@
   display: flex;
   align-items: center;
   gap: 24px;
-  height: 68px;
-  padding: 0 32px;
+  /* Clears the iOS status bar/Dynamic Island (viewport-fit=cover + PWA
+     black-translucent status bar in index.html make this necessary) - same
+     pattern as common-header.css's .ch-topbar. Home has its own separate
+     header (not SiteHeader), so it needs the fix independently. */
+  height: calc(68px + env(safe-area-inset-top, 0px));
+  padding: env(safe-area-inset-top, 0px) 32px 0;
   background: var(--bg-surface);
   border-bottom: 1px solid var(--border);
   backdrop-filter: blur(8px);
@@ -524,7 +528,10 @@
   background: var(--bg-surface);
   box-shadow: -8px 0 32px rgba(0,0,0,0.14);
   z-index: var(--z-modal, 1000);
-  padding: 18px;
+  /* Top-only bump so the close button/logo row clears the status bar/Dynamic
+     Island - this is a fixed, full-height (100dvh) panel, not sticky, so it
+     doesn't get the free clearance a sticky header gets from document flow. */
+  padding: calc(18px + env(safe-area-inset-top, 0px)) 18px 18px;
   overflow-y: auto;
   transition: right 0.25s ease;
   display: flex;
@@ -1730,7 +1737,7 @@
 }
 
 @media (max-width: 860px) {
-  .hp-header { padding: 0 16px; gap: 12px; }
+  .hp-header { padding: env(safe-area-inset-top, 0px) 16px 0; gap: 12px; }
   .hp-nav { display: none; }
   /* .hp-nav's margin:0 auto is what pushes header-actions to the right edge -
      once nav is hidden that centering mechanism disappears, so it has to be
