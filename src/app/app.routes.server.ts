@@ -1,5 +1,4 @@
 import { RenderMode, ServerRoute } from '@angular/ssr';
-import { MOCK_EXPERTS } from './features/career-guides/data/mock-experts';
 
 const CATEGORIES = [
   'update', 'news', 'sports', 'entertainment', 'health', 'technology',
@@ -26,10 +25,7 @@ export const serverRoutes: ServerRoute[] = [
   { path: 'tag/:tag',      renderMode: RenderMode.Server },
   { path: 'campaign/:id',  renderMode: RenderMode.Server },
   // Career Guides is a frontend-only UI prototype running on a fixed mock
-  // dataset (features/career-guides/data/mock-experts.ts) - Prerender both,
-  // enumerating the mock experts' slugs same as CATEGORIES above. Swap the
-  // profile route to RenderMode.Server (like author/:id) once real experts
-  // come from an API instead of a static import.
+  // dataset (features/career-guides/data/mock-experts.ts).
   { path: 'career-guides',           renderMode: RenderMode.Prerender },
   { path: 'career-guides/explore',   renderMode: RenderMode.Prerender },
   // Mentor-only, always shows live per-user data - never prerendered.
@@ -37,11 +33,10 @@ export const serverRoutes: ServerRoute[] = [
   // Must precede 'career-guides/:expertId' - same static-before-dynamic
   // ordering requirement as app.routes.ts.
   { path: 'career-guides/become-an-instructor', renderMode: RenderMode.Prerender },
-  {
-    path: 'career-guides/:expertId',
-    renderMode: RenderMode.Prerender,
-    getPrerenderParams: async () => MOCK_EXPERTS.map(e => ({ expertId: e.slug })),
-  },
+  // Server (not Prerender): the profile page fetches live reviews/stats/
+  // follower data per expert, so building this at request time (like
+  // author/:id) keeps the build from depending on the backend being awake.
+  { path: 'career-guides/:expertId', renderMode: RenderMode.Server },
   // 'search' and 'topics' now redirect to '/blog' (see app.routes.ts) - kept
   // as Server mode so the redirect resolves to a real HTTP redirect during
   // SSR instead of falling through to the client-only '**' route.
