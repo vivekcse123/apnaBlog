@@ -82,6 +82,10 @@
 /* ══ LAYOUT ══ */
 .ep-layout { display: grid; grid-template-columns: 1fr 300px; gap: 18px; padding: 18px 24px 0; align-items: start; }
 @media (max-width: 900px) { .ep-layout { grid-template-columns: 1fr; } }
+/* Clear the floating mobile bottom nav (mobile-bottom-nav.css: 66px tall,
+   10px off the bottom, z-index:1100) - same fix as guide-list.css - so the
+   sidebar's last card (Share this profile) isn't hidden underneath it. */
+@media (max-width: 768px) { .ep-layout { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); } }
 
 .ep-card { background: var(--bg-surface); border: 1px solid var(--border); border-radius: 18px; padding: 20px; box-shadow: var(--card-shadow); margin-bottom: 18px; }
 .ep-card h2 { font-size: 16px; font-weight: 700; color: var(--text-primary); margin-bottom: 12px; }
