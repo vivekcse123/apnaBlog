@@ -71,6 +71,12 @@ export class GuideList implements OnInit {
   }
 
   ngOnInit(): void {
+    // Ratings/session-counts/followers/mentor-check are all live, per-visitor
+    // data with no SEO value - skip them on the server so prerendering
+    // `career-guides`/`career-guides/explore` doesn't depend on the backend
+    // being up (same convention as scrollToExperts above).
+    if (!isPlatformBrowser(this.platformId)) return;
+
     this.callbackRequests.ratings()
       .pipe(takeUntilDestroyed(this.destroyRef), catchError(() => of({ data: [] as ExpertRating[] })))
       .subscribe(res => this.ratings.set(new Map(res.data.map(r => [r.expertSlug, r]))));
