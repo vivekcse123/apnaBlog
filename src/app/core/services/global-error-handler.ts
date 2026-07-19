@@ -23,6 +23,15 @@ export class GlobalErrorHandler implements ErrorHandler {
       return;
     }
 
+    if (this.isBrowserExtensionError(error)) {
+      // e.g. the Angular DevTools extension throwing "Angular debugging APIs
+      // are not available" when it probes a production build - genuinely
+      // unrelated to the app, but zone.js still routes it through here.
+      // Still logged for visibility, just not toasted at the user.
+      console.error('[GlobalError] Ignored (browser extension, not app code):', error);
+      return;
+    }
+
     console.error('[GlobalError]', error);
 
     if (isPlatformBrowser(this.platformId)) {
@@ -33,5 +42,11 @@ export class GlobalErrorHandler implements ErrorHandler {
         // console.error above is still the source of truth for debugging.
       }
     }
+  }
+
+  private isBrowserExtensionError(error: unknown): boolean {
+    const stack = error instanceof Error ? (error.stack ?? '') : '';
+    const message = error instanceof Error ? error.message : String(error);
+    return stack.includes('backend_bundle.js') || message.includes('Angular DevTools');
   }
 }

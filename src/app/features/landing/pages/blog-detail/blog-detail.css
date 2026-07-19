@@ -1930,8 +1930,13 @@
   /* Progress bar above everything */
   .reading-progress-bar { z-index: 1001; }
 
-  /* TOC full screen */
+  /* TOC full screen - header padded clear of the notch/status bar so the
+     "Contents" title isn't hidden above the viewport, and the nav list gets
+     enough bottom padding to scroll fully clear of the stacked mob-article-bar
+     + mob-nav fixed bars (same clearance value used for .blog-detail-footer). */
   .toc-sidebar { top: 0; height: 100dvh; }
+  .toc-header { padding-top: calc(16px + env(safe-area-inset-top, 0px)); }
+  .toc-nav { padding-bottom: calc(52px + 78px + env(safe-area-inset-bottom, 0px)); }
 
   /* Back to Blogs link */
   .blog-back-wrap { padding: 8px 14px 14px; }
