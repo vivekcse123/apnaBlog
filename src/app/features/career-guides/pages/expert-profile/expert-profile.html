@@ -108,7 +108,7 @@
         <section class="ep-card">
           <h2>Experience</h2>
           <ol class="ep-timeline">
-            @for (item of displayExpert()!.experience; track item.title) {
+            @for (item of displayExpert()!.experience; track $index) {
               <li>
                 <span class="ep-tl-dot"></span>
                 <div>
@@ -124,7 +124,7 @@
         <section class="ep-card">
           <h2>Education</h2>
           <ol class="ep-timeline">
-            @for (item of displayExpert()!.education; track item.title) {
+            @for (item of displayExpert()!.education; track $index) {
               <li>
                 <span class="ep-tl-dot"></span>
                 <div>
