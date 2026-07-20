@@ -321,12 +321,31 @@ export class ManageUsers implements OnInit, OnDestroy {
     return colors[Math.abs(hash) % colors.length];
   }
 
+  /* -1 is the ellipsis sentinel ("…") - keeps the button count capped at
+     7 slots (1, …, cur-1..cur+1, …, total) regardless of totalPages, so the
+     nav row fits in one line on mobile instead of needing to scroll. */
+  static readonly PAGE_ELLIPSIS = -1;
+
   visiblePages = computed(() => {
     const total = this.totalPages();
     const cur   = this.currentPage();
     if (total <= 7) return this.pages();
-    const start = Math.max(1, Math.min(cur - 3, total - 6));
-    return Array.from({ length: Math.min(7, total) }, (_, i) => start + i);
+
+    const ELLIPSIS = ManageUsers.PAGE_ELLIPSIS;
+    let start = Math.max(2, cur - 1);
+    let end   = Math.min(total - 1, cur + 1);
+    // Collapsing a single hidden page into "…" saves no space and just
+    // looks like a gap (e.g. "1 3 4 5" with page 2 silently missing) -
+    // show it directly instead of eliding it.
+    if (start === 3) start = 2;
+    if (end === total - 2) end = total - 1;
+
+    const pages: number[] = [1];
+    if (start > 2) pages.push(ELLIPSIS);
+    for (let i = start; i <= end; i++) pages.push(i);
+    if (end < total - 1) pages.push(ELLIPSIS);
+    pages.push(total);
+    return pages;
   });
 
   ngOnDestroy(): void {

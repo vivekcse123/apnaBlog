@@ -380,6 +380,13 @@
   background: var(--accent);
   border-color:transparent; color:#fff; cursor:default;
 }
+.ap-pg-ellipsis {
+  min-width:20px; height:32px;
+  display:inline-flex; align-items:center; justify-content:center;
+  color:var(--text-muted);
+  font-size:13px; font-weight:600;
+  flex-shrink:0;
+}
 
 /* ── Modal Overlay ─────────────────────────────── */
 .ap-overlay {
@@ -559,9 +566,28 @@
   td.ap-td-actions::before { display:none; }
   .ap-action { width:38px; height:38px; }
 
-  /* Pagination */
+  /* Pagination - the ellipsis pattern in visiblePages() caps the nav row at
+     ~7 number/ellipsis slots regardless of totalPages, and First/Last are
+     dropped here since page 1 and the last page are always among those
+     slots - together that's narrow enough to sit on one line without
+     scrolling. overflow-x:auto stays only as a fallback for extreme cases
+     (folded phones, etc); width:100% + min-width:0 make sure it would
+     actually engage rather than the row silently growing past the edge. */
   .ap-pagination { justify-content:center; }
   .ap-pg-info    { width:100%; text-align:center; }
+  .ap-pg-first, .ap-pg-last { display:none; }
+  .ap-pg-nav {
+    flex-wrap:nowrap;
+    overflow-x:auto;
+    width:100%;
+    min-width:0;
+    max-width:100%;
+    justify-content:center;
+    scrollbar-width:none;
+    -ms-overflow-style:none;
+  }
+  .ap-pg-nav::-webkit-scrollbar { display:none; }
+  .ap-pg-btn { flex-shrink:0; }
 
   /* Skeleton cards */
   .ap-sk-row {

@@ -362,13 +362,17 @@
       <div class="ap-pagination">
         <span class="ap-pg-info">Showing {{ pageStart() }}–{{ pageEnd() }} of {{ filteredBlogs().length }}</span>
         <div class="ap-pg-nav">
-          <button class="ap-pg-btn" (click)="goToPage(1)"         [disabled]="currentPage() === 1"            title="First">«</button>
+          <button class="ap-pg-btn ap-pg-first" (click)="goToPage(1)"         [disabled]="currentPage() === 1"            title="First">«</button>
           <button class="ap-pg-btn" (click)="previousPage()"      [disabled]="currentPage() === 1"            title="Prev">‹</button>
-          @for (p of visiblePages(); track p) {
-            <button class="ap-pg-btn ap-pg-num" [class.ap-pg-active]="currentPage() === p" (click)="goToPage(p)">{{ p }}</button>
+          @for (p of visiblePages(); track $index) {
+            @if (p === -1) {
+              <span class="ap-pg-ellipsis">&hellip;</span>
+            } @else {
+              <button class="ap-pg-btn ap-pg-num" [class.ap-pg-active]="currentPage() === p" (click)="goToPage(p)">{{ p }}</button>
+            }
           }
           <button class="ap-pg-btn" (click)="nextPage()"         [disabled]="currentPage() === totalPages()"  title="Next">›</button>
-          <button class="ap-pg-btn" (click)="goToPage(totalPages())" [disabled]="currentPage() === totalPages()" title="Last">»</button>
+          <button class="ap-pg-btn ap-pg-last" (click)="goToPage(totalPages())" [disabled]="currentPage() === totalPages()" title="Last">»</button>
         </div>
       </div>
     }

@@ -49,6 +49,14 @@
       bottom: calc(10px + var(--safe-area-bottom, env(safe-area-inset-bottom, 0px)));
       transition: bottom 0.15s ease;
     }
+
+    /* [data-safe-ready="1"] is only ever set by the iOS `navigator.standalone`
+       branch in index.html (Android/desktop never set it) - so this scopes the
+       "sit almost flush against the home indicator, Instagram-style" spacing to
+       iOS PWA installs specifically, leaving Android/browser untouched. */
+    :root[data-safe-ready="1"] .mob-nav {
+      bottom: calc(2px + var(--safe-area-bottom, env(safe-area-inset-bottom, 0px)));
+    }
   }
 
   /* ── Nav item base - larger touch target (full pill height) ── */
@@ -68,7 +76,7 @@
     -webkit-tap-highlight-color: transparent;
   }
 
-  .mob-nav-item:not(.mob-nav-item--fab):active {
+  .mob-nav-item:active {
     transform: scale(0.9);
   }
 
@@ -128,27 +136,20 @@
     box-shadow: 0 0 0 2px #2563EB;
   }
 
-  /* ── Label ── */
+  /* ── Label: hidden - icon-only nav (Instagram-style). Kept in the DOM
+     (not removed from the template) so aria-label on the parent link still
+     carries the accessible name; text is just visually suppressed. ── */
   .mob-nav-label {
-    font-size: 10px;
-    font-weight: 500;
-    font-family: 'DM Sans', sans-serif;
-    letter-spacing: 0.01em;
-    color: var(--text-secondary, #4b5563);
-    transition: color 0.18s, font-weight 0.18s;
-    white-space: nowrap;
+    display: none;
   }
 
   /* ── Hover state ── */
-  .mob-nav-item:not(.mob-nav-item--fab):hover {
+  .mob-nav-item:hover {
     color: #2563EB;
   }
 
-  /* ══ Centre FAB (admin / user dashboard modes) ══ */
-  .mob-nav-item--fab {
-    flex: 1.2;
-  }
-
+  /* ══ Centre "create" item (admin / super-admin / user dashboard modes) -
+     plain icon, same width/height/treatment as every other nav item. ══ */
   .mob-nav-item--fab::before {
     display: none;
   }
@@ -157,20 +158,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 52px;
-    height: 52px;
-    border-radius: 50%;
-    background: var(--accent);
-    color: #fff;
-    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.32), 0 1px 4px rgba(0,0,0,0.12);
-    transition: transform 0.15s, box-shadow 0.15s;
-    margin-top: -20px;
-    border: 3px solid var(--bg-base, #F8FAFC);
-  }
-
-  .mob-nav-item--fab:active .mob-nav-fab-ring {
-    transform: scale(0.9);
-    box-shadow: 0 1px 4px rgba(37, 99, 235, 0.18);
+    line-height: 1;
+    border-radius: 12px;
+    padding: 6px 10px;
+    transition: background 0.18s, padding 0.18s, border-radius 0.18s;
   }
 
   /* ══ Shorts item (public mode) - flat, same treatment as other items ══ */
@@ -217,10 +208,6 @@
     background: rgba(30, 41, 59, 0.78);
     border-color: var(--border, rgba(255, 255, 255, 0.08));
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45), 0 2px 8px rgba(0, 0, 0, 0.25);
-  }
-
-  [data-theme="dark"] .mob-nav-fab-ring {
-    border-color: var(--bg-base, #0F172A);
   }
 
   [data-theme="dark"] .mob-nav-item--active .mob-nav-icon {

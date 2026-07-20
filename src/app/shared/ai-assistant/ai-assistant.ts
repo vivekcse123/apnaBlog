@@ -16,7 +16,16 @@ interface ChatMessage {
   chips?:   AssistantChip[];
 }
 
-const HIDDEN_ROUTE_PREFIXES = ['/auth', '/admin', '/super-admin'];
+// Shorts is an immersive full-bleed feed with its own upload FAB pinned to
+// the same bottom-right corner (and that FAB's offset shifts further when an
+// ad banner fills in), so the AI FAB can't be reliably "raised" to clear it -
+// simplest to hide it there entirely.
+const HIDDEN_ROUTE_PREFIXES = ['/auth', '/admin', '/super-admin', '/shorts'];
+
+// Blog-detail stacks its own fixed Like/Comment/Share/Save bar above the
+// mobile bottom nav - the FAB needs extra bottom clearance there so it
+// doesn't sit on top of the Save button.
+const RAISED_ROUTE_PREFIXES = ['/blog/'];
 
 @Component({
   selector: 'app-ai-assistant',
@@ -36,6 +45,7 @@ export class AiAssistant {
 
   isOpen    = signal(false);
   isHidden  = signal(false);
+  isRaised  = signal(false);
   query     = signal('');
   isTyping  = signal(false);
   messages  = signal<ChatMessage[]>([]);
@@ -49,6 +59,7 @@ export class AiAssistant {
 
   private updateHiddenForUrl(url: string): void {
     this.isHidden.set(HIDDEN_ROUTE_PREFIXES.some(p => url.startsWith(p)));
+    this.isRaised.set(RAISED_ROUTE_PREFIXES.some(p => url.startsWith(p)));
   }
 
   toggle(): void {

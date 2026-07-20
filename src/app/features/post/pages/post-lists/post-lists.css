@@ -11,6 +11,8 @@
   color: var(--text-primary);
   min-height: 100dvh;
   font-family: 'DM Sans', -apple-system, sans-serif;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 /* ── Header ────────────────────────────────────── */
@@ -41,7 +43,6 @@
   font-weight: 800;
   letter-spacing: -.4px;
   color: var(--text-primary);
-  color: transparent;
 }
 .ap-subtitle {
   margin: 0;
@@ -146,6 +147,7 @@
   overflow: hidden;
   transition: transform .18s, box-shadow .18s;
   cursor: default;
+  min-width: 0;
 }
 .ap-stat::before {
   content: '';
@@ -223,6 +225,7 @@
   transition: border-color .15s, box-shadow .15s;
   /* Override global select { width: 100% } from styles.css */
   width: 180px;
+  min-width: 0;
 }
 .ap-select:focus { border-color: #2563EB; box-shadow: 0 0 0 3px rgba(37, 99, 235, .14); }
 
@@ -514,6 +517,13 @@
   color:#fff;
   cursor:default;
 }
+.ap-pg-ellipsis {
+  min-width:20px; height:32px;
+  display:inline-flex; align-items:center; justify-content:center;
+  color:var(--text-muted);
+  font-size:13px; font-weight:600;
+  flex-shrink:0;
+}
 
 /* ── Modal Overlay ─────────────────────────────── */
 .ap-overlay {
@@ -668,7 +678,7 @@
   }
 
   /* Stats: 2-col grid */
-  .ap-stats { grid-template-columns:repeat(2,1fr); gap:8px; }
+  .ap-stats { grid-template-columns:repeat(2, minmax(0, 1fr)); gap:8px; }
   .ap-stat  { padding:14px 14px; gap:10px; }
   .ap-stat-icon { width:34px; height:34px; border-radius:8px; }
   .ap-stat-num  { font-size:22px; }
@@ -679,7 +689,7 @@
   /* Restore filter-selects as a 2-col grid (overrides desktop display:contents) */
   .ap-filter-selects {
     display:grid;
-    grid-template-columns:1fr 1fr;
+    grid-template-columns:minmax(0, 1fr) minmax(0, 1fr);
     gap:8px;
   }
   .ap-filter-selects .ap-result-count {
@@ -688,11 +698,17 @@
     margin-left:0;
   }
   .ap-select { width:100%; }
-  /* Chips row: horizontal scroll so they never wrap */
+  /* Chips row: horizontal scroll so they never wrap.
+     min-width:0 overrides the flex item's default min-width:auto - without
+     it, the row's own min-content width (sum of all chip widths) forces it
+     wider than .ap-toolbar, so overflow-x:auto never kicks in and the row
+     spills past the screen edge instead of scrolling. */
   .ap-filter-chips {
     display:flex;
     flex-wrap:nowrap;
     overflow-x:auto;
+    width:100%;
+    min-width:0;
     gap:8px;
     padding-bottom:2px;
     scrollbar-width:none;
@@ -756,9 +772,28 @@
   td.ap-td-num { text-align:right; }
   .ap-num-cell { float:none; }
 
-  /* Pagination */
+  /* Pagination - the ellipsis pattern in visiblePages() caps the nav row at
+     ~7 number/ellipsis slots regardless of totalPages, and First/Last are
+     dropped here since page 1 and the last page are always among those
+     slots - together that's narrow enough to sit on one line without
+     scrolling. overflow-x:auto stays only as a fallback for extreme cases
+     (folded phones, etc); width:100% + min-width:0 make sure it would
+     actually engage rather than the row silently growing past the edge. */
   .ap-pagination { justify-content:center; }
   .ap-pg-info    { width:100%; text-align:center; }
+  .ap-pg-first, .ap-pg-last { display:none; }
+  .ap-pg-nav {
+    flex-wrap:nowrap;
+    overflow-x:auto;
+    width:100%;
+    min-width:0;
+    max-width:100%;
+    justify-content:center;
+    scrollbar-width:none;
+    -ms-overflow-style:none;
+  }
+  .ap-pg-nav::-webkit-scrollbar { display:none; }
+  .ap-pg-btn { flex-shrink:0; }
 
   /* Skeleton cards */
   .ap-sk-row {

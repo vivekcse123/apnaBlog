@@ -229,7 +229,7 @@
 
 .sh-search-hint { margin-top: 12px; }
 .sh-search-popover .sh-search-hint { margin-top: 0; }
-.sh-search-hint .lbl { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 8px; }
+.sh-search-hint .lbl { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 8px; margin: 10px 5px;}
 .sh-search-quick { display: flex; flex-wrap: wrap; gap: 7px; }
 .sh-search-quick a {
   display: flex; align-items: center; gap: 7px; padding: 7px 12px; border-radius: 999px;

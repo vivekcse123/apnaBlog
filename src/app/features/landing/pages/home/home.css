@@ -715,7 +715,7 @@
   margin: 0 0 30px;
 }
 
-.hp-hero-ctas { display: flex; gap: 14px; flex-wrap: wrap; }
+.hp-hero-ctas { display: flex; gap: 14px; flex-wrap: nowrap; }
 
 .hp-hero-art {
   position: relative;
@@ -1284,13 +1284,11 @@
   list-style: none;
   margin: 0;
   padding: 0 0 4px;
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 16px;
-  overflow-x: auto;
-  scrollbar-width: none;
 }
-.hp-sponsored-list::-webkit-scrollbar { display: none; }
-.hp-sponsored-item { flex: 0 0 auto; width: 240px; }
+.hp-sponsored-item { width: 100%; }
 .hp-sponsored-link {
   display: block;
   background: var(--bg-surface);
@@ -1314,10 +1312,14 @@
   font-weight: 800;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--text-muted);
-  background: var(--bg-hover);
+  color: #92400E;
+  background: #FEF3C7;
   border-radius: 5px;
   padding: 2px 7px;
+}
+:host-context([data-theme="dark"]) .hp-sponsored-tag {
+  color: #FCD34D;
+  background: rgba(217, 119, 6, 0.18);
 }
 .hp-sponsored-title {
   font-size: 14px;
@@ -1762,7 +1764,15 @@
   }
   .hp-hero-inner { grid-template-columns: 1fr; }
   .hp-hero-art { display: none; }
+  /* Explore Articles + Latest News must stay side by side, never wrap to
+     two lines - buttons shrink (padding/font/gap) to share the row instead. */
+  .hp-hero-ctas { gap: 8px; }
+  .hp-hero-ctas .hp-btn { flex: 1 1 0; min-width: 0; padding: 11px 12px; font-size: 13.5px; gap: 5px; }
+  .hp-hero-ctas .hp-btn svg { flex-shrink: 0; width: 14px; height: 14px; }
   .hp-chip-rail, .hp-section, .hp-feature-row, .hp-tp-row, .hp-newsletter, .hp-sponsored-row { padding-left: 16px; padding-right: 16px; }
+  /* Sponsored cards go full-width single column on mobile instead of the
+     desktop multi-column grid, so each card spans the screen edge to edge. */
+  .hp-sponsored-list { grid-template-columns: 1fr; }
   /* Smaller type/spacing throughout - the desktop footer's sizing made it
      feel oversized once it's a single narrow flowing column instead of a
      wide 5-across row. */
@@ -1791,6 +1801,10 @@
 @media (max-width: 560px) {
   .hp-rail-card { flex-basis: 220px; }
   .hp-short-card { flex-basis: 130px; }
+}
+
+@media (max-width: 380px) {
+  .hp-hero-ctas .hp-btn { padding: 10px 8px; font-size: 12.5px; }
 }
 
 /* Embedded mode (Home rendered inside the user dashboard shell at

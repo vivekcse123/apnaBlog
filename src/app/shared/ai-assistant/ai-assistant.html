@@ -6,6 +6,7 @@
   @if (!isOpen()) {
     <button
       class="ai-fab"
+      [class.ai-fab--raised]="isRaised()"
       type="button"
       (click)="toggle()"
       [attr.aria-expanded]="isOpen()"

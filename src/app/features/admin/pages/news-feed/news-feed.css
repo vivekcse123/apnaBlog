@@ -18,9 +18,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 12px;
 }
-.nf-header-left { display: flex; align-items: center; gap: 12px; }
+.nf-header-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .nf-header-icon {
   width: 42px; height: 42px;
   border-radius: 12px;

@@ -1416,7 +1416,7 @@
   .sidebar-section { padding: 18px; }
 
   /* Quick Actions: 4 cards in a row */
-  .qa-grid  { grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .qa-grid  { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
   .qa-card  { padding: 12px 8px; gap: 8px; align-items: center; }
   .qa-label { font-size: 11px; text-align: center; }
 

@@ -27,6 +27,11 @@
 
 @media (max-width: 768px) {
   .ai-fab { right: 16px; bottom: calc(78px + env(safe-area-inset-bottom, 0px)); width: 48px; height: 48px; }
+
+  /* Blog-detail adds its own fixed Like/Comment/Share/Save bar
+     (.mob-article-bar, bottom: 82px, height: 52px) above the bottom nav -
+     push the FAB above that bar too so it doesn't cover the Save button. */
+  .ai-fab--raised { bottom: calc(146px + env(safe-area-inset-bottom, 0px)); }
 }
 
 .ai-scrim {
