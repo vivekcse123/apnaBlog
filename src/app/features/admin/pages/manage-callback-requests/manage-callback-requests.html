@@ -1,11 +1,19 @@
 <div class="mcr-page">
 
   <div class="mcr-header">
-    <div>
-      <h1 class="mcr-title">📞 Career Guides &middot; Callback Requests</h1>
-      <p class="mcr-sub">All callback requests across every expert. {{ total() }} total.</p>
+    <div class="mcr-header__title-row">
+      <span class="mcr-header__icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+      </span>
+      <div>
+        <h1 class="mcr-title">Career Guides &middot; Callback Requests</h1>
+        <p class="mcr-sub">All callback requests across every expert. {{ total() }} total.</p>
+      </div>
     </div>
-    <button class="mcr-refresh" (click)="load()">↻ Refresh</button>
+    <button class="mcr-refresh" (click)="load()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      Refresh
+    </button>
   </div>
 
   <div class="mcr-filters">
@@ -32,7 +40,10 @@
     </label>
 
     <button class="mcr-reset" type="button" (click)="resetFilters()">Reset</button>
-    <button class="mcr-reset" type="button" (click)="exportCsv()">⬇ Export CSV</button>
+    <button class="mcr-reset" type="button" (click)="exportCsv()">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Export CSV
+    </button>
   </div>
 
   @if (isLoading()) {
@@ -43,7 +54,9 @@
     <div class="mcr-error">{{ error() }}</div>
   } @else if (requests().length === 0) {
     <div class="mcr-empty">
-      <span class="mcr-empty__icon">📭</span>
+      <span class="mcr-empty__icon">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M22 6v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6"/><path d="M2 6l10 7L22 6"/><path d="M2 6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2"/></svg>
+      </span>
       <p>No callback requests match these filters.</p>
     </div>
   } @else {
@@ -51,16 +64,20 @@
       @for (r of requests(); track trackById($index, r)) {
         <div class="mcr-row">
           <div class="mcr-row__head" (click)="toggleExpand(r._id)">
-            <div class="mcr-row__info">
-              <span class="mcr-status" [attr.data-status]="r.status">{{ r.status }}</span>
-              <span class="mcr-user">{{ r.userName }}</span>
-              <span class="mcr-arrow">→</span>
-              <span class="mcr-expert">{{ r.expertName }}</span>
-              <span class="mcr-topic">{{ r.topic }}</span>
+            <div class="mcr-row__top">
+              <div class="mcr-row__parties">
+                <span class="mcr-status" [attr.data-status]="r.status">{{ r.status }}</span>
+                <span class="mcr-user">{{ r.userName }}</span>
+                <svg class="mcr-arrow" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                <span class="mcr-expert">{{ r.expertName }}</span>
+              </div>
+              <button class="mcr-chevron-btn" type="button" [class.mcr-chevron-btn--open]="expandedId() === r._id" aria-label="Toggle details">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
             </div>
-            <div class="mcr-row__meta">
-              <span>{{ r.preferredDate }} · {{ r.preferredTime }}</span>
-              <span class="mcr-chevron">{{ expandedId() === r._id ? '▲' : '▼' }}</span>
+            <div class="mcr-row__bottom">
+              <span class="mcr-topic">{{ r.topic }}</span>
+              <span class="mcr-date">{{ r.preferredDate }} &middot; {{ r.preferredTime }}</span>
             </div>
           </div>
 

@@ -73,6 +73,9 @@
 }
 .app-logo:hover { opacity: 0.8; }
 .app-logo-img { border-radius: 8px; }
+.app-logo-word { font-size: 18px; font-weight: 800; letter-spacing: -0.02em; white-space: nowrap; }
+.app-logo-word-a { color: var(--text-primary); }
+.app-logo-word-i { color: var(--accent); }
 
 .header-center {
   min-width: 0;
@@ -570,7 +573,7 @@
   border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
   font-size: 11px; font-weight: 700; letter-spacing: 0.04em;
   text-transform: uppercase;
-  padding: 5px 13px; border-radius: var(--bd2-radius-pill);
+  padding: 5px 13px; border-radius: 12px;
   cursor: pointer;
   transition: background 0.2s, color 0.2s;
 }
@@ -1930,13 +1933,21 @@
   /* Progress bar above everything */
   .reading-progress-bar { z-index: 1001; }
 
-  /* TOC full screen - header padded clear of the notch/status bar so the
-     "Contents" title isn't hidden above the viewport, and the nav list gets
-     enough bottom padding to scroll fully clear of the stacked mob-article-bar
-     + mob-nav fixed bars (same clearance value used for .blog-detail-footer). */
-  .toc-sidebar { top: 0; height: 100dvh; }
-  .toc-header { padding-top: calc(16px + env(safe-area-inset-top, 0px)); }
-  .toc-nav { padding-bottom: calc(52px + 78px + env(safe-area-inset-bottom, 0px)); }
+  /* TOC starts below the sticky app .header (54px + notch) instead of top:0 -
+     .header's z-index:1000 sits above .toc-sidebar's 850, so a full-screen
+     top:0 panel had its "Contents" title rendered underneath the header bar.
+     The nav list gets enough bottom padding to scroll fully clear of the
+     stacked mob-article-bar + mob-nav fixed bars (same clearance value used
+     for .blog-detail-footer). */
+  .toc-sidebar {
+    top: calc(54px + env(safe-area-inset-top, 0px));
+    height: calc(100dvh - 54px - env(safe-area-inset-top, 0px));
+  }
+  /* mob-article-bar's top edge sits at 134px from the screen bottom
+     (bottom: 82px + height: 52px) - that's the tallest fixed element stacked
+     above mob-nav, so clearance must be at least that plus a visible gap,
+     not just mob-nav's own footprint. */
+  .toc-nav { padding-bottom: calc(134px + 16px + env(safe-area-inset-bottom, 0px)); }
 
   /* Back to Blogs link */
   .blog-back-wrap { padding: 8px 14px 14px; }
@@ -2013,7 +2024,7 @@
   /* Header simplification */
   .cat-btn-full  { display: none; }
   .cat-btn-short { display: inline; }
-  .hdr-cat-btn   { padding: 6px 10px; gap: 4px; }
+  .hdr-cat-btn   { padding: 6px 10px; gap: 4px; border-radius: 10px; }
 }
 
 /* ══════════════════════════════════════════
@@ -2196,9 +2207,6 @@
     background: rgba(239, 68, 68, 0.1);
   }
 
-  /* ── 2. Hide font-size buttons (clutter on small screens) ── */
-  .font-size-btns { display: none; }
-
   /* ── 3. Language bar - horizontal scroll instead of wrapping ── */
   .lang-bar {
     flex-wrap: nowrap;
@@ -2209,6 +2217,7 @@
   }
   .lang-bar::-webkit-scrollbar { display: none; }
   .lang-btn { flex-shrink: 0; }
+  .font-size-btns { flex-shrink: 0; }
 
   /* ── 4. Author meta line - pulled in tighter under the name on mobile only ── */
   .author-chip-meta { margin-top: -33px; }
@@ -2221,9 +2230,12 @@
     bottom: calc(64px + 52px + 8px + env(safe-area-inset-bottom, 0px));
   }
 
-  /* ── 7. Footer - account for mob-article-bar height ── */
+  /* ── 7. Footer - account for mob-article-bar height.
+     mob-article-bar's top edge sits at 134px from the viewport bottom
+     (bottom:82px + height:52px) - padding must clear that plus a visible
+     gap, not land flush against it. ── */
   .blog-detail-footer {
-    padding-bottom: calc(52px + 78px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(52px + 78px + 20px + env(safe-area-inset-bottom, 0px));
   }
 
   /* ── 8. Discussion compose - more compact on mobile ── */
