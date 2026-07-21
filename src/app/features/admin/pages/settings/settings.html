@@ -1,4 +1,4 @@
-<div class="settings-root">
+<div class="settings-root" [class.mobile-drilldown-open]="mobileDrilldownOpen()">
 
   @if (showModal()) {
     <app-message-modal
@@ -17,6 +17,98 @@
     style="display:none"
     (change)="onAvatarSelected($event)" />
 
+  <!-- ══ Mobile list-root — native-style menu shown only below 768px, ══
+       ══ hidden once a section is drilled into (see .mobile-drilldown-open) ── -->
+  <div class="mobile-list-root">
+    <h1 class="mlr-page-title">Settings</h1>
+    @if (!isLoading() && user(); as mu) {
+      <button class="mlr-you-card" (click)="openMobileSection('profile')">
+        <div class="mlr-avatar">
+          @if (avatarUrl()) {
+            <img [src]="avatarUrl()!" alt="" />
+          } @else {
+            {{ avatarInitial() }}
+          }
+        </div>
+        <div class="mlr-you-info">
+          <span class="mlr-you-name">{{ mu.name || 'Your Profile' }}</span>
+          <span class="mlr-you-email">{{ mu.email }}</span>
+        </div>
+        <span class="role-badge mlr-you-role">{{ mu.role }}</span>
+        <svg class="mlr-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    }
+
+    <div class="mlr-group">
+      <button class="mlr-row" (click)="openMobileSection('appearance')">
+        <span class="mlr-row-icon mlr-icon--accent">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/>
+            <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>
+          </svg>
+        </span>
+        <span class="mlr-row-body">
+          <span class="mlr-row-label">Appearance</span>
+          <span class="mlr-row-sub">Light or dark theme</span>
+        </span>
+        <svg class="mlr-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+      <button class="mlr-row" (click)="openMobileSection('language')">
+        <span class="mlr-row-icon mlr-icon--accent2">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+          </svg>
+        </span>
+        <span class="mlr-row-body">
+          <span class="mlr-row-label">Language</span>
+          <span class="mlr-row-sub">Interface language</span>
+        </span>
+        <svg class="mlr-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+      <button class="mlr-row" (click)="openMobileSection('notifications')">
+        <span class="mlr-row-icon mlr-icon--warn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+        </span>
+        <span class="mlr-row-body">
+          <span class="mlr-row-label">Notifications</span>
+          <span class="mlr-row-sub">Alerts and digest emails</span>
+        </span>
+        <svg class="mlr-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+      <button class="mlr-row" (click)="openMobileSection('security')">
+        <span class="mlr-row-icon mlr-icon--success">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </span>
+        <span class="mlr-row-body">
+          <span class="mlr-row-label">Security</span>
+          <span class="mlr-row-sub">Password, 2FA, active sessions</span>
+        </span>
+        <svg class="mlr-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
+
+    <div class="mlr-group mlr-group--danger">
+      <button class="mlr-row mlr-row--danger" (click)="openMobileSection('danger')">
+        <span class="mlr-row-icon mlr-icon--danger">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+        </span>
+        <span class="mlr-row-body">
+          <span class="mlr-row-label">Danger Zone</span>
+          <span class="mlr-row-sub">Export, deactivate, or delete account</span>
+        </span>
+        <svg class="mlr-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
+  </div>
+
   <aside class="sidebar">
     <div class="sidebar-brand">
       <nav class="settings-breadcrumb" aria-label="Breadcrumb">
@@ -29,6 +121,9 @@
       </nav>
     </div>
     <div class="mobile-section-header">
+      <button class="mobile-back-btn" (click)="closeMobileSection()" aria-label="Back to settings list" type="button">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
       <span class="mobile-section-name" [class.danger-section]="activeSection() === 'danger'">{{ activeSectionHeading() }}</span>
     </div>
 
@@ -61,8 +156,15 @@
     @if (activeSection() === 'profile') {
       <div class="section-wrap">
         <div class="section-heading">
-          <h1>Profile Information</h1>
-          <p>Your account details fetched from the server</p>
+          <div class="section-heading-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+            </svg>
+          </div>
+          <div>
+            <h1>Profile Information</h1>
+            <p>Your account details fetched from the server</p>
+          </div>
         </div>
 
         @if (saveSuccess()) {
@@ -241,8 +343,16 @@
     @if (activeSection() === 'appearance') {
       <div class="section-wrap">
         <div class="section-heading">
-          <h1>Appearance</h1>
-          <p>Theme is applied globally across the entire application</p>
+          <div class="section-heading-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/>
+              <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>
+            </svg>
+          </div>
+          <div>
+            <h1>Appearance</h1>
+            <p>Theme is applied globally across the entire application</p>
+          </div>
         </div>
         <div class="appearance-card">
           <span class="appear-title">Color Theme</span>
@@ -294,8 +404,16 @@
     @if (activeSection() === 'language') {
       <div class="section-wrap">
         <div class="section-heading">
-          <h1>Language & Region</h1>
-          <p>Set your preferred interface language</p>
+          <div class="section-heading-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+            </svg>
+          </div>
+          <div>
+            <h1>Language & Region</h1>
+            <p>Set your preferred interface language</p>
+          </div>
         </div>
         <div class="lang-grid">
           @for (lang of languages; track lang.code) {
@@ -318,8 +436,15 @@
     @if (activeSection() === 'notifications') {
       <div class="section-wrap">
         <div class="section-heading">
-          <h1>Notifications</h1>
-          <p>Choose what alerts you receive</p>
+          <div class="section-heading-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+            </svg>
+          </div>
+          <div>
+            <h1>Notifications</h1>
+            <p>Choose what alerts you receive</p>
+          </div>
         </div>
         <div class="notif-list">
           @for (item of visibleNotifItems; track item.key) {
@@ -340,8 +465,15 @@
     @if (activeSection() === 'security') {
       <div class="section-wrap">
         <div class="section-heading">
-          <h1>Security</h1>
-          <p>Protect your account and manage access</p>
+          <div class="section-heading-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+          </div>
+          <div>
+            <h1>Security</h1>
+            <p>Protect your account and manage access</p>
+          </div>
         </div>
         <div class="security-card">
           <div class="card-title-row">
@@ -465,8 +597,16 @@
     @if (activeSection() === 'danger') {
       <div class="section-wrap">
         <div class="section-heading danger-heading">
-          <h1>Danger Zone</h1>
-          <p>These actions are permanent and cannot be undone</p>
+          <div class="section-heading-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+          </div>
+          <div>
+            <h1>Danger Zone</h1>
+            <p>These actions are permanent and cannot be undone</p>
+          </div>
         </div>
         <div class="danger-card">
           <div class="danger-row">

@@ -134,10 +134,13 @@
                       <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.9 1.5 3.2-.5 1 3.1 2.4 2.1-1.5 2.9 1.5 2.9-2.4 2.1-1 3.1-3.2-.5L12 22l-2.9-1.5-3.2.5-1-3.1-2.4-2.1 1.5-2.9-1.5-2.9 2.4-2.1 1-3.1 3.2.5z"/><path d="M9 12l2 2 4-4" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
                     </span>
                   }
+                  @if (expert.availabilityStatus) {
+                    <span class="cg-avail-dot" [attr.data-status]="expert.availabilityStatus" [title]="expert.availabilityStatus"></span>
+                  }
                 </span>
                 <div class="cg-expert-id">
                   <span class="cg-expert-name">{{ expert.name }} @if (expert.verified) { <span class="cg-tick" title="Verified expert"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.9 1.5 3.2-.5 1 3.1 2.4 2.1-1.5 2.9 1.5 2.9-2.4 2.1-1 3.1-3.2-.5L12 22l-2.9-1.5-3.2.5-1-3.1-2.4-2.1 1.5-2.9-1.5-2.9 2.4-2.1 1-3.1 3.2.5z"/><path d="M9 12l2 2 4-4" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span> }</span>
-                  <span class="cg-expert-title">{{ expert.title }}</span>
+                  <span class="cg-expert-title">{{ expert.title | decodeEntities }}</span>
                   @if (expert.specialBadge) {
                     <span class="cg-special-badge">🎖 {{ expert.specialBadge }}</span>
                   }
@@ -156,7 +159,7 @@
 
               <div class="cg-expert-skills">
                 @for (skill of expert.skills.slice(0, 4); track skill) {
-                  <span class="cg-skill-chip">{{ skill }}</span>
+                  <span class="cg-skill-chip">{{ skill | decodeEntities }}</span>
                 }
               </div>
 

@@ -11,6 +11,7 @@ import { PostService } from '../../../post/services/post-service';
 import { AdminService } from '../../../admin/services/admin-service';
 import { Auth } from '../../../../core/services/auth';
 import { environment } from '../../../../../environments/environment';
+import { hasLifetimeAccess } from '../../../../core/utils/lifetime-membership.util';
 
 @Component({
   selector: 'app-super-admin-home',
@@ -46,6 +47,7 @@ export class SuperAdminHome implements OnInit {
   adminCount     = signal(0);
   superAdminCount = signal(0);
   premiumCount   = signal(0);
+  lifetimeCount  = signal(0);
   recentUsers    = signal<any[]>([]);
   inactiveList   = signal<any[]>([]);
   categoryCounts = signal<{ name: string; count: number }[]>([]);
@@ -96,6 +98,7 @@ export class SuperAdminHome implements OnInit {
           this.adminCount.set(all.filter(u => u.role === 'admin').length);
           this.superAdminCount.set(all.filter(u => u.role === 'super_admin').length);
           this.premiumCount.set(all.filter(u => u.isPremium).length);
+          this.lifetimeCount.set(all.filter(u => hasLifetimeAccess(u)).length);
           this.recentUsers.set(all.slice(0, 5));
         }
         this.isLoading.set(false);

@@ -1,7 +1,5 @@
 .mf-page {
-  padding: 24px;
-  max-width: 900px;
-  margin: 0 auto;
+  padding: 28px 36px;
   color: var(--text-primary);
 }
 
@@ -13,7 +11,7 @@
 .mf-header__icon {
   flex-shrink: 0; display: flex; align-items: center; justify-content: center;
   width: 44px; height: 44px; border-radius: 12px;
-  background: var(--bg-surface-alt); color: var(--danger);
+  background: var(--danger-bg); border: 1px solid var(--danger-border); color: var(--danger);
 }
 .mf-title { font-size: 22px; font-weight: 800; color: var(--text-primary); margin: 0 0 4px; }
 .mf-sub   { font-size: 13px; color: var(--text-secondary); margin: 0; }

@@ -153,10 +153,10 @@
     top: 0; left: 0;
     height: 100dvh;
     transform: translateX(-100%);
-    /* Clear the floating mobile bottom nav (66px tall, 10px off the
+    /* Clear the floating mobile bottom nav (58px tall, 4px off the
        bottom, z-index:1100 - above the sidebar's own 200) so the last
        nav links/shortcuts don't render underneath it. */
-    padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(82px + env(safe-area-inset-bottom, 0px));
   }
   .sidebar--open { transform: translateX(0); }
 }

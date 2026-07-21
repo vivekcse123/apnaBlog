@@ -49,6 +49,12 @@
   padding: 4px 12px; border-radius: 999px; margin-bottom: 14px;
 }
 .bi-status-badge--pending { background: rgba(246, 201, 14, 0.15); color: #b7860b; }
+.bi-status-badge--rejected { background: rgba(220, 38, 38, 0.12); color: #dc2626; }
+
+.bi-submit-error {
+  font-size: 12.5px; font-weight: 600; color: #dc2626; background: rgba(220,38,38,0.08);
+  border: 1px solid rgba(220,38,38,0.2); border-radius: 10px; padding: 10px 14px; margin: 0 0 12px;
+}
 
 /* ══ FORM ══ */
 .bi-hero { padding: 24px 20px 4px; text-align: center; }

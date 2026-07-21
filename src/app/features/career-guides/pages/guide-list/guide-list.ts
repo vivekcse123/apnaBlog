@@ -14,13 +14,14 @@ import { UserService } from '../../../user/services/user-service';
 import { CallbackRequestService, ExpertRating, ExpertSessionCount } from '../../services/callback-request.service';
 import { MentorProfileService } from '../../services/mentor-profile.service';
 import { MentorProfileRecord } from '../../models/mentor-profile.model';
+import { DecodeEntitiesPipe } from '../../../../shared/pipes/decode-entities-pipe';
 
 type SortKey = 'top-rated' | 'most-experienced' | 'newest';
 
 @Component({
   selector: 'app-guide-list',
   standalone: true,
-  imports: [CommonModule, RouterLink, SiteHeader, MobileBottomNav],
+  imports: [CommonModule, RouterLink, SiteHeader, MobileBottomNav, DecodeEntitiesPipe],
   templateUrl: './guide-list.html',
   styleUrl: './guide-list.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -136,11 +137,14 @@ export class GuideList implements OnInit {
         company:        o.company || e.company,
         bio:            o.bio || e.bio,
         responseTime:   o.responseTime || e.responseTime,
+        yearsExperience: o.yearsExperience || e.yearsExperience,
         skills:         o.skills?.length ? o.skills : e.skills,
         languages:      o.languages?.length ? o.languages : e.languages,
         certifications: o.certifications?.length ? o.certifications : e.certifications,
         education:      o.education?.length ? o.education : e.education,
-        experience:     o.experience?.length ? o.experience : e.experience,
+        experience:     (o.experience?.length ? o.experience : e.experience)
+          .slice().sort((a, b) => (b.current ? 1 : 0) - (a.current ? 1 : 0)),
+        availabilityStatus: o.availabilityStatus,
       };
     });
   });

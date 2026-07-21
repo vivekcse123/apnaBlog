@@ -11,6 +11,7 @@ import { Auth } from '../../../../core/services/auth';
 import { Sidebar, SidebarLink } from '../../../../shared/sidebar/sidebar';
 import { MobileBottomNav } from '../../../../shared/mobile-bottom-nav/mobile-bottom-nav';
 import { MessageService } from '../../../../core/services/message.service';
+import { hasLifetimeAccess } from '../../../../core/utils/lifetime-membership.util';
 
 @Component({
   selector: 'app-user-dashboard',
@@ -21,6 +22,8 @@ import { MessageService } from '../../../../core/services/message.service';
   styleUrl: './user-dashboard.css',
 })
 export class UserDashboard implements OnInit {
+  protected readonly hasLifetimeAccess = hasLifetimeAccess;
+
   private route          = inject(ActivatedRoute);
   private router         = inject(Router);
   private userService    = inject(UserService);
@@ -39,6 +42,23 @@ export class UserDashboard implements OnInit {
   // passes avatar URL if exists, otherwise passes initials string
   // CommonHeader will need to handle both cases
   profileDisplay = computed(() => this.avatar() ?? this.initial());
+
+  // Admins/Super Admins can reach this page via the "My Personal Dashboard"
+  // sidebar shortcut on their own dashboards - give them a way back here too.
+  dashboardShortcuts = computed<SidebarLink[]>(() => {
+    const id = this.userId();
+    const role = this.user()?.role;
+    const shortcuts: SidebarLink[] = [
+      { label: 'Write a Story', routerLink: '/user/' + id + '/create-blog', icon: 'write' },
+    ];
+    if (role === 'admin') {
+      shortcuts.push({ label: 'Admin Dashboard', routerLink: '/admin/' + id, icon: 'shield' });
+    } else if (role === 'super_admin') {
+      shortcuts.push({ label: 'Super Admin Dashboard', routerLink: '/super-admin/' + id, icon: 'shield' });
+    }
+    shortcuts.push({ label: 'View Site', routerLink: '/', icon: 'globe' });
+    return shortcuts;
+  });
 
   // "Mentor Requests" only shows once we know the user is a mentor (real
   // field on the User model - see blogApp/src/models/users.model.js) - built

@@ -134,6 +134,7 @@
 .dot-admin { background: #7c3aed; }
 .dot-super { background: #f59e0b; }
 .dot-premium { background: #d97706; }
+.dot-lifetime { background: #6d28d9; }
 .dot-frozen { background: var(--danger); }
 
 .role-count {

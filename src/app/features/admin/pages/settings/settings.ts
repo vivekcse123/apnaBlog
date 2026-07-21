@@ -57,13 +57,29 @@ export class Settings implements OnInit {
     }
   }
 
+  // ── Mobile list → detail drill-down (view-state only, no business logic).
+  // On mobile, tapping a row in the list-root opens that section full-screen;
+  // the back button in the sticky header returns to the list. Desktop is
+  // unaffected - both the list and the active section render simultaneously
+  // there, as before, so this state is simply inert at desktop widths. ──
+  mobileDrilldownOpen = signal(false);
+
+  openMobileSection(id: string): void {
+    this.switchSection(id);
+    this.mobileDrilldownOpen.set(true);
+  }
+
+  closeMobileSection(): void {
+    this.mobileDrilldownOpen.set(false);
+  }
+
   sections = [
-    { id: 'profile',       label: 'Profile',       icon: '◈' },
-    { id: 'appearance',    label: 'Appearance',    icon: '◐' },
-    { id: 'language',      label: 'Language',      icon: '◎' },
-    { id: 'notifications', label: 'Notifications', icon: '◆' },
-    { id: 'security',      label: 'Security',      icon: '◉' },
-    { id: 'danger',        label: 'Danger Zone',   icon: '◬' },
+    { id: 'profile',       label: 'Profile',       icon: '◈', subtitle: 'Name, photo, bio, contact info' },
+    { id: 'appearance',    label: 'Appearance',    icon: '◐', subtitle: 'Light or dark theme' },
+    { id: 'language',      label: 'Language',      icon: '◎', subtitle: 'Interface language' },
+    { id: 'notifications', label: 'Notifications', icon: '◆', subtitle: 'Alerts and digest emails' },
+    { id: 'security',      label: 'Security',      icon: '◉', subtitle: 'Password, 2FA, active sessions' },
+    { id: 'danger',        label: 'Danger Zone',   icon: '◬', subtitle: 'Export, deactivate, or delete account' },
   ];
 
   private sectionHeadings: Record<string, string> = {

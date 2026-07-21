@@ -15,6 +15,9 @@ import { NewsFeed }          from './pages/news-feed/news-feed';
 import { ManageChallenges } from './pages/manage-challenges/manage-challenges';
 import { ManageFlags }      from './pages/manage-flags/manage-flags';
 import { ManageCallbackRequests } from './pages/manage-callback-requests/manage-callback-requests';
+import { ManageMentorApplications } from './pages/manage-mentor-applications/manage-mentor-applications';
+import { ManageMentors } from './pages/manage-mentors/manage-mentors';
+import { ManageMessages } from './pages/manage-messages/manage-messages';
 
 const routes: Routes = [
   {
@@ -24,7 +27,7 @@ const routes: Routes = [
       {
         path: '',
         component: AdminHome,
-        title: 'ApnaInsights - Home'
+        title: 'ApnaInsights - Admin Dashboard'
       },
       {
         path: 'manage-users',
@@ -90,6 +93,21 @@ const routes: Routes = [
         path: 'career-guides/callback-requests',
         component: ManageCallbackRequests,
         title: 'ApnaInsights - Callback Requests'
+      },
+      {
+        path: 'career-guides/mentor-applications',
+        component: ManageMentorApplications,
+        title: 'ApnaInsights - Mentor Applications'
+      },
+      {
+        path: 'career-guides/mentors',
+        component: ManageMentors,
+        title: 'ApnaInsights - Manage Mentors'
+      },
+      {
+        path: 'messages',
+        component: ManageMessages,
+        title: 'ApnaInsights - Messages'
       }
     ]
   }

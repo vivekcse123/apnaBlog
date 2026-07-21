@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import {
-  ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject, signal
+  ChangeDetectionStrategy, Component, OnDestroy, OnInit, computed, effect, inject, signal
 } from '@angular/core';
 import { Auth } from '../../../../core/services/auth';
 import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
@@ -11,6 +11,8 @@ import { UserProfile } from '../../../../shared/user-profile/user-profile';
 import { User } from '../../../user/models/user.mode';
 import { Sidebar } from '../../../../shared/sidebar/sidebar';
 import { MobileBottomNav } from '../../../../shared/mobile-bottom-nav/mobile-bottom-nav';
+import { AdminMessagesService } from '../../../admin/services/admin-messages.service';
+import { hasLifetimeAccess } from '../../../../core/utils/lifetime-membership.util';
 
 @Component({
   selector: 'app-super-admin-dashboard',
@@ -21,10 +23,13 @@ import { MobileBottomNav } from '../../../../shared/mobile-bottom-nav/mobile-bot
   styleUrl: './super-admin-dashboard.css',
 })
 export class SuperAdminDashboard implements OnInit, OnDestroy {
+  protected readonly hasLifetimeAccess = hasLifetimeAccess;
+
   private route       = inject(ActivatedRoute);
   private userService = inject(UserService);
   private authService = inject(Auth);
   private router      = inject(Router);
+  private adminMessages = inject(AdminMessagesService);
 
   initial  = signal<string | null>(null);
   avatar   = signal<string | null>(null);
@@ -33,9 +38,24 @@ export class SuperAdminDashboard implements OnInit, OnDestroy {
   isOpened    = signal(false);
   sidebarOpen = signal(false);
 
+  /** Sidebar "Messages" nav-link badge - unread contact + DM count. */
+  messagesBadge = computed(() => {
+    const n = this.adminMessages.unreadContactCount() + this.adminMessages.unreadMessageCount();
+    return n > 0 ? String(n) : undefined;
+  });
+
   sub!: Subscription;
 
+  constructor() {
+    effect(() => {
+      this.adminMessages.liveTick();
+      this.adminMessages.listContacts({ limit: 1 }).subscribe();
+      this.adminMessages.listConversations({ limit: 1 }).subscribe();
+    });
+  }
+
   ngOnInit(): void {
+    this.adminMessages.ensureLive();
     this.sub = this.route.paramMap.pipe(
       switchMap(param => {
         const id = param.get('id');

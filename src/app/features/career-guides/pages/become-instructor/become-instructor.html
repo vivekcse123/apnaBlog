@@ -22,7 +22,11 @@
         <button class="cg-btn cg-btn--outline" type="button" (click)="goToRegister()">Create Account</button>
       </div>
     </div>
-  } @else if (status() === 'pending-review') {
+  } @else if (isLoadingApplication()) {
+    <div class="bi-gate">
+      <p>Loading…</p>
+    </div>
+  } @else if (existingApplication()?.status === 'pending') {
     <!-- ══ SUBMITTED CONFIRMATION ══ -->
     <div class="bi-gate">
       <span class="bi-gate-icon bi-gate-icon--success" aria-hidden="true">
@@ -30,8 +34,26 @@
       </span>
       <h1>Application submitted</h1>
       <p class="bi-status-badge bi-status-badge--pending">Pending Review</p>
-      <p>Thanks, {{ fullName() }}! Our team will review your application and get back to you. You can track its status from your dashboard once that section is available.</p>
+      <p>Thanks, {{ existingApplication()!.fullName }}! Our team will review your application and get back to you.</p>
       <a class="cg-btn cg-btn--ghost" routerLink="/career-guides">Back to Career Guides</a>
+    </div>
+  } @else if (existingApplication()?.status === 'rejected') {
+    <!-- ══ REJECTED - REAPPLY ══ -->
+    <div class="bi-gate">
+      <span class="bi-gate-icon" aria-hidden="true">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+      </span>
+      <h1>Application not approved</h1>
+      <p class="bi-status-badge bi-status-badge--rejected">Not Approved</p>
+      @if (existingApplication()!.rejectionReason) {
+        <p>{{ existingApplication()!.rejectionReason }}</p>
+      } @else {
+        <p>Our team reviewed your application and it wasn't approved this time.</p>
+      }
+      <div class="bi-gate-actions">
+        <button class="cg-btn cg-btn--primary" type="button" (click)="startNewApplication()">Apply Again</button>
+        <a class="cg-btn cg-btn--ghost" routerLink="/career-guides">Back to Career Guides</a>
+      </div>
     </div>
   } @else {
     <!-- ══ APPLICATION FORM ══ -->
@@ -197,8 +219,13 @@
         <span>I agree to the <a routerLink="/terms" target="_blank">Terms of Service</a> and confirm the information above is accurate.</span>
       </label>
 
+      @if (submitError()) {
+        <p class="bi-submit-error">{{ submitError() }}</p>
+      }
       <div class="bi-submit-row">
-        <button class="cg-btn cg-btn--primary" type="submit" [disabled]="!isFormValid()">Submit Application</button>
+        <button class="cg-btn cg-btn--primary" type="submit" [disabled]="!isFormValid() || isSubmitting()">
+          {{ isSubmitting() ? 'Submitting…' : 'Submit Application' }}
+        </button>
       </div>
     </form>
   }

@@ -1,19 +1,22 @@
-import { Component, ChangeDetectionStrategy, OnInit, DestroyRef, signal, computed, inject, effect, PLATFORM_ID } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnInit, DestroyRef, signal, computed, inject, effect, untracked, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { catchError, of, timeout, Observable } from 'rxjs';
+import { environment } from '../../../../../environments/environment';
 import { SiteHeader } from '../../../../shared/site-header/site-header';
 import { MobileBottomNav } from '../../../../shared/mobile-bottom-nav/mobile-bottom-nav';
 import { Auth } from '../../../../core/services/auth';
+import { ToastService } from '../../../../core/services/toast.service';
 import { MOCK_EXPERTS } from '../../data/mock-experts';
 import { Expert } from '../../models/expert.model';
 import { CallbackRequestService, ExpertReview, BookedSlot } from '../../services/callback-request.service';
 import { CallbackRequestRecord } from '../../models/callback-request.model';
 import { UserService } from '../../../user/services/user-service';
-import { PaymentService } from '../../../../core/services/payment.service';
+import { PremiumPurchase } from '../../../../shared/premium-purchase/premium-purchase';
 import { MentorProfileService } from '../../services/mentor-profile.service';
-import { MentorProfileRecord } from '../../models/mentor-profile.model';
+import { MentorAvailabilityStatus, MentorProfileRecord } from '../../models/mentor-profile.model';
+import { DecodeEntitiesPipe } from '../../../../shared/pipes/decode-entities-pipe';
 
 const DURATIONS = [15, 30, 45, 60] as const;
 const TOPICS = ['Angular', 'Interview', 'Resume', 'Career Switch', 'Salary Discussion', 'Technical Guidance'] as const;
@@ -26,7 +29,7 @@ const FREE_SESSION_BLOCKING_STATUSES = ['pending', 'accepted', 'scheduled', 'com
 @Component({
   selector: 'app-expert-profile',
   standalone: true,
-  imports: [CommonModule, RouterLink, SiteHeader, MobileBottomNav],
+  imports: [CommonModule, RouterLink, SiteHeader, MobileBottomNav, PremiumPurchase, DecodeEntitiesPipe],
   templateUrl: './expert-profile.html',
   styleUrl: './expert-profile.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -38,9 +41,9 @@ export class ExpertProfile implements OnInit {
   private platformId = inject(PLATFORM_ID);
   private callbackRequests = inject(CallbackRequestService);
   private userService = inject(UserService);
-  private paymentService = inject(PaymentService);
   private mentorProfileService = inject(MentorProfileService);
   private destroyRef = inject(DestroyRef);
+  private toast = inject(ToastService);
 
   // Base data reads from the static MOCK_EXPERTS array the listing page also
   // uses. Real, mentor-edited fields (see mentor-dashboard.ts's profile
@@ -64,13 +67,39 @@ export class ExpertProfile implements OnInit {
       company:        overlay.company || base.company,
       bio:            overlay.bio || base.bio,
       responseTime:   overlay.responseTime || base.responseTime,
+      yearsExperience: overlay.yearsExperience || base.yearsExperience,
       skills:         overlay.skills?.length ? overlay.skills : base.skills,
       languages:      overlay.languages?.length ? overlay.languages : base.languages,
       certifications: overlay.certifications?.length ? overlay.certifications : base.certifications,
       education:      overlay.education?.length ? overlay.education : base.education,
-      experience:     overlay.experience?.length ? overlay.experience : base.experience,
+      // Current role(s) float to the top - same ordering as mentor-dashboard.ts's
+      // sortedExperienceView() so the dashboard preview matches what visitors see.
+      experience:     (overlay.experience?.length ? overlay.experience : base.experience)
+        .slice().sort((a, b) => (b.current ? 1 : 0) - (a.current ? 1 : 0)),
     };
   });
+
+  // Live Available/Busy/Unavailable status - defaults to 'available' to
+  // match the backend schema default when no override has been saved yet.
+  availabilityStatus = computed<MentorAvailabilityStatus>(() => this.realProfile()?.availabilityStatus ?? 'available');
+
+  constructor() {
+    // Kept live via the same Socket.IO connection callback-requests already
+    // uses (see CallbackRequestService) - mentor-profile.router.js's PATCH
+    // /availability broadcasts to every connected client, so any visitor
+    // sitting on this page sees the badge/CTA state flip without reloading.
+    effect(() => {
+      const update = this.callbackRequests.lastAvailabilityUpdate();
+      const slug = untracked(this.expertId);
+      if (!update || update.mentorSlug !== slug) return;
+      // Refetch rather than patch in-memory - realProfile() may still be
+      // null here (mentor toggled status before ever saving a profile via
+      // PUT, which the availability PATCH upserts independently of).
+      this.ssrBound(this.mentorProfileService.getBySlug(slug))
+        .pipe(takeUntilDestroyed(this.destroyRef), catchError(() => of({ data: null })))
+        .subscribe(res => this.realProfile.set(res.data));
+    });
+  }
 
   readonly durations = DURATIONS;
   readonly topics = TOPICS;
@@ -86,6 +115,42 @@ export class ExpertProfile implements OnInit {
     return Math.round((list.reduce((sum, r) => sum + r.rating, 0) / list.length) * 10) / 10;
   });
 
+  // Sort/pagination for the Reviews section - client-side since
+  // reviewsFor() already returns the full (small - tens per mentor at most,
+  // gated by the 1-free-session cap) list unpaginated.
+  reviewSort = signal<'latest' | 'highest' | 'lowest'>('latest');
+  reviewsShown = signal(5);
+  private readonly REVIEWS_PAGE_SIZE = 5;
+
+  sortedReviews = computed(() => {
+    const list = [...this.realReviews()];
+    const sort = this.reviewSort();
+    if (sort === 'highest') return list.sort((a, b) => b.rating - a.rating);
+    if (sort === 'lowest') return list.sort((a, b) => a.rating - b.rating);
+    return list.sort((a, b) => b.submittedAt.localeCompare(a.submittedAt));
+  });
+  visibleReviews = computed(() => this.sortedReviews().slice(0, this.reviewsShown()));
+  hasMoreReviews = computed(() => this.reviewsShown() < this.sortedReviews().length);
+
+  setReviewSort(sort: 'latest' | 'highest' | 'lowest'): void {
+    this.reviewSort.set(sort);
+    this.reviewsShown.set(this.REVIEWS_PAGE_SIZE);
+  }
+  showMoreReviews(): void { this.reviewsShown.update(n => n + this.REVIEWS_PAGE_SIZE); }
+
+  // Count + percentage of reviews at each star rating (5 first), for the
+  // distribution bars shown next to the average-rating summary.
+  ratingDistribution = computed(() => {
+    const list = this.realReviews();
+    const total = list.length;
+    const counts = [5, 4, 3, 2, 1].map(star => list.filter(r => Math.round(r.rating) === star).length);
+    return [5, 4, 3, 2, 1].map((star, i) => ({
+      star,
+      count: counts[i],
+      pct: total ? Math.round((counts[i] / total) * 100) : 0,
+    }));
+  });
+
   // Real "Sessions Guided" count - works for every expert since callback
   // requests are stored by plain expertSlug, not tied to a real account.
   sessionsGuided = signal(0);
@@ -96,6 +161,14 @@ export class ExpertProfile implements OnInit {
   // used to link the Articles stat to this mentor's /author/:id page.
   mentorUserId = signal<string | null>(null);
   hasRealAccount = computed(() => !!this.mentorUserId());
+
+  // True when the logged-in visitor IS this mentor - Follow/Message/Book/
+  // Request Callback don't make sense on your own profile, so the hero
+  // actions swap for a single "Go to Dashboard" link instead.
+  isOwnProfile = computed(() => {
+    const mentorId = this.mentorUserId();
+    return !!mentorId && this.auth.isAuthorized() && this.auth.userId() === mentorId;
+  });
 
   // Only the first mentorship session is free, platform-wide (see the same
   // rule enforced server-side in POST /api/callback-requests). Checked
@@ -109,26 +182,16 @@ export class ExpertProfile implements OnInit {
   private isPremiumUser      = signal(false);
   hasUsedFreeSession = computed(() => this.usedFreeSessionRaw() && !this.isPremiumUser());
 
-  // ── Upgrade to Premium (Razorpay one-time purchase, see core/services/payment.service.ts) ──
-  upgrading = signal(false);
-  upgradeError = signal('');
+  // ── Upgrade to Premium (Razorpay one-time purchase via the shared stepper
+  // modal, see shared/premium-purchase/) ──
+  showPremiumModal = signal(false);
 
-  upgradeToPremium(): void {
-    if (this.upgrading()) return;
-    this.upgrading.set(true);
-    this.upgradeError.set('');
-    this.paymentService.purchasePremium()
-      .then(() => {
-        this.upgrading.set(false);
-        // Premium removes the free-session cap entirely - this is what
-        // flips hasUsedFreeSession back to false and re-enables the
-        // Message/Book/Callback forms below.
-        this.isPremiumUser.set(true);
-      })
-      .catch((err: Error) => {
-        this.upgrading.set(false);
-        if (err.message !== 'cancelled') this.upgradeError.set(err.message);
-      });
+  onPremiumPurchased(): void {
+    this.showPremiumModal.set(false);
+    // Premium removes the free-session cap entirely - this is what flips
+    // hasUsedFreeSession back to false and re-enables the Message/Book/
+    // Callback forms below.
+    this.isPremiumUser.set(true);
   }
 
   // ── Auth gate: Follow / Message / Book / Request Callback all require a
@@ -193,6 +256,8 @@ export class ExpertProfile implements OnInit {
     this.resumePendingIntent();
     const slug = this.expertId();
     if (!slug) return;
+
+    this.callbackRequests.ensureLive();
 
     this.ssrBound(this.mentorProfileService.getBySlug(slug))
       .pipe(takeUntilDestroyed(this.destroyRef), catchError(() => of({ data: null })))
@@ -490,4 +555,90 @@ export class ExpertProfile implements OnInit {
 
   trackByReview(_i: number, r: ExpertReview): string { return r.userName + r.submittedAt; }
   trackBySkill(_i: number, s: string): string { return s; }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // Share (mirrors blog-detail.ts's working share implementation)
+  // ══════════════════════════════════════════════════════════════════════════
+
+  shareMenuOpen = signal(false);
+  copyLinkSuccess = signal(false);
+
+  private shareUrl(): string {
+    return `${environment.siteUrl}/career-guides/${this.expertId()}`;
+  }
+
+  async nativeShareProfile(): Promise<void> {
+    const e = this.expert();
+    if (!e || !isPlatformBrowser(this.platformId)) return;
+    if ('share' in navigator) {
+      try {
+        await (navigator as any).share({
+          title: e.name,
+          text: `Check out ${e.name}'s mentor profile on ApnaInsights`,
+          url: this.shareUrl(),
+        });
+      } catch (err: any) {
+        if (err?.name !== 'AbortError') this.shareMenuOpen.set(true);
+      }
+    } else {
+      this.shareMenuOpen.set(true);
+    }
+  }
+
+  shareOnTwitter(): void {
+    const e = this.expert();
+    if (!e || !isPlatformBrowser(this.platformId)) return;
+    window.open(
+      `https://twitter.com/intent/tweet?url=${encodeURIComponent(this.shareUrl())}&text=${encodeURIComponent(e.name)}`,
+      '_blank',
+    );
+    this.shareMenuOpen.set(false);
+  }
+
+  shareOnFacebook(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(this.shareUrl())}`, '_blank');
+    this.shareMenuOpen.set(false);
+  }
+
+  shareOnLinkedIn(): void {
+    const e = this.expert();
+    if (!e || !isPlatformBrowser(this.platformId)) return;
+    window.open(
+      `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(this.shareUrl())}&title=${encodeURIComponent(e.name)}`,
+      '_blank',
+    );
+    this.shareMenuOpen.set(false);
+  }
+
+  shareOnWhatsApp(): void {
+    const e = this.expert();
+    if (!e || !isPlatformBrowser(this.platformId)) return;
+    window.open(`https://wa.me/?text=${encodeURIComponent(e.name + ' - ' + this.shareUrl())}`, '_blank');
+    this.shareMenuOpen.set(false);
+  }
+
+  shareByEmail(): void {
+    const e = this.expert();
+    if (!isPlatformBrowser(this.platformId)) return;
+    const subject = encodeURIComponent(`Check out ${e?.name ?? 'this mentor'}'s profile on ApnaInsights`);
+    const body = encodeURIComponent(`I thought you'd find this mentor profile useful: ${this.shareUrl()}`);
+    window.open(`mailto:?subject=${subject}&body=${body}`);
+    this.shareMenuOpen.set(false);
+  }
+
+  async copyLink(): Promise<void> {
+    if (!isPlatformBrowser(this.platformId)) return;
+    try {
+      await navigator.clipboard.writeText(this.shareUrl());
+      this.copyLinkSuccess.set(true);
+      this.toast.show('Profile link copied to clipboard!', 'success');
+      setTimeout(() => {
+        this.copyLinkSuccess.set(false);
+        this.shareMenuOpen.set(false);
+      }, 2000);
+    } catch {
+      this.toast.show('Could not copy link.', 'error');
+    }
+  }
 }

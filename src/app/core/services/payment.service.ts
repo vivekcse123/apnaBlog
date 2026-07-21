@@ -1,7 +1,7 @@
 import { Injectable, PLATFORM_ID, inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
-import { firstValueFrom } from 'rxjs';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { catchError, firstValueFrom, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 export interface CreateOrderData {
@@ -58,15 +58,16 @@ export class PaymentService {
    * isPremium. Rejects on cancellation, checkout failure, or a failed
    * server-side verification - callers should catch and show that message.
    */
-  async purchasePremium(): Promise<void> {
+  async purchasePremium(couponCode?: string): Promise<{ premiumExpiresAt: string | null }> {
     await this.loadCheckoutScript();
 
     const res = await firstValueFrom(
-      this.http.post<{ status: number; data: CreateOrderData }>(`${this.endpoint}/create-order`, {})
+      this.http.post<{ status: number; data: CreateOrderData }>(`${this.endpoint}/create-order`, couponCode ? { couponCode } : {})
+        .pipe(catchError((err: HttpErrorResponse) => throwError(() => new Error(err?.error?.message ?? 'Could not start checkout. Please try again.'))))
     );
     const order = res.data;
 
-    return new Promise<void>((resolve, reject) => {
+    return new Promise<{ premiumExpiresAt: string | null }>((resolve, reject) => {
       const rzp = new window.Razorpay({
         key: order.keyId,
         amount: order.amount,
@@ -77,11 +78,11 @@ export class PaymentService {
         prefill: { name: order.name, email: order.email },
         theme: { color: '#2563EB' },
         handler: (response: RazorpaySuccessResponse) => {
-          this.http.post<{ status: number; message: string; data: { isPremium: boolean } }>(
+          this.http.post<{ status: number; message: string; data: { isPremium: boolean; premiumExpiresAt: string | null } }>(
             `${this.endpoint}/verify`,
             response
           ).subscribe({
-            next: () => resolve(),
+            next: (verifyRes) => resolve({ premiumExpiresAt: verifyRes.data.premiumExpiresAt ?? null }),
             error: (err) => reject(new Error(err?.error?.message ?? 'Payment could not be verified. Please contact support.')),
           });
         },

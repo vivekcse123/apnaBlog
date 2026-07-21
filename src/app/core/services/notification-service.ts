@@ -4,11 +4,12 @@ import {
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import {
-  BehaviorSubject, Observable,
+  BehaviorSubject, Observable, Subscription,
   tap, catchError, of, forkJoin, map,
 } from 'rxjs';
 import { NotificationResponse, Notification } from '../../shared/models/notification.model';
 import { Auth } from './auth';
+import { SocketService } from './socket.service';
 import { environment } from '../../../environments/environment';
 
 const POLL_INTERVAL_MS  = 60_000; // 1 minute
@@ -29,14 +30,16 @@ export class NotificationService implements OnDestroy {
   private _pollTimer: ReturnType<typeof setInterval> | undefined = undefined;
   private _visibilityHandler: (() => void) | undefined = undefined;
   private _sourceMap = new Map<string, 'admin' | 'user'>();
+  private _liveSub: Subscription | undefined = undefined;
 
   notifications$ = this._notifications$.asObservable();
   unreadCount$   = this._unreadCount$.asObservable();
   loading$       = this._loading$.asObservable();
 
-  private http        = inject(HttpClient);
-  private authService = inject(Auth);
-  private platformId  = inject(PLATFORM_ID);
+  private http         = inject(HttpClient);
+  private authService  = inject(Auth);
+  private platformId   = inject(PLATFORM_ID);
+  private socketService = inject(SocketService);
 
   constructor() {
     effect(() => {
@@ -51,11 +54,22 @@ export class NotificationService implements OnDestroy {
           this.fetchNotifications();
           this._startPolling();
           this._setupVisibilityRefresh();
+          this._listenForLivePush();
         }
       } else {
         this._reset();
       }
     });
+  }
+
+  // Real-time push: the backend's notification.service.js emits
+  // 'notification_created' to this user's room (or 'admins') the instant any
+  // notification is created - refetch immediately instead of waiting for the
+  // 60s poll. The poll + visibility-refresh stay in place as a fallback net
+  // in case a push event is dropped (e.g. a brief disconnect).
+  private _listenForLivePush(): void {
+    this._liveSub?.unsubscribe();
+    this._liveSub = this.socketService.on('notification_created').subscribe(() => this.fetchNotifications());
   }
 
   fetchNotifications(page = 1, limit = 20): void {
@@ -161,6 +175,8 @@ export class NotificationService implements OnDestroy {
     this._lastFetchAt = 0;
     this._stopPolling();
     this._removeVisibilityListener();
+    this._liveSub?.unsubscribe();
+    this._liveSub = undefined;
     this._notifications$.next([]);
     this._unreadCount$.next(0);
     this._loading$.next(false);

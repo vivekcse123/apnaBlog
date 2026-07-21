@@ -1648,11 +1648,30 @@
   min-width: 0;
 }
 
+.spb-eyebrow {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--accent-text);
+  margin: 0 0 6px;
+}
+
 .spb-greeting {
   font-size: 12px;
   color: var(--text-muted);
   margin: 0 0 2px;
   font-weight: 500;
+}
+
+.spb-email {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  margin: 0 0 10px;
 }
 
 .spb-name {
@@ -1724,6 +1743,20 @@
 }
 .spb-premium-expiry { font-weight: 500; opacity: 0.75; }
 [data-theme="dark"] .spb-premium-badge { color: #fcd34d; background: linear-gradient(135deg, rgba(251,191,36,0.16), rgba(245,158,11,0.12)); }
+
+.spb-lifetime-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #6d28d9;
+  background: linear-gradient(135deg, rgba(167,139,250,0.2), rgba(109,40,217,0.14));
+  border: 1px solid rgba(109,40,217,0.35);
+  border-radius: 20px;
+  padding: 3px 10px;
+}
+[data-theme="dark"] .spb-lifetime-badge { color: #c4b5fd; background: linear-gradient(135deg, rgba(167,139,250,0.18), rgba(109,40,217,0.14)); }
 
 .spb-upgrade-badge {
   display: inline-flex;

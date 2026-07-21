@@ -18,7 +18,7 @@ const routes: Routes = [
       {
         path: '',
         component: UserHome,
-        title: 'ApnaInsights - Home'
+        title: 'ApnaInsights - Personal Dashboard'
       },
       {
         path: 'manage-blogs',

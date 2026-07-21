@@ -10,7 +10,10 @@
       { label: 'Taxonomy',        routerLink: '/super-admin/' + userId() + '/taxonomy',        icon: 'taxonomy', exact: false, groupLabel: 'Content' },
       { label: 'Users',           routerLink: '/super-admin/' + userId() + '/manage-users',    icon: 'users',    exact: false, groupLabel: 'Access' },
       { label: 'Role Management', routerLink: '/super-admin/' + userId() + '/role-management', icon: 'shield',   exact: false, groupLabel: 'Access' },
+      { label: 'Messages',        routerLink: '/super-admin/' + userId() + '/messages', icon: 'mail', exact: false, groupLabel: 'Access', badge: messagesBadge() },
       { label: 'Callback Requests', routerLink: '/super-admin/' + userId() + '/career-guides/callback-requests', icon: 'comment', exact: false, groupLabel: 'Access' },
+      { label: 'Mentor Applications', routerLink: '/super-admin/' + userId() + '/career-guides/mentor-applications', icon: 'shield', exact: false, groupLabel: 'Access' },
+      { label: 'Manage Mentors', routerLink: '/super-admin/' + userId() + '/career-guides/mentors', icon: 'users', exact: false, groupLabel: 'Access' },
       { label: 'Traffic',         routerLink: '/super-admin/' + userId() + '/visitor',         icon: 'chart',    exact: false, groupLabel: 'Insights' },
       { label: 'Settings',        routerLink: '/super-admin/' + userId() + '/settings',        icon: 'settings', exact: false, groupLabel: 'Settings' }
     ]"
@@ -41,6 +44,7 @@
           [basePath]="'super-admin'"
           [totalBlogs]="user()?.totalBlogs ?? 0"
           [totalViews]="user()?.totalViews ?? 0"
+          [hasLifetime]="hasLifetimeAccess(user())"
           (close)="closeProfile()"
           (logout)="logout()">
         </app-user-profile>

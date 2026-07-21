@@ -3,16 +3,25 @@
   <!-- ── Header ── -->
   <header class="page-hd">
     <div class="page-hd-left">
-      <div class="page-hd-title-row">
-        <h1 class="page-hd-title">Welcome back, Admin</h1>
-        @if (isRefreshing()) {
-          <span class="refreshing-badge">
-            <span class="refresh-dot"></span>
-            Syncing
-          </span>
-        }
+      <div class="page-hd-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
       </div>
-      <p class="page-hd-sub">Here's what's happening across ApnaInsights today.</p>
+      <div>
+        <span class="page-hd-eyebrow">Admin Dashboard</span>
+        <div class="page-hd-title-row">
+          <h1 class="page-hd-title">Welcome back, Admin</h1>
+          @if (isRefreshing()) {
+            <span class="refreshing-badge">
+              <span class="refresh-dot"></span>
+              Syncing
+            </span>
+          }
+        </div>
+        <p class="page-hd-sub">Here's what's happening across ApnaInsights today.</p>
+      </div>
     </div>
     <div class="page-hd-right">
       <button class="btn-primary" (click)="showCreateModal.set(true)" type="button">
@@ -365,6 +374,7 @@
       <div class="si-item"><span class="si-val">{{ totalUsers() }}</span><span class="si-lbl">Total Users</span></div>
       <div class="si-item"><span class="si-val">{{ activeUsers() }}</span><span class="si-lbl">Active</span></div>
       <div class="si-item"><span class="si-val">{{ premiumUsers() }}</span><span class="si-lbl">Premium</span></div>
+      <div class="si-item"><span class="si-val">{{ lifetimeMembers() }}</span><span class="si-lbl">Lifetime Members</span></div>
       <div class="si-item"><span class="si-val" [class.si-val--alert]="inactiveUsers() > 0">{{ inactiveUsers() }}</span><span class="si-lbl">Frozen</span></div>
       <div class="si-item"><span class="si-val">{{ totalFollows() }}</span><span class="si-lbl">Total Follows</span></div>
       <div class="si-item"><span class="si-val">{{ pwaInstalls() }}</span><span class="si-lbl">PWA Installs</span></div>

@@ -24,6 +24,9 @@
     <span class="up-name">{{ name }}</span>
     <span class="up-email">{{ email }}</span>
     <span class="up-role-badge role-{{ role }}">{{ roleLabel }}</span>
+    @if (hasLifetime) {
+      <span class="up-lifetime-badge" title="Lifetime Membership — all premium features unlocked, no purchase needed">👑 Lifetime Member</span>
+    }
   </div>
 
   <!-- ── Appearance ── -->

@@ -9,6 +9,10 @@ export interface ExpertTimelineEntry {
   title: string;
   org: string;
   period: string;
+  /** Experience-only "I currently work here" flag - entries with this set
+   *  sort to the top of the Experience list (mentor-dashboard.ts's
+   *  setCurrentExperience(), expert-profile.ts's displayExpert() sort). */
+  current?: boolean;
 }
 
 export interface Expert {
@@ -37,4 +41,9 @@ export interface Expert {
   reviews: ExpertReview[];
   /** Special profile badge, e.g. "Government Career Mentor" for Ranjeet Verma. */
   specialBadge?: string;
+  /** Live status the mentor toggles themselves - only set once a real
+   *  MentorProfile overlay exists (see MentorProfileService), undefined
+   *  otherwise (treated as 'available' by consumers, matching the backend
+   *  schema default). */
+  availabilityStatus?: 'available' | 'busy' | 'unavailable';
 }

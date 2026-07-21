@@ -34,6 +34,7 @@ export class UserProfile {
   @Input() basePath:     string = 'user';
   @Input() totalBlogs:   number = 0;
   @Input() totalViews:   number = 0;
+  @Input() hasLifetime:  boolean = false;
 
   @Output() close  = new EventEmitter<void>();
   @Output() logout = new EventEmitter<void>();

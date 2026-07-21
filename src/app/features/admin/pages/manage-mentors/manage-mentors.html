@@ -1,0 +1,117 @@
+<div class="mm-page">
+
+  <div class="mm-header">
+    <div class="mm-header__title-row">
+      <span class="mm-header__icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </span>
+      <div>
+        <h1 class="mm-title">Manage Mentors</h1>
+        <p class="mm-sub">All approved Career Guides mentors. Suspend to hide from the marketplace and booking without freezing their account.</p>
+      </div>
+    </div>
+    <button class="mm-refresh" (click)="load()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      Refresh
+    </button>
+  </div>
+
+  @if (isLoading()) {
+    <div class="mm-loading">
+      @for (_ of [1,2,3]; track $index) { <div class="mm-skeleton"></div> }
+    </div>
+  } @else if (error()) {
+    <div class="mm-error">{{ error() }}</div>
+  } @else if (mentors().length === 0) {
+    <div class="mm-empty">
+      <p>No mentors yet. Approve an application to get started.</p>
+    </div>
+  } @else {
+    <div class="mm-list">
+      @for (mentor of mentors(); track mentor._id) {
+        <div class="mm-card">
+          <div class="mm-card__head">
+            <div class="mm-card__info">
+              <span class="mm-name">{{ mentor.name }}</span>
+              <span class="mm-email">{{ mentor.email }}</span>
+              <span class="mm-slug">/career-guides/{{ mentor.mentorSlug }}</span>
+            </div>
+            <span class="mm-badge" [class.mm-badge--suspended]="mentor.mentorStatus === 'suspended'">
+              {{ mentor.mentorStatus === 'suspended' ? 'Suspended' : 'Active' }}
+            </span>
+          </div>
+
+          <div class="mm-card__actions">
+            <button class="mm-btn mm-btn--ghost" (click)="startEditProfile(mentor)">Edit Profile</button>
+            <button class="mm-btn" [class.mm-btn--suspend]="mentor.mentorStatus !== 'suspended'" [class.mm-btn--activate]="mentor.mentorStatus === 'suspended'"
+              (click)="requestToggleStatus(mentor)">
+              {{ mentor.mentorStatus === 'suspended' ? 'Activate' : 'Suspend' }}
+            </button>
+          </div>
+
+          @if (editingUserId() === mentor._id) {
+            <div class="mm-edit">
+              @if (isLoadingProfile()) {
+                <p class="mm-muted">Loading profile…</p>
+              } @else {
+                <label>Title
+                  <input type="text" [(ngModel)]="editTitle" maxlength="120" placeholder="e.g. Senior Frontend Engineer">
+                </label>
+                <label>Company
+                  <input type="text" [(ngModel)]="editCompany" maxlength="120">
+                </label>
+                <label>Bio (at least 10 characters)
+                  <textarea rows="3" [(ngModel)]="editBio" maxlength="1000"></textarea>
+                </label>
+                <label>Usually replies within
+                  <input type="text" [(ngModel)]="editResponseTime" maxlength="80">
+                </label>
+                <label>Skills (comma separated)
+                  <input type="text" [(ngModel)]="editSkills">
+                </label>
+                <label>Languages (comma separated)
+                  <input type="text" [(ngModel)]="editLanguages">
+                </label>
+                <label>Certifications (comma separated)
+                  <input type="text" [(ngModel)]="editCertifications">
+                </label>
+                @if (profileError()) { <p class="mm-inline-error">{{ profileError() }}</p> }
+                <div class="mm-inline-actions">
+                  <button class="mm-btn mm-btn--ghost" (click)="cancelEditProfile()">Cancel</button>
+                  <button class="mm-btn mm-btn--save" [disabled]="isSavingProfile()" (click)="saveProfile(mentor)">
+                    {{ isSavingProfile() ? 'Saving…' : 'Save Profile' }}
+                  </button>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+
+  @if (showConfirm()) {
+    <div class="mm-modal-backdrop" (click)="cancelToggleStatus()">
+      <div class="mm-modal" (click)="$event.stopPropagation()">
+        <h3>
+          {{ pendingMentor()?.mentorStatus === 'suspended' ? 'Reactivate' : 'Suspend' }}
+          {{ pendingMentor()?.name }}?
+        </h3>
+        <p>
+          @if (pendingMentor()?.mentorStatus === 'suspended') {
+            They'll reappear in the marketplace and become bookable again.
+          } @else {
+            They'll be hidden from the marketplace and can't be booked until reactivated. Their account and login stay unaffected.
+          }
+        </p>
+        <div class="mm-inline-actions">
+          <button class="mm-btn mm-btn--ghost" (click)="cancelToggleStatus()">Cancel</button>
+          <button class="mm-btn mm-btn--save" [disabled]="isTogglingStatus()" (click)="confirmToggleStatus()">
+            {{ isTogglingStatus() ? 'Working…' : 'Confirm' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+</div>

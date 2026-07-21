@@ -69,6 +69,11 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
   showSearch         = signal(false);
   searchQuery        = signal('');
   private searchDebounce: ReturnType<typeof setTimeout> | null = null;
+  // Set when a card's autoplay attempt (both unmuted and muted-retry) fails
+  // outright - shows a "Tap to play" affordance instead of a silently stuck
+  // paused video. Seen specifically in installed PWAs (iOS/Android) where
+  // autoplay policy enforcement can be stricter than a plain browser tab.
+  autoplayFailedIdx  = signal(-1);
 
   // ── Private state ──────────────────────────────────────────────────────────
   private categoryCache       = new Map<string, VideoShort[]>();
@@ -196,6 +201,17 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     sd.textContent = JSON.stringify(schema);
   }
 
+  // True for an installed PWA (Android/desktop `display-mode: standalone`,
+  // or iOS's non-standard `navigator.standalone`) - viewport chrome, memory
+  // limits, and autoplay-policy enforcement can all differ from a regular
+  // browser tab, which is why Shorts has been reported working in DevTools/
+  // mobile emulation but not after "Add to Home Screen".
+  private isStandaloneMode(): boolean {
+    if (!isPlatformBrowser(this.platformId)) return false;
+    return window.matchMedia?.('(display-mode: standalone)').matches === true
+      || (navigator as any).standalone === true;
+  }
+
   ngAfterViewInit(): void {
     if (!isPlatformBrowser(this.platformId)) return;
     this.setupObserver();
@@ -205,6 +221,17 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     this.setupScrollEndPlay();
     this.initBottomAd();
     document.addEventListener('visibilitychange', this.visibilityHandler);
+
+    // Installed-PWA cold start: SSR-hydrated card refs can attach a tick
+    // later than in a normal tab reload, so the very first observeAll() can
+    // silently observe zero elements. Re-run once after hydration settles.
+    if (this.isStandaloneMode()) {
+      setTimeout(() => {
+        this.observeAll();
+        const vid = this.getVideoAt(this.activeIndex());
+        if (!vid || vid.paused) this.autoPlayVideo(this.activeIndex());
+      }, 400);
+    }
   }
 
   private initBottomAd(): void {
@@ -481,6 +508,12 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
   // ── IntersectionObserver ───────────────────────────────────────────────────
 
   private setupObserver(): void {
+    // Installed PWAs can shrink a card's effective visible ratio below 0.8
+    // (safe-area insets, dynamic viewport chrome), so the "is this card
+    // active" bar is relaxed to 0.5 in standalone mode - otherwise a card
+    // could sit just under 0.8 forever and never autoplay.
+    const visibleThreshold = this.isStandaloneMode() ? 0.5 : 0.8;
+
     this.observer = new IntersectionObserver(entries => {
       let bestVisibleIdx = -1;
 
@@ -488,11 +521,26 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
         const idx = Number(e.target.getAttribute('data-idx'));
         if (isNaN(idx)) continue;
 
-        if (!e.isIntersecting || e.intersectionRatio < 0.8) {
+        if (!e.isIntersecting || e.intersectionRatio < visibleThreshold) {
           const vid = this.getVideoAt(idx);
           if (vid && !vid.paused) {
             vid.pause();
             vid.muted = true;
+          }
+          // Fully release far off-screen video elements rather than just
+          // pausing - a long scroll session in an installed iOS PWA can
+          // otherwise accumulate many decoded-but-hidden <video> elements
+          // under real memory pressure in a way a desktop dev-tools tab
+          // never hits, which has been reported as Shorts "stopping working".
+          // Guarded on currentTime > 0 (has actually been played) rather
+          // than readyState, which reaches HAVE_METADATA almost immediately
+          // for every card just from preload="metadata" regardless of
+          // visibility - readyState alone would strip a card's still-SSR'd
+          // src before the visitor has ever scrolled to it.
+          if (vid && vid.currentTime > 0 && Math.abs(idx - this.activeIndex()) > 1) {
+            vid.removeAttribute('src');
+            vid.load();
+            this.progressBound.delete(idx);
           }
           this.manuallyPausedSet.delete(idx);
           continue;
@@ -619,6 +667,14 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     const vid = this.getVideoAt(cardIdx);
     if (!vid) return;
 
+    // Restore a src stripped by the far-off-screen unload in setupObserver()
+    // - Angular's [src] binding won't reapply it on its own since the bound
+    // expression (short.videoUrl) never actually changed value.
+    if (!vid.src && short.videoType === 'upload' && short.videoUrl) {
+      vid.src = short.videoUrl;
+      vid.load();
+    }
+
     if (vid.readyState >= 2 && !vid.classList.contains('sf-video--ready')) {
       vid.classList.add('sf-video--ready');
     }
@@ -637,6 +693,7 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     vid.play()
       .then(() => {
         if (gen !== this.playGeneration) return;
+        if (this.autoplayFailedIdx() === cardIdx) this.ngZone.run(() => this.autoplayFailedIdx.set(-1));
         if (!this.gestureUnlocked) {
           this.ngZone.run(() => {
             this.isMuted.set(true);
@@ -655,11 +712,30 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
         vid.play()
           .then(() => {
             if (gen !== this.playGeneration) return;
+            if (this.autoplayFailedIdx() === cardIdx) this.ngZone.run(() => this.autoplayFailedIdx.set(-1));
             if (!this.gestureUnlocked) {
               this.ngZone.run(() => this.isMuted.set(true));
             }
           })
-          .catch(() => { this.pendingPlayIdx = cardIdx; });
+          .catch(() => {
+            if (gen !== this.playGeneration) return;
+            this.pendingPlayIdx = cardIdx;
+            this.ngZone.run(() => this.autoplayFailedIdx.set(cardIdx));
+            // The video may simply not have been decode-ready yet (more
+            // likely on a cold-started installed PWA than a warm dev-tools
+            // tab) rather than genuinely policy-blocked - retry once when it
+            // reports enough data, instead of leaving the card stuck until
+            // the visitor happens to tap it.
+            const retry = () => {
+              if (this.playGeneration !== gen || !document.body.contains(vid)) return;
+              if (this.manuallyPausedSet.has(cardIdx) || vid.paused === false) return;
+              vid.play().then(() => {
+                if (this.autoplayFailedIdx() === cardIdx) this.ngZone.run(() => this.autoplayFailedIdx.set(-1));
+              }).catch(() => {});
+            };
+            vid.addEventListener('loadeddata', retry, { once: true });
+            vid.addEventListener('canplay', retry, { once: true });
+          });
       });
   }
 
@@ -751,7 +827,9 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     } else {
       this.manuallyPausedSet.delete(cardIdx);
       vid.muted = this.isMuted();
-      vid.play().catch(() => {});
+      vid.play().then(() => {
+        if (this.autoplayFailedIdx() === cardIdx) this.autoplayFailedIdx.set(-1);
+      }).catch(() => {});
       this.indicatorIsPlaying.set(true);
     }
     this.flashIndicator(cardIdx);

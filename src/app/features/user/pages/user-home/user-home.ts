@@ -12,7 +12,8 @@ import { ShortsService } from '../../../shorts/services/shorts.service';
 import { DashboardCache } from '../../../../core/services/dashboard-cache';
 import { CreatePost } from '../../../post/pages/create-post/create-post';
 import { ReadingHistory, HistoryEntry } from '../../../../core/services/reading-history';
-import { PaymentService } from '../../../../core/services/payment.service';
+import { PremiumPurchase } from '../../../../shared/premium-purchase/premium-purchase';
+import { hasLifetimeAccess } from '../../../../core/utils/lifetime-membership.util';
 
 Chart.register(...registerables);
 
@@ -20,7 +21,7 @@ Chart.register(...registerables);
   selector: 'app-user-home',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, CreatePost],
+  imports: [CommonModule, RouterModule, CreatePost, PremiumPurchase],
   templateUrl: './user-home.html',
   styleUrl: './user-home.css',
 })
@@ -34,7 +35,6 @@ export class UserHome implements OnInit, AfterViewInit, OnDestroy {
   private userService     = inject(UserService);
   private shortsService   = inject(ShortsService);
   private readingHistory  = inject(ReadingHistory);
-  private paymentService  = inject(PaymentService);
   private destroyRef     = inject(DestroyRef);
   private route          = inject(ActivatedRoute);
   readonly router        = inject(Router);
@@ -52,24 +52,19 @@ export class UserHome implements OnInit, AfterViewInit, OnDestroy {
   isLoading       = signal<boolean>(true);
   isRefreshing    = signal<boolean>(false);
 
-  // ── Premium upgrade (Razorpay one-time purchase) — only real perk today is
-  // unlimited mentor sessions in Career Guides, see core/services/payment.service.ts ──
-  upgrading    = signal<boolean>(false);
-  upgradeError = signal<string>('');
+  // ── Premium upgrade (Razorpay one-time purchase via the shared stepper
+  // modal) — only real perk today is unlimited mentor sessions in Career
+  // Guides, see shared/premium-purchase/. ──
+  showPremiumModal = signal<boolean>(false);
 
-  upgradeToPremium(): void {
-    if (this.upgrading()) return;
-    this.upgrading.set(true);
-    this.upgradeError.set('');
-    this.paymentService.purchasePremium()
-      .then(() => {
-        this.upgrading.set(false);
-        this.user.update((u: any) => u ? { ...u, isPremium: true } : u);
-      })
-      .catch((err: Error) => {
-        this.upgrading.set(false);
-        if (err.message !== 'cancelled') this.upgradeError.set(err.message);
-      });
+  // Admins and approved Mentors get Lifetime Membership automatically - see
+  // core/utils/lifetime-membership.util.ts. Takes priority over the
+  // Premium/Upgrade badge below since they never need to purchase.
+  lifetimeAccess = computed(() => hasLifetimeAccess(this.user()));
+
+  onPremiumPurchased(): void {
+    this.showPremiumModal.set(false);
+    this.user.update((u: any) => u ? { ...u, isPremium: true } : u);
   }
 
   shortsCount    = signal<number>(0);

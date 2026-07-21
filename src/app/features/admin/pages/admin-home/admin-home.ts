@@ -17,6 +17,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Auth } from '../../../../core/services/auth';
 import { DashboardCache } from '../../../../core/services/dashboard-cache';
 import { environment } from '../../../../../environments/environment';
+import { hasLifetimeAccess } from '../../../../core/utils/lifetime-membership.util';
 
 Chart.register(...registerables);
 
@@ -70,6 +71,7 @@ export class AdminHome implements OnInit, AfterViewInit, OnDestroy {
   activeUsers    = signal<number>(0);
   inactiveUsers  = signal<number>(0);
   premiumUsers   = signal<number>(0);
+  lifetimeMembers = signal<number>(0);
 
   newBlogs      = signal<number>(0);
   newUsers      = signal<number>(0);
@@ -314,12 +316,14 @@ export class AdminHome implements OnInit, AfterViewInit, OnDestroy {
     const inactive         = allUsers.filter((u: any) => u.status === 'inactive');
     const newUsersThisWeek = allUsers.filter((u: any) => new Date(u.createdAt) >= weekAgo);
     const premium          = allUsers.filter((u: any) => u.isPremium);
+    const lifetime         = allUsers.filter((u: any) => hasLifetimeAccess(u));
 
     this.totalUsers.set(allUsers.length);
     this.newUsers.set(newUsersThisWeek.length);
     this.activeUsers.set(active.length);
     this.inactiveUsers.set(inactive.length);
     this.premiumUsers.set(premium.length);
+    this.lifetimeMembers.set(lifetime.length);
 
     this.recentBlogs.set(
       [...allPosts]

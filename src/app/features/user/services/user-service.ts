@@ -87,6 +87,14 @@ export class UserService {
     );
   }
 
+  /** Admin: suspend/reactivate an existing mentor without touching account-wide login access. */
+  setMentorStatus(userId: string, mentorStatus: 'active' | 'suspended'): Observable<apiResponse<User>> {
+    this.invalidate(userId);
+    return this.http.patch<apiResponse<User>>(`${this.endPoint}${userId}/mentor-status`, { mentorStatus }).pipe(
+      tap(() => this.invalidate(userId))
+    );
+  }
+
   followUser(authorId: string): Observable<{ status: number; data: { followersCount: number; isFollowing: boolean } }> {
     return this.http.post<{ status: number; data: { followersCount: number; isFollowing: boolean } }>(
       `${this.endPoint}${authorId}/follow`, {}

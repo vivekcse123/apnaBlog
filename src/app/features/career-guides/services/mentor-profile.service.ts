@@ -3,7 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { Auth } from '../../../core/services/auth';
-import { MentorProfileRecord } from '../models/mentor-profile.model';
+import { MentorAvailabilityStatus, MentorProfileRecord } from '../models/mentor-profile.model';
 
 interface ProfileResponse { status: number; data: MentorProfileRecord | null; }
 interface UpdateResponse { status: number; message: string; data: MentorProfileRecord; }
@@ -52,5 +52,11 @@ export class MentorProfileService {
   removeBlockedDate(userId: string, date: string): Observable<UpdateResponse> {
     const h = this.headers();
     return this.http.delete<UpdateResponse>(`${environment.apiUrl}/mentor-profile/${userId}/blocked-dates/${date}`, h ? { headers: h } : {});
+  }
+
+  /** Mentor toggles their own live Available/Busy/Unavailable status. Self or admin only. */
+  updateAvailability(userId: string, status: MentorAvailabilityStatus): Observable<UpdateResponse> {
+    const h = this.headers();
+    return this.http.patch<UpdateResponse>(`${environment.apiUrl}/mentor-profile/${userId}/availability`, { status }, h ? { headers: h } : {});
   }
 }

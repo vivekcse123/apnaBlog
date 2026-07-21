@@ -13,6 +13,7 @@ import { NotificationNavEvent, NotificationNavigationService, USER_NOTIFICATION_
 import { Auth } from '../../../../core/services/auth';
 import { ToastService } from '../../../../core/services/toast.service';
 import { DashboardCache } from '../../../../core/services/dashboard-cache';
+import { hasLifetimeAccess } from '../../../../core/utils/lifetime-membership.util';
 
 @Component({
   selector: 'app-manage-users',
@@ -49,7 +50,10 @@ export class ManageUsers implements OnInit, OnDestroy {
   activeCount   = computed(() => this.allUsers().filter(u => u.status === 'active').length);
   inactiveCount = computed(() => this.allUsers().filter(u => u.status !== 'active').length);
   premiumCount  = computed(() => this.allUsers().filter(u => u.isPremium).length);
+  lifetimeCount = computed(() => this.allUsers().filter(u => hasLifetimeAccess(u)).length);
   sponsorCount  = computed(() => this.allUsers().filter(u => u.role === 'sponsor').length);
+
+  protected readonly hasLifetimeAccess = hasLifetimeAccess;
 
   todayCount = computed(() => {
     const today = new Date();

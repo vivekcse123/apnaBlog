@@ -1,0 +1,173 @@
+<div class="amm-page">
+
+  <div class="amm-header">
+    <div class="amm-header__title-row">
+      <span class="amm-header__icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><path d="M22 6l-10 7L2 6"/></svg>
+      </span>
+      <div>
+        <h1 class="amm-title">Messages</h1>
+        <p class="amm-sub">Contact submissions, direct messages, and callback/booking requests in one place.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="amm-tabs">
+    <button class="amm-tab" [class.amm-tab--active]="activeTab() === 'contact'" (click)="setTab('contact')">
+      Contact Submissions
+      @if (unreadContactCount() > 0) { <span class="amm-tab-badge">{{ unreadContactCount() }}</span> }
+    </button>
+    <button class="amm-tab" [class.amm-tab--active]="activeTab() === 'messages'" (click)="setTab('messages')">
+      Direct Messages
+      @if (unreadMessageCount() > 0) { <span class="amm-tab-badge">{{ unreadMessageCount() }}</span> }
+    </button>
+    <button class="amm-tab" [class.amm-tab--active]="activeTab() === 'callback'" (click)="setTab('callback')">
+      Callback &amp; Booking Requests
+    </button>
+  </div>
+
+  @if (activeTab() === 'contact') {
+    <div class="amm-filters">
+      <input class="amm-search" type="text" placeholder="Search name, email, subject..."
+             [(ngModel)]="contactSearch" (keyup.enter)="applyContactFilters()" />
+      <select class="amm-select" [(ngModel)]="contactReadFilter" (change)="applyContactFilters()">
+        <option value="">All</option>
+        <option value="false">Unread</option>
+        <option value="true">Read</option>
+      </select>
+      <button class="amm-btn" type="button" (click)="applyContactFilters()">Search</button>
+      <button class="amm-btn amm-btn--ghost" type="button" (click)="resetContactFilters()">Reset</button>
+      <button class="amm-btn amm-btn--ghost" type="button" (click)="exportContactsCsv()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Export CSV
+      </button>
+    </div>
+
+    @if (contactLoading()) {
+      <div class="amm-loading">
+        @for (_ of [1,2,3,4]; track $index) { <div class="amm-skeleton"></div> }
+      </div>
+    } @else if (contactError()) {
+      <div class="amm-error">{{ contactError() }}</div>
+    } @else if (contacts().length === 0) {
+      <div class="amm-empty"><p>No contact messages match these filters.</p></div>
+    } @else {
+      <div class="amm-list">
+        @for (c of contacts(); track trackByContactId($index, c)) {
+          <div class="amm-row">
+            <div class="amm-row__head" (click)="toggleContactExpand(c._id)">
+              <div class="amm-row__top">
+                <div class="amm-row__parties">
+                  <span class="amm-status" [attr.data-read]="c.read">{{ c.read ? 'read' : 'unread' }}</span>
+                  <span class="amm-user">{{ c.name }}</span>
+                  <span class="amm-muted">{{ c.email }}</span>
+                </div>
+                <button class="amm-chevron-btn" type="button" [class.amm-chevron-btn--open]="expandedContactId() === c._id" aria-label="Toggle details">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+              </div>
+              <div class="amm-row__bottom">
+                <span class="amm-topic">{{ c.subject }}</span>
+                <span class="amm-date">{{ c.createdAt | date:'MMM d, y, h:mm a' }}</span>
+              </div>
+            </div>
+
+            @if (expandedContactId() === c._id) {
+              <div class="amm-row__body">
+                <p class="amm-message">{{ c.message }}</p>
+                <div class="amm-actions">
+                  <a class="amm-action" [href]="'mailto:' + c.email + '?subject=Re: ' + c.subject">Reply by Email</a>
+                  <button class="amm-action amm-action--accept" [disabled]="c.read || contactUpdating().has(c._id)" (click)="markContactRead(c)">Mark Read</button>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      @if (contactTotalPages() > 1) {
+        <div class="amm-pagination">
+          <button class="amm-page-btn" [disabled]="contactPage() === 1" (click)="goToContactPage(contactPage() - 1)">← Prev</button>
+          <span>Page {{ contactPage() }} of {{ contactTotalPages() }}</span>
+          <button class="amm-page-btn" [disabled]="contactPage() === contactTotalPages()" (click)="goToContactPage(contactPage() + 1)">Next →</button>
+        </div>
+      }
+    }
+  }
+
+  @if (activeTab() === 'messages') {
+    <div class="amm-filters">
+      <input class="amm-search" type="text" placeholder="Search participant name or email..."
+             [(ngModel)]="conversationSearch" (keyup.enter)="applyConversationFilters()" />
+      <button class="amm-btn" type="button" (click)="applyConversationFilters()">Search</button>
+      <button class="amm-btn amm-btn--ghost" type="button" (click)="resetConversationFilters()">Reset</button>
+    </div>
+
+    @if (conversationLoading()) {
+      <div class="amm-loading">
+        @for (_ of [1,2,3,4]; track $index) { <div class="amm-skeleton"></div> }
+      </div>
+    } @else if (conversationError()) {
+      <div class="amm-error">{{ conversationError() }}</div>
+    } @else if (conversations().length === 0) {
+      <div class="amm-empty"><p>No conversations match these filters.</p></div>
+    } @else {
+      <div class="amm-list">
+        @for (conv of conversations(); track trackByConversation($index, conv)) {
+          <div class="amm-row">
+            <div class="amm-row__head" (click)="toggleConversationExpand(conv)">
+              <div class="amm-row__top">
+                <div class="amm-row__parties">
+                  @if (conv.unreadCount > 0) {
+                    <span class="amm-badge-pill">{{ conv.unreadCount }} unread</span>
+                  }
+                  <span class="amm-user">{{ conv.userA.name }}</span>
+                  <svg class="amm-arrow" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                  <span class="amm-user">{{ conv.userB.name }}</span>
+                </div>
+                <button class="amm-chevron-btn" type="button" [class.amm-chevron-btn--open]="expandedConversation() === conv" aria-label="Toggle thread">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+              </div>
+              <div class="amm-row__bottom">
+                <span class="amm-topic">{{ conv.lastMessage }}</span>
+                <span class="amm-date">{{ conv.lastMessageAt | date:'MMM d, y, h:mm a' }}</span>
+              </div>
+            </div>
+
+            @if (expandedConversation() === conv) {
+              <div class="amm-row__body">
+                @if (threadLoading()) {
+                  <div class="amm-thread-loading">Loading thread…</div>
+                } @else {
+                  <div class="amm-thread">
+                    @for (m of thread(); track trackByMessageId($index, m)) {
+                      <div class="amm-thread-msg" [class.amm-thread-msg--a]="isMine(m, conv)">
+                        <span class="amm-thread-author">{{ isMine(m, conv) ? conv.userA.name : conv.userB.name }}</span>
+                        <p>{{ m.content }}</p>
+                        <span class="amm-thread-time">{{ m.createdAt | date:'MMM d, h:mm a' }}</span>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      @if (conversationTotalPages() > 1) {
+        <div class="amm-pagination">
+          <button class="amm-page-btn" [disabled]="conversationPage() === 1" (click)="goToConversationPage(conversationPage() - 1)">← Prev</button>
+          <span>Page {{ conversationPage() }} of {{ conversationTotalPages() }}</span>
+          <button class="amm-page-btn" [disabled]="conversationPage() === conversationTotalPages()" (click)="goToConversationPage(conversationPage() + 1)">Next →</button>
+        </div>
+      }
+    }
+  }
+
+  @if (activeTab() === 'callback') {
+    <app-manage-callback-requests></app-manage-callback-requests>
+  }
+
+</div>

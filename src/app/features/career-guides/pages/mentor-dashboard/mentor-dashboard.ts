@@ -11,8 +11,9 @@ import { CallbackRequestRecord } from '../../models/callback-request.model';
 import { Auth } from '../../../../core/services/auth';
 import { UserService } from '../../../user/services/user-service';
 import { MentorProfileService } from '../../services/mentor-profile.service';
-import { MentorProfileRecord } from '../../models/mentor-profile.model';
+import { MentorAvailabilityStatus, MentorProfileRecord } from '../../models/mentor-profile.model';
 import { ExpertTimelineEntry } from '../../models/expert.model';
+import { DecodeEntitiesPipe, decodeHtmlEntities } from '../../../../shared/pipes/decode-entities-pipe';
 
 // Mirrors the caps enforced server-side in mentor-profile.model.js /
 // mentor-profile.router.js - validated here too so a mentor finds out
@@ -24,10 +25,11 @@ const CAPS = {
   maxTimelineEntries: 10,
   timelineField: 120,
   bioMinLength: 10,
+  yearsExperienceMax: 60,
 };
 
 const emptyProfile = (): MentorProfileRecord => ({
-  title: '', company: '', bio: '', responseTime: '',
+  title: '', company: '', bio: '', responseTime: '', yearsExperience: 0,
   skills: [], languages: [], certifications: [],
   education: [], experience: [],
 });
@@ -43,7 +45,7 @@ const todayStr = () => new Date().toISOString().slice(0, 10);
 @Component({
   selector: 'app-mentor-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, SiteHeader, MobileBottomNav],
+  imports: [CommonModule, FormsModule, RouterLink, SiteHeader, MobileBottomNav, DecodeEntitiesPipe],
   templateUrl: './mentor-dashboard.html',
   styleUrl: './mentor-dashboard.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -66,10 +68,19 @@ export class MentorDashboard implements OnInit {
   // ── My Profile (real, backend-persisted - overlays the marketplace's
   //    MOCK_EXPERTS base, see expert-profile.ts's displayExpert()) ──
   profile = signal<MentorProfileRecord>(emptyProfile());
+  // Current role(s) float to the top, same ordering expert-profile.ts's
+  // displayExpert() applies on the public page - keeps the two views consistent.
+  sortedExperienceView = computed(() => [...this.profile().experience].sort((a, b) => (b.current ? 1 : 0) - (a.current ? 1 : 0)));
   isEditingProfile = signal(false);
   isSavingProfile = signal(false);
   profileSaveError = signal('');
   profileSaved = signal(false);
+  // Tracked manually rather than via NgForm.dirty because education/experience
+  // rows are array-mutated (add/remove), not pure ngModel bindings - native
+  // form-dirty propagation would miss a row removal. Reset false whenever the
+  // edit buffer is freshly loaded from the saved profile (entering edit mode,
+  // or right after a successful save), set true on every field edit.
+  profileDirty = signal(false);
 
   // Plain editable copies bound via ngModel - arrays/lists edited as
   // comma-separated text (matches this codebase's simple-input convention),
@@ -78,6 +89,7 @@ export class MentorDashboard implements OnInit {
   editCompany = '';
   editBio = '';
   editResponseTime = '';
+  editYearsExperience: number | null = null;
   editSkills = '';
   editLanguages = '';
   editCertifications = '';
@@ -95,6 +107,41 @@ export class MentorDashboard implements OnInit {
   private removingDate = signal<string | null>(null);
   isRemovingDate(date: string): boolean { return this.removingDate() === date; }
   todayForMin = todayStr();
+
+  // ── Live Available/Busy/Unavailable status - separate from blockedDates
+  //    (whole-day scheduling). See PATCH /mentor-profile/:id/availability. ──
+  availabilityStatus = computed<MentorAvailabilityStatus>(() => this.profile().availabilityStatus ?? 'available');
+  pendingAvailability = signal<MentorAvailabilityStatus | null>(null);
+  isUpdatingAvailability = signal(false);
+  availabilityError = signal('');
+
+  requestAvailabilityChange(status: MentorAvailabilityStatus): void {
+    if (status === this.availabilityStatus() || this.isUpdatingAvailability()) return;
+    this.availabilityError.set('');
+    this.pendingAvailability.set(status);
+  }
+  cancelAvailabilityChange(): void { this.pendingAvailability.set(null); }
+  confirmAvailabilityChange(): void {
+    const userId = this.auth.userId();
+    const status = this.pendingAvailability();
+    if (!userId || !status || this.isUpdatingAvailability()) return;
+
+    this.isUpdatingAvailability.set(true);
+    this.mentorProfileService.updateAvailability(userId, status)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          this.profile.set(res.data);
+          this.isUpdatingAvailability.set(false);
+          this.pendingAvailability.set(null);
+        },
+        error: (err) => {
+          this.isUpdatingAvailability.set(false);
+          this.pendingAvailability.set(null);
+          this.availabilityError.set(err?.error?.message ?? 'Could not update your availability.');
+        },
+      });
+  }
 
   // Set when become-instructor.ts redirects an already-approved mentor here.
   showAlreadyMentorNotice = signal(this.route.snapshot.queryParamMap.get('notice') === 'already-mentor');
@@ -178,17 +225,19 @@ export class MentorDashboard implements OnInit {
 
   startEditingProfile(): void {
     const p = this.profile();
-    this.editTitle = p.title;
-    this.editCompany = p.company;
-    this.editBio = p.bio;
-    this.editResponseTime = p.responseTime;
-    this.editSkills = p.skills.join(', ');
-    this.editLanguages = p.languages.join(', ');
-    this.editCertifications = p.certifications.join(', ');
-    this.editEducation = p.education.map(e => ({ ...e }));
-    this.editExperience = p.experience.map(e => ({ ...e }));
+    this.editTitle = decodeHtmlEntities(p.title);
+    this.editCompany = decodeHtmlEntities(p.company);
+    this.editBio = decodeHtmlEntities(p.bio);
+    this.editResponseTime = decodeHtmlEntities(p.responseTime);
+    this.editYearsExperience = p.yearsExperience || null;
+    this.editSkills = p.skills.map(decodeHtmlEntities).join(', ');
+    this.editLanguages = p.languages.map(decodeHtmlEntities).join(', ');
+    this.editCertifications = p.certifications.map(decodeHtmlEntities).join(', ');
+    this.editEducation = p.education.map(e => ({ title: decodeHtmlEntities(e.title), org: decodeHtmlEntities(e.org), period: decodeHtmlEntities(e.period) }));
+    this.editExperience = p.experience.map(e => ({ title: decodeHtmlEntities(e.title), org: decodeHtmlEntities(e.org), period: decodeHtmlEntities(e.period), current: !!e.current }));
     this.profileSaveError.set('');
     this.profileSaved.set(false);
+    this.profileDirty.set(false);
     this.isEditingProfile.set(true);
   }
 
@@ -196,10 +245,18 @@ export class MentorDashboard implements OnInit {
     this.isEditingProfile.set(false);
   }
 
-  addEducationRow(): void { this.editEducation = [...this.editEducation, { title: '', org: '', period: '' }]; }
-  removeEducationRow(i: number): void { this.editEducation = this.editEducation.filter((_, idx) => idx !== i); }
-  addExperienceRow(): void { this.editExperience = [...this.editExperience, { title: '', org: '', period: '' }]; }
-  removeExperienceRow(i: number): void { this.editExperience = this.editExperience.filter((_, idx) => idx !== i); }
+  addEducationRow(): void { this.editEducation = [...this.editEducation, { title: '', org: '', period: '' }]; this.profileDirty.set(true); }
+  removeEducationRow(i: number): void { this.editEducation = this.editEducation.filter((_, idx) => idx !== i); this.profileDirty.set(true); }
+  addExperienceRow(): void { this.editExperience = [...this.editExperience, { title: '', org: '', period: '', current: false }]; this.profileDirty.set(true); }
+  removeExperienceRow(i: number): void { this.editExperience = this.editExperience.filter((_, idx) => idx !== i); this.profileDirty.set(true); }
+
+  // Only one role can be "current" at a time (mirrors LinkedIn's convention) -
+  // checking one row's box unchecks every other row rather than allowing
+  // several entries to all claim to be the mentor's present position.
+  setCurrentExperience(index: number, checked: boolean): void {
+    this.editExperience = this.editExperience.map((row, idx) => ({ ...row, current: idx === index ? checked : false }));
+    this.profileDirty.set(true);
+  }
 
   private splitList(value: string): string[] {
     return value.split(',').map(s => s.trim()).filter(Boolean);
@@ -216,6 +273,7 @@ export class MentorDashboard implements OnInit {
     if (!payload.bio || payload.bio.length < CAPS.bioMinLength) return `Bio must be at least ${CAPS.bioMinLength} characters.`;
     if (payload.bio.length > CAPS.bio) return `Bio must be ${CAPS.bio} characters or fewer.`;
     if (payload.responseTime.length > CAPS.responseTime) return `"Usually replies within" must be ${CAPS.responseTime} characters or fewer.`;
+    if (payload.yearsExperience < 0 || payload.yearsExperience > CAPS.yearsExperienceMax) return `Years of experience must be between 0 and ${CAPS.yearsExperienceMax}.`;
 
     for (const [key, items] of Object.entries({ skills: payload.skills, languages: payload.languages, certifications: payload.certifications }) as [keyof typeof CAPS.listItem, string[]][]) {
       if (items.length > CAPS.maxListItems) return `You can list at most ${CAPS.maxListItems} ${key}.`;
@@ -241,6 +299,7 @@ export class MentorDashboard implements OnInit {
   }
 
   saveProfile(): void {
+    if (this.isSavingProfile()) return;
     const userId = this.auth.userId();
     if (!userId) return;
 
@@ -249,6 +308,7 @@ export class MentorDashboard implements OnInit {
       company: this.editCompany.trim(),
       bio: this.editBio.trim(),
       responseTime: this.editResponseTime.trim(),
+      yearsExperience: this.editYearsExperience ?? 0,
       skills: this.splitList(this.editSkills),
       languages: this.splitList(this.editLanguages),
       certifications: this.splitList(this.editCertifications),
@@ -272,6 +332,7 @@ export class MentorDashboard implements OnInit {
           this.isSavingProfile.set(false);
           this.isEditingProfile.set(false);
           this.profileSaved.set(true);
+          this.profileDirty.set(false);
         },
         error: (err) => {
           this.isSavingProfile.set(false);

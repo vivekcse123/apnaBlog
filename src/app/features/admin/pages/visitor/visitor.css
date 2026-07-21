@@ -34,11 +34,21 @@
   gap: 14px;
 }
 
+.page-header-icon {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  background: var(--accent-subtle);
+  border: 1px solid rgba(37, 99, 235, .2);
+  display: flex; align-items: center; justify-content: center;
+  color: #2563EB;
+  flex-shrink: 0;
+}
+
 .page-title {
   font-size: 22px;
   font-weight: 600;
   color: var(--text-primary);
-  margin: 0;
+  margin: 0 0 4px;
 }
 
 .live-dot {

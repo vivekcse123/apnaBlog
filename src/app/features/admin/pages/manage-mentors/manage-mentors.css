@@ -1,0 +1,75 @@
+.mm-page { padding: 28px 36px; color: var(--text-primary); }
+
+.mm-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 16px; flex-wrap: wrap; }
+.mm-header__title-row { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.mm-header__icon {
+  flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  width: 44px; height: 44px; border-radius: 12px;
+  background: var(--accent-subtle); border: 1px solid rgba(37, 99, 235, .2); color: var(--accent-text);
+}
+.mm-title { font-size: 22px; font-weight: 800; color: var(--text-primary); margin: 0 0 4px; }
+.mm-sub { font-size: 13px; color: var(--text-secondary); margin: 0; }
+.mm-refresh {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: var(--bg-surface); border: 1px solid var(--border);
+  color: var(--text-secondary); border-radius: 10px; padding: 8px 16px; cursor: pointer; font-size: 12.5px; font-weight: 700;
+}
+.mm-refresh:hover { border-color: var(--accent); color: var(--accent-text); }
+
+.mm-loading { display: flex; flex-direction: column; gap: 12px; }
+.mm-skeleton { height: 64px; border-radius: 10px; background: var(--sk-base, var(--bg-surface-alt)); animation: mm-pulse 1.4s ease-in-out infinite; }
+@keyframes mm-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+.mm-error { background: var(--error-bg); border: 1px solid var(--error); color: var(--error); border-radius: 8px; padding: 16px; }
+.mm-empty { text-align: center; padding: 56px 20px; color: var(--text-secondary); font-size: 14px; }
+
+.mm-list { display: flex; flex-direction: column; gap: 12px; }
+.mm-card { background: var(--bg-surface); border-radius: 10px; border: 1.5px solid var(--border); padding: 14px 16px; }
+
+.mm-card__head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.mm-card__info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.mm-name { font-size: 14px; font-weight: 700; color: var(--text-primary); }
+.mm-email { font-size: 12px; color: var(--text-secondary); }
+.mm-slug { font-size: 11.5px; color: var(--text-muted); }
+
+.mm-badge { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 999px; background: rgba(22,163,74,0.12); color: #16a34a; flex-shrink: 0; }
+.mm-badge--suspended { background: rgba(220,38,38,0.12); color: #dc2626; }
+
+.mm-card__actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
+.mm-btn { border: none; border-radius: 8px; padding: 8px 16px; font-size: 12.5px; font-weight: 700; cursor: pointer; font-family: inherit; }
+.mm-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.mm-btn--ghost { background: var(--bg-surface-alt); color: var(--text-secondary); border: 1px solid var(--border); }
+.mm-btn--suspend { background: rgba(220,38,38,0.12); color: #dc2626; }
+.mm-btn--suspend:hover:not(:disabled) { background: rgba(220,38,38,0.2); }
+.mm-btn--activate { background: rgba(22,163,74,0.12); color: #16a34a; }
+.mm-btn--activate:hover:not(:disabled) { background: rgba(22,163,74,0.2); }
+.mm-btn--save { background: var(--accent); color: #fff; }
+.mm-btn--save:hover:not(:disabled) { background: var(--accent-hover); }
+
+.mm-edit {
+  margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border);
+  display: flex; flex-direction: column; gap: 10px;
+}
+.mm-edit label { display: flex; flex-direction: column; gap: 5px; font-size: 12.5px; font-weight: 700; color: var(--text-secondary); }
+.mm-edit input, .mm-edit textarea {
+  font-family: inherit; font-size: 13px; font-weight: 400; color: var(--text-primary);
+  background: var(--bg-surface-alt); border: 1.5px solid var(--border); border-radius: 8px; padding: 8px 10px; resize: vertical;
+}
+.mm-muted { font-size: 13px; color: var(--text-secondary); }
+.mm-inline-error { font-size: 12px; font-weight: 600; color: #dc2626; margin: 0; }
+.mm-inline-actions { display: flex; justify-content: flex-end; gap: 8px; }
+
+.mm-modal-backdrop {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
+  z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 20px;
+}
+.mm-modal { width: 100%; max-width: 420px; background: var(--bg-surface); border-radius: 16px; padding: 22px; box-shadow: var(--card-shadow-lg); }
+.mm-modal h3 { font-size: 16px; font-weight: 700; color: var(--text-primary); margin: 0 0 10px; }
+.mm-modal p { font-size: 13px; color: var(--text-secondary); line-height: 1.55; margin: 0 0 16px; }
+
+@media (max-width: 640px) {
+  .mm-page { padding: 16px; }
+  .mm-header { flex-direction: column; align-items: stretch; }
+  .mm-refresh { width: 100%; justify-content: center; }
+  .mm-card__head { flex-direction: column; }
+}

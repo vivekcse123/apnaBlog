@@ -1,0 +1,107 @@
+.pp-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.55); backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px); z-index: 2100;
+  display: flex; align-items: center; justify-content: center; padding: 16px;
+}
+.pp-box {
+  width: 100%; max-width: 460px; max-height: 90vh; overflow-y: auto;
+  background: var(--bg-surface); border-radius: 20px; border: 1px solid var(--border);
+  box-shadow: var(--card-shadow-lg);
+}
+
+.pp-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 22px 0;
+}
+.pp-header h2 { font-size: 17px; font-weight: 800; color: var(--text-primary); margin: 0; }
+.pp-close {
+  width: 30px; height: 30px; border-radius: 50%; border: none; background: var(--bg-surface-alt);
+  color: var(--text-secondary); cursor: pointer; font-size: 13px;
+}
+.pp-close:hover { color: var(--text-primary); }
+.pp-close:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.pp-steps { display: flex; gap: 6px; padding: 16px 22px 0; flex-wrap: wrap; }
+.pp-step {
+  font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em;
+  color: var(--text-muted); padding: 4px 10px; border-radius: 999px; background: var(--bg-surface-alt);
+}
+.pp-step.active { background: var(--accent); color: #fff; }
+.pp-step.done { color: #16a34a; background: rgba(22,163,74,0.1); }
+
+.pp-body { padding: 18px 22px 22px; }
+
+/* ══ Step 1 ══ */
+.pp-plan-card { background: var(--bg-surface-alt); border-radius: 14px; padding: 18px; margin-bottom: 6px; }
+.pp-plan-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.pp-plan-badge { font-size: 13px; font-weight: 800; color: var(--text-primary); }
+.pp-plan-price { font-size: 20px; font-weight: 800; color: var(--accent-text); }
+.pp-plan-period { font-size: 12px; font-weight: 600; color: var(--text-muted); }
+.pp-plan-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.55; margin: 0; }
+.pp-skel { display: inline-block; width: 50px; height: 18px; border-radius: 4px; background: var(--bg-hover, rgba(0,0,0,0.08)); vertical-align: middle; }
+
+/* ══ Step 2: coupon ══ */
+.pp-coupon-card {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  background: linear-gradient(135deg, var(--accent-subtle), var(--accent-2-subtle, var(--accent-subtle)));
+  border: 1.5px dashed var(--accent); border-radius: 14px; padding: 14px 16px; margin-bottom: 14px;
+}
+.pp-coupon-card.applied { border-style: solid; }
+.pp-coupon-left { display: flex; flex-direction: column; gap: 2px; }
+.pp-coupon-tag { font-size: 11px; font-weight: 700; color: var(--accent-text); }
+.pp-coupon-code { font-size: 15px; font-weight: 800; color: var(--text-primary); letter-spacing: 0.02em; }
+.pp-coupon-desc { font-size: 12px; color: var(--text-secondary); }
+.pp-coupon-savings { font-size: 12px; font-weight: 700; color: #16a34a; margin-top: 2px; }
+
+.pp-manual-coupon { margin-bottom: 14px; }
+.pp-manual-coupon label { display: block; font-size: 12px; font-weight: 700; color: var(--text-secondary); margin-bottom: 6px; }
+.pp-manual-row { display: flex; gap: 8px; }
+.pp-manual-row input {
+  flex: 1; font-family: inherit; font-size: 13px; color: var(--text-primary);
+  background: var(--bg-surface-alt); border: 1.5px solid var(--border); border-radius: 10px; padding: 9px 12px;
+}
+
+.pp-price-summary { background: var(--bg-surface-alt); border-radius: 12px; padding: 14px 16px; margin-bottom: 14px; }
+.pp-price-row { display: flex; justify-content: space-between; font-size: 13px; color: var(--text-secondary); padding: 3px 0; }
+.pp-price-row--discount { color: #16a34a; }
+.pp-price-row--total { font-size: 14.5px; font-weight: 800; color: var(--text-primary); border-top: 1px solid var(--border); margin-top: 6px; padding-top: 8px; }
+
+/* ══ Step 3: trust row ══ */
+.pp-trust-row { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+.pp-trust-item {
+  flex: 1; min-width: 110px; display: flex; flex-direction: column; align-items: center; gap: 6px;
+  text-align: center; font-size: 11px; font-weight: 600; color: var(--text-secondary);
+  background: var(--bg-surface-alt); border-radius: 12px; padding: 12px 8px;
+}
+.pp-trust-icon {
+  display: flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: 10px; background: var(--accent-subtle); color: var(--accent-text);
+}
+
+/* ══ Step 4: confirmation ══ */
+.pp-confirm { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; padding: 10px 0; color: #16a34a; }
+.pp-confirm h3 { font-size: 18px; font-weight: 800; color: var(--text-primary); margin: 4px 0 0; }
+.pp-confirm p { font-size: 13.5px; color: var(--text-secondary); line-height: 1.55; margin: 0 0 8px; }
+
+/* ══ Shared ══ */
+.pp-muted { font-size: 13px; color: var(--text-secondary); margin-bottom: 14px; }
+.pp-error {
+  font-size: 12.5px; color: #ef4444; background: rgba(239,68,68,0.08);
+  border: 1px solid rgba(239,68,68,0.25); border-radius: 10px; padding: 9px 12px; margin: 8px 0 0;
+}
+.pp-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 6px; }
+.pp-full { width: 100%; }
+.pp-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 11px 20px; border-radius: 12px; font-size: 13.5px; font-weight: 700; font-family: inherit;
+  cursor: pointer; border: none;
+}
+.pp-btn--primary { background: var(--accent); color: #fff; }
+.pp-btn--primary:hover:not(:disabled) { background: var(--accent-hover); }
+.pp-btn--ghost { background: var(--bg-surface-alt); color: var(--text-secondary); border: 1.5px solid var(--border); }
+.pp-btn--outline { background: none; color: var(--text-secondary); border: 1.5px solid var(--border); }
+.pp-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+@media (max-width: 480px) {
+  .pp-trust-item { min-width: 90px; }
+}

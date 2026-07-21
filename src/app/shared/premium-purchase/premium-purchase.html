@@ -1,0 +1,139 @@
+@if (open()) {
+  <div class="pp-overlay" (click)="close()">
+    <div class="pp-box" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-labelledby="pp-title">
+
+      <div class="pp-header">
+        <h2 id="pp-title">Upgrade to Premium</h2>
+        <button type="button" class="pp-close" (click)="close()" aria-label="Close" [disabled]="isPurchasing()">✕</button>
+      </div>
+
+      @if (step() < 4) {
+        <div class="pp-steps">
+          <span class="pp-step" [class.active]="step() === 1" [class.done]="step() > 1">1. Choose Plan</span>
+          <span class="pp-step" [class.active]="step() === 2" [class.done]="step() > 2">2. Apply Coupon</span>
+          <span class="pp-step" [class.active]="step() === 3">3. Secure Payment</span>
+        </div>
+      }
+
+      <div class="pp-body">
+
+        <!-- ══ STEP 1: Choose Plan ══ -->
+        @if (step() === 1) {
+          <div class="pp-plan-card">
+            <div class="pp-plan-head">
+              <span class="pp-plan-badge">💎 Premium</span>
+              <span class="pp-plan-price">
+                @if (pricing(); as p) { ₹{{ p.amountRupees }} } @else { <span class="pp-skel"></span> }
+                <span class="pp-plan-period">/ year</span>
+              </span>
+            </div>
+            <p class="pp-plan-desc">Unlimited mentor sessions across Career Guides for one year - book as many Career Guides sessions and callbacks as you need, no free-session cap.</p>
+          </div>
+          <div class="pp-actions">
+            <button type="button" class="pp-btn pp-btn--primary pp-full" (click)="next()">Continue</button>
+          </div>
+        }
+
+        <!-- ══ STEP 2: Apply Coupon ══ -->
+        @if (step() === 2) {
+          @if (welcomeCoupon(); as wc) {
+            @if (wc.eligible) {
+              <div class="pp-coupon-card" [class.applied]="appliedCoupon()?.code === wc.code">
+                <div class="pp-coupon-left">
+                  <span class="pp-coupon-tag">🎉 First Purchase Offer</span>
+                  <span class="pp-coupon-code">{{ wc.code }}</span>
+                  <span class="pp-coupon-desc">{{ wc.description }}</span>
+                  @if (pricing(); as p) {
+                    <span class="pp-coupon-savings">Save ₹{{ (p.amountRupees * (wc.discountPercent! / 100)) | number:'1.0-0' }} ({{ wc.discountPercent }}% off)</span>
+                  }
+                </div>
+                @if (appliedCoupon()?.code === wc.code) {
+                  <button type="button" class="pp-btn pp-btn--ghost" (click)="removeCoupon()">Remove</button>
+                } @else {
+                  <button type="button" class="pp-btn pp-btn--primary" (click)="applyWelcomeCoupon()">Apply</button>
+                }
+              </div>
+            } @else {
+              <p class="pp-muted">No first-purchase coupon available for your account right now.</p>
+            }
+          }
+
+          <div class="pp-manual-coupon">
+            <label for="pp-manual-code">Have a coupon code?</label>
+            <div class="pp-manual-row">
+              <input id="pp-manual-code" type="text" [ngModel]="manualCode()" (ngModelChange)="manualCode.set($event)" placeholder="Enter code" />
+              <button type="button" class="pp-btn pp-btn--outline" (click)="applyManualCode()">Apply</button>
+            </div>
+            @if (manualCodeError()) { <p class="pp-error">{{ manualCodeError() }}</p> }
+          </div>
+
+          @if (pricing(); as p) {
+            <div class="pp-price-summary">
+              <div class="pp-price-row"><span>Plan price</span><span>₹{{ p.amountRupees }}</span></div>
+              @if (appliedCoupon(); as c) {
+                <div class="pp-price-row pp-price-row--discount"><span>Coupon ({{ c.code }})</span><span>-₹{{ discountAmountRupees() }}</span></div>
+              }
+              <div class="pp-price-row pp-price-row--total"><span>Total</span><span>₹{{ totalRupees() }}</span></div>
+            </div>
+          }
+
+          <div class="pp-actions">
+            <button type="button" class="pp-btn pp-btn--ghost" (click)="back()">Back</button>
+            <button type="button" class="pp-btn pp-btn--primary" (click)="next()">Continue</button>
+          </div>
+        }
+
+        <!-- ══ STEP 3: Secure Payment ══ -->
+        @if (step() === 3) {
+          <div class="pp-trust-row">
+            <div class="pp-trust-item">
+              <span class="pp-trust-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+              <span>Secure Payment</span>
+            </div>
+            <div class="pp-trust-item">
+              <span class="pp-trust-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span>
+              <span>Instant Activation</span>
+            </div>
+            <div class="pp-trust-item">
+              <span class="pp-trust-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.9 1.5 3.2-.5 1 3.1 2.4 2.1-1.5 2.9 1.5 2.9-2.4 2.1-1 3.1-3.2-.5L12 22l-2.9-1.5-3.2.5-1-3.1-2.4-2.1 1.5-2.9-1.5-2.9 2.4-2.1 1-3.1 3.2.5z"/><path d="M9 12l2 2 4-4" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+              <span>Verified Platform</span>
+            </div>
+          </div>
+
+          @if (pricing(); as p) {
+            <div class="pp-price-summary">
+              <div class="pp-price-row"><span>Plan price</span><span>₹{{ p.amountRupees }}</span></div>
+              @if (appliedCoupon(); as c) {
+                <div class="pp-price-row pp-price-row--discount"><span>Coupon ({{ c.code }})</span><span>-₹{{ discountAmountRupees() }}</span></div>
+              }
+              <div class="pp-price-row pp-price-row--total"><span>Amount to pay</span><span>₹{{ totalRupees() }}</span></div>
+            </div>
+          }
+
+          @if (purchaseError()) { <p class="pp-error">{{ purchaseError() }}</p> }
+
+          <div class="pp-actions">
+            <button type="button" class="pp-btn pp-btn--ghost" [disabled]="isPurchasing()" (click)="back()">Back</button>
+            <button type="button" class="pp-btn pp-btn--primary" [disabled]="isPurchasing()" (click)="confirmPurchase()">
+              {{ isPurchasing() ? 'Opening checkout…' : 'Pay ₹' + totalRupees() }}
+            </button>
+          </div>
+        }
+
+        <!-- ══ STEP 4: Confirmation ══ -->
+        @if (step() === 4) {
+          <div class="pp-confirm">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            <h3>You're Premium!</h3>
+            <p>
+              Unlimited mentor sessions are now unlocked.
+              @if (premiumExpiresAt(); as exp) { Valid until {{ exp | date:'mediumDate' }}. }
+            </p>
+            <button type="button" class="pp-btn pp-btn--primary" (click)="close()">Done</button>
+          </div>
+        }
+
+      </div>
+    </div>
+  </div>
+}

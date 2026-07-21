@@ -11,6 +11,7 @@
 
   <header class="md-hero">
     <div>
+      <span class="md-eyebrow">Mentor Dashboard</span>
       <h1>Welcome back, {{ mentorName().split(' ')[0] || 'Mentor' }} 👋</h1>
       <p>Here's what's happening with your mentorship requests today.</p>
       @if (avgRating(); as avg) {
@@ -129,40 +130,74 @@
 
     @if (!isEditingProfile()) {
       <div class="md-profile-view">
-        <p><strong>{{ profile().title || 'No title set' }}</strong> @if (profile().company) { · {{ profile().company }} }</p>
-        <p class="md-empty-line">{{ profile().bio || 'No bio yet - click Edit Profile to add one.' }}</p>
+        <p><strong>{{ (profile().title | decodeEntities) || 'No title set' }}</strong> @if (profile().company) { · {{ profile().company | decodeEntities }} } @if (profile().yearsExperience) { · {{ profile().yearsExperience }}+ years exp. }</p>
+        <p class="md-empty-line">{{ (profile().bio || 'No bio yet - click Edit Profile to add one.') | decodeEntities }}</p>
+
+        @if (profile().experience.length) {
+          <div class="md-timeline-group md-timeline-view">
+            <span class="md-timeline-label">Experience</span>
+            <ul class="md-view-list">
+              @for (item of sortedExperienceView(); track $index) {
+                <li>
+                  <strong>{{ item.title | decodeEntities }}</strong>
+                  <span class="md-view-muted">{{ item.org | decodeEntities }}</span>
+                  @if (item.current) { <span class="md-current-badge">Current</span> }
+                  <span class="md-view-period">{{ item.period | decodeEntities }}</span>
+                </li>
+              }
+            </ul>
+          </div>
+        }
+
+        @if (profile().education.length) {
+          <div class="md-timeline-group md-timeline-view">
+            <span class="md-timeline-label">Education</span>
+            <ul class="md-view-list">
+              @for (item of profile().education; track $index) {
+                <li>
+                  <strong>{{ item.title | decodeEntities }}</strong>
+                  <span class="md-view-muted">{{ item.org | decodeEntities }}</span>
+                  <span class="md-view-period">{{ item.period | decodeEntities }}</span>
+                </li>
+              }
+            </ul>
+          </div>
+        }
       </div>
     } @else {
       <form class="md-profile-form" #profileForm="ngForm" (ngSubmit)="saveProfile()">
         <label>Title *
-          <input type="text" name="editTitle" [(ngModel)]="editTitle" required maxlength="120" placeholder="e.g. Frontend Guide & MEAN Stack Expert">
+          <input type="text" name="editTitle" [(ngModel)]="editTitle" (ngModelChange)="profileDirty.set(true)" required maxlength="120" placeholder="e.g. Frontend Guide & MEAN Stack Expert">
         </label>
         <label>Company
-          <input type="text" name="editCompany" [(ngModel)]="editCompany" maxlength="120" placeholder="e.g. Evoke Technologies">
+          <input type="text" name="editCompany" [(ngModel)]="editCompany" (ngModelChange)="profileDirty.set(true)" maxlength="120" placeholder="e.g. Evoke Technologies">
         </label>
         <label>Bio * (at least 10 characters)
-          <textarea name="editBio" [(ngModel)]="editBio" required minlength="10" maxlength="1000" rows="4"></textarea>
+          <textarea name="editBio" [(ngModel)]="editBio" (ngModelChange)="profileDirty.set(true)" required minlength="10" maxlength="1000" rows="4"></textarea>
         </label>
         <label>Usually replies within
-          <input type="text" name="editResponseTime" [(ngModel)]="editResponseTime" maxlength="80" placeholder="e.g. Usually replies within 2 hours">
+          <input type="text" name="editResponseTime" [(ngModel)]="editResponseTime" (ngModelChange)="profileDirty.set(true)" maxlength="80" placeholder="e.g. Usually replies within 2 hours">
+        </label>
+        <label>Years of experience
+          <input type="number" name="editYearsExperience" [(ngModel)]="editYearsExperience" (ngModelChange)="profileDirty.set(true)" min="0" max="60" placeholder="e.g. 7">
         </label>
         <label>Skills (comma separated)
-          <input type="text" name="editSkills" [(ngModel)]="editSkills" placeholder="Angular, TypeScript, RxJS">
+          <input type="text" name="editSkills" [(ngModel)]="editSkills" (ngModelChange)="profileDirty.set(true)" placeholder="Angular, TypeScript, RxJS">
         </label>
         <label>Languages (comma separated)
-          <input type="text" name="editLanguages" [(ngModel)]="editLanguages" placeholder="English, Hindi">
+          <input type="text" name="editLanguages" [(ngModel)]="editLanguages" (ngModelChange)="profileDirty.set(true)" placeholder="English, Hindi">
         </label>
         <label>Certifications (comma separated)
-          <input type="text" name="editCertifications" [(ngModel)]="editCertifications" placeholder="MEAN Stack Certified - Udemy">
+          <input type="text" name="editCertifications" [(ngModel)]="editCertifications" (ngModelChange)="profileDirty.set(true)" placeholder="MEAN Stack Certified - Udemy">
         </label>
 
         <div class="md-timeline-group">
           <span class="md-timeline-label">Education</span>
           @for (row of editEducation; track $index) {
             <div class="md-timeline-row">
-              <input type="text" [(ngModel)]="row.title" name="eduTitle{{$index}}" maxlength="120" placeholder="Degree">
-              <input type="text" [(ngModel)]="row.org" name="eduOrg{{$index}}" maxlength="120" placeholder="Institution">
-              <input type="text" [(ngModel)]="row.period" name="eduPeriod{{$index}}" maxlength="60" placeholder="2018 - 2022">
+              <input type="text" [(ngModel)]="row.title" (ngModelChange)="profileDirty.set(true)" name="eduTitle{{$index}}" maxlength="120" placeholder="Degree">
+              <input type="text" [(ngModel)]="row.org" (ngModelChange)="profileDirty.set(true)" name="eduOrg{{$index}}" maxlength="120" placeholder="Institution">
+              <input type="text" [(ngModel)]="row.period" (ngModelChange)="profileDirty.set(true)" name="eduPeriod{{$index}}" maxlength="60" placeholder="2018 - 2022">
               <button type="button" class="md-row-remove" (click)="removeEducationRow($index)" aria-label="Remove">✕</button>
             </div>
           }
@@ -172,10 +207,14 @@
         <div class="md-timeline-group">
           <span class="md-timeline-label">Experience</span>
           @for (row of editExperience; track $index) {
-            <div class="md-timeline-row">
-              <input type="text" [(ngModel)]="row.title" name="expTitle{{$index}}" maxlength="120" placeholder="Role">
-              <input type="text" [(ngModel)]="row.org" name="expOrg{{$index}}" maxlength="120" placeholder="Company">
-              <input type="text" [(ngModel)]="row.period" name="expPeriod{{$index}}" maxlength="60" placeholder="2022 - 2025">
+            <div class="md-timeline-row md-timeline-row--exp">
+              <input type="text" [(ngModel)]="row.title" (ngModelChange)="profileDirty.set(true)" name="expTitle{{$index}}" maxlength="120" placeholder="Role">
+              <input type="text" [(ngModel)]="row.org" (ngModelChange)="profileDirty.set(true)" name="expOrg{{$index}}" maxlength="120" placeholder="Company">
+              <input type="text" [(ngModel)]="row.period" (ngModelChange)="profileDirty.set(true)" name="expPeriod{{$index}}" maxlength="60" placeholder="2022 - 2025">
+              <label class="md-current-check">
+                <input type="checkbox" name="expCurrent{{$index}}" [checked]="row.current" (change)="setCurrentExperience($index, $any($event.target).checked)">
+                Current
+              </label>
               <button type="button" class="md-row-remove" (click)="removeExperienceRow($index)" aria-label="Remove">✕</button>
             </div>
           }
@@ -188,7 +227,7 @@
 
         <div class="md-profile-actions">
           <button type="button" class="md-btn md-btn--outline" (click)="cancelEditingProfile()">Cancel</button>
-          <button type="submit" class="md-btn md-btn--primary" [disabled]="isSavingProfile() || profileForm.invalid">
+          <button type="submit" class="md-btn md-btn--primary" [disabled]="isSavingProfile() || profileForm.invalid || !profileDirty()">
             {{ isSavingProfile() ? 'Saving…' : 'Save Profile' }}
           </button>
         </div>
@@ -198,6 +237,39 @@
 
   <section class="md-section">
     <h2>Availability</h2>
+
+    <div class="md-status-row" role="group" aria-label="Your current status">
+      <button type="button" class="md-status-btn md-status-btn--available" [class.active]="availabilityStatus() === 'available'"
+        [disabled]="isUpdatingAvailability()" (click)="requestAvailabilityChange('available')">
+        <span class="md-status-dot"></span> Available
+      </button>
+      <button type="button" class="md-status-btn md-status-btn--busy" [class.active]="availabilityStatus() === 'busy'"
+        [disabled]="isUpdatingAvailability()" (click)="requestAvailabilityChange('busy')">
+        <span class="md-status-dot"></span> Busy
+      </button>
+      <button type="button" class="md-status-btn md-status-btn--unavailable" [class.active]="availabilityStatus() === 'unavailable'"
+        [disabled]="isUpdatingAvailability()" (click)="requestAvailabilityChange('unavailable')">
+        <span class="md-status-dot"></span> Unavailable
+      </button>
+    </div>
+    <p class="md-empty-line">This status is shown to visitors on your public profile and updates instantly.</p>
+    @if (availabilityError()) {
+      <p class="md-profile-error">{{ availabilityError() }}</p>
+    }
+
+    @if (pendingAvailability(); as pending) {
+      <div class="md-status-confirm">
+        <p>Change your status to <strong>{{ pending }}</strong>?</p>
+        <div class="md-status-confirm-actions">
+          <button type="button" class="md-btn md-btn--outline" (click)="cancelAvailabilityChange()">Cancel</button>
+          <button type="button" class="md-btn md-btn--primary" [disabled]="isUpdatingAvailability()" (click)="confirmAvailabilityChange()">
+            {{ isUpdatingAvailability() ? 'Updating…' : 'Confirm' }}
+          </button>
+        </div>
+      </div>
+    }
+
+    <h3 class="md-timeline-label">Blocked dates</h3>
     <p class="md-empty-line">Mark specific dates you're fully unavailable - Book Session and Request Callback will both refuse new requests on those days.</p>
 
     <div class="md-avail-add">

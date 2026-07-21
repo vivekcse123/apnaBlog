@@ -1,6 +1,7 @@
 import { Component, ChangeDetectionStrategy, OnInit, DestroyRef, signal, inject } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { PLATFORM_ID } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { catchError, of } from 'rxjs';
@@ -8,15 +9,16 @@ import { SiteHeader } from '../../../../shared/site-header/site-header';
 import { MobileBottomNav } from '../../../../shared/mobile-bottom-nav/mobile-bottom-nav';
 import { Auth } from '../../../../core/services/auth';
 import { UserService } from '../../../user/services/user-service';
+import { MentorApplicationService } from '../../services/mentor-application.service';
+import { MentorApplicationRecord } from '../../models/mentor-application.model';
 import { MOCK_CATEGORIES } from '../../data/mock-experts';
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const;
-type ApplicationStatus = 'draft' | 'pending-review';
 
 @Component({
   selector: 'app-become-instructor',
   standalone: true,
-  imports: [CommonModule, RouterLink, SiteHeader, MobileBottomNav],
+  imports: [CommonModule, FormsModule, RouterLink, SiteHeader, MobileBottomNav],
   templateUrl: './become-instructor.html',
   styleUrl: './become-instructor.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -26,6 +28,7 @@ export class BecomeInstructor implements OnInit {
   private auth = inject(Auth);
   private platformId = inject(PLATFORM_ID);
   private userService = inject(UserService);
+  private mentorApplicationService = inject(MentorApplicationService);
   private destroyRef = inject(DestroyRef);
 
   readonly days = DAYS;
@@ -33,9 +36,17 @@ export class BecomeInstructor implements OnInit {
 
   isLoggedIn(): boolean { return this.auth.isAuthorized(); }
 
+  // Real application state (replaces the old local-only prototype flag) -
+  // see GET /api/mentor-applications/mine.
+  isLoadingApplication = signal(true);
+  existingApplication = signal<MentorApplicationRecord | null>(null);
+  isSubmitting = signal(false);
+  submitError = signal('');
+
   ngOnInit(): void {
     const userId = this.auth.userId();
-    if (!userId) return;
+    if (!userId) { this.isLoadingApplication.set(false); return; }
+
     this.userService.getUserById(userId)
       .pipe(takeUntilDestroyed(this.destroyRef), catchError(() => of({ data: null })))
       .subscribe(res => {
@@ -45,6 +56,19 @@ export class BecomeInstructor implements OnInit {
           this.router.navigate(['/career-guides/dashboard'], { queryParams: { notice: 'already-mentor' } });
         }
       });
+
+    this.mentorApplicationService.mine()
+      .pipe(takeUntilDestroyed(this.destroyRef), catchError(() => of({ data: null })))
+      .subscribe(res => {
+        this.existingApplication.set(res.data);
+        this.isLoadingApplication.set(false);
+      });
+  }
+
+  /** Rejected applicants can fill out and submit the form again. */
+  startNewApplication(): void {
+    this.existingApplication.set(null);
+    this.submitError.set('');
   }
 
   goToLogin(): void {
@@ -53,10 +77,6 @@ export class BecomeInstructor implements OnInit {
   goToRegister(): void {
     this.router.navigate(['/auth/register'], { queryParams: { returnUrl: '/career-guides/become-an-instructor' } });
   }
-
-  // ── Form state (local prototype only - no backend to persist the
-  // application to yet; submitting just flips this to 'pending-review'). ──
-  status = signal<ApplicationStatus>('draft');
 
   photoFileName = signal('');
   resumeFileName = signal('');
@@ -125,8 +145,40 @@ export class BecomeInstructor implements OnInit {
   }
 
   submit(): void {
-    if (!this.isFormValid()) return;
-    this.status.set('pending-review');
-    if (isPlatformBrowser(this.platformId)) window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (!this.isFormValid() || this.isSubmitting()) return;
+
+    this.isSubmitting.set(true);
+    this.submitError.set('');
+    this.mentorApplicationService.submit({
+      fullName: this.fullName().trim(),
+      currentRole: this.currentRole().trim(),
+      currentCompany: this.currentCompany().trim(),
+      yearsExperience: this.yearsExperience() ?? 0,
+      linkedin: this.linkedin().trim(),
+      github: this.github().trim(),
+      portfolio: this.portfolio().trim(),
+      bio: this.bio().trim(),
+      reason: this.reason().trim(),
+      skills: this.skills(),
+      expertise: this.expertise(),
+      languages: this.languages(),
+      teachingCategories: this.teachingCategories(),
+      availableDays: this.availableDays(),
+      availableTime: this.availableTime().trim(),
+      photoFileName: this.photoFileName(),
+      resumeFileName: this.resumeFileName(),
+    })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          this.isSubmitting.set(false);
+          this.existingApplication.set(res.data);
+          if (isPlatformBrowser(this.platformId)) window.scrollTo({ top: 0, behavior: 'smooth' });
+        },
+        error: (err) => {
+          this.isSubmitting.set(false);
+          this.submitError.set(err?.error?.message ?? 'Could not submit your application. Please try again.');
+        },
+      });
   }
 }

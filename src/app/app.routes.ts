@@ -166,7 +166,7 @@ export const routes: Routes = [
     {
         path: 'career-guides/dashboard',
         loadComponent: () => import('./features/career-guides/pages/mentor-dashboard/mentor-dashboard').then(m => m.MentorDashboard),
-        title: 'Mentor Dashboard | ApnaInsights'
+        title: 'ApnaInsights - Mentor Dashboard'
     },
     {
         // Must come before 'career-guides/:expertId' below - route order
@@ -217,7 +217,7 @@ export const routes: Routes = [
             },
             {
                 path: 'sponsor/:id',
-                title: 'Sponsor Dashboard | ApnaInsights',
+                title: 'ApnaInsights - Sponsor Dashboard',
                 canActivate: [sponsorGuard, roleGuard],
                 loadComponent: () => import('./features/sponsor/pages/sponsor-dashboard/sponsor-dashboard').then(m => m.SponsorDashboard),
                 data: { role: 'sponsor' }

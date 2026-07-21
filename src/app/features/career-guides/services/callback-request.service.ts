@@ -1,11 +1,11 @@
-import { Injectable, PLATFORM_ID, inject, signal } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { io, Socket } from 'socket.io-client';
 import { environment } from '../../../../environments/environment';
 import { Auth } from '../../../core/services/auth';
+import { SocketService } from '../../../core/services/socket.service';
 import { CallbackRequestRecord, CallbackStatus, CreateCallbackRequestPayload, SubmitFeedbackPayload } from '../models/callback-request.model';
+import { MentorAvailabilityStatus } from '../models/mentor-profile.model';
 
 interface ListResponse { status: number; data: CallbackRequestRecord[]; total?: number; page?: number; }
 interface ItemResponse { status: number; message: string; data: CallbackRequestRecord; }
@@ -36,29 +36,32 @@ export interface AdminCallbackFilters {
 export class CallbackRequestService {
   private http = inject(HttpClient);
   private auth = inject(Auth);
-  private platformId = inject(PLATFORM_ID);
+  private socketService = inject(SocketService);
 
-  private socket: Socket | null = null;
+  private liveSubscribed = false;
   /** Bumped on every 'callback_created'/'callback_updated' event - components can
    *  react to this signal (e.g. in an effect) to know when to refetch. */
   liveTick = signal(0);
+  /** Latest mentor_availability_updated broadcast, if any - see expert-profile.ts. */
+  lastAvailabilityUpdate = signal<{ mentorSlug: string; availabilityStatus: MentorAvailabilityStatus } | null>(null);
 
   private headers(): HttpHeaders | undefined {
     const token = this.auth.getToken();
     return token ? new HttpHeaders({ Authorization: `Bearer ${token}` }) : undefined;
   }
 
-  private connectSocket(): void {
-    if (!isPlatformBrowser(this.platformId) || this.socket) return;
-    const base = environment.apiUrl.replace(/\/api\/?$/, '');
-    this.socket = io(base, { auth: { token: this.auth.getToken() ?? '' }, transports: ['websocket', 'polling'] });
-    this.socket.on('callback_created', () => this.liveTick.update(v => v + 1));
-    this.socket.on('callback_updated', () => this.liveTick.update(v => v + 1));
-  }
-
-  /** Call once from a page that displays live callback-request data. */
+  /** Call once from a page that displays live callback-request data. Delegates
+   *  to the app-wide SocketService (single shared connection) rather than
+   *  opening its own - guarded so repeated calls don't stack up duplicate
+   *  listeners on this singleton service. */
   ensureLive(): void {
-    this.connectSocket();
+    if (this.liveSubscribed) return;
+    this.liveSubscribed = true;
+    this.socketService.on('callback_created').subscribe(() => this.liveTick.update(v => v + 1));
+    this.socketService.on('callback_updated').subscribe(() => this.liveTick.update(v => v + 1));
+    this.socketService
+      .on<{ mentorSlug: string; availabilityStatus: MentorAvailabilityStatus }>('mentor_availability_updated')
+      .subscribe(payload => this.lastAvailabilityUpdate.set(payload));
   }
 
   /** Public aggregate rating per expert (from real submitted feedback only). */

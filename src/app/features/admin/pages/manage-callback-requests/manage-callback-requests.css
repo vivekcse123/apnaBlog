@@ -5,10 +5,19 @@
 .mcr-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; }
 .mcr-header__title-row { display: flex; align-items: center; gap: 14px; min-width: 0; }
 .mcr-header__icon {
-  flex-shrink: 0; display: flex; align-items: center; justify-content: center;
-  width: 44px; height: 44px; border-radius: 12px;
-  background: var(--bg-surface-alt); color: var(--accent-text);
+  flex-shrink: 0; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center;
+  width: 44px; 
+  height: 44px; 
+  border-radius: 12px;
+  background: var(--accent-subtle); 
+  border: 1px solid rgba(37, 99, 235, .2); 
+  color: var(--accent-text);
+  margin-top: -15px;
 }
+
 
 @media (max-width: 640px) {
   .mcr-page { padding: 16px; }

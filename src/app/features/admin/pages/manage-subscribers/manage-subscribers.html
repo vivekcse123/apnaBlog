@@ -2,9 +2,16 @@
 
   <!-- Header -->
   <div class="ms-header">
-    <div>
-      <h2 class="ms-title">Newsletter Subscribers</h2>
-      <p class="ms-sub">Manage email subscribers and send newsletters</p>
+    <div class="ms-header-left">
+      <div class="ms-header-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 6l-10 7L2 6"/>
+        </svg>
+      </div>
+      <div>
+        <h2 class="ms-title">Newsletter Subscribers</h2>
+        <p class="ms-sub">Manage email subscribers and send newsletters</p>
+      </div>
     </div>
     <div class="ms-header-actions">
       <button class="sp-export-btn" (click)="exportCSV()" [disabled]="!subscribers().length" title="Export as CSV">

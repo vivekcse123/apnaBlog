@@ -4,10 +4,7 @@
     [isOpen]="sidebarOpen()"
     (close)="sidebarOpen.set(false)"
     [navLinks]="navLinks()"
-    [shortcuts]="[
-      { label: 'Write a Story', routerLink: '/user/' + userId() + '/create-blog', icon: 'write' },
-      { label: 'View Site',     routerLink: '/',                                     icon: 'globe' }
-    ]">
+    [shortcuts]="dashboardShortcuts()">
   </app-sidebar>
 
   <div class="dash-main">
@@ -31,6 +28,7 @@
           [userId]="userId()"
           [totalBlogs]="user()?.totalBlogs ?? 0"
           [totalViews]="user()?.totalViews ?? 0"
+          [hasLifetime]="hasLifetimeAccess(user())"
           (close)="closeProfile()"
           (logout)="logout()">
         </app-user-profile>

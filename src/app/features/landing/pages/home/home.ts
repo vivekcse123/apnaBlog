@@ -169,7 +169,7 @@ export class Home implements OnInit, OnDestroy {
   // Curated subset (not the full live categories() list, which runs to 14+)
   // so the footer's Categories column stays roughly the same length as
   // Explore/Company instead of dwarfing them.
-  readonly footerCategories: string[] = ['Technology', 'Career', 'Business', 'Health', 'Lifestyle', 'News'];
+  readonly footerCategories: string[] = ['Technology', 'Career', 'Business', 'Health', 'Lifestyle', 'News', 'AI'];
 
   // Fallback list used before taxonomy API responds (avoids empty UI flash)
   private readonly FALLBACK_CATEGORIES = [

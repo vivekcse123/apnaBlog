@@ -50,8 +50,15 @@
 
       <!-- Row 2: name + badges - always full-width, always visible -->
       <div class="spb-identity">
+        <span class="spb-eyebrow">Personal Dashboard</span>
         <p class="spb-greeting">{{ greeting }}</p>
         <h1 class="spb-name">{{ user()?.name || 'Writer' }}</h1>
+        @if (user()?.email) {
+          <p class="spb-email">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v16H4z"/><path d="m22 6-10 7L2 6"/></svg>
+            {{ user()?.email }}
+          </p>
+        }
         <div class="spb-badges-row">
           <span class="spb-role-badge">
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
@@ -66,7 +73,11 @@
           @if (earnedBadgeCount() > 0) {
             <span class="spb-earned-badge">🏅 {{ earnedBadgeCount() }} achievement{{ earnedBadgeCount() === 1 ? '' : 's' }}</span>
           }
-          @if (user()?.isPremium) {
+          @if (lifetimeAccess()) {
+            <span class="spb-lifetime-badge" title="Lifetime Membership — all premium features unlocked, no purchase needed">
+              👑 Lifetime Member
+            </span>
+          } @else if (user()?.isPremium) {
             <span class="spb-premium-badge"
               [title]="user()?.premiumExpiresAt ? ('Premium until ' + (user().premiumExpiresAt | date:'MMM d, y')) : 'Premium'">
               💎 Premium
@@ -75,18 +86,17 @@
               }
             </span>
           } @else {
-            <button type="button" class="spb-upgrade-badge" [disabled]="upgrading()" (click)="upgradeToPremium()"
+            <button type="button" class="spb-upgrade-badge" (click)="showPremiumModal.set(true)"
               title="Unlimited mentor sessions for 1 year">
-              {{ upgrading() ? 'Opening checkout…' : '✨ Upgrade to Premium (1 yr)' }}
+              ✨ Upgrade to Premium (1 yr)
             </button>
           }
         </div>
-        @if (upgradeError()) {
-          <p class="spb-upgrade-error">{{ upgradeError() }}</p>
-        }
       </div>
 
     </div>
+
+    <app-premium-purchase [open]="showPremiumModal()" (closed)="showPremiumModal.set(false)" (purchased)="onPremiumPurchased()" />
 
     <!-- Social stats bar -->
     <div class="social-stats-bar">

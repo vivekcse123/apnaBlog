@@ -11,13 +11,16 @@ import { Settings } from '../admin/pages/settings/settings';
 import { Visitor } from '../admin/pages/visitor/visitor';
 import { ManageShorts } from '../admin/pages/manage-shorts/manage-shorts';
 import { ManageCallbackRequests } from '../admin/pages/manage-callback-requests/manage-callback-requests';
+import { ManageMentorApplications } from '../admin/pages/manage-mentor-applications/manage-mentor-applications';
+import { ManageMentors } from '../admin/pages/manage-mentors/manage-mentors';
+import { ManageMessages } from '../admin/pages/manage-messages/manage-messages';
 
 const routes: Routes = [
   {
     path: '',
     component: SuperAdminDashboard,
     children: [
-      { path: '', component: SuperAdminHome, title: 'ApnaInsights - Super Admin' },
+      { path: '', component: SuperAdminHome, title: 'ApnaInsights - Super Admin Dashboard' },
       { path: 'role-management', component: RoleManagement, title: 'ApnaInsights - Role Management' },
       { path: 'manage-users', component: ManageUsers, title: 'ApnaInsights - Manage Users' },
       { path: 'manage-blogs', component: PostLists, title: 'ApnaInsights - Manage Blogs' },
@@ -28,6 +31,9 @@ const routes: Routes = [
       { path: 'settings', component: Settings, title: 'ApnaInsights - Settings' },
       { path: 'visitor', component: Visitor, title: 'ApnaInsights - Visitor' },
       { path: 'career-guides/callback-requests', component: ManageCallbackRequests, title: 'ApnaInsights - Callback Requests' },
+      { path: 'career-guides/mentor-applications', component: ManageMentorApplications, title: 'ApnaInsights - Mentor Applications' },
+      { path: 'career-guides/mentors', component: ManageMentors, title: 'ApnaInsights - Manage Mentors' },
+      { path: 'messages', component: ManageMessages, title: 'ApnaInsights - Messages' },
     ]
   }
 ];

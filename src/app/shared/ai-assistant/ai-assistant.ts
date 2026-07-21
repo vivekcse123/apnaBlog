@@ -20,7 +20,11 @@ interface ChatMessage {
 // the same bottom-right corner (and that FAB's offset shifts further when an
 // ad banner fills in), so the AI FAB can't be reliably "raised" to clear it -
 // simplest to hide it there entirely.
-const HIDDEN_ROUTE_PREFIXES = ['/auth', '/admin', '/super-admin', '/shorts'];
+// '/user' and '/sponsor' are private dashboard-only prefixes (no public route
+// shares them). '/career-guides/dashboard' must be the full literal, NOT the
+// bare '/career-guides' prefix - that's a public prefix shared by the mentor
+// marketplace/explore/profile pages, which should keep showing the assistant.
+const HIDDEN_ROUTE_PREFIXES = ['/auth', '/admin', '/super-admin', '/shorts', '/user', '/career-guides/dashboard', '/sponsor'];
 
 // Blog-detail stacks its own fixed Like/Comment/Share/Save bar above the
 // mobile bottom nav - the FAB needs extra bottom clearance there so it

@@ -142,6 +142,15 @@
           </div>
         }
 
+        @if (autoplayFailedIdx() === i && !endedCards().has(short._id)) {
+          <div class="sf-replay" (click)="$event.stopPropagation(); doTogglePublic(i, $event)">
+            <div class="sf-replay-btn">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+            </div>
+            <span class="sf-replay-label">Tap to play</span>
+          </div>
+        }
+
         @if (seekIndicator()?.cardIdx === i) {
           <div class="sf-seek-bubble" [class.sf-seek-bubble--right]="seekIndicator()!.dir === 'fwd'"
                [class.sf-seek-bubble--left]="seekIndicator()!.dir === 'bwd'" aria-hidden="true">

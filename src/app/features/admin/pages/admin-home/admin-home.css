@@ -30,7 +30,28 @@
   border-bottom: 1px solid var(--border);
 }
 
-.page-hd-left { display: flex; flex-direction: column; gap: 4px; }
+.page-hd-left { display: flex; align-items: center; gap: 14px; }
+
+.page-hd-icon {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  background: var(--accent-subtle);
+  border: 1px solid rgba(37, 99, 235, .2);
+  display: flex; align-items: 
+  center; justify-content: center;
+  color: #2563EB;
+  flex-shrink: 0;
+}
+
+.page-hd-eyebrow {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #2563EB;
+  margin: 0 0 4px;
+}
 
 .page-hd-title-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 

@@ -18,12 +18,12 @@
     align-items: center;
     justify-content: space-around;
     position: fixed;
-    left: 10px;
-    right: 10px;
-    bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+    left: 16px;
+    right: 16px;
+    bottom: calc(4px + env(safe-area-inset-bottom, 0px));
     z-index: 1100;
-    height: 66px;
-    border-radius: 24px;
+    height: 58px;
+    border-radius: 22px;
     background: rgba(255, 255, 255, 0.82);
     -webkit-backdrop-filter: blur(18px) saturate(1.6);
     backdrop-filter: blur(18px) saturate(1.6);
@@ -46,7 +46,7 @@
      without the old bottom:-100px hack that misaligned dashboard content padding. */
   @media (display-mode: standalone) {
     .mob-nav {
-      bottom: calc(10px + var(--safe-area-bottom, env(safe-area-inset-bottom, 0px)));
+      bottom: calc(4px + var(--safe-area-bottom, env(safe-area-inset-bottom, 0px)));
       transition: bottom 0.15s ease;
     }
 
@@ -55,7 +55,7 @@
        "sit almost flush against the home indicator, Instagram-style" spacing to
        iOS PWA installs specifically, leaving Android/browser untouched. */
     :root[data-safe-ready="1"] .mob-nav {
-      bottom: calc(2px + var(--safe-area-bottom, env(safe-area-inset-bottom, 0px)));
+      bottom: calc(1px + var(--safe-area-bottom, env(safe-area-inset-bottom, 0px)));
     }
   }
 

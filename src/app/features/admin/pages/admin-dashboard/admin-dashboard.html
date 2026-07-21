@@ -11,15 +11,18 @@
       { label: 'Shorts',    routerLink: '/admin/' + userId() + '/manage-shorts', icon: 'video', exact: false,   groupLabel: 'Content' },
       { label: 'Users',     routerLink: '/admin/' + userId() + '/manage-users', icon: 'users',    exact: false, groupLabel: 'Users' },
       { label: 'Subscribers',  routerLink: '/admin/' + userId() + '/subscribers',     icon: 'mail',   exact: false, groupLabel: 'Users' },
+      { label: 'Messages',  routerLink: '/admin/' + userId() + '/messages', icon: 'mail', exact: false, groupLabel: 'Users', badge: messagesBadge() },
       { label: 'Callback Requests', routerLink: '/admin/' + userId() + '/career-guides/callback-requests', icon: 'comment', exact: false, groupLabel: 'Users' },
+      { label: 'Mentor Applications', routerLink: '/admin/' + userId() + '/career-guides/mentor-applications', icon: 'shield', exact: false, groupLabel: 'Users' },
+      { label: 'Manage Mentors', routerLink: '/admin/' + userId() + '/career-guides/mentors', icon: 'users', exact: false, groupLabel: 'Users' },
       { label: 'Flags',       routerLink: '/admin/' + userId() + '/flags',       icon: 'flag',  exact: false,   groupLabel: 'Moderation & Growth' },
       { label: 'Sponsored',   routerLink: '/admin/' + userId() + '/sponsored-report', icon: 'trend',  exact: false, groupLabel: 'Moderation & Growth' },
       { label: 'Traffic',     routerLink: '/admin/' + userId() + '/visitor',        icon: 'chart',  exact: false, groupLabel: 'Moderation & Growth' },
       { label: 'Settings',  routerLink: '/admin/' + userId() + '/settings',     icon: 'settings', exact: false, groupLabel: 'Settings' }
     ]"
     [shortcuts]="[
-      { label: 'Write a Story', routerLink: '/admin/' + userId() + '/create-blog', icon: 'write' },
-      { label: 'View Site',     routerLink: '/',                                    icon: 'globe' }
+      { label: 'My Personal Dashboard',routerLink: '/user/' + userId(),                    icon: 'user'  },
+      { label: 'View Site',            routerLink: '/',                                    icon: 'globe' }
     ]">
   </app-sidebar>
 
@@ -45,6 +48,7 @@
           [basePath]="'admin'"
           [totalBlogs]="user()?.totalBlogs ?? 0"
           [totalViews]="user()?.totalViews ?? 0"
+          [hasLifetime]="hasLifetimeAccess(user())"
           (close)="closeProfile()"
           (logout)="logout()">
         </app-user-profile>
