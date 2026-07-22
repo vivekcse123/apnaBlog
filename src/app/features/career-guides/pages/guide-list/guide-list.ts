@@ -62,6 +62,13 @@ export class GuideList implements OnInit {
   // looked like at the last deploy, not their latest edit.
   private profileOverrides = signal<Map<string, MentorProfileRecord>>(new Map());
 
+  // Which MOCK_EXPERTS slugs are still active mentors (not suspended), per
+  // the same GET /api/mentor-profile call - see mentor-profile.router.js.
+  // null = not fetched yet (SSR, or the request hasn't settled), in which
+  // case mergedExperts() shows the full mock roster unfiltered rather than
+  // treating "unknown" as "suspended".
+  private activeSlugs = signal<Set<string> | null>(null);
+
   // Real field on the User model (backend), default false for everyone until
   // an admin approval workflow exists to actually promote someone to mentor.
   isMentor = signal(false);
@@ -106,8 +113,11 @@ export class GuideList implements OnInit {
       .subscribe(res => this.followerCounts.set(new Map(res.data.map(r => [r.expertSlug, r.followersCount]))));
 
     this.mentorProfileService.getAll()
-      .pipe(takeUntilDestroyed(this.destroyRef), timeout(8000), catchError(() => of({ data: [] as (MentorProfileRecord & { mentorSlug: string })[] })))
-      .subscribe(res => this.profileOverrides.set(new Map(res.data.map(p => [p.mentorSlug, p]))));
+      .pipe(takeUntilDestroyed(this.destroyRef), timeout(8000), catchError(() => of({ data: [] as (MentorProfileRecord & { mentorSlug: string })[], activeSlugs: null as string[] | null })))
+      .subscribe(res => {
+        this.profileOverrides.set(new Map(res.data.map(p => [p.mentorSlug, p])));
+        if (res.activeSlugs) this.activeSlugs.set(new Set(res.activeSlugs));
+      });
 
     const userId = this.auth.userId();
     if (!userId) return;
@@ -124,11 +134,16 @@ export class GuideList implements OnInit {
 
   // MOCK_EXPERTS base, overlaid with each mentor's real edited profile
   // (title/company/bio/skills/etc.) where one exists - same only-non-empty-
-  // wins merge as expert-profile.ts's displayExpert().
+  // wins merge as expert-profile.ts's displayExpert(). Also drops any mock
+  // entry whose backing mentor account has been suspended (see activeSlugs
+  // above) - every MOCK_EXPERTS entry maps to a real backend mentor account,
+  // so suspension there should actually remove the card, not just its overlay.
   private mergedExperts = computed<Expert[]>(() => {
+    const active = this.activeSlugs();
+    const base = active ? this.allExperts().filter(e => active.has(e.slug)) : this.allExperts();
     const overrides = this.profileOverrides();
-    if (!overrides.size) return this.allExperts();
-    return this.allExperts().map(e => {
+    if (!overrides.size) return base;
+    return base.map(e => {
       const o = overrides.get(e.slug);
       if (!o) return e;
       return {

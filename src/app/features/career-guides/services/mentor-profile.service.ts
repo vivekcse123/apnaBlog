@@ -8,7 +8,7 @@ import { MentorAvailabilityStatus, MentorProfileRecord } from '../models/mentor-
 interface ProfileResponse { status: number; data: MentorProfileRecord | null; }
 interface UpdateResponse { status: number; message: string; data: MentorProfileRecord; }
 interface MentorProfileWithSlug extends MentorProfileRecord { mentorSlug: string; }
-interface ListResponse { status: number; data: MentorProfileWithSlug[]; }
+interface ListResponse { status: number; data: MentorProfileWithSlug[]; activeSlugs: string[]; }
 
 @Injectable({ providedIn: 'root' })
 export class MentorProfileService {

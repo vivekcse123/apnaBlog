@@ -1,8 +1,8 @@
 /* Hidden on desktop - shown only on mobile.
-   Redesigned as a floating rounded pill (part of the homepage visual
-   refresh) with a blurred glass background and larger touch targets -
-   structure/selectors are unchanged so mobile-bottom-nav.ts/.html (shared
-   across 4 modes app-wide) don't need to change. */
+   Full-width bar flush against the screen bottom (Instagram-style) with a
+   blurred glass background and larger touch targets - structure/selectors
+   are unchanged so mobile-bottom-nav.ts/.html (shared across 4 modes
+   app-wide) don't need to change. */
 :host {
   display: block;
   height: 0;
@@ -18,18 +18,22 @@
     align-items: center;
     justify-content: space-around;
     position: fixed;
-    left: 16px;
-    right: 16px;
-    bottom: calc(4px + env(safe-area-inset-bottom, 0px));
+    left: 0;
+    right: 0;
+    bottom: 0;
     z-index: 1100;
     height: 58px;
-    border-radius: 22px;
-    background: rgba(255, 255, 255, 0.82);
+    border-radius: 0;
+    background: rgba(255, 255, 255, 0.92);
     -webkit-backdrop-filter: blur(18px) saturate(1.6);
     backdrop-filter: blur(18px) saturate(1.6);
-    border: 1px solid var(--border, rgba(0, 0, 0, 0.06));
-    box-shadow: 0 8px 30px rgba(15, 23, 42, 0.14), 0 2px 8px rgba(15, 23, 42, 0.06);
-    padding: 0 6px;
+    border-top: 1px solid var(--border, rgba(0, 0, 0, 0.06));
+    box-shadow: 0 -2px 12px rgba(15, 23, 42, 0.08);
+    padding: 0 4px;
+    /* Edge-to-edge like Instagram: background reaches the true device edge,
+       icons sit above the home indicator via bottom padding instead of a
+       floating gap. */
+    padding-bottom: env(safe-area-inset-bottom, 0px);
     gap: 0;
     /* iOS PWA: force GPU compositing layer before first paint so position is
        resolved immediately - prevents the nav from appearing above the screen
@@ -42,20 +46,11 @@
   }
 
   /* ── iOS PWA standalone: use JS-resolved --safe-area-bottom (set by index.html
-     polling script) so the correct height is applied from the very first paint,
-     without the old bottom:-100px hack that misaligned dashboard content padding. */
+     polling script) so the correct inset is applied from the very first paint -
+     env(safe-area-inset-bottom) returns 0 on first paint due to a WebKit bug. */
   @media (display-mode: standalone) {
     .mob-nav {
-      bottom: calc(4px + var(--safe-area-bottom, env(safe-area-inset-bottom, 0px)));
-      transition: bottom 0.15s ease;
-    }
-
-    /* [data-safe-ready="1"] is only ever set by the iOS `navigator.standalone`
-       branch in index.html (Android/desktop never set it) - so this scopes the
-       "sit almost flush against the home indicator, Instagram-style" spacing to
-       iOS PWA installs specifically, leaving Android/browser untouched. */
-    :root[data-safe-ready="1"] .mob-nav {
-      bottom: calc(1px + var(--safe-area-bottom, env(safe-area-inset-bottom, 0px)));
+      padding-bottom: var(--safe-area-bottom, env(safe-area-inset-bottom, 0px));
     }
   }
 
