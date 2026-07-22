@@ -2,7 +2,7 @@ import { Component, ChangeDetectionStrategy, OnInit, DestroyRef, signal, compute
 import { CommonModule, DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { PLATFORM_ID } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { DomSanitizer, SafeHtml, Meta, Title } from '@angular/platform-browser';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { catchError, of, timeout } from 'rxjs';
 import { SiteHeader } from '../../../../shared/site-header/site-header';
@@ -15,6 +15,7 @@ import { CallbackRequestService, ExpertRating, ExpertSessionCount } from '../../
 import { MentorProfileService } from '../../services/mentor-profile.service';
 import { MentorProfileRecord } from '../../models/mentor-profile.model';
 import { DecodeEntitiesPipe } from '../../../../shared/pipes/decode-entities-pipe';
+import { environment } from '../../../../../environments/environment';
 
 type SortKey = 'top-rated' | 'most-experienced' | 'newest';
 
@@ -35,6 +36,8 @@ export class GuideList implements OnInit {
   private destroyRef = inject(DestroyRef);
   private document = inject(DOCUMENT);
   private platformId = inject(PLATFORM_ID);
+  private meta = inject(Meta);
+  private title = inject(Title);
 
   // Real aggregate ratings from actual submitted session feedback (see
   // GET /api/callback-requests/ratings) - keyed by expertSlug. Cards for
@@ -90,6 +93,8 @@ export class GuideList implements OnInit {
   }
 
   ngOnInit(): void {
+    this.setMetaTags();
+
     // Ratings/session-counts/followers/mentor-check are all live, per-visitor
     // data with no SEO value - skip them on the server so prerendering
     // `career-guides`/`career-guides/explore` doesn't depend on the backend
@@ -124,6 +129,43 @@ export class GuideList implements OnInit {
     this.userService.getUserById(userId)
       .pipe(takeUntilDestroyed(this.destroyRef), timeout(8000), catchError(() => of({ data: null })))
       .subscribe(res => this.isMentor.set(!!res.data?.isMentor));
+  }
+
+  private setMetaTags(): void {
+    const site = environment.siteUrl;
+    const url = `${site}/career-guides`;
+    const title = 'Career Guides - Connect with Industry Experts | ApnaInsights';
+    const description = 'Get 1:1 career guidance from verified industry experts - resume reviews, interview preparation, and personalized mentorship on ApnaInsights.';
+    const image = `${site}/og-image-career-guides.png`;
+
+    this.title.setTitle(title);
+    this.meta.updateTag({ name: 'description', content: description });
+    this.meta.updateTag({ name: 'robots', content: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' });
+
+    this.meta.updateTag({ property: 'og:type', content: 'website' });
+    this.meta.updateTag({ property: 'og:title', content: title });
+    this.meta.updateTag({ property: 'og:description', content: description });
+    this.meta.updateTag({ property: 'og:url', content: url });
+    this.meta.updateTag({ property: 'og:site_name', content: 'ApnaInsights' });
+    this.meta.updateTag({ property: 'og:image', content: image });
+    this.meta.updateTag({ property: 'og:image:width', content: '1200' });
+    this.meta.updateTag({ property: 'og:image:height', content: '630' });
+    this.meta.updateTag({ property: 'og:image:alt', content: title });
+    this.meta.updateTag({ property: 'og:locale', content: 'en_IN' });
+
+    this.meta.updateTag({ name: 'twitter:card', content: 'summary_large_image' });
+    this.meta.updateTag({ name: 'twitter:title', content: title });
+    this.meta.updateTag({ name: 'twitter:description', content: description });
+    this.meta.updateTag({ name: 'twitter:image', content: image });
+    this.meta.updateTag({ name: 'twitter:site', content: '@apnainsights' });
+
+    let canonical = this.document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
+    if (!canonical) {
+      canonical = this.document.createElement('link');
+      canonical.setAttribute('rel', 'canonical');
+      this.document.head.appendChild(canonical);
+    }
+    canonical.setAttribute('href', url);
   }
 
   // This whole page runs on MOCK_EXPERTS (see data/mock-experts.ts) - there is

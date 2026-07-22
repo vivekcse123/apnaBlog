@@ -74,6 +74,23 @@ export class CampaignPage implements OnInit {
           this.titleSvc.setTitle(`${p.title} | Sponsored | ApnaInsights`);
           // Sponsored pages must not be indexed - they are ads, not editorial content
           this.meta.updateTag({ name: 'robots', content: 'noindex,nofollow' });
+
+          const url   = `${environment.siteUrl}/campaign/${id}`;
+          const desc  = (p.description || '').trim() || `${p.title} - a sponsored story on ApnaInsights.`;
+          const image = p.featuredImage || environment.ogImage;
+          this.meta.updateTag({ name: 'description',         content: desc });
+          this.meta.updateTag({ property: 'og:type',         content: 'website' });
+          this.meta.updateTag({ property: 'og:title',        content: `${p.title} | Sponsored | ApnaInsights` });
+          this.meta.updateTag({ property: 'og:description',  content: desc });
+          this.meta.updateTag({ property: 'og:url',          content: url });
+          this.meta.updateTag({ property: 'og:image',        content: image });
+          this.meta.updateTag({ property: 'og:image:width',  content: '1200' });
+          this.meta.updateTag({ property: 'og:image:height', content: '630' });
+          this.meta.updateTag({ property: 'og:image:alt',    content: p.title });
+          this.meta.updateTag({ name: 'twitter:card',        content: 'summary_large_image' });
+          this.meta.updateTag({ name: 'twitter:title',       content: `${p.title} | Sponsored | ApnaInsights` });
+          this.meta.updateTag({ name: 'twitter:description', content: desc });
+          this.meta.updateTag({ name: 'twitter:image',       content: image });
         },
         error: () => { this.isLoading.set(false); this.loadError.set(true); },
       });

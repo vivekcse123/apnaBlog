@@ -18,6 +18,7 @@ import { Post }           from '../../../../core/models/post.model';
 import { TimeAgoPipe }    from '../../../../shared/pipes/time-ago-pipe';
 import { MobileBottomNav } from '../../../../shared/mobile-bottom-nav/mobile-bottom-nav';
 import { SiteHeader } from '../../../../shared/site-header/site-header';
+import { LiveNewsSection } from '../../../../shared/live-news-section/live-news-section';
 import { Auth }           from '../../../../core/services/auth';
 import { BookmarkService } from '../../../../core/services/bookmark.service';
 
@@ -97,7 +98,7 @@ const CATEGORY_DESCRIPTIONS: Record<string, { description: string; intro: string
 @Component({
   selector: 'app-category-page',
   standalone: true,
-  imports: [RouterLink, CommonModule, FormsModule, DatePipe, TimeAgoPipe, MobileBottomNav, SiteHeader],
+  imports: [RouterLink, CommonModule, FormsModule, DatePipe, TimeAgoPipe, MobileBottomNav, SiteHeader, LiveNewsSection],
   templateUrl: './category-page.html',
   styleUrl: './category-page.css',
 })
@@ -164,6 +165,20 @@ export class CategoryPage implements OnInit, OnDestroy {
   isLoading       = signal(true);
   showCatDropdown = signal(false);
   searchQuery     = signal('');
+
+  // News category only: lets the reader swap which of the two sections
+  // (Live News feed vs the regular published-stories grid) renders first.
+  // Persisted so the choice survives revisits.
+  private readonly SECTION_ORDER_KEY = 'apnainsights:news-section-order';
+  sectionOrder = signal<'live-first' | 'posts-first'>('live-first');
+
+  toggleSectionOrder(): void {
+    const next = this.sectionOrder() === 'live-first' ? 'posts-first' : 'live-first';
+    this.sectionOrder.set(next);
+    if (isPlatformBrowser(this.platformId)) {
+      try { localStorage.setItem(this.SECTION_ORDER_KEY, next); } catch { /* storage unavailable */ }
+    }
+  }
 
   ALL_CATEGORIES = computed<string[]>(() => {
     const names = this.taxonomyService.categoryNames();
@@ -272,6 +287,12 @@ export class CategoryPage implements OnInit, OnDestroy {
       this.categoryName.set(matched);
       this.searchQuery.set('');
       this.displayCount.set(this.PAGE_SIZE);
+      if (matched === 'News' && isPlatformBrowser(this.platformId)) {
+        try {
+          const saved = localStorage.getItem(this.SECTION_ORDER_KEY);
+          if (saved === 'live-first' || saved === 'posts-first') this.sectionOrder.set(saved);
+        } catch { /* storage unavailable */ }
+      }
       this.setMeta(matched);
       this.loadPosts();
       setTimeout(() => this.pushAds(), 300);
@@ -290,6 +311,7 @@ export class CategoryPage implements OnInit, OnDestroy {
       this.allPosts.set(cached);
       this.isLoading.set(false);
       this.applyRobotsForCount();
+      this.setOgImage();
       this.injectItemList(this.posts());
       return;
     }
@@ -306,8 +328,18 @@ export class CategoryPage implements OnInit, OnDestroy {
         this.allPosts.set(posts);
         this.isLoading.set(false);
         this.applyRobotsForCount();
+        this.setOgImage();
         this.injectItemList(this.posts());
       });
+  }
+
+  // Once the category's real posts are in, swap the generic sitewide og:image
+  // for the most recent post's own featured image - actually relevant to what
+  // this category link is sharing, same fallback as blog-detail.ts.
+  private setOgImage(): void {
+    const image = this.posts()[0]?.featuredImage || environment.ogImage;
+    this.meta.updateTag({ property: 'og:image', content: image });
+    this.meta.updateTag({ name: 'twitter:image', content: image });
   }
 
   // Mark thin category pages noindex so they don't hurt AdSense review.
@@ -340,8 +372,14 @@ export class CategoryPage implements OnInit, OnDestroy {
     this.meta.updateTag({ property: 'og:description', content: desc });
     this.meta.updateTag({ property: 'og:url',         content: url });
     this.meta.updateTag({ property: 'og:type',        content: 'website' });
+    this.meta.updateTag({ property: 'og:image',        content: environment.ogImage });
+    this.meta.updateTag({ property: 'og:image:width',  content: '1200' });
+    this.meta.updateTag({ property: 'og:image:height', content: '630' });
+    this.meta.updateTag({ property: 'og:image:alt',    content: `${name} Guides & Insights | ApnaInsights` });
+    this.meta.updateTag({ name: 'twitter:card',        content: 'summary_large_image' });
     this.meta.updateTag({ name: 'twitter:title',       content: `${name} Guides & Insights | ApnaInsights` });
     this.meta.updateTag({ name: 'twitter:description', content: desc });
+    this.meta.updateTag({ name: 'twitter:image',       content: environment.ogImage });
 
     let canonical = this.document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
     if (!canonical) {

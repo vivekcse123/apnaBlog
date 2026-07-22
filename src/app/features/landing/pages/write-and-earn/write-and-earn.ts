@@ -64,9 +64,14 @@ export class WriteAndEarn implements OnInit {
     this.meta.updateTag({ property: 'og:description', content: desc });
     this.meta.updateTag({ property: 'og:url',         content: url });
     this.meta.updateTag({ property: 'og:site_name',   content: 'ApnaInsights' });
+    this.meta.updateTag({ property: 'og:image',        content: `${environment.siteUrl}/og-image-write-and-earn.png` });
+    this.meta.updateTag({ property: 'og:image:width',  content: '1200' });
+    this.meta.updateTag({ property: 'og:image:height', content: '630' });
+    this.meta.updateTag({ property: 'og:image:alt',    content: 'Write & Earn | ApnaInsights' });
     this.meta.updateTag({ name: 'twitter:card',        content: 'summary_large_image' });
     this.meta.updateTag({ name: 'twitter:title',       content: 'Write & Earn | ApnaInsights' });
     this.meta.updateTag({ name: 'twitter:description', content: desc });
+    this.meta.updateTag({ name: 'twitter:image',       content: `${environment.siteUrl}/og-image-write-and-earn.png` });
 
     let canonical = this.document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
     if (!canonical) {

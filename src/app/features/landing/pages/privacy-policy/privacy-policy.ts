@@ -33,6 +33,13 @@ export class PrivacyPolicy implements OnInit, OnDestroy {
     this.meta.updateTag({ property: 'og:title', content: 'Privacy Policy | ApnaInsights' });
     this.meta.updateTag({ property: 'og:description', content: 'ApnaInsights Privacy Policy - how we handle your data and use of third-party advertising.' });
     this.meta.updateTag({ property: 'og:url', content: environment.siteUrl + '/privacy-policy' });
+    this.meta.updateTag({ property: 'og:image', content: environment.ogImage });
+    this.meta.updateTag({ property: 'og:image:width', content: '1200' });
+    this.meta.updateTag({ property: 'og:image:height', content: '630' });
+    this.meta.updateTag({ property: 'og:image:alt', content: 'Privacy Policy | ApnaInsights' });
+    this.meta.updateTag({ name: 'twitter:card', content: 'summary_large_image' });
+    this.meta.updateTag({ name: 'twitter:title', content: 'Privacy Policy | ApnaInsights' });
+    this.meta.updateTag({ name: 'twitter:image', content: environment.ogImage });
 
     let canonical = this.document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
     if (!canonical) {

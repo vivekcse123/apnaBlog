@@ -5,6 +5,7 @@ import { isPlatformBrowser, CommonModule, Location, DOCUMENT } from '@angular/co
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Meta, Title } from '@angular/platform-browser';
+import { environment } from '../../../../../environments/environment';
 import { ShortsService } from '../../services/shorts.service';
 import { VideoShort, ShortComment } from '../../models/video-short.model';
 import { Auth } from '../../../../core/services/auth';
@@ -173,6 +174,14 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
     this.meta.updateTag({ property: 'og:description', content: desc });
     this.meta.updateTag({ property: 'og:url',         content: 'https://apnainsights.com/shorts' });
     this.meta.updateTag({ property: 'og:type',        content: 'website' });
+    this.meta.updateTag({ property: 'og:image',        content: environment.ogImage });
+    this.meta.updateTag({ property: 'og:image:width',  content: '1200' });
+    this.meta.updateTag({ property: 'og:image:height', content: '630' });
+    this.meta.updateTag({ property: 'og:image:alt',    content: 'ApnaInsights Shorts' });
+    this.meta.updateTag({ name: 'twitter:card',        content: 'summary_large_image' });
+    this.meta.updateTag({ name: 'twitter:title',       content: 'ApnaInsights Shorts' });
+    this.meta.updateTag({ name: 'twitter:description', content: desc });
+    this.meta.updateTag({ name: 'twitter:image',       content: environment.ogImage });
 
     const canonical = this.doc.querySelector<HTMLLinkElement>('link[rel="canonical"]')
       ?? (() => {
@@ -397,6 +406,7 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
         });
         // Cache first page results per category for instant switching
         if (reset && !search) this.categoryCache.set(catKey, this.shorts());
+        if (reset) this.setOgImage();
         this.hasMore.set(this.page < (res.totalPages ?? 1));
         this.page++;
         this.isLoading.set(false);
@@ -410,6 +420,14 @@ export class ShortsFeed implements OnInit, AfterViewInit, OnDestroy {
       },
       error: () => { this.isLoading.set(false); this.hasMore.set(false); },
     });
+  }
+
+  // Once the feed's real shorts are in, swap the generic sitewide og:image
+  // for the first short's own thumbnail - same fallback used by short-view.ts.
+  private setOgImage(): void {
+    const image = this.shorts()[0]?.thumbnailUrl || environment.ogImage;
+    this.meta.updateTag({ property: 'og:image', content: image });
+    this.meta.updateTag({ name: 'twitter:image', content: image });
   }
 
   private resolveDeepLink(isReset: boolean): void {

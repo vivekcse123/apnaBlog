@@ -402,6 +402,7 @@ export class BlogListPage implements OnInit, OnDestroy {
       this.allPosts.set(cached);
       this.isLoading.set(false);
       this.injectItemList();
+      this.setOgImage();
       return;
     }
     this.isLoading.set(true);
@@ -412,7 +413,17 @@ export class BlogListPage implements OnInit, OnDestroy {
         this.allPosts.set(posts);
         this.isLoading.set(false);
         this.injectItemList();
+        this.setOgImage();
       });
+  }
+
+  // Once the real posts are in, swap the generic sitewide og:image for the
+  // most recent post's own featured image - same fallback as blog-detail.ts,
+  // category-page.ts and tag-page.ts.
+  private setOgImage(): void {
+    const image = this.sortedPosts()[0]?.featuredImage || environment.ogImage;
+    this.meta.updateTag({ property: 'og:image', content: image });
+    this.meta.updateTag({ name: 'twitter:image', content: image });
   }
 
   private pushedAds = new WeakSet<Element>();
@@ -440,6 +451,14 @@ export class BlogListPage implements OnInit, OnDestroy {
     this.meta.updateTag({ property: 'og:description', content: desc });
     this.meta.updateTag({ property: 'og:url',         content: url });
     this.meta.updateTag({ property: 'og:type',        content: 'website' });
+    this.meta.updateTag({ property: 'og:image',        content: environment.ogImage });
+    this.meta.updateTag({ property: 'og:image:width',  content: '1200' });
+    this.meta.updateTag({ property: 'og:image:height', content: '630' });
+    this.meta.updateTag({ property: 'og:image:alt',    content: 'All Blogs | ApnaInsights' });
+    this.meta.updateTag({ name: 'twitter:card',        content: 'summary_large_image' });
+    this.meta.updateTag({ name: 'twitter:title',       content: 'All Blogs | ApnaInsights' });
+    this.meta.updateTag({ name: 'twitter:description', content: desc });
+    this.meta.updateTag({ name: 'twitter:image',       content: environment.ogImage });
 
     let canonical = this.document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
     if (!canonical) {

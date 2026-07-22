@@ -127,6 +127,7 @@ export class TagPage implements OnInit, OnDestroy {
       this.injectItemList(this.posts());
       this._updateRobotsForPostCount(this.posts().length);
       this._enrichMetaWithTopCategory();
+      this._setOgImage();
       return;
     }
 
@@ -143,7 +144,17 @@ export class TagPage implements OnInit, OnDestroy {
         this.injectItemList(this.posts());
         this._updateRobotsForPostCount(this.posts().length);
         this._enrichMetaWithTopCategory();
+        this._setOgImage();
       });
+  }
+
+  // Once the tag's real posts are in, swap the generic sitewide og:image for
+  // the most recent post's own featured image - same fallback pattern as
+  // blog-detail.ts and category-page.ts's setOgImage().
+  private _setOgImage(): void {
+    const image = this.posts()[0]?.featuredImage || environment.ogImage;
+    this.meta.updateTag({ property: 'og:image', content: image });
+    this.meta.updateTag({ name: 'twitter:image', content: image });
   }
 
   private _updateRobotsForPostCount(count: number): void {
@@ -190,6 +201,14 @@ export class TagPage implements OnInit, OnDestroy {
     this.meta.updateTag({ property: 'og:description', content: desc });
     this.meta.updateTag({ property: 'og:url',         content: url });
     this.meta.updateTag({ property: 'og:type',        content: 'website' });
+    this.meta.updateTag({ property: 'og:image',        content: environment.ogImage });
+    this.meta.updateTag({ property: 'og:image:width',  content: '1200' });
+    this.meta.updateTag({ property: 'og:image:height', content: '630' });
+    this.meta.updateTag({ property: 'og:image:alt',    content: `#${display} Stories | ApnaInsights` });
+    this.meta.updateTag({ name: 'twitter:card',        content: 'summary_large_image' });
+    this.meta.updateTag({ name: 'twitter:title',       content: `#${display} Stories | ApnaInsights` });
+    this.meta.updateTag({ name: 'twitter:description', content: desc });
+    this.meta.updateTag({ name: 'twitter:image',       content: environment.ogImage });
 
     let canonical = this.document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
     if (!canonical) {

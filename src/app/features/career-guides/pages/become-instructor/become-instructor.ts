@@ -1,8 +1,9 @@
 import { Component, ChangeDetectionStrategy, OnInit, DestroyRef, signal, inject } from '@angular/core';
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { CommonModule, DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { PLATFORM_ID } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { Meta, Title } from '@angular/platform-browser';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { catchError, of } from 'rxjs';
 import { SiteHeader } from '../../../../shared/site-header/site-header';
@@ -12,6 +13,7 @@ import { UserService } from '../../../user/services/user-service';
 import { MentorApplicationService } from '../../services/mentor-application.service';
 import { MentorApplicationRecord } from '../../models/mentor-application.model';
 import { MOCK_CATEGORIES } from '../../data/mock-experts';
+import { environment } from '../../../../../environments/environment';
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const;
 
@@ -30,6 +32,9 @@ export class BecomeInstructor implements OnInit {
   private userService = inject(UserService);
   private mentorApplicationService = inject(MentorApplicationService);
   private destroyRef = inject(DestroyRef);
+  private meta = inject(Meta);
+  private titleSvc = inject(Title);
+  private document = inject(DOCUMENT);
 
   readonly days = DAYS;
   readonly categories = MOCK_CATEGORIES;
@@ -44,6 +49,8 @@ export class BecomeInstructor implements OnInit {
   submitError = signal('');
 
   ngOnInit(): void {
+    this.setMetaTags();
+
     const userId = this.auth.userId();
     if (!userId) { this.isLoadingApplication.set(false); return; }
 
@@ -63,6 +70,41 @@ export class BecomeInstructor implements OnInit {
         this.existingApplication.set(res.data);
         this.isLoadingApplication.set(false);
       });
+  }
+
+  private setMetaTags(): void {
+    const site = environment.siteUrl;
+    const url = `${site}/career-guides/become-an-instructor`;
+    const title = 'Become a Mentor - Share Your Expertise | ApnaInsights Career Guides';
+    const description = 'Apply to become a verified career mentor on ApnaInsights - guide job-seekers with 1:1 sessions, resume reviews, and interview prep.';
+    const image = `${site}/og-image-career-guides.png`;
+
+    this.titleSvc.setTitle(title);
+    this.meta.updateTag({ name: 'description', content: description });
+    this.meta.updateTag({ name: 'robots', content: 'index, follow' });
+
+    this.meta.updateTag({ property: 'og:type', content: 'website' });
+    this.meta.updateTag({ property: 'og:title', content: title });
+    this.meta.updateTag({ property: 'og:description', content: description });
+    this.meta.updateTag({ property: 'og:url', content: url });
+    this.meta.updateTag({ property: 'og:site_name', content: 'ApnaInsights' });
+    this.meta.updateTag({ property: 'og:image', content: image });
+    this.meta.updateTag({ property: 'og:image:width', content: '1200' });
+    this.meta.updateTag({ property: 'og:image:height', content: '630' });
+    this.meta.updateTag({ property: 'og:image:alt', content: title });
+
+    this.meta.updateTag({ name: 'twitter:card', content: 'summary_large_image' });
+    this.meta.updateTag({ name: 'twitter:title', content: title });
+    this.meta.updateTag({ name: 'twitter:description', content: description });
+    this.meta.updateTag({ name: 'twitter:image', content: image });
+
+    let canonical = this.document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
+    if (!canonical) {
+      canonical = this.document.createElement('link');
+      canonical.setAttribute('rel', 'canonical');
+      this.document.head.appendChild(canonical);
+    }
+    canonical.setAttribute('href', url);
   }
 
   /** Rejected applicants can fill out and submit the form again. */

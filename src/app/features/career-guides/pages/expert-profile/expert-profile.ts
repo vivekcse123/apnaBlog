@@ -1,5 +1,6 @@
 import { Component, ChangeDetectionStrategy, OnInit, DestroyRef, signal, computed, inject, effect, untracked, PLATFORM_ID } from '@angular/core';
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { CommonModule, DOCUMENT, isPlatformBrowser } from '@angular/common';
+import { Meta, Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { catchError, of, timeout, Observable } from 'rxjs';
@@ -44,6 +45,9 @@ export class ExpertProfile implements OnInit {
   private mentorProfileService = inject(MentorProfileService);
   private destroyRef = inject(DestroyRef);
   private toast = inject(ToastService);
+  private meta = inject(Meta);
+  private title = inject(Title);
+  private document = inject(DOCUMENT);
 
   // Base data reads from the static MOCK_EXPERTS array the listing page also
   // uses. Real, mentor-edited fields (see mentor-dashboard.ts's profile
@@ -253,6 +257,7 @@ export class ExpertProfile implements OnInit {
   }
 
   ngOnInit(): void {
+    this.setMetaTags();
     this.resumePendingIntent();
     const slug = this.expertId();
     if (!slug) return;
@@ -298,8 +303,60 @@ export class ExpertProfile implements OnInit {
             if (!userRes) return;
             this.followersCount.set((userRes as any).followersCount ?? 0);
             this.isFollowing.set((userRes as any).isFollowing ?? false);
+            const avatar = (userRes as any).data?.avatar;
+            if (avatar) this.setOgImageFromAvatar(avatar);
           });
       });
+  }
+
+  private setMetaTags(): void {
+    const e = this.expert();
+    if (!e) return;
+    const site = environment.siteUrl;
+    const url = `${site}/career-guides/${e.slug}`;
+    const pageTitle = `${e.name} - ${e.title} | ApnaInsights Career Guides`;
+    const bio = e.bio?.trim();
+    const description = bio
+      ? (bio.length > 200 ? bio.slice(0, 197) + '...' : bio)
+      : `Connect with ${e.name}, ${e.title} at ${e.company}, for 1:1 career guidance on ApnaInsights.`;
+    // Real experts don't have an uploaded photo (avatarInitial/avatarColor are
+    // just a colored letter, not shareable) - default to the Career Guides
+    // page's own image until/unless the mentor's real account has an avatar
+    // (see setOgImageFromAvatar(), called once getUserById resolves below).
+    const image = `${site}/og-image-career-guides.png`;
+
+    this.title.setTitle(pageTitle);
+    this.meta.updateTag({ name: 'description', content: description });
+    this.meta.updateTag({ name: 'robots', content: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' });
+
+    this.meta.updateTag({ property: 'og:type', content: 'profile' });
+    this.meta.updateTag({ property: 'og:title', content: pageTitle });
+    this.meta.updateTag({ property: 'og:description', content: description });
+    this.meta.updateTag({ property: 'og:url', content: url });
+    this.meta.updateTag({ property: 'og:site_name', content: 'ApnaInsights' });
+    this.meta.updateTag({ property: 'og:image', content: image });
+    this.meta.updateTag({ property: 'og:image:width', content: '1200' });
+    this.meta.updateTag({ property: 'og:image:height', content: '630' });
+    this.meta.updateTag({ property: 'og:image:alt', content: pageTitle });
+    this.meta.updateTag({ property: 'og:locale', content: 'en_IN' });
+
+    this.meta.updateTag({ name: 'twitter:card', content: 'summary_large_image' });
+    this.meta.updateTag({ name: 'twitter:title', content: pageTitle });
+    this.meta.updateTag({ name: 'twitter:description', content: description });
+    this.meta.updateTag({ name: 'twitter:image', content: image });
+
+    let canonical = this.document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
+    if (!canonical) {
+      canonical = this.document.createElement('link');
+      canonical.setAttribute('rel', 'canonical');
+      this.document.head.appendChild(canonical);
+    }
+    canonical.setAttribute('href', url);
+  }
+
+  private setOgImageFromAvatar(avatarUrl: string): void {
+    this.meta.updateTag({ property: 'og:image', content: avatarUrl });
+    this.meta.updateTag({ name: 'twitter:image', content: avatarUrl });
   }
 
   // ── Follow (real, only when this expert has a real mentor account) ──
