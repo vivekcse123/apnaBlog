@@ -1943,11 +1943,11 @@
     top: calc(54px + env(safe-area-inset-top, 0px));
     height: calc(100dvh - 54px - env(safe-area-inset-top, 0px));
   }
-  /* mob-article-bar's top edge sits at 134px from the screen bottom
-     (bottom: 82px + height: 52px) - that's the tallest fixed element stacked
+  /* mob-article-bar's top edge sits at 118px from the screen bottom
+     (bottom: 66px + height: 52px) - that's the tallest fixed element stacked
      above mob-nav, so clearance must be at least that plus a visible gap,
      not just mob-nav's own footprint. */
-  .toc-nav { padding-bottom: calc(134px + 16px + env(safe-area-inset-bottom, 0px)); }
+  .toc-nav { padding-bottom: calc(118px + 16px + env(safe-area-inset-bottom, 0px)); }
 
   /* Back to Blogs link */
   .blog-back-wrap { padding: 8px 14px 14px; }
@@ -2087,12 +2087,14 @@
 
 @media (max-width: 768px) {
   /* ── 1. Bottom action bar (like / comment / share / save) - floating
-       rounded pill, matching the global mobile bottom nav's chrome so the
-       two stacked bars read as one design system ── */
+       rounded pill sitting just above the global bottom nav, which is now
+       a flush edge-to-edge bar (58px tall, no floating gap of its own -
+       see mobile-bottom-nav.css). 8px is a deliberate small breathing gap,
+       not leftover math from the nav's old floating-pill design. ── */
   .mob-article-bar {
     display: flex;
     position: fixed;
-    bottom: calc(64px + 18px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(58px + 8px + env(safe-area-inset-bottom, 0px));
     left: 10px; right: 10px;
     z-index: 900;
     height: 52px;
@@ -2227,15 +2229,15 @@
 
   /* ── 6. Scroll-to-top FAB - lift above mob-article-bar ── */
   .bd-scroll-top-fab {
-    bottom: calc(64px + 52px + 8px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(118px + 8px + env(safe-area-inset-bottom, 0px));
   }
 
   /* ── 7. Footer - account for mob-article-bar height.
-     mob-article-bar's top edge sits at 134px from the viewport bottom
-     (bottom:82px + height:52px) - padding must clear that plus a visible
+     mob-article-bar's top edge sits at 118px from the viewport bottom
+     (bottom:66px + height:52px) - padding must clear that plus a visible
      gap, not land flush against it. ── */
   .blog-detail-footer {
-    padding-bottom: calc(52px + 78px + 20px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(118px + 20px + env(safe-area-inset-bottom, 0px));
   }
 
   /* ── 8. Discussion compose - more compact on mobile ── */

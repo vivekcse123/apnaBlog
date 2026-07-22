@@ -679,17 +679,17 @@
 }
 
 @media (max-width: 768px) {
-  .author-page { padding-bottom: calc(62px + env(safe-area-inset-bottom, 0px)); }
+  .author-page { padding-bottom: calc(58px + env(safe-area-inset-bottom, 0px)); }
   .ap-stats-bar { display: grid; grid-template-columns: repeat(4, 1fr); }
   .ap-stat-cell { border-right: none; }
   .ap-expertise-card, .ap-extras-sidebar, .ap-sidebar { flex-direction: column; }
 }
 
 @media (max-width: 640px) {
-  /* Both the bottom nav (62px) and this page's own sticky follow bar stack
+  /* Both the bottom nav (58px) and this page's own sticky follow bar stack
      at the bottom here - pad enough that the footer/content above them
      never sits underneath either. */
-  .author-page { padding-bottom: calc(134px + env(safe-area-inset-bottom, 0px)); }
+  .author-page { padding-bottom: calc(130px + env(safe-area-inset-bottom, 0px)); }
   .ap-hero { padding: 16px 4% 0; }
   .ap-cover { height: 110px; border-radius: 16px; }
   .ap-hero-card { margin: -48px 0 0; padding: 16px; gap: 14px; border-radius: 16px; }
@@ -718,14 +718,14 @@
   .ap-featured-title { font-size: 17px; }
 
   /* Mobile sticky follow bar - sits above the bottom nav. The bottom nav
-     itself is fixed 58px tall with a 4px bottom offset (62px total
-     footprint) and z-index:1100 (see mobile-bottom-nav.css) - this bar's
-     offset/z-index must clear both or the higher-stacked bottom nav paints
-     over it. */
+     itself is fixed, flush to the bottom, 58px tall (its own safe-area inset
+     is handled via padding-bottom, not an extra offset - see
+     mobile-bottom-nav.css) and z-index:1100 - this bar's offset/z-index must
+     clear both or the higher-stacked bottom nav paints over it. */
   .ap-mobile-actionbar {
     display: flex; align-items: center; gap: 10px;
     position: fixed; left: 0; right: 0;
-    bottom: calc(62px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(58px + env(safe-area-inset-bottom, 0px));
     z-index: 1150;
     padding: 10px 4%;
     background: var(--bg-surface);

@@ -84,12 +84,12 @@
 /* ══ LAYOUT ══ */
 .cg-layout { display: grid; grid-template-columns: 240px 1fr; gap: 22px; padding: 10px 40px 48px; align-items: start; }
 @media (max-width: 1100px) { .cg-layout { grid-template-columns: 1fr; padding: 10px 16px 40px; } }
-/* Clear the floating mobile bottom nav (mobile-bottom-nav.css: 58px tall,
-   4px off the bottom, z-index:1100) so the quiz card and anything else at
-   the end of the page don't render underneath it. Must come after the
-   1100px rule above - that one sets the shorthand `padding` property, which
-   resets padding-bottom too and would silently win if this came first. */
-@media (max-width: 768px) { .cg-layout { padding-bottom: calc(82px + env(safe-area-inset-bottom, 0px)); } }
+/* Clear the mobile bottom nav (mobile-bottom-nav.css: flush to the bottom,
+   58px tall, z-index:1100) so the quiz card and anything else at the end of
+   the page don't render underneath it. Must come after the 1100px rule
+   above - that one sets the shorthand `padding` property, which resets
+   padding-bottom too and would silently win if this came first. */
+@media (max-width: 768px) { .cg-layout { padding-bottom: calc(78px + env(safe-area-inset-bottom, 0px)); } }
 
 .cg-side { position: sticky; top: 78px; flex-direction: column; gap: 16px; }
 .cg-card { background: var(--bg-surface); border: 1px solid var(--border); border-radius: 18px; padding: 16px; box-shadow: var(--card-shadow); }
