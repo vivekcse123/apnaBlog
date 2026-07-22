@@ -40,6 +40,16 @@ export class NewsFeedService {
     );
   }
 
+  // Unauthenticated feed for public-facing widgets (e.g. the "Live News"
+  // section on /category/news) - hits a separate route that never requires
+  // an admin token and never filters out already-published items.
+  fetchPublicByCategory(category: string, page = 1): Observable<NewsItem[]> {
+    const params: any = { category, page, limit: 30 };
+    return this.http.get<any>(`${this.API}/public`, { params }).pipe(
+      map(res => res.data ?? [])
+    );
+  }
+
   // Mark an item as published after the admin creates a blog post from it
   markPublished(newsId: string, postId?: string): Observable<any> {
     return this.http.patch(`${this.API}/${newsId}/mark-published`, { postId }).pipe(

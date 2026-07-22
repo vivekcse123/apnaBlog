@@ -730,6 +730,15 @@
     padding: 10px 4%;
     background: var(--bg-surface);
     border-top: 1px solid var(--border);
+    /* iOS PWA: force GPU compositing layer so position:fixed resolves
+       immediately - same fix as .mob-nav in mobile-bottom-nav.css, applied
+       here too since this bar floated mid-screen on standalone cold launch
+       without it. */
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    will-change: transform;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
   }
   .ap-mobile-actionbar .ap-follow-btn--full { flex: 1; justify-content: center; }
   .ap-mobile-actionbar .ap-share-btn,

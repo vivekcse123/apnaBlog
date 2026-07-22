@@ -26,7 +26,18 @@
 .ai-fab:active { transform: scale(0.94); }
 
 @media (max-width: 768px) {
-  .ai-fab { right: 16px; bottom: calc(74px + env(safe-area-inset-bottom, 0px)); width: 48px; height: 48px; }
+  .ai-fab {
+    right: 16px; bottom: calc(74px + env(safe-area-inset-bottom, 0px)); width: 48px; height: 48px;
+    /* iOS PWA: force GPU compositing layer so position:fixed resolves
+       immediately - same fix as .mob-nav in mobile-bottom-nav.css, applied
+       here too since this FAB floated mid-screen on standalone cold launch
+       without it. */
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    will-change: transform;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+  }
 
   /* Blog-detail adds its own fixed Like/Comment/Share/Save bar
      (.mob-article-bar, bottom: 66px, height: 52px) above the bottom nav -

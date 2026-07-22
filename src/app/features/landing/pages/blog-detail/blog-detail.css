@@ -1996,6 +1996,15 @@
   .bd-scroll-top-fab {
     bottom: calc(70px + env(safe-area-inset-bottom, 0px));
     left: 12px; width: 38px; height: 38px; font-size: 16px;
+    /* iOS PWA: force GPU compositing layer so position:fixed resolves
+       immediately - same fix as .mob-nav in mobile-bottom-nav.css, applied
+       here too since this FAB floated mid-screen on standalone cold launch
+       without it. */
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    will-change: transform;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
   }
 
   .blog-detail-footer {
@@ -2105,6 +2114,15 @@
     border: 1px solid var(--border);
     border-radius: var(--bd2-radius-lg, 20px);
     box-shadow: var(--card-shadow-lg);
+    /* iOS PWA: force GPU compositing layer so position:fixed resolves
+       immediately - same fix as .mob-nav in mobile-bottom-nav.css, applied
+       here too since this bar floated mid-screen on standalone cold launch
+       without it. */
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    will-change: transform;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
   }
   .mob-art-btn {
     flex: 1;

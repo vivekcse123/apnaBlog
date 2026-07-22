@@ -1,0 +1,84 @@
+<section class="lns" aria-labelledby="lns-heading">
+  <div class="lns-head">
+    <h2 class="lns-title" id="lns-heading">
+      <span class="lns-pulse" aria-hidden="true"></span>
+      Live News
+    </h2>
+    @if (lastUpdated()) {
+      <span class="lns-updated">Updated {{ timeAgo(lastUpdated()!.toISOString()) }}</span>
+    }
+  </div>
+
+  @if (isLoading()) {
+    <div class="lns-grid">
+      @for (_ of [1,2,3,4]; track $index) {
+        <div class="lns-card lns-card--skel">
+          <div class="lns-skel lns-skel--media"></div>
+          <div class="lns-card-body">
+            <div class="lns-skel lns-skel--title"></div>
+            <div class="lns-skel lns-skel--desc"></div>
+            <div class="lns-skel lns-skel--meta"></div>
+          </div>
+        </div>
+      }
+    </div>
+
+  } @else if (error() && items().length === 0) {
+    <div class="lns-empty">
+      <span class="lns-empty-icon" aria-hidden="true">📡</span>
+      <h3>Live news is taking a break</h3>
+      <p>{{ error() }}</p>
+      <button class="lns-retry-btn" (click)="retry()">Try again</button>
+    </div>
+
+  } @else if (items().length === 0) {
+    <div class="lns-empty">
+      <span class="lns-empty-icon" aria-hidden="true">📭</span>
+      <h3>No live news right now</h3>
+      <p>Check back soon for the latest headlines.</p>
+    </div>
+
+  } @else {
+    <div class="lns-grid">
+      @for (item of items(); track item.guid) {
+        <a
+          class="lns-card"
+          [class.lns-card--inert]="!isSafeLink(item.link)"
+          [href]="isSafeLink(item.link) ? item.link : null"
+          target="_blank"
+          rel="noopener noreferrer nofollow"
+          [attr.aria-label]="'Read on ' + (item.sourceName || 'source') + ': ' + item.title">
+
+          <span class="lns-card-media">
+            @if (hasThumbnail(item)) {
+              <img [src]="item.thumbnail" [alt]="item.title" loading="lazy" width="320" height="180" (error)="onThumbnailError(item.guid)" />
+            } @else {
+              <span class="lns-card-media-fallback" aria-hidden="true">{{ sourceInitial(item) }}</span>
+            }
+            @if (isLive(item)) {
+              <span class="lns-live-badge"><span class="lns-live-dot" aria-hidden="true"></span>Live</span>
+            }
+          </span>
+
+          <span class="lns-card-body">
+            <span class="lns-card-title">{{ item.title }}</span>
+            @if (item.description) {
+              <span class="lns-card-desc">{{ item.description }}</span>
+            }
+            <span class="lns-card-meta">
+              <span>{{ timeAgo(item.pubDate) }}</span>
+            </span>
+          </span>
+        </a>
+      }
+    </div>
+
+    @if (hasMore()) {
+      <div class="lns-load-more-wrap">
+        <button class="lns-load-more-btn" [disabled]="isLoadingMore()" (click)="loadMore()">
+          {{ isLoadingMore() ? 'Loading…' : 'Load more news' }}
+        </button>
+      </div>
+    }
+  }
+</section>
