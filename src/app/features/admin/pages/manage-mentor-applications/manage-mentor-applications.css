@@ -16,6 +16,17 @@
 }
 .ma-refresh:hover { border-color: var(--accent); color: var(--accent-text); }
 
+.ma-header__actions { display: flex; align-items: center; gap: 12px; }
+.ma-search { position: relative; display: flex; align-items: center; }
+.ma-search-icon { position: absolute; left: 12px; color: var(--text-muted); pointer-events: none; }
+.ma-search-input {
+  height: 38px; padding: 0 14px 0 36px; border: 1px solid var(--border); border-radius: 9px;
+  background: var(--bg-surface); color: var(--text-primary); font-size: 13.5px; font-family: inherit;
+  width: 220px; outline: none; transition: border-color .18s, box-shadow .18s;
+}
+.ma-search-input::placeholder { color: var(--text-muted); }
+.ma-search-input:focus { border-color: var(--accent); box-shadow: var(--brand-focus-ring); }
+
 .ma-tabs { display: flex; gap: 6px; margin-bottom: 18px; }
 .ma-tab {
   padding: 8px 16px; border-radius: 999px; font-size: 13px; font-weight: 700; font-family: inherit;

@@ -90,9 +90,11 @@
 }
 
 /* ── Floating celebration button ── */
+/* Anchored to the left (unlike the AI assistant FAB, which is bottom-right)
+   so the two floating buttons never overlap on mobile. */
 .bday-fab {
   position: fixed;
-  right: 20px;
+  left: 20px;
   bottom: 84px;
   z-index: 1500;
   display: flex;
@@ -125,7 +127,7 @@
 .bday-fab-icon { font-size: 16px; line-height: 1; }
 
 @media (max-width: 560px) {
-  .bday-fab { bottom: 62px; right: 14px; }
+  .bday-fab { bottom: 62px; left: 14px; }
 }
 
 /* ── Modal backdrop ── */

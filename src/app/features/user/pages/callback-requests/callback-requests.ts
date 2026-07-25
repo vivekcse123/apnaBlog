@@ -3,19 +3,22 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { CallbackRequestService } from '../../../career-guides/services/callback-request.service';
 import { CallbackRequestRecord } from '../../../career-guides/models/callback-request.model';
+import { ToastService } from '../../../../core/services/toast.service';
+import { ConfirmModal } from '../../../../shared/confirm-modal/confirm-modal';
 
 const STARS = [1, 2, 3, 4, 5];
 
 @Component({
   selector: 'app-callback-requests',
   standalone: true,
-  imports: [CommonModule, DatePipe, RouterLink],
+  imports: [CommonModule, DatePipe, RouterLink, ConfirmModal],
   templateUrl: './callback-requests.html',
   styleUrl: './callback-requests.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CallbackRequests implements OnInit {
   private callbackRequests = inject(CallbackRequestService);
+  private toast = inject(ToastService);
 
   readonly stars = STARS;
 
@@ -23,6 +26,7 @@ export class CallbackRequests implements OnInit {
   isLoading = signal(true);
   error = signal('');
   cancelling = signal<Set<string>>(new Set());
+  pendingCancelId = signal<string | null>(null);
 
   // Feedback form - one at a time, keyed by request id.
   feedbackOpenId = signal<string | null>(null);
@@ -68,6 +72,16 @@ export class CallbackRequests implements OnInit {
     return minutesSinceCreated <= 30;
   }
 
+  requestCancel(id: string): void {
+    this.pendingCancelId.set(id);
+  }
+
+  confirmCancel(): void {
+    const id = this.pendingCancelId();
+    this.pendingCancelId.set(null);
+    if (id) this.cancel(id);
+  }
+
   cancel(id: string): void {
     const set = new Set(this.cancelling());
     set.add(id);
@@ -78,7 +92,7 @@ export class CallbackRequests implements OnInit {
         const s = new Set(this.cancelling()); s.delete(id); this.cancelling.set(s);
       },
       error: (err) => {
-        alert(err?.error?.message ?? 'Could not cancel this request.');
+        this.toast.show(err?.error?.message ?? 'Could not cancel this request.', 'error');
         const s = new Set(this.cancelling()); s.delete(id); this.cancelling.set(s);
       },
     });

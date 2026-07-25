@@ -16,6 +16,12 @@
     <div class="ch-loading">
       @for (_ of [1,2]; track $index) { <div class="ch-card ch-card--skeleton"></div> }
     </div>
+  } @else if (loadError()) {
+    <div class="ch-empty">
+      <span class="ch-empty__icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></span>
+      <p>{{ loadError() }}</p>
+      <button type="button" class="ch-empty__btn" (click)="retryLoad()">Retry</button>
+    </div>
   } @else if (challenges().length === 0) {
     <div class="ch-empty">
       <span class="ch-empty__icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg></span>

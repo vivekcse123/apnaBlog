@@ -17,15 +17,23 @@ export class SplashScreen implements OnInit {
   private platformId = inject(PLATFORM_ID);
   private meta       = inject(Meta);
   private titleSvc   = inject(Title);
+  private timerId: ReturnType<typeof setTimeout> | null = null;
 
   ngOnInit(): void {
     this.titleSvc.setTitle('ApnaInsights');
     this.meta.updateTag({ name: 'robots', content: 'noindex, nofollow' });
     if (!isPlatformBrowser(this.platformId)) return;
 
+    this.timerId = setTimeout(() => this.proceed(), 2800);
+  }
+
+  skip(): void {
+    if (this.timerId !== null) clearTimeout(this.timerId);
+    this.proceed();
+  }
+
+  private proceed(): void {
     const onboarded = localStorage.getItem('apna_onboarded');
-    setTimeout(() => {
-      this.router.navigate([onboarded ? '/' : '/onboarding'], { replaceUrl: true });
-    }, 2800);
+    this.router.navigate([onboarded ? '/' : '/onboarding'], { replaceUrl: true });
   }
 }

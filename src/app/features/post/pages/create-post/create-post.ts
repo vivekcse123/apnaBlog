@@ -1,5 +1,5 @@
 import {
-  ChangeDetectionStrategy, Component, ElementRef, HostListener, NgZone, OnDestroy, OnInit, PLATFORM_ID, ViewChild, computed, inject, input, output, signal
+  ChangeDetectionStrategy, Component, ElementRef, HostListener, NgZone, OnDestroy, OnInit, PLATFORM_ID, ViewChild, computed, effect, inject, input, output, signal
 } from '@angular/core';
 import { isPlatformBrowser, DecimalPipe } from '@angular/common';
 import {
@@ -48,6 +48,7 @@ export class CreatePost implements OnInit, OnDestroy {
   @ViewChild('editorRef')    editorRef!: ElementRef<HTMLDivElement>;
   @ViewChild('cropImageElC') cropImageElC!: ElementRef<HTMLImageElement>;
   @ViewChild('cropFrameElC') cropFrameElC!: ElementRef<HTMLDivElement>;
+  @ViewChild('errorBanner') errorBanner?: ElementRef<HTMLElement>;
 
   close       = output<void>();
   postCreated = output<Post>();
@@ -56,6 +57,18 @@ export class CreatePost implements OnInit, OnDestroy {
   isSubmitting   = signal(false);
   errorMessage   = signal('');
   successMessage = signal('');
+
+  constructor() {
+    // Cross-field validation errors (category required, image still
+    // uploading, incomplete MCQ, etc.) render at the bottom of a long form -
+    // scroll them into view instead of leaving a submit click with no
+    // visible feedback if the error banner is off-screen.
+    effect(() => {
+      if (this.errorMessage() && isPlatformBrowser(this.platformId)) {
+        queueMicrotask(() => this.errorBanner?.nativeElement?.scrollIntoView({ behavior: 'smooth', block: 'center' }));
+      }
+    });
+  }
   activeFormats  = signal<Set<string>>(new Set());
   activeBlock    = signal<string>('');
   isCodeActive   = signal(false);

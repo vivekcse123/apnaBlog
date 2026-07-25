@@ -30,7 +30,9 @@
     <div class="mr-list">
       @for (r of requests(); track trackById($index, r)) {
         <div class="mr-row">
-          <div class="mr-row__head" (click)="toggleExpand(r._id)">
+          <div class="mr-row__head" (click)="toggleExpand(r._id)" role="button" tabindex="0"
+               (keydown.enter)="toggleExpand(r._id)" [attr.aria-expanded]="expandedId() === r._id"
+               [attr.aria-label]="(expandedId() === r._id ? 'Collapse' : 'Expand') + ' request from ' + r.userName">
             <div class="mr-row__info">
               <span class="mr-status" [attr.data-status]="r.status">{{ r.status }}</span>
               <span class="mr-user">{{ r.userName }}</span>
@@ -91,7 +93,7 @@
 
               <div class="mr-actions">
                 <button class="mr-action mr-action--accept" [disabled]="updating().has(r._id) || !canDecide(r.status)" (click)="updateStatus(r._id, 'accepted')">Accept</button>
-                <button class="mr-action mr-action--reject" [disabled]="updating().has(r._id) || !canDecide(r.status)" (click)="updateStatus(r._id, 'rejected')">Reject</button>
+                <button class="mr-action mr-action--reject" [disabled]="updating().has(r._id) || !canDecide(r.status)" (click)="requestReject(r._id)">Reject</button>
                 <button class="mr-action" [disabled]="updating().has(r._id) || !canDecide(r.status)" (click)="updateStatus(r._id, 'scheduled')">Schedule</button>
                 <button class="mr-action mr-action--complete" [disabled]="updating().has(r._id) || !canComplete(r.status)" (click)="updateStatus(r._id, 'completed')">Mark Completed</button>
               </div>
@@ -115,5 +117,14 @@
       }
     </div>
   }
+
+  <app-confirm-modal
+    [show]="!!pendingReject()"
+    title="Reject this request?"
+    message="The requester will be notified this wasn't accepted. This can't be undone from here."
+    confirmText="Reject"
+    cancelText="Never mind"
+    (confirmed)="confirmReject()"
+    (cancelled)="pendingReject.set(null)" />
 
 </div>

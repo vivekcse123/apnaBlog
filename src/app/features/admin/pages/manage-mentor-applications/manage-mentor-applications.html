@@ -10,13 +10,21 @@
         <p class="ma-sub">Review, approve, or reject requests to become a Career Guides mentor.</p>
       </div>
     </div>
-    <button class="ma-refresh" (click)="load()">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-      Refresh
-    </button>
+    <div class="ma-header__actions">
+      <div class="ma-search">
+        <svg class="ma-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" class="ma-search-input" placeholder="Search applicants…"
+               [ngModel]="searchQuery()" (ngModelChange)="onSearchChange($event)" autocomplete="off" />
+      </div>
+      <button class="ma-refresh" (click)="load()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        Refresh
+      </button>
+    </div>
   </div>
 
   <div class="ma-tabs" role="tablist">
+    <button class="ma-tab" [class.active]="activeTab() === 'all'" (click)="setTab('all')">All</button>
     <button class="ma-tab" [class.active]="activeTab() === 'pending'" (click)="setTab('pending')">
       Pending @if (pendingCount()) { <span class="ma-tab-count">{{ pendingCount() }}</span> }
     </button>
@@ -32,13 +40,19 @@
     <div class="ma-error">{{ error() }}</div>
   } @else if (filtered().length === 0) {
     <div class="ma-empty">
-      <p>No {{ activeTab() }} applications.</p>
+      @if (searchQuery()) {
+        <p>No applicants match "{{ searchQuery() }}".</p>
+      } @else {
+        <p>No {{ activeTab() === 'all' ? '' : (activeTab() + ' ') }}applications.</p>
+      }
     </div>
   } @else {
     <div class="ma-list">
-      @for (app of filtered(); track app._id) {
+      @for (app of pagedApplications(); track app._id) {
         <div class="ma-card">
-          <div class="ma-card__head" (click)="toggleExpand(app._id)">
+          <div class="ma-card__head" (click)="toggleExpand(app._id)" role="button" tabindex="0"
+               (keydown.enter)="toggleExpand(app._id)" [attr.aria-expanded]="expandedId() === app._id"
+               [attr.aria-label]="(expandedId() === app._id ? 'Collapse' : 'Expand') + ' application from ' + applicantName(app)">
             <div class="ma-card__info">
               <span class="ma-applicant">{{ applicantName(app) }}</span>
               <span class="ma-role">{{ app.currentRole }} @if (app.currentCompany) { · {{ app.currentCompany }} }</span>
@@ -141,6 +155,7 @@
         </div>
       }
     </div>
+    <app-pagination [currentPage]="currentPage()" [totalPages]="totalPages()" (pageChange)="goToPage($event)" />
   }
 
 </div>

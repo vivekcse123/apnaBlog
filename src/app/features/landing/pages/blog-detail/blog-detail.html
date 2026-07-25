@@ -176,9 +176,19 @@
     </button>
   </div>
 
-  <!-- Structured-data BreadcrumbList is injected separately via JSON-LD
-       (injectArticleSchema() in blog-detail.ts) - this is just the visible
-       back-navigation, no microdata needed here. -->
+  <!-- Visible breadcrumb matching the BreadcrumbList JSON-LD injected in
+       injectArticleSchema() (blog-detail.ts) - structured data should
+       reflect visible page content, so this mirrors that same Home /
+       Category / Title path rather than relying on invisible microdata. -->
+  <nav class="blog-breadcrumb" aria-label="Breadcrumb">
+    <a routerLink="/" class="blog-breadcrumb-link">Home</a>
+    @if (post()!.categories[0]; as cat) {
+      <span class="blog-breadcrumb-sep" aria-hidden="true">›</span>
+      <a [routerLink]="['/category', cat.toLowerCase()]" class="blog-breadcrumb-link">{{ cat }}</a>
+    }
+    <span class="blog-breadcrumb-sep" aria-hidden="true">›</span>
+    <span class="blog-breadcrumb-current" aria-current="page">{{ post()!.title }}</span>
+  </nav>
   <div class="blog-back-wrap">
     <a class="blog-back-link" routerLink="/blog">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
@@ -220,6 +230,7 @@
                 <a class="toc-item"
                   [class.level-2]="item.level === 2"
                   [class.level-3]="item.level === 3"
+                  [class.level-4]="item.level === 4"
                   [class.active]="activeHeadingId() === item.id"
                   (click)="scrollToHeading(item.id)"><b class="toc-item__num">{{ i + 1 }}.</b>{{ item.text }}</a>
               }
@@ -302,6 +313,11 @@
                 <span class="meta-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
                 {{ post()!.createdAt | date:'MMM d, y' }}
               </span>
+              @if (isMeaningfullyUpdated()) {
+                <span class="meta-item" [title]="'Updated ' + (post()!.updatedAt | date:'MMM d, y')">
+                  Updated {{ post()!.updatedAt | date:'MMM d, y' }}
+                </span>
+              }
               <span class="meta-item">
                 <span class="meta-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
                 {{ readingTime() }} min read
@@ -414,6 +430,8 @@
           (click)="openLightbox(carouselImages()[0], post()!.title)"
           title="Click to enlarge"/>
       </div>
+    } @else if (carouselImages().length === 0) {
+      <div class="featured-image-fallback" aria-hidden="true">{{ post()!.title.charAt(0).toUpperCase() }}</div>
     }
 
     @if (carouselImages().length > 1) {
@@ -773,7 +791,7 @@
               @for (rp of relatedPosts(); track rp._id) {
                 <article class="related-card">
                   @if (rp.featuredImage) {
-                    <img [src]="rp.featuredImage" [alt]="rp.title"
+                    <img [src]="rp.featuredImage | cldResize:280:160" [alt]="rp.title"
                       class="related-img" loading="lazy" width="280" height="160"/>
                   } @else {
                     <div class="related-no-img">
@@ -807,7 +825,7 @@
 
         <!-- Gradient cover banner - close button floats over it -->
         <div class="apm-cover">
-          <button class="modal-close-btn" (click)="closeAuthorModal()" aria-label="Close author profile">
+          <button #authorModalCloseBtn class="modal-close-btn" (click)="closeAuthorModal()" aria-label="Close author profile">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
         </div>
@@ -942,7 +960,7 @@
               <span class="apos-subtitle">{{ authorTotalPosts() }} blog{{ authorTotalPosts() === 1 ? '' : 's' }} published</span>
             </div>
           </div>
-          <button class="modal-close-btn" (click)="closeAuthorPostsModal()" aria-label="Close">✕</button>
+          <button #authorPostsModalCloseBtn class="modal-close-btn" (click)="closeAuthorPostsModal()" aria-label="Close">✕</button>
         </div>
 
         <!-- Scrollable list -->
@@ -963,7 +981,7 @@
                 <button class="apos-item" type="button" (click)="navigateFromAuthorModal(ap.slug || ap._id)">
                   <div class="apos-thumb">
                     @if (ap.featuredImage) {
-                      <img [src]="ap.featuredImage" [alt]="ap.title" loading="lazy" width="80" height="56" />
+                      <img [src]="ap.featuredImage | cldResize:80:56" [alt]="ap.title" loading="lazy" width="80" height="56" />
                     } @else {
                       <div class="apos-thumb-fallback">{{ ap.title.charAt(0).toUpperCase() }}</div>
                     }
@@ -1226,7 +1244,7 @@
 <!-- ── Image Lightbox ── -->
 @if (lightboxSrc()) {
   <div class="lightbox-overlay" (click)="closeLightbox()" role="dialog" aria-modal="true" aria-label="Image preview">
-    <button class="lightbox-close" (click)="closeLightbox()" aria-label="Close image">✕</button>
+    <button #lightboxCloseBtn class="lightbox-close" (click)="closeLightbox()" aria-label="Close image">✕</button>
     <img class="lightbox-img" [src]="lightboxSrc()!" [alt]="lightboxAlt()" (click)="$event.stopPropagation()" />
   </div>
 }
@@ -1327,7 +1345,7 @@
 @if (showFlagModal()) {
   <div class="flag-modal-overlay" (click)="closeFlagModal()">
     <div class="flag-modal" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-labelledby="flag-modal-title">
-      <button class="flag-modal-close" (click)="closeFlagModal()" aria-label="Close">✕</button>
+      <button #flagModalCloseBtn class="flag-modal-close" (click)="closeFlagModal()" aria-label="Close">✕</button>
       <h3 class="flag-modal-title" id="flag-modal-title">Report this post</h3>
       <p class="flag-modal-sub">Help us keep ApnaInsights safe and accurate.</p>
 

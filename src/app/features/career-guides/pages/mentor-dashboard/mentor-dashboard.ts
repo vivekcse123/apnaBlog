@@ -14,6 +14,7 @@ import { MentorProfileService } from '../../services/mentor-profile.service';
 import { MentorAvailabilityStatus, MentorProfileRecord } from '../../models/mentor-profile.model';
 import { ExpertTimelineEntry } from '../../models/expert.model';
 import { DecodeEntitiesPipe, decodeHtmlEntities } from '../../../../shared/pipes/decode-entities-pipe';
+import { VerifiedBadge } from '../../../../shared/verified-badge/verified-badge';
 
 // Mirrors the caps enforced server-side in mentor-profile.model.js /
 // mentor-profile.router.js - validated here too so a mentor finds out
@@ -45,7 +46,7 @@ const todayStr = () => new Date().toISOString().slice(0, 10);
 @Component({
   selector: 'app-mentor-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, SiteHeader, MobileBottomNav, DecodeEntitiesPipe],
+  imports: [CommonModule, FormsModule, RouterLink, SiteHeader, MobileBottomNav, DecodeEntitiesPipe, VerifiedBadge],
   templateUrl: './mentor-dashboard.html',
   styleUrl: './mentor-dashboard.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

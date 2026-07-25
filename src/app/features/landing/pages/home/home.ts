@@ -29,6 +29,7 @@ import { PostCache, PostWithTs } from '../../../post/services/post-cache';
 import { ReadingHistory }        from '../../../../core/services/reading-history';
 import { TaxonomyService }       from '../../../../core/services/taxonomy.service';
 import { categoryColorFor as sharedCategoryColorFor } from '../../../../shared/utils/category-color';
+import { readCachedSiteStats, writeCachedSiteStats, formatStatCount, CachedSiteStats } from '../../../../core/utils/site-stats.util';
 import { BookmarkService }       from '../../../../core/services/bookmark.service';
 import { AllPostsCache }         from '../../../../core/services/all-posts-cache';
 import { NotificationPanel }     from '../../../../shared/components/notification-panel/notification-panel';
@@ -164,6 +165,8 @@ export class Home implements OnInit, OnDestroy {
   private currentUserData = signal<User | null>(null);
 
   readonly skeletonItems: null[] = new Array(4).fill(null);
+  readonly trendingSkeletonItems: null[] = new Array(PAGE_SIZE).fill(null);
+  readonly picksSkeletonItems: null[] = new Array(3).fill(null);
   readonly shortsSkeletonItems: null[] = new Array(SHORTS_LIMIT).fill(null);
 
   // Curated subset (not the full live categories() list, which runs to 14+)
@@ -476,6 +479,7 @@ export class Home implements OnInit, OnDestroy {
     const cached = this.allPostsCache.get();
     if (cached.length) {
       this.megaMenuPosts.set(cached);
+      this.siteStats.set(readCachedSiteStats());
       return;
     }
     this.postService.getAllPublished()
@@ -483,8 +487,13 @@ export class Home implements OnInit, OnDestroy {
       .subscribe(posts => {
         this.allPostsCache.set(posts);
         this.megaMenuPosts.set(posts);
+        writeCachedSiteStats(posts);
+        this.siteStats.set(readCachedSiteStats());
       });
   }
+
+  siteStats = signal<CachedSiteStats | null>(readCachedSiteStats());
+  formatStatCount = formatStatCount;
 
   installPromptEvent = signal<any>(null);
   canInstall = computed(() => !!this.installPromptEvent());
@@ -543,6 +552,15 @@ export class Home implements OnInit, OnDestroy {
     this.loadHomeShorts();
   }
 
+  // Only surfaced when the initial load has nothing else to show - a failed
+  // background refresh on top of already-cached posts stays silent instead
+  // of interrupting a visitor who already has content in front of them.
+  loadError = signal(false);
+
+  retryLoad(): void {
+    this.loadFresh(true);
+  }
+
   private loadFresh(showLoader: boolean): void {
     if (showLoader) this.isLoading.set(true);
 
@@ -551,11 +569,13 @@ export class Home implements OnInit, OnDestroy {
         takeUntilDestroyed(this.destroyRef),
         catchError(() => {
           this.isLoading.set(false);
+          if (showLoader && !this.allPosts().length) this.loadError.set(true);
           return of(null);
         })
       )
       .subscribe(res => {
         if (!res) return;
+        this.loadError.set(false);
         const posts: Post[] = res.data || [];
         if (showLoader) {
           this.commitPosts(posts);
@@ -626,13 +646,13 @@ export class Home implements OnInit, OnDestroy {
     const og   = environment.ogImage;
     // Kept under ~50 chars so it doesn't get truncated in Google search results.
     this.titleService.setTitle('ApnaInsights - Practical Knowledge for Everyday Life');
-    this.meta.updateTag({ name: 'description',    content: 'Practical knowledge for everyday life - expert guides on Technology, Career, Health & Business written by verified contributors across India.' });
+    this.meta.updateTag({ name: 'description',    content: 'Practical knowledge for everyday life - expert guides on Technology, Career, Health & Business written by real contributors across India.' });
     this.meta.updateTag({ name: 'keywords',       content: 'practical knowledge India, technology guides India, career tips India, health advice India, business insights, ApnaInsights, everyday life guides' });
     this.meta.updateTag({ name: 'robots',         content: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' });
     this.meta.updateTag({ name: 'author',         content: 'ApnaInsights Editorial Team' });
     this.meta.updateTag({ property: 'og:type',         content: 'website' });
     this.meta.updateTag({ property: 'og:title',        content: 'ApnaInsights - Practical Knowledge for Everyday Life' });
-    this.meta.updateTag({ property: 'og:description',  content: 'Practical knowledge for everyday life - expert guides on Technology, Career, Health & Business written by verified contributors across India.' });
+    this.meta.updateTag({ property: 'og:description',  content: 'Practical knowledge for everyday life - expert guides on Technology, Career, Health & Business written by real contributors across India.' });
     this.meta.updateTag({ property: 'og:url',          content: `${site}/` });
     this.meta.updateTag({ property: 'og:site_name',    content: 'ApnaInsights' });
     this.meta.updateTag({ property: 'og:image',        content: og });
@@ -642,7 +662,7 @@ export class Home implements OnInit, OnDestroy {
     this.meta.updateTag({ property: 'og:locale',       content: 'en_IN' });
     this.meta.updateTag({ name: 'twitter:card',        content: 'summary_large_image' });
     this.meta.updateTag({ name: 'twitter:title',       content: 'ApnaInsights - Practical Knowledge for Everyday Life' });
-    this.meta.updateTag({ name: 'twitter:description', content: 'Practical knowledge for everyday life. Expert guides on Technology, Career, Health & Business from verified contributors across India.' });
+    this.meta.updateTag({ name: 'twitter:description', content: 'Practical knowledge for everyday life. Expert guides on Technology, Career, Health & Business from real contributors across India.' });
     this.meta.updateTag({ name: 'twitter:image',       content: og });
     this.meta.updateTag({ name: 'twitter:site',        content: '@apnainsights' });
 
@@ -696,7 +716,7 @@ export class Home implements OnInit, OnDestroy {
               caption:      'ApnaInsights',
             },
             image:       { '@id': `${site}/#logo` },
-            description: 'ApnaInsights is India\'s practical knowledge platform publishing expert-reviewed guides on Technology, Career, Health and Business - written by verified contributors.',
+            description: 'ApnaInsights is India\'s practical knowledge platform publishing expert-reviewed guides on Technology, Career, Health and Business - written by real contributors.',
             foundingDate: '2024',
             sameAs: [
               'https://twitter.com/apnainsights',
@@ -709,7 +729,7 @@ export class Home implements OnInit, OnDestroy {
             '@id':         `${site}/#homepage`,
             url:           `${site}/`,
             name:          'ApnaInsights - Practical Guides on Tech, Career & Life',
-            description:   'Browse expert-reviewed guides on Technology, Career, Health & Business - trusted insights from verified contributors across India.',
+            description:   'Browse expert-reviewed guides on Technology, Career, Health & Business - trusted insights from real contributors across India.',
             inLanguage:    'en-IN',
             isPartOf:      { '@id': `${site}/#website` },
             about:         { '@type': 'Thing', name: 'Practical Knowledge Platform India' },
@@ -803,6 +823,13 @@ export class Home implements OnInit, OnDestroy {
   private static readonly MIN_VISIBLE_VIEWS = 100;
   hasMeaningfulViews(n: number | undefined | null): boolean {
     return (n ?? 0) >= Home.MIN_VISIBLE_VIEWS;
+  }
+
+  // Real verification signal only - admins and active mentors have an
+  // actual reviewed/approved status behind them. Ordinary contributors
+  // have no verification pipeline, so never show this for them.
+  isVerifiedContributor(user: any): boolean {
+    return user?.role === 'admin' || user?.mentorStatus === 'active';
   }
 
   // The category chip rail / dropdown navigate to the dedicated category

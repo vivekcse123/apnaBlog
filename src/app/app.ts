@@ -40,6 +40,26 @@ export class App implements OnInit, OnDestroy {
       this.authService.logout();
     }
 
+    // A PWA cold start (installed app launched from a home-screen icon, per
+    // the manifest's start_url '/?source=pwa' + display:'standalone') sees
+    // the splash/onboarding flow once. Deliberately scoped to real PWA
+    // launches only - detected via display-mode:standalone or the ?source=pwa
+    // param, not "any first-time browser visitor" - so an ordinary browser
+    // tab (including search engine crawlers, which don't carry localStorage
+    // between visits and would otherwise get redirected on every single
+    // crawl) always sees the real homepage. Checked here (app bootstrap),
+    // not in a route guard, so it never runs against the prerendered '/'
+    // route during SSR/build, and never re-fires on in-app navigation back
+    // to '/' after ngOnInit's first pass.
+    if (
+      isPlatformBrowser(this.platformId) &&
+      window.location.pathname === '/' &&
+      !localStorage.getItem('apna_onboarded') &&
+      (window.matchMedia('(display-mode: standalone)').matches || new URLSearchParams(window.location.search).get('source') === 'pwa')
+    ) {
+      this.router.navigate(['/splash'], { replaceUrl: true });
+    }
+
     // Register service worker + restore push subscription state
     if (isPlatformBrowser(this.platformId)) {
       this.pushService.init();

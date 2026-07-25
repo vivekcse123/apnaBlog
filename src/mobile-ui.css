@@ -27,6 +27,13 @@
   --mob-r-lg:  18px;
   --mob-r-xl:  24px;
   --mob-r-pill: 99px;
+  /* Extra steps folded in from what used to be page-local radius variables
+     (home.css's --home-radius-*, blog-detail.css's --bd2-radius-*) so every
+     page derives from one shared scale instead of re-declaring its own. */
+  --mob-r-chip:    11px;
+  --mob-r-card-sm: 10px;
+  --mob-r-card-md: 16px;
+  --mob-r-card-lg: 20px;
 
   /* Shadow */
   --mob-shadow-sm: 0 1px 4px rgba(0,0,0,0.08);

@@ -38,7 +38,7 @@
 }
 .ch-search:focus-within {
   border-color: rgba(37, 99, 235, 0.6);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  box-shadow: var(--brand-focus-ring);
   background: var(--bg-surface);
 }
 .ch-search-ico {
@@ -377,6 +377,7 @@
   gap: 10px;
   padding: 10px 14px;
 }
+.ch-panel-bar:focus-within { box-shadow: var(--brand-focus-ring); border-radius: 8px; }
 .ch-panel-bar .ch-search-ico { flex-shrink: 0; color: var(--text-muted); }
 
 .ch-panel-input {

@@ -27,6 +27,10 @@ export const USER_NOTIFICATION_TYPES: NotificationType[] = [
   'USER_FOLLOWED', 'SUBSCRIBER_ADDED',
 ];
 
+export const MENTOR_NOTIFICATION_TYPES: NotificationType[] = [
+  'MENTOR_APPLICATION_SUBMITTED', 'MENTOR_APPLICATION_APPROVED', 'MENTOR_APPLICATION_REJECTED',
+];
+
 export const NON_NAVIGABLE_TYPES: NotificationType[] = [
   'POST_DELETED', 'POST_REJECTED', 'SHORT_REJECTED', 'USER_DELETED',
   'info', 'warning', 'success', 'error',
@@ -71,7 +75,9 @@ export class NotificationNavigationService {
           ? [prefix, adminId, 'manage-shorts']
           : USER_NOTIFICATION_TYPES.includes(event.type)
             ? [prefix, adminId, 'manage-users']
-            : null;
+            : MENTOR_NOTIFICATION_TYPES.includes(event.type)
+              ? [prefix, adminId, 'career-guides', 'mentor-applications']
+              : null;
 
       if (!targetPath) return;
 

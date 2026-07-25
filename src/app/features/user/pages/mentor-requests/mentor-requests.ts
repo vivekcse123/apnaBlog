@@ -2,6 +2,8 @@ import { Component, ChangeDetectionStrategy, OnInit, effect, inject, signal, unt
 import { CommonModule, DatePipe } from '@angular/common';
 import { CallbackRequestService } from '../../../career-guides/services/callback-request.service';
 import { CallbackRequestRecord, CallbackStatus } from '../../../career-guides/models/callback-request.model';
+import { ToastService } from '../../../../core/services/toast.service';
+import { ConfirmModal } from '../../../../shared/confirm-modal/confirm-modal';
 
 const STATUSES: CallbackStatus[] = ['pending', 'accepted', 'rejected', 'scheduled', 'completed', 'cancelled', 'expired'];
 
@@ -12,13 +14,14 @@ const STATUSES: CallbackStatus[] = ['pending', 'accepted', 'rejected', 'schedule
 @Component({
   selector: 'app-mentor-requests',
   standalone: true,
-  imports: [CommonModule, DatePipe],
+  imports: [CommonModule, DatePipe, ConfirmModal],
   templateUrl: './mentor-requests.html',
   styleUrl: './mentor-requests.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MentorRequests implements OnInit {
   private callbackRequests = inject(CallbackRequestService);
+  private toast = inject(ToastService);
 
   readonly statuses = STATUSES;
 
@@ -69,6 +72,18 @@ export class MentorRequests implements OnInit {
   canDecide(status: CallbackStatus): boolean { return status === 'pending'; }
   canComplete(status: CallbackStatus): boolean { return status === 'accepted' || status === 'scheduled'; }
 
+  // Reject is terminal for the requester - confirm before firing it, unlike
+  // Accept/Schedule/Mark Completed which move the request forward.
+  pendingReject = signal<string | null>(null);
+
+  requestReject(id: string): void { this.pendingReject.set(id); }
+
+  confirmReject(): void {
+    const id = this.pendingReject();
+    this.pendingReject.set(null);
+    if (id) this.updateStatus(id, 'rejected');
+  }
+
   updateStatus(id: string, status: CallbackStatus): void {
     const set = new Set(this.updating());
     set.add(id);
@@ -79,7 +94,7 @@ export class MentorRequests implements OnInit {
         const s = new Set(this.updating()); s.delete(id); this.updating.set(s);
       },
       error: (err) => {
-        alert(err?.error?.message ?? 'Could not update this request.');
+        this.toast.show(err?.error?.message ?? 'Could not update this request.', 'error');
         const s = new Set(this.updating()); s.delete(id); this.updating.set(s);
       },
     });

@@ -102,10 +102,10 @@
 
               <div class="mcr-actions">
                 <button class="mcr-action mcr-action--accept" [disabled]="updating().has(r._id) || !canDecide(r.status)" (click)="updateStatus(r._id, 'accepted')">Accept</button>
-                <button class="mcr-action mcr-action--reject" [disabled]="updating().has(r._id) || !canDecide(r.status)" (click)="updateStatus(r._id, 'rejected')">Reject</button>
+                <button class="mcr-action mcr-action--reject" [disabled]="updating().has(r._id) || !canDecide(r.status)" (click)="requestStatusChange(r._id, 'rejected')">Reject</button>
                 <button class="mcr-action" [disabled]="updating().has(r._id) || !canDecide(r.status)" (click)="updateStatus(r._id, 'scheduled')">Schedule</button>
                 <button class="mcr-action mcr-action--complete" [disabled]="updating().has(r._id) || !canComplete(r.status)" (click)="updateStatus(r._id, 'completed')">Mark Completed</button>
-                <button class="mcr-action mcr-action--cancel" [disabled]="updating().has(r._id) || !canCancel(r.status)" (click)="updateStatus(r._id, 'cancelled')">Cancel</button>
+                <button class="mcr-action mcr-action--cancel" [disabled]="updating().has(r._id) || !canCancel(r.status)" (click)="requestStatusChange(r._id, 'cancelled')">Cancel</button>
               </div>
 
               @if (r.activityLog.length) {
@@ -132,5 +132,14 @@
       </div>
     }
   }
+
+  <app-confirm-modal
+    [show]="!!pendingAction()"
+    [title]="pendingAction()?.status === 'rejected' ? 'Reject this request?' : 'Cancel this request?'"
+    message="This notifies the requester and can't be undone from here."
+    [confirmText]="pendingAction()?.status === 'rejected' ? 'Reject' : 'Cancel request'"
+    cancelText="Never mind"
+    (confirmed)="confirmPendingAction()"
+    (cancelled)="pendingAction.set(null)" />
 
 </div>

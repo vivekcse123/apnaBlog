@@ -14,10 +14,10 @@
   color: var(--text-primary);
 
   /* Reskin tokens - locally scoped, consume existing global vars only */
-  --bd2-radius-sm: 10px;
-  --bd2-radius-md: 16px;
-  --bd2-radius-lg: 20px;
-  --bd2-radius-pill: 999px;
+  --bd2-radius-sm: var(--mob-r-card-sm);
+  --bd2-radius-md: var(--mob-r-card-md);
+  --bd2-radius-lg: var(--mob-r-card-lg);
+  --bd2-radius-pill: var(--mob-r-pill);
   --bd2-gap: 24px;
   --bd2-col-toc: 272px;
   --bd2-col-aside: 320px;
@@ -352,6 +352,7 @@
 }
 .toc-item.level-2 { font-weight: 600; }
 .toc-item.level-3 { padding-left: 22px; font-size: 12.5px; }
+.toc-item.level-4 { padding-left: 34px; font-size: 12px; }
 .toc-item:hover { background: var(--bg-surface-alt, var(--bg-base)); color: var(--text-primary); }
 .toc-item.active { background: var(--accent-subtle); color: var(--accent-text); font-weight: 700; border-left-color: #2563EB; }
 .toc-backdrop {
@@ -491,6 +492,23 @@
 /* Wrapper keeps the same page-width centering/gutter the link used to carry
    itself; the link inside is inline-flex so its clickable area only covers
    the icon+text, not the full row width. */
+.blog-breadcrumb {
+  max-width: 1600px; margin: 0 auto; padding: 16px 40px 0;
+  display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
+  font-size: 13px; color: var(--text-muted);
+}
+.blog-breadcrumb-link { color: var(--text-muted); text-decoration: none; }
+.blog-breadcrumb-link:hover { color: var(--accent-text); }
+.blog-breadcrumb-sep { color: var(--text-muted); opacity: 0.6; }
+.blog-breadcrumb-current {
+  color: var(--text-secondary); font-weight: 600;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 320px;
+}
+@media (max-width: 768px) {
+  .blog-breadcrumb { padding: 12px 5% 0; }
+  .blog-breadcrumb-current { max-width: 45vw; }
+}
+
 .blog-back-wrap { max-width: 1600px; margin: 0 auto; padding: 14px 40px 20px; }
 .blog-back-link {
   display: inline-flex; align-items: center; gap: 7px;
@@ -520,6 +538,17 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* Same treatment as listing cards' image fallback (blog-list.css's
+   .bl-post-media-fallback) - a text-only post gets a placeholder here
+   instead of jumping straight from header to body. */
+.featured-image-fallback {
+  width: 100%; aspect-ratio: 2.1 / 1; margin-bottom: 24px;
+  border-radius: var(--bd2-radius-lg);
+  background: var(--bg-surface-alt, #f3f4f6);
+  display: grid; place-items: center;
+  font-size: 64px; font-weight: 800; color: var(--text-muted);
 }
 .featured-image {
   width: 100%; height: 100%;
@@ -1034,14 +1063,14 @@
 .blog-content ::ng-deep .code-block-copy:hover { background: rgba(255,255,255,0.1); color: #cdd6f4; }
 .blog-content ::ng-deep .code-block pre { margin: 0; border-radius: 0; }
 
-/* Clickable paragraphs for reactions */
+/* Paragraphs are still click-to-react (see openReactionPicker in blog-detail.ts),
+   but without a hover highlight/pointer cursor over ordinary body text - that
+   affordance read as "everything is a broken link" and interrupted normal
+   reading/text-selection before a reader ever discovered the feature. */
 .blog-content ::ng-deep p {
-  cursor: pointer; border-radius: 4px;
+  border-radius: 4px;
   padding: 2px 5px; margin-left: -5px; margin-right: -5px;
-  transition: background 0.15s;
 }
-.blog-content ::ng-deep p:hover { background: rgba(37, 99, 235, 0.05); }
-[data-theme="dark"] .blog-content ::ng-deep p:hover { background: rgba(96,165,250,0.06); }
 
 /* ══════════════════════════════════════════
    TAGS / CATEGORIES SECTION
@@ -1510,12 +1539,12 @@
   border: none; background: var(--accent);
   color: #fff; font-size: 18px; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35);
   opacity: 0; transform: translateY(12px); pointer-events: none;
   transition: opacity 0.25s, transform 0.25s;
 }
 .bd-scroll-top-fab.visible { opacity: 1; transform: none; pointer-events: auto; }
-.bd-scroll-top-fab:hover { box-shadow: 0 6px 20px rgba(37, 99, 235, 0.5); }
+.bd-scroll-top-fab:hover { box-shadow: 0 8px 28px rgba(37, 99, 235, 0.5); }
 
 /* ══════════════════════════════════════════
    IMAGE LIGHTBOX
@@ -1571,7 +1600,7 @@
   display: flex; justify-content: flex-end; padding: 12px;
 }
 .modal-close-btn {
-  width: 30px; height: 30px; border-radius: 50%; border: none;
+  width: 32px; height: 32px; border-radius: 50%; border: none;
   background: rgba(0,0,0,0.28); color: #fff;
   cursor: pointer; display: flex; align-items: center; justify-content: center;
   transition: background 0.15s; backdrop-filter: blur(4px);
@@ -2130,6 +2159,7 @@
     gap: 2px; border: none; background: transparent;
     color: var(--text-muted); font-family: inherit;
     cursor: pointer; padding: 4px 6px;
+    min-height: 44px; /* WCAG 2.5.8 minimum touch target */
     margin: 6px 4px;
     border-radius: var(--bd2-radius-sm);
     transition: color 0.15s, background 0.15s;

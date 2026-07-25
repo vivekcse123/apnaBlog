@@ -6,25 +6,29 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MentorApplicationService } from '../../../career-guides/services/mentor-application.service';
 import { MentorApplicationRecord, MentorApplicationStatus } from '../../../career-guides/models/mentor-application.model';
 import { DecodeEntitiesPipe } from '../../../../shared/pipes/decode-entities-pipe';
+import { ToastService } from '../../../../core/services/toast.service';
+import { Pagination } from '../../../../shared/components/pagination/pagination';
 
-type Tab = MentorApplicationStatus;
+type Tab = MentorApplicationStatus | 'all';
 
 @Component({
   selector: 'app-manage-mentor-applications',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, DecodeEntitiesPipe],
+  imports: [CommonModule, FormsModule, DecodeEntitiesPipe, Pagination],
   templateUrl: './manage-mentor-applications.html',
   styleUrl: './manage-mentor-applications.css',
 })
 export class ManageMentorApplications implements OnInit {
   private mentorApplicationService = inject(MentorApplicationService);
   private destroyRef = inject(DestroyRef);
+  private toast = inject(ToastService);
 
   applications = signal<MentorApplicationRecord[]>([]);
   isLoading = signal(true);
   error = signal('');
-  activeTab = signal<Tab>('pending');
+  activeTab = signal<Tab>('all');
+  searchQuery = signal('');
 
   expandedId = signal<string | null>(null);
 
@@ -39,8 +43,34 @@ export class ManageMentorApplications implements OnInit {
   rejectReason = signal('');
   isRejecting = signal(false);
 
-  filtered = computed(() => this.applications().filter(a => a.status === this.activeTab()));
+  filtered = computed(() => {
+    const tab = this.activeTab();
+    const byTab = tab === 'all' ? this.applications() : this.applications().filter(a => a.status === tab);
+    const q = this.searchQuery().trim().toLowerCase();
+    if (!q) return byTab;
+    return byTab.filter(a =>
+      this.applicantName(a).toLowerCase().includes(q) || this.applicantEmail(a).toLowerCase().includes(q)
+    );
+  });
   pendingCount = computed(() => this.applications().filter(a => a.status === 'pending').length);
+
+  readonly PAGE_SIZE = 10;
+  currentPage = signal(1);
+  totalPages  = computed(() => Math.max(1, Math.ceil(this.filtered().length / this.PAGE_SIZE)));
+  pagedApplications = computed(() => {
+    const start = (this.currentPage() - 1) * this.PAGE_SIZE;
+    return this.filtered().slice(start, start + this.PAGE_SIZE);
+  });
+
+  goToPage(n: number): void {
+    if (n < 1 || n > this.totalPages()) return;
+    this.currentPage.set(n);
+  }
+
+  onSearchChange(value: string): void {
+    this.searchQuery.set(value);
+    this.currentPage.set(1);
+  }
 
   ngOnInit(): void {
     this.load();
@@ -60,7 +90,7 @@ export class ManageMentorApplications implements OnInit {
       });
   }
 
-  setTab(tab: Tab): void { this.activeTab.set(tab); this.expandedId.set(null); }
+  setTab(tab: Tab): void { this.activeTab.set(tab); this.expandedId.set(null); this.currentPage.set(1); }
 
   toggleExpand(id: string): void {
     this.expandedId.set(this.expandedId() === id ? null : id);
@@ -127,7 +157,7 @@ export class ManageMentorApplications implements OnInit {
         },
         error: (err) => {
           this.isRejecting.set(false);
-          alert(err?.error?.message ?? 'Could not reject this application.');
+          this.toast.show(err?.error?.message ?? 'Could not reject this application.', 'error');
         },
       });
   }

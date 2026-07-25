@@ -497,15 +497,16 @@
   background: var(--accent);
   color: #fff;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   padding: 0.55rem 1.25rem;
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.15s, opacity 0.15s;
+  transition: opacity 0.2s, transform 0.2s, box-shadow 0.2s;
 }
 
-.btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
+.btn-primary:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 5px 16px rgba(37, 99, 235, 0.4); }
+.btn-primary:active:not(:disabled) { transform: scale(0.97); }
 .btn-primary:disabled { opacity: 0.55; cursor: not-allowed; }
 
 .btn-ghost {
@@ -1949,17 +1950,6 @@
   display: inline-block;
   text-transform: capitalize;
 }
-
-/* Primary button - gradient */
-.btn-primary {
-  background: var(--accent);
-  color: #fff;
-  border: none;
-  border-radius: 10px;
-  transition: opacity 0.2s, transform 0.15s;
-}
-.btn-primary:hover:not([disabled]) { opacity: 0.88; transform: translateY(-1px); }
-.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
 /* Security/appearance cards hover */
 .appearance-card {

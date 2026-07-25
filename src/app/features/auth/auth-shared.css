@@ -144,11 +144,18 @@
 .form-header h2 { font-size: 22px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.3px; margin: 0 0 4px; }
 .form-header p  { font-size: 13.5px; color: var(--text-muted); margin: 0; }
 
-/* Google button - real button rendered invisibly on top, see login.ts */
-.google-btn-wrap { position: relative; width: 100%; margin-bottom: 16px; }
+/* Google button - Google's own rendered button IS the visible/clickable
+   button (see login.ts). Chrome's anti-clickjacking occlusion check on
+   desktop silently drops clicks on a hidden/opacity:0 GIS button, which is
+   why an earlier invisible-overlay version of this worked on mobile but not
+   desktop - so the real button must never be hidden before it's clicked.
+   The custom-styled `.google-btn` only appears as a loading overlay AFTER a
+   real click already landed (see .google-btn--visible), which is safe since
+   occlusion is only checked pre-click. */
+.google-btn-wrap { position: relative; width: 100%; min-height: 48px; margin-bottom: 16px; }
 
 .google-btn {
-  width: 100%;
+  position: absolute; inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -162,17 +169,19 @@
   font-weight: 600;
   font-family: 'DM Sans', sans-serif;
   letter-spacing: 0.1px;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
 }
 
-.google-btn-wrap:hover .google-btn {
-  border-color: var(--accent);
+.google-btn--visible { opacity: 1; }
+
+.google-btn-wrap:hover .google-btn-real {
   box-shadow: 0 0 0 3px var(--accent-subtle);
-  background: var(--input-bg);
 }
 
-.google-btn-real { position: absolute; inset: 0; opacity: 0; overflow: hidden; border-radius: 12px; }
-.google-btn-real--busy { pointer-events: none; }
+.google-btn-real { border-radius: 12px; overflow: hidden; }
+.google-btn-real--busy { opacity: 0; pointer-events: none; }
 
 .google-btn-spinner {
   width: 18px; height: 18px;

@@ -14,6 +14,12 @@
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
+/* Sits above the fixed mobile bottom nav (58px tall) instead of covering it -
+   see mobile-bottom-nav.css's matching breakpoint. */
+@media (max-width: 768px) {
+  .cookie-bar { bottom: 58px; }
+}
+
 @keyframes slideUp {
   from { transform: translateY(100%); opacity: 0; }
   to   { transform: translateY(0);    opacity: 1; }

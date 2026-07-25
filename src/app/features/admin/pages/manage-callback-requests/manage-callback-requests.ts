@@ -4,13 +4,15 @@ import { FormsModule } from '@angular/forms';
 import { CallbackRequestService } from '../../../career-guides/services/callback-request.service';
 import { CallbackRequestRecord, CallbackStatus } from '../../../career-guides/models/callback-request.model';
 import { MOCK_EXPERTS, MOCK_CATEGORIES } from '../../../career-guides/data/mock-experts';
+import { ToastService } from '../../../../core/services/toast.service';
+import { ConfirmModal } from '../../../../shared/confirm-modal/confirm-modal';
 
 const STATUSES: CallbackStatus[] = ['pending', 'accepted', 'rejected', 'scheduled', 'completed', 'cancelled', 'expired'];
 
 @Component({
   selector: 'app-manage-callback-requests',
   standalone: true,
-  imports: [CommonModule, FormsModule, DatePipe],
+  imports: [CommonModule, FormsModule, DatePipe, ConfirmModal],
   templateUrl: './manage-callback-requests.html',
   styleUrl: './manage-callback-requests.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -18,6 +20,7 @@ const STATUSES: CallbackStatus[] = ['pending', 'accepted', 'rejected', 'schedule
 export class ManageCallbackRequests implements OnInit {
   private callbackRequests = inject(CallbackRequestService);
   private platformId = inject(PLATFORM_ID);
+  private toast = inject(ToastService);
 
   readonly statuses = STATUSES;
   readonly experts = MOCK_EXPERTS;
@@ -100,6 +103,25 @@ export class ManageCallbackRequests implements OnInit {
   canComplete(status: CallbackStatus): boolean { return status === 'accepted' || status === 'scheduled'; }
   canCancel(status: CallbackStatus): boolean { return status === 'pending' || status === 'accepted' || status === 'scheduled'; }
 
+  // Reject/Cancel are terminal, hard-to-undo decisions for the requester -
+  // gate them behind a confirmation, unlike Accept/Schedule/Mark Completed
+  // which move a request forward and are safe to fire immediately.
+  pendingAction = signal<{ id: string; status: CallbackStatus } | null>(null);
+
+  requestStatusChange(id: string, status: CallbackStatus): void {
+    if (status === 'rejected' || status === 'cancelled') {
+      this.pendingAction.set({ id, status });
+    } else {
+      this.updateStatus(id, status);
+    }
+  }
+
+  confirmPendingAction(): void {
+    const pending = this.pendingAction();
+    this.pendingAction.set(null);
+    if (pending) this.updateStatus(pending.id, pending.status);
+  }
+
   updateStatus(id: string, status: CallbackStatus): void {
     const set = new Set(this.updating());
     set.add(id);
@@ -110,7 +132,7 @@ export class ManageCallbackRequests implements OnInit {
         const s = new Set(this.updating()); s.delete(id); this.updating.set(s);
       },
       error: (err) => {
-        alert(err?.error?.message ?? 'Could not update this request.');
+        this.toast.show(err?.error?.message ?? 'Could not update this request.', 'error');
         const s = new Set(this.updating()); s.delete(id); this.updating.set(s);
       },
     });

@@ -1,6 +1,9 @@
 <div class="toast-container">
   @for (toast of toastService.toasts(); track toast.id) {
-    <div class="toast" [class]="toast.type" [class.dismissing]="toast.dismissing">
+    <div class="toast" [class]="toast.type" [class.dismissing]="toast.dismissing"
+      [attr.role]="toast.type === 'error' ? 'alert' : 'status'" aria-atomic="true"
+      (mouseenter)="toastService.pause(toast.id)" (mouseleave)="toastService.resume(toast.id)"
+      (focusin)="toastService.pause(toast.id)" (focusout)="toastService.resume(toast.id)">
       <span class="toast-icon">
         @switch (toast.type) {
           @case ('success') { <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg> }

@@ -20,16 +20,13 @@
   position: relative;
   background: var(--bg-surface);
   border: 1px solid var(--border);
-  border-radius: 18px;
+  border-radius: 20px;
   padding: 48px 40px 40px;
   width: 90%;
   max-width: 860px;
   max-height: 92vh;
   overflow-y: auto;
-  box-shadow:
-    0 4px 6px rgba(0,0,0,.06),
-    0 12px 32px rgba(0,0,0,.14),
-    0 40px 80px rgba(0,0,0,.18);
+  box-shadow: var(--card-shadow-lg);
   animation: slideUp 0.28s cubic-bezier(.22,.68,0,1.1);
 }
 

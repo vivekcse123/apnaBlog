@@ -17,7 +17,10 @@ import { UserService } from '../../../user/services/user-service';
 import { PremiumPurchase } from '../../../../shared/premium-purchase/premium-purchase';
 import { MentorProfileService } from '../../services/mentor-profile.service';
 import { MentorAvailabilityStatus, MentorProfileRecord } from '../../models/mentor-profile.model';
+import { MentorApplicationService } from '../../services/mentor-application.service';
+import { PublicMentorCard } from '../../models/mentor-application.model';
 import { DecodeEntitiesPipe } from '../../../../shared/pipes/decode-entities-pipe';
+import { VerifiedBadge } from '../../../../shared/verified-badge/verified-badge';
 
 const DURATIONS = [15, 30, 45, 60] as const;
 const TOPICS = ['Angular', 'Interview', 'Resume', 'Career Switch', 'Salary Discussion', 'Technical Guidance'] as const;
@@ -30,7 +33,7 @@ const FREE_SESSION_BLOCKING_STATUSES = ['pending', 'accepted', 'scheduled', 'com
 @Component({
   selector: 'app-expert-profile',
   standalone: true,
-  imports: [CommonModule, RouterLink, SiteHeader, MobileBottomNav, PremiumPurchase, DecodeEntitiesPipe],
+  imports: [CommonModule, RouterLink, SiteHeader, MobileBottomNav, PremiumPurchase, DecodeEntitiesPipe, VerifiedBadge],
   templateUrl: './expert-profile.html',
   styleUrl: './expert-profile.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -43,6 +46,7 @@ export class ExpertProfile implements OnInit {
   private callbackRequests = inject(CallbackRequestService);
   private userService = inject(UserService);
   private mentorProfileService = inject(MentorProfileService);
+  private mentorApplicationService = inject(MentorApplicationService);
   private destroyRef = inject(DestroyRef);
   private toast = inject(ToastService);
   private meta = inject(Meta);
@@ -53,7 +57,15 @@ export class ExpertProfile implements OnInit {
   // uses. Real, mentor-edited fields (see mentor-dashboard.ts's profile
   // editor) overlay on top via realProfile()/displayExpert() below.
   private expertId = signal<string>(this.route.snapshot.paramMap.get('expertId') ?? '');
-  expert = computed<Expert | undefined>(() => MOCK_EXPERTS.find(e => e.slug === this.expertId()));
+
+  // Fallback base for a real mentor approved via the application workflow
+  // who isn't in the curated MOCK_EXPERTS list (see GET
+  // /api/mentor-applications/approved/:slug, fetched in ngOnInit only when
+  // the slug isn't found below) - without this, visiting a newly-approved
+  // mentor's own profile page hit the "Expert not found" branch.
+  private fallbackExpert = signal<Expert | null>(null);
+  expert = computed<Expert | undefined>(() =>
+    MOCK_EXPERTS.find(e => e.slug === this.expertId()) ?? this.fallbackExpert() ?? undefined);
 
   // Real backend-persisted profile override, if the mentor has saved one
   // (see GET /api/mentor-profile/by-slug/:slug). Null until it loads, or if
@@ -264,6 +276,19 @@ export class ExpertProfile implements OnInit {
 
     this.callbackRequests.ensureLive();
 
+    // Not in the curated catalog - look up a real, approved mentor by slug.
+    // Meta tags are re-applied once this resolves since setMetaTags() above
+    // ran before expert() had anything to read for these mentors.
+    if (!MOCK_EXPERTS.some(e => e.slug === slug)) {
+      this.ssrBound(this.mentorApplicationService.approvedBySlug(slug))
+        .pipe(takeUntilDestroyed(this.destroyRef), catchError(() => of({ data: null as PublicMentorCard | null })))
+        .subscribe(res => {
+          if (!res.data) return;
+          this.fallbackExpert.set(res.data);
+          this.setMetaTags();
+        });
+    }
+
     this.ssrBound(this.mentorProfileService.getBySlug(slug))
       .pipe(takeUntilDestroyed(this.destroyRef), catchError(() => of({ data: null })))
       .subscribe(res => this.realProfile.set(res.data));
@@ -303,6 +328,7 @@ export class ExpertProfile implements OnInit {
             if (!userRes) return;
             this.followersCount.set((userRes as any).followersCount ?? 0);
             this.isFollowing.set((userRes as any).isFollowing ?? false);
+            this.realArticlesCount.set((userRes as any).totalBlogs ?? 0);
             const avatar = (userRes as any).data?.avatar;
             if (avatar) this.setOgImageFromAvatar(avatar);
           });
@@ -363,6 +389,11 @@ export class ExpertProfile implements OnInit {
   followersCount = signal(0);
   isFollowing = signal(false);
   followLoading = signal(false);
+
+  // Real published-article count for this mentor's actual author account -
+  // replaces the mock Expert record's fabricated `articlesWritten`, same
+  // reasoning as followersCount/sessionsGuided above. null until loaded.
+  realArticlesCount = signal<number | null>(null);
 
   private toggleFollow(): void {
     const mentorId = this.mentorUserId();

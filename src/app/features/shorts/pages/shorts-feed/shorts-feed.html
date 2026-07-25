@@ -82,6 +82,8 @@
                  [src]="short.videoUrl"
                  [attr.poster]="short.thumbnailUrl || null"
                  muted playsinline preload="metadata"
+                 [attr.aria-label]="short.title"
+                 [attr.aria-describedby]="'sf-caption-' + short._id"
                  (loadeddata)="onVideoData($event)">
           </video>
         } @else {
@@ -295,7 +297,7 @@
           </div>
 
           <!-- Title + caption -->
-          <p class="sf-body-text" [class.sf-body-text--open]="isExpanded(short._id)">
+          <p class="sf-body-text" [id]="'sf-caption-' + short._id" [class.sf-body-text--open]="isExpanded(short._id)">
             <strong class="sf-body-title">{{ short.title }}</strong>
             @if (short.caption) { <span class="sf-body-caption">&nbsp;{{ short.caption }}</span> }
           </p>

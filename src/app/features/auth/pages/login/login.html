@@ -71,11 +71,13 @@
         <p>Sign in to your account to continue</p>
       </div>
 
-      <!-- Google Sign-In - Google's real button is rendered invisibly into
-           #googleBtnSlot, stacked on top of this one, so the click is always
-           handled natively by Google (see login.ts for why). -->
+      <!-- Google Sign-In - Google's real button is rendered into #googleBtnSlot
+           and IS the visible/clickable button. The custom-styled div only
+           overlays it as a loading spinner once isGoogleLoading() is true,
+           i.e. after a real click already landed (see login.ts for why it
+           must never be hidden/occluded beforehand). -->
       <div class="google-btn-wrap">
-        <div class="google-btn" aria-hidden="true">
+        <div class="google-btn" [class.google-btn--visible]="isGoogleLoading()" aria-hidden="true">
           @if (isGoogleLoading()) {
             <span class="google-btn-spinner"></span>
             <span>Signing in…</span>
@@ -107,13 +109,15 @@
             <input id="login-email" type="text" placeholder="Enter your email or username"
               formControlName="email" autocomplete="email" autofocus
               [class.field-error]="loginForm.get('email')?.invalid &&
-                (isSubmitted() || loginForm.get('email')?.touched)">
+                (isSubmitted() || loginForm.get('email')?.touched)"
+              [attr.aria-invalid]="loginForm.get('email')?.invalid && (isSubmitted() || loginForm.get('email')?.touched) ? true : null"
+              [attr.aria-describedby]="loginForm.get('email')?.invalid && (isSubmitted() || loginForm.get('email')?.touched) ? 'login-email-error' : null">
           </div>
           @if(loginForm.get('email')?.invalid && (isSubmitted() || loginForm.get('email')?.touched)){
             @if(loginForm.get('email')?.errors?.['required']){
-              <small class="error">Email / Username is required</small>
+              <small class="error" id="login-email-error">Email / Username is required</small>
             } @else if(loginForm.get('email')?.errors?.['pattern']){
-              <small class="error">Enter a valid email address</small>
+              <small class="error" id="login-email-error">Enter a valid email address</small>
             }
           }
         </div>
@@ -128,7 +132,9 @@
               placeholder="Enter your password"
               formControlName="password" autocomplete="current-password"
               [class.field-error]="loginForm.get('password')?.invalid &&
-                (isSubmitted() || loginForm.get('password')?.touched)">
+                (isSubmitted() || loginForm.get('password')?.touched)"
+              [attr.aria-invalid]="loginForm.get('password')?.invalid && (isSubmitted() || loginForm.get('password')?.touched) ? true : null"
+              [attr.aria-describedby]="loginForm.get('password')?.invalid && (isSubmitted() || loginForm.get('password')?.touched) ? 'login-pwd-error' : null">
             <button type="button" class="eye-btn" (click)="togglePasswordVisibility()"
                     [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'">
               @if (showPassword) {
@@ -140,7 +146,7 @@
           </div>
           @if(loginForm.get('password')?.invalid && (isSubmitted() || loginForm.get('password')?.touched)){
             @if(loginForm.get('password')?.errors?.['required']){
-              <small class="error">Password is required</small>
+              <small class="error" id="login-pwd-error">Password is required</small>
             }
           }
         </div>

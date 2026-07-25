@@ -14,15 +14,18 @@ import { UserService } from '../../../user/services/user-service';
 import { CallbackRequestService, ExpertRating, ExpertSessionCount } from '../../services/callback-request.service';
 import { MentorProfileService } from '../../services/mentor-profile.service';
 import { MentorProfileRecord } from '../../models/mentor-profile.model';
+import { MentorApplicationService } from '../../services/mentor-application.service';
+import { PublicMentorCard } from '../../models/mentor-application.model';
 import { DecodeEntitiesPipe } from '../../../../shared/pipes/decode-entities-pipe';
 import { environment } from '../../../../../environments/environment';
+import { VerifiedBadge } from '../../../../shared/verified-badge/verified-badge';
 
 type SortKey = 'top-rated' | 'most-experienced' | 'newest';
 
 @Component({
   selector: 'app-guide-list',
   standalone: true,
-  imports: [CommonModule, RouterLink, SiteHeader, MobileBottomNav, DecodeEntitiesPipe],
+  imports: [CommonModule, RouterLink, SiteHeader, MobileBottomNav, DecodeEntitiesPipe, VerifiedBadge],
   templateUrl: './guide-list.html',
   styleUrl: './guide-list.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -33,6 +36,7 @@ export class GuideList implements OnInit {
   private userService = inject(UserService);
   private callbackRequests = inject(CallbackRequestService);
   private mentorProfileService = inject(MentorProfileService);
+  private mentorApplicationService = inject(MentorApplicationService);
   private destroyRef = inject(DestroyRef);
   private document = inject(DOCUMENT);
   private platformId = inject(PLATFORM_ID);
@@ -71,6 +75,12 @@ export class GuideList implements OnInit {
   // case mergedExperts() shows the full mock roster unfiltered rather than
   // treating "unknown" as "suspended".
   private activeSlugs = signal<Set<string> | null>(null);
+
+  // Real mentors approved via the application workflow (see
+  // GET /api/mentor-applications/approved) - the actual fix for approved
+  // mentors not appearing here, since the roster below (allExperts) is a
+  // curated static list that nothing else ever adds to automatically.
+  private realMentors = signal<PublicMentorCard[]>([]);
 
   // Real field on the User model (backend), default false for everyone until
   // an admin approval workflow exists to actually promote someone to mentor.
@@ -123,6 +133,10 @@ export class GuideList implements OnInit {
         this.profileOverrides.set(new Map(res.data.map(p => [p.mentorSlug, p])));
         if (res.activeSlugs) this.activeSlugs.set(new Set(res.activeSlugs));
       });
+
+    this.mentorApplicationService.approved()
+      .pipe(takeUntilDestroyed(this.destroyRef), timeout(8000), catchError(() => of({ data: [] as PublicMentorCard[] })))
+      .subscribe(res => this.realMentors.set(res.data));
 
     const userId = this.auth.userId();
     if (!userId) return;
@@ -182,7 +196,15 @@ export class GuideList implements OnInit {
   // so suspension there should actually remove the card, not just its overlay.
   private mergedExperts = computed<Expert[]>(() => {
     const active = this.activeSlugs();
-    const base = active ? this.allExperts().filter(e => active.has(e.slug)) : this.allExperts();
+    const curated = active ? this.allExperts().filter(e => active.has(e.slug)) : this.allExperts();
+
+    // Real mentors from the application workflow, skipping anyone already
+    // curated above by slug (a curated MOCK_EXPERTS entry always wins - it
+    // has richer hand-written copy than the raw application data).
+    const curatedSlugs = new Set(this.allExperts().map(e => e.slug));
+    const real: Expert[] = this.realMentors().filter(m => !curatedSlugs.has(m.slug));
+
+    const base = [...curated, ...real];
     const overrides = this.profileOverrides();
     if (!overrides.size) return base;
     return base.map(e => {
@@ -229,7 +251,7 @@ export class GuideList implements OnInit {
         sorted.reverse();
         break;
       default:
-        sorted.sort((a, b) => b.rating - a.rating);
+        sorted.sort((a, b) => (this.ratingFor(b.slug)?.avgRating ?? 0) - (this.ratingFor(a.slug)?.avgRating ?? 0));
     }
     return sorted;
   });

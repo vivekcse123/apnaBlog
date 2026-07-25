@@ -23,7 +23,7 @@
   max-width: 780px;
   margin: 1rem;
   background: var(--bg-surface);
-  border-radius: 16px;
+  border-radius: 20px;
   border: 1px solid var(--border);
   box-shadow: var(--card-shadow-lg);
   animation: slideUp 0.25s ease;

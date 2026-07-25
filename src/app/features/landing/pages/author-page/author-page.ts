@@ -20,6 +20,7 @@ import { MobileBottomNav } from '../../../../shared/mobile-bottom-nav/mobile-bot
 import { SiteHeader } from '../../../../shared/site-header/site-header';
 import { BookmarkService } from '../../../../core/services/bookmark.service';
 import { MessageComposerModal } from '../message-composer.modal';
+import { VerifiedBadge } from '../../../../shared/verified-badge/verified-badge';
 
 // Emoji + accent colour for the expertise chips - derived from each author's
 // own post categories (real data) rather than a fabricated skills list.
@@ -48,7 +49,7 @@ const DEFAULT_CATEGORY_META = { emoji: '📝', color: '#64748B' };
   selector: 'app-author-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, CommonModule, DatePipe, TimeAgoPipe, MobileBottomNav, SiteHeader, MessageComposerModal],
+  imports: [RouterLink, CommonModule, DatePipe, TimeAgoPipe, MobileBottomNav, SiteHeader, MessageComposerModal, VerifiedBadge],
   templateUrl: './author-page.html',
   styleUrl: './author-page.css',
 })
@@ -173,6 +174,14 @@ export class AuthorPage implements OnInit, OnDestroy {
   get authorBio(): string     { return (this.author() as any)?.bio      ?? ''; }
   get joinedDate(): string    { return (this.author() as any)?.createdAt ?? ''; }
   get authorEmail(): string   { return (this.author() as any)?.email    ?? ''; }
+
+  // Real verification signal only - admins and active mentors have an
+  // actual reviewed/approved status behind them. Do not show this badge
+  // for ordinary authors, who have no verification pipeline at all.
+  get isVerifiedAuthor(): boolean {
+    const a = this.author() as any;
+    return a?.role === 'admin' || a?.mentorStatus === 'active';
+  }
 
   // Surfaces an author's LinkedIn/portfolio/company link as a visible
   // credential on their public profile - an E-E-A-T signal for reviewers,

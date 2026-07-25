@@ -3,7 +3,7 @@ import {
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { environment } from '../../../../../environments/environment';
-import { CommonModule, DatePipe, isPlatformBrowser } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Meta, Title } from '@angular/platform-browser';
 import { DOCUMENT } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -12,17 +12,17 @@ import { of } from 'rxjs';
 import { PostService } from '../../../post/services/post-service';
 import { AllPostsCache } from '../../../../core/services/all-posts-cache';
 import { Post } from '../../../../core/models/post.model';
-import { TimeAgoPipe } from '../../../../shared/pipes/time-ago-pipe';
 import { MobileBottomNav } from '../../../../shared/mobile-bottom-nav/mobile-bottom-nav';
 import { SiteHeader } from '../../../../shared/site-header/site-header';
 import { Auth } from '../../../../core/services/auth';
-import { BookmarkService } from '../../../../core/services/bookmark.service';
+import { PostCard } from '../../../../shared/components/post-card/post-card';
+import { Pagination } from '../../../../shared/components/pagination/pagination';
 
 @Component({
   selector: 'app-tag-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, CommonModule, DatePipe, TimeAgoPipe, MobileBottomNav, SiteHeader],
+  imports: [RouterLink, CommonModule, MobileBottomNav, SiteHeader, PostCard, Pagination],
   templateUrl: './tag-page.html',
   styleUrl: './tag-page.css',
 })
@@ -37,7 +37,6 @@ export class TagPage implements OnInit, OnDestroy {
   private titleSvc    = inject(Title);
   private document    = inject(DOCUMENT);
   private auth        = inject(Auth);
-  bookmarkService      = inject(BookmarkService);
 
   get writeRoute(): string {
     if (!this.auth.isAuthorized()) return '/auth/login';
@@ -71,16 +70,24 @@ export class TagPage implements OnInit, OnDestroy {
   // page that's mostly empty (AdSense low-value-content / ad-density risk).
   isThinPage = computed(() => !this.isLoading() && this.posts().length < 5);
 
-  // Renders posts in batches instead of the full (sometimes 100s-long) list -
-  // popular tags were producing multi-MB prerendered HTML. All posts are
-  // already in memory (allPostsCache), so "Load more" is instant, no refetch.
+  // Renders posts in bounded pages instead of the full (sometimes
+  // 100s-long) list - popular tags were producing multi-MB rendered HTML.
+  // All posts are already in memory (allPostsCache), so paging is instant,
+  // no refetch.
   private readonly PAGE_SIZE = 24;
-  displayCount = signal(this.PAGE_SIZE);
-  visiblePosts = computed(() => this.posts().slice(0, this.displayCount()));
-  hasMorePosts = computed(() => this.posts().length > this.displayCount());
+  currentPage = signal(1);
+  totalPages  = computed(() => Math.max(1, Math.ceil(this.posts().length / this.PAGE_SIZE)));
+  visiblePosts = computed(() => {
+    const start = (this.currentPage() - 1) * this.PAGE_SIZE;
+    return this.posts().slice(start, start + this.PAGE_SIZE);
+  });
 
-  loadMore(): void {
-    this.displayCount.update(n => n + this.PAGE_SIZE);
+  goToPage(n: number): void {
+    if (n < 1 || n > this.totalPages()) return;
+    this.currentPage.set(n);
+    if (isPlatformBrowser(this.platformId)) {
+      this.document.getElementById('main-content')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }
 
   // Tracks which .adsbygoogle <ins> elements have already been pushed -
@@ -107,7 +114,7 @@ export class TagPage implements OnInit, OnDestroy {
       if (!tag) { this.router.navigate(['/']); return; }
 
       this.tagSlug.set(tag.toLowerCase());
-      this.displayCount.set(this.PAGE_SIZE);
+      this.currentPage.set(1);
       this.setMeta(tag);
       this.loadPosts();
       setTimeout(() => this.pushAds(), 300);
@@ -286,34 +293,4 @@ export class TagPage implements OnInit, OnDestroy {
     if (isPlatformBrowser(this.platformId)) window.scrollTo({ top: 0, behavior: 'instant' });
   }
 
-  getAuthorName(post: Post): string {
-    return (post.user as any)?.name ?? 'Anonymous';
-  }
-
-  getAuthorId(post: Post): string | null {
-    return (post.user as any)?._id ?? null;
-  }
-
-  getAuthorInitial(post: Post): string {
-    return this.getAuthorName(post).charAt(0).toUpperCase();
-  }
-
-  isBookmarked(postId: string): boolean { return this.bookmarkService.isBookmarked(postId); }
-
-  toggleBookmark(postId: string, event: Event): void {
-    event.stopPropagation();
-    event.preventDefault();
-    this.bookmarkService.toggle(postId);
-  }
-
-  private rtCache = new Map<string, number>();
-  readingTime(post: Post): number {
-    const id = post._id;
-    if (this.rtCache.has(id)) return this.rtCache.get(id)!;
-    const mins = post.readingTimeMinutes ?? Math.max(1, Math.ceil(
-      (post.content ?? '').replace(/<[^>]*>/g, '').trim().split(/\s+/).length / 200
-    ));
-    this.rtCache.set(id, mins);
-    return mins;
-  }
 }

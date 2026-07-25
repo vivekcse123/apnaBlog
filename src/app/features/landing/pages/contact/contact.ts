@@ -40,7 +40,6 @@ export class Contact implements OnInit, OnDestroy {
   currentYear = new Date().getFullYear();
 
   isSubmitting  = signal(false);
-  successMessage = signal('');
   errorMessage   = signal('');
 
   get isLoggedIn(): boolean    { return this.auth.isAuthorized(); }
@@ -127,7 +126,6 @@ export class Contact implements OnInit, OnDestroy {
   submitForm(): void {
     if (this.isSubmitting()) return;
     this.isSubmitting.set(true);
-    this.successMessage.set('');
     this.errorMessage.set('');
 
     this.contactService.sendMessage(this.contactData).subscribe({

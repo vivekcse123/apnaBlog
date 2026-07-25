@@ -193,11 +193,6 @@ app.get('/blog/:id', async (req: Request, res: Response, next: NextFunction) => 
  * ```
  */
 
-// /contact → /about (server-side 301 so bots follow without JavaScript)
-app.get('/contact', (_req: Request, res: Response) => {
-  res.redirect(301, '/about');
-});
-
 /**
  * Serve static files from /browser
  */

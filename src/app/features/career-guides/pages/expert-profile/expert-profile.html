@@ -1,6 +1,6 @@
 <app-site-header></app-site-header>
 
-<div class="ep">
+<div class="ep" id="main-content">
 
   @if (!expert()) {
     <div class="ep-not-found">
@@ -23,9 +23,7 @@
           <div class="ep-avatar" [style.background]="expert()!.avatarColor">
             {{ expert()!.avatarInitial }}
             @if (expert()!.verified) {
-              <span class="ep-verified" title="Verified expert">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.9 1.5 3.2-.5 1 3.1 2.4 2.1-1.5 2.9 1.5 2.9-2.4 2.1-1 3.1-3.2-.5L12 22l-2.9-1.5-3.2.5-1-3.1-2.4-2.1 1.5-2.9-1.5-2.9 2.4-2.1 1-3.1 3.2.5z"/><path d="M9 12l2 2 4-4" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              </span>
+              <app-verified-badge mode="overlay" size="lg" label="Verified expert" />
             }
           </div>
         </div>
@@ -94,12 +92,10 @@
       <div class="ep-stat"><strong>{{ displayExpert()!.yearsExperience }}+</strong><span>Years Exp.</span></div>
       <div class="ep-stat"><strong>{{ sessionsGuided() }}</strong><span>Sessions Guided</span></div>
       <div class="ep-stat"><strong>{{ hasRealAccount() ? followersCount() : '—' }}</strong><span>Followers</span></div>
-      @if (hasRealAccount()) {
+      @if (hasRealAccount() && realArticlesCount() !== null) {
         <a class="ep-stat ep-stat--link" [routerLink]="['/author', mentorUserId()]">
-          <strong>{{ expert()!.articlesWritten }}</strong><span>Articles</span>
+          <strong>{{ realArticlesCount() }}</strong><span>Articles</span>
         </a>
-      } @else {
-        <div class="ep-stat"><strong>{{ expert()!.articlesWritten }}</strong><span>Articles</span></div>
       }
     </div>
 

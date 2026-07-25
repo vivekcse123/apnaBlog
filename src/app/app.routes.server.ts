@@ -15,6 +15,7 @@ export const serverRoutes: ServerRoute[] = [
   { path: 'editorial-policy', renderMode: RenderMode.Prerender },
   { path: 'blog',           renderMode: RenderMode.Prerender },
   { path: 'write-and-earn', renderMode: RenderMode.Prerender },
+  { path: 'contact',        renderMode: RenderMode.Prerender },
   {
     path: 'category/:category',
     renderMode: RenderMode.Prerender,

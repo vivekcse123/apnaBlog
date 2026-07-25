@@ -71,11 +71,13 @@
         <p>Create your account to start sharing stories</p>
       </div>
 
-      <!-- Google Sign-Up - Google's real button is rendered invisibly into
-           #googleBtnSlot, stacked on top of this one, so the click is always
-           handled natively by Google (see register.ts for why). -->
+      <!-- Google Sign-Up - Google's real button is rendered into #googleBtnSlot
+           and IS the visible/clickable button. The custom-styled div only
+           overlays it as a loading spinner once isGoogleLoading() is true,
+           i.e. after a real click already landed (see register.ts for why it
+           must never be hidden/occluded beforehand). -->
       <div class="google-btn-wrap">
-        <div class="google-btn" aria-hidden="true">
+        <div class="google-btn" [class.google-btn--visible]="isGoogleLoading()" aria-hidden="true">
           @if (isGoogleLoading()) {
             <span class="google-btn-spinner"></span>
             <span>Signing up…</span>
@@ -110,17 +112,19 @@
               formControlName="name"
               autocomplete="name" autofocus
               [class.field-error]="registerForm.get('name')?.invalid &&
-                (isSubmitted() || registerForm.get('name')?.touched)">
+                (isSubmitted() || registerForm.get('name')?.touched)"
+              [attr.aria-invalid]="registerForm.get('name')?.invalid && (isSubmitted() || registerForm.get('name')?.touched) ? true : null"
+              [attr.aria-describedby]="registerForm.get('name')?.invalid && (isSubmitted() || registerForm.get('name')?.touched) ? 'reg-name-error' : null">
           </div>
           @if (registerForm.get('name')?.invalid && (isSubmitted() || registerForm.get('name')?.touched)) {
             @if (registerForm.get('name')?.errors?.['required']) {
-              <small class="error">Name is required</small>
+              <small class="error" id="reg-name-error">Name is required</small>
             } @else if (registerForm.get('name')?.errors?.['minlength']) {
-              <small class="error">Name must be at least 3 characters</small>
+              <small class="error" id="reg-name-error">Name must be at least 3 characters</small>
             } @else if (registerForm.get('name')?.errors?.['maxlength']) {
-              <small class="error">Name cannot exceed 30 characters</small>
+              <small class="error" id="reg-name-error">Name cannot exceed 30 characters</small>
             } @else if (registerForm.get('name')?.errors?.['pattern']) {
-              <small class="error">Only letters, spaces, hyphens and apostrophes are allowed</small>
+              <small class="error" id="reg-name-error">Only letters, spaces, hyphens and apostrophes are allowed</small>
             }
           }
         </div>
@@ -137,13 +141,15 @@
               formControlName="email"
               autocomplete="email"
               [class.field-error]="registerForm.get('email')?.invalid &&
-                (isSubmitted() || registerForm.get('email')?.touched)">
+                (isSubmitted() || registerForm.get('email')?.touched)"
+              [attr.aria-invalid]="registerForm.get('email')?.invalid && (isSubmitted() || registerForm.get('email')?.touched) ? true : null"
+              [attr.aria-describedby]="registerForm.get('email')?.invalid && (isSubmitted() || registerForm.get('email')?.touched) ? 'reg-email-error' : null">
           </div>
           @if (registerForm.get('email')?.invalid && (isSubmitted() || registerForm.get('email')?.touched)) {
             @if (registerForm.get('email')?.errors?.['required']) {
-              <small class="error">Email is required</small>
+              <small class="error" id="reg-email-error">Email is required</small>
             } @else if (registerForm.get('email')?.errors?.['pattern']) {
-              <small class="error">Enter a valid email (e.g. name&#64;example.com)</small>
+              <small class="error" id="reg-email-error">Enter a valid email (e.g. name&#64;example.com)</small>
             }
           }
         </div>
@@ -162,17 +168,19 @@
                 formControlName="dob"
                 [max]="maxDob"
                 [class.field-error]="registerForm.get('dob')?.invalid &&
-                  (isSubmitted() || registerForm.get('dob')?.touched)">
+                  (isSubmitted() || registerForm.get('dob')?.touched)"
+              [attr.aria-invalid]="registerForm.get('dob')?.invalid && (isSubmitted() || registerForm.get('dob')?.touched) ? true : null"
+              [attr.aria-describedby]="registerForm.get('dob')?.invalid && (isSubmitted() || registerForm.get('dob')?.touched) ? 'reg-dob-error' : null">
             </div>
             @if (registerForm.get('dob')?.invalid && (isSubmitted() || registerForm.get('dob')?.touched)) {
               @if (registerForm.get('dob')?.errors?.['required']) {
-                <small class="error">Date of birth is required</small>
+                <small class="error" id="reg-dob-error">Date of birth is required</small>
               } @else if (registerForm.get('dob')?.errors?.['futureDate']) {
-                <small class="error">Date of birth cannot be in the future</small>
+                <small class="error" id="reg-dob-error">Date of birth cannot be in the future</small>
               } @else if (registerForm.get('dob')?.errors?.['tooYoung']) {
-                <small class="error">You must be at least 13 years old to register</small>
+                <small class="error" id="reg-dob-error">You must be at least 13 years old to register</small>
               } @else if (registerForm.get('dob')?.errors?.['tooOld'] || registerForm.get('dob')?.errors?.['invalidDate']) {
-                <small class="error">Please enter a valid date of birth</small>
+                <small class="error" id="reg-dob-error">Please enter a valid date of birth</small>
               }
             }
           </div>
@@ -190,7 +198,9 @@
                 formControlName="password"
                 autocomplete="new-password"
                 [class.field-error]="registerForm.get('password')?.invalid &&
-                  (isSubmitted() || registerForm.get('password')?.touched)">
+                  (isSubmitted() || registerForm.get('password')?.touched)"
+                [attr.aria-invalid]="registerForm.get('password')?.invalid && (isSubmitted() || registerForm.get('password')?.touched) ? true : null"
+                [attr.aria-describedby]="registerForm.get('password')?.invalid && (isSubmitted() || registerForm.get('password')?.touched) ? 'reg-password-error' : null">
               <button type="button" class="eye-btn" (click)="showPassword = !showPassword"
                       [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'">
                 @if (showPassword) {
@@ -202,13 +212,13 @@
             </div>
             @if (registerForm.get('password')?.invalid && (isSubmitted() || registerForm.get('password')?.touched)) {
               @if (registerForm.get('password')?.errors?.['required']) {
-                <small class="error">Password is required</small>
+                <small class="error" id="reg-password-error">Password is required</small>
               } @else if (registerForm.get('password')?.errors?.['minlength']) {
-                <small class="error">Password must be at least 8 characters</small>
+                <small class="error" id="reg-password-error">Password must be at least 8 characters</small>
               } @else if (registerForm.get('password')?.errors?.['maxlength']) {
-                <small class="error">Password cannot exceed 30 characters</small>
+                <small class="error" id="reg-password-error">Password cannot exceed 30 characters</small>
               } @else if (registerForm.get('password')?.errors?.['pattern']) {
-                <small class="error">Must include at least one letter and one number</small>
+                <small class="error" id="reg-password-error">Must include at least one letter and one number</small>
               }
             }
             @if (registerForm.get('password')?.value) {

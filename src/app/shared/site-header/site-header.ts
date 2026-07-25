@@ -224,6 +224,8 @@ export class SiteHeader implements OnInit, OnDestroy {
     if (event.key !== 'Escape') return;
     if (this.menuOpen()) this.menuOpen.set(false);
     if (this.showHeaderSearch()) this.closeSearch();
+    if (this.profileMenuOpen()) this.profileMenuOpen.set(false);
+    if (this.showMoreCategories()) this.showMoreCategories.set(false);
   }
 
   ngOnInit(): void {

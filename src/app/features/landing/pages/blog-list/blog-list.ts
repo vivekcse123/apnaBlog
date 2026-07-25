@@ -18,10 +18,12 @@ import { Post } from '../../../../core/models/post.model';
 import { MobileBottomNav } from '../../../../shared/mobile-bottom-nav/mobile-bottom-nav';
 import { SiteHeader } from '../../../../shared/site-header/site-header';
 import { Auth } from '../../../../core/services/auth';
-import { BookmarkService } from '../../../../core/services/bookmark.service';
 import { ThemeService } from '../../../../core/services/theme-service';
 import { ReadingHistory, HistoryEntry } from '../../../../core/services/reading-history';
 import { categoryColorFor as sharedCategoryColorFor } from '../../../../shared/utils/category-color';
+import { PostCard } from '../../../../shared/components/post-card/post-card';
+import { Pagination } from '../../../../shared/components/pagination/pagination';
+import { estimateReadingTimeMinutes } from '../../../../shared/utils/reading-time';
 
 const FALLBACK_CATEGORIES: string[] = [
   'Update', 'News', 'Sports', 'Entertainment', 'Health', 'Technology', 'Business',
@@ -42,7 +44,7 @@ interface CategoryRow {
   selector: 'app-blog-list',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, CommonModule, FormsModule, MobileBottomNav, SiteHeader],
+  imports: [RouterLink, CommonModule, FormsModule, MobileBottomNav, SiteHeader, PostCard, Pagination],
   templateUrl: './blog-list.html',
   styleUrl: './blog-list.css',
 })
@@ -61,7 +63,6 @@ export class BlogListPage implements OnInit, OnDestroy {
   private auth             = inject(Auth);
   private http              = inject(HttpClient);
   private readingHistory   = inject(ReadingHistory);
-  bookmarkService           = inject(BookmarkService);
   themeService              = inject(ThemeService);
 
   // ── Auth-derived routes (same pattern as category-page / home) ──────────
@@ -327,22 +328,6 @@ export class BlogListPage implements OnInit, OnDestroy {
     return this.sortedPosts().slice(start, start + this.PAGE_SIZE);
   });
 
-  pageNumbers = computed<(number | '…')[]>(() => {
-    const total = this.totalPages();
-    const cur   = this.currentPage();
-    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
-    const pages = new Set<number>([1, 2, total - 1, total, cur - 1, cur, cur + 1]);
-    const sorted = [...pages].filter(n => n >= 1 && n <= total).sort((a, b) => a - b);
-    const out: (number | '…')[] = [];
-    let prev = 0;
-    for (const n of sorted) {
-      if (prev && n - prev > 1) out.push('…');
-      out.push(n);
-      prev = n;
-    }
-    return out;
-  });
-
   goToPage(n: number): void {
     if (n < 1 || n > this.totalPages()) return;
     this.currentPage.set(n);
@@ -536,17 +521,6 @@ export class BlogListPage implements OnInit, OnDestroy {
     if (isPlatformBrowser(this.platformId)) window.scrollTo({ top: 0, behavior: 'instant' });
   }
 
-  getAuthorName(post: Post): string { return (post.user as any)?.name ?? 'Anonymous'; }
-  getAuthorId(post: Post): string | null { return (post.user as any)?._id ?? null; }
-  getAuthorInitial(post: Post): string { return this.getAuthorName(post).charAt(0).toUpperCase(); }
-
-  isBookmarked(postId: string): boolean { return this.bookmarkService.isBookmarked(postId); }
-  toggleBookmark(postId: string, event: Event): void {
-    event.stopPropagation();
-    event.preventDefault();
-    this.bookmarkService.toggle(postId);
-  }
-
   fmtCount(n: number): string {
     if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
     if (n >= 1_000)     return (n / 1_000).toFixed(1).replace(/\.0$/, '') + 'K';
@@ -557,9 +531,7 @@ export class BlogListPage implements OnInit, OnDestroy {
   readingTime(post: Post): number {
     const id = post._id;
     if (this.rtCache.has(id)) return this.rtCache.get(id)!;
-    const mins = post.readingTimeMinutes ?? Math.max(1, Math.ceil(
-      (post.content ?? '').replace(/<[^>]*>/g, '').trim().split(/\s+/).length / 200
-    ));
+    const mins = estimateReadingTimeMinutes(post);
     this.rtCache.set(id, mins);
     return mins;
   }

@@ -1,8 +1,9 @@
 import {
   Component, OnInit, OnDestroy, HostListener,
-  ElementRef, inject, ChangeDetectionStrategy, signal, effect
+  ElementRef, inject, ChangeDetectionStrategy, signal, effect,
+  ViewChild, PLATFORM_ID
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { filter, Subject, take, takeUntil } from 'rxjs';
 
@@ -100,7 +101,11 @@ export class NotificationPanel implements OnInit, OnDestroy {
   private elRef       = inject(ElementRef);
   private sanitizer   = inject(DomSanitizer);
   private coordinator = inject(PanelCoordinator);
+  private platformId  = inject(PLATFORM_ID);
   private destroy$    = new Subject<void>();
+  private previouslyFocused: HTMLElement | null = null;
+
+  @ViewChild('closeBtn') closeBtn?: ElementRef<HTMLButtonElement>;
 
   notifications = signal<Notification[]>([]);
   unreadCount   = signal(0);
@@ -113,6 +118,17 @@ export class NotificationPanel implements OnInit, OnDestroy {
 
   constructor() {
     effect(() => { if (this.panelOpen()) this.coordinator.open(PANEL_ID); });
+
+    effect(() => {
+      if (!isPlatformBrowser(this.platformId)) return;
+      if (this.panelOpen()) {
+        this.previouslyFocused = document.activeElement as HTMLElement;
+        queueMicrotask(() => this.closeBtn?.nativeElement?.focus());
+      } else if (this.previouslyFocused) {
+        this.previouslyFocused.focus();
+        this.previouslyFocused = null;
+      }
+    });
   }
 
   ngOnInit(): void {

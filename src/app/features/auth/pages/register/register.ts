@@ -47,8 +47,8 @@ export class Register {
   private meta         = inject(Meta);
   private toastService = inject(ToastService);
 
-  // Google's own rendered button lives invisibly on top of our styled button
-  // (see register.html/.css) - see the comment in the constructor for why.
+  // Google's own rendered button lives on top and IS the visible/clickable
+  // button (see register.html/.css) - see the comment in the constructor for why.
   @ViewChild('googleBtnSlot') googleBtnSlot!: ElementRef<HTMLDivElement>;
 
   // Build the form immediately - no ngOnInit flash
@@ -92,9 +92,13 @@ export class Register {
       // cooldown, etc.) - it is NOT reliable as a direct button-click
       // handler. Google's own rendered button doesn't have that problem:
       // clicking it opens the real sign-up flow immediately, every time.
-      // So we render Google's actual button, invisibly, on top of our
-      // custom-styled one (see register.html/.css) - visually it's our
-      // button, but the click is always handled natively by Google's client.
+      // An earlier version rendered it invisibly on top of a custom-styled
+      // button, but Chrome's desktop anti-clickjacking check silently drops
+      // clicks on a hidden/occluded GIS button (mobile didn't enforce this,
+      // which is why that version worked on mobile but not desktop) - so the
+      // real button is now the visible one; our custom styling only overlays
+      // it as a loading spinner AFTER a real click already landed (see
+      // .google-btn--visible in auth-shared.css).
       pollUntilGoogleIdentityReady(() => {
         google.accounts.id.initialize({
           client_id: '602340491283-om39opmifq815fsvs15ju1et07kk0laq.apps.googleusercontent.com',
@@ -102,7 +106,7 @@ export class Register {
         });
         const width = Math.min(400, Math.max(200, this.googleBtnSlot?.nativeElement.offsetWidth || 300));
         google.accounts.id.renderButton(this.googleBtnSlot.nativeElement, {
-          type: 'standard', theme: 'outline', size: 'large', width, text: 'signup_with',
+          type: 'standard', theme: 'outline', size: 'large', width, text: 'continue_with',
         });
       });
     });
@@ -172,6 +176,7 @@ export class Register {
         next: () => {
           this.isLoading.set(false);
           const email = this.registerForm.get('email')?.value ?? 'your inbox';
+          this.toastService.show('Welcome to ApnaInsights!', 'success');
           this.successMessage.set(
             `Account created! A welcome email has been sent to ${email}. Redirecting to login…`
           );

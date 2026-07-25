@@ -15,6 +15,8 @@ import { ToastService } from '../../../../core/services/toast.service';
 import { DashboardCache } from '../../../../core/services/dashboard-cache';
 import { hasLifetimeAccess } from '../../../../core/utils/lifetime-membership.util';
 
+type BulkAction = 'freeze' | 'unfreeze' | 'grant-premium' | 'revoke-premium' | 'delete';
+
 @Component({
   selector: 'app-manage-users',
   standalone: true,
@@ -303,6 +305,128 @@ export class ManageUsers implements OnInit, OnDestroy {
   }
 
   cancelDelete(): void { this.showDeleteConfirm.set(false); this.pendingDeleteUser.set(null); }
+
+  // ── Bulk selection & actions ────────────────────────────────────────────
+  // Freezing/deleting/granting-premium one-at-a-time was the only option
+  // before - selecting rows across the current page lets an admin apply the
+  // same action to many users at once.
+  selectedIds = signal<Set<string>>(new Set());
+
+  isSelected(id: string): boolean { return this.selectedIds().has(id); }
+
+  toggleSelect(id: string): void {
+    const next = new Set(this.selectedIds());
+    if (next.has(id)) next.delete(id); else next.add(id);
+    this.selectedIds.set(next);
+  }
+
+  allOnPageSelected = computed(() =>
+    this.paginatedUsers().length > 0 && this.paginatedUsers().every(u => this.selectedIds().has(u._id))
+  );
+
+  toggleSelectAllOnPage(): void {
+    const next = new Set(this.selectedIds());
+    if (this.allOnPageSelected()) {
+      this.paginatedUsers().forEach(u => next.delete(u._id));
+    } else {
+      this.paginatedUsers().forEach(u => next.add(u._id));
+    }
+    this.selectedIds.set(next);
+  }
+
+  clearSelection(): void { this.selectedIds.set(new Set()); }
+
+  selectedCount = computed(() => this.selectedIds().size);
+
+  bulkBusy = signal(false);
+  pendingBulkAction = signal<BulkAction | null>(null);
+
+  requestBulkAction(action: BulkAction): void {
+    if (!this.selectedCount()) return;
+    this.pendingBulkAction.set(action);
+  }
+  cancelBulkAction(): void { this.pendingBulkAction.set(null); }
+
+  bulkActionLabel(action: BulkAction | null): string {
+    switch (action) {
+      case 'freeze':         return 'Freeze';
+      case 'unfreeze':       return 'Unfreeze';
+      case 'grant-premium':  return 'Grant Premium to';
+      case 'revoke-premium': return 'Revoke Premium from';
+      case 'delete':         return 'Delete';
+      default:                return '';
+    }
+  }
+
+  confirmBulkAction(): void {
+    const action = this.pendingBulkAction();
+    this.pendingBulkAction.set(null);
+    if (!action || this.bulkBusy()) return;
+
+    // Lifetime-access users (admins/mentors) already have automatic access -
+    // toggling Premium on them is a no-op the backend would reject, so leave
+    // them out of a bulk premium action instead of reporting a false failure.
+    let targets = this.allUsers().filter(u => this.selectedIds().has(u._id));
+    if (action === 'grant-premium' || action === 'revoke-premium') {
+      targets = targets.filter(u => !hasLifetimeAccess(u));
+    }
+    if (!targets.length) { this.clearSelection(); return; }
+
+    this.bulkBusy.set(true);
+    let remaining = targets.length;
+    let failed = 0;
+
+    const call$ = (user: User) => {
+      switch (action) {
+        case 'freeze':         return this.adminService.freezeUser(user._id);
+        case 'unfreeze':       return this.adminService.unFreezeUser(user._id);
+        case 'grant-premium':  return this.adminService.setPremium(user._id, true);
+        case 'revoke-premium': return this.adminService.setPremium(user._id, false);
+        case 'delete':         return this.adminService.deleteUser(user._id);
+      }
+    };
+
+    targets.forEach(user => {
+      call$(user).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+        next: () => {
+          if (action === 'delete') {
+            this.allUsers.update(list => list.filter(u => u._id !== user._id));
+          } else if (action === 'freeze' || action === 'unfreeze') {
+            user.status = action === 'freeze' ? 'inactive' : 'active';
+            this.allUsers.update(users => [...users]);
+          } else {
+            user.isPremium = action === 'grant-premium';
+            this.allUsers.update(users => [...users]);
+          }
+          remaining--;
+          if (remaining === 0) this.finishBulkAction(targets.length, failed);
+        },
+        error: () => {
+          failed++;
+          remaining--;
+          if (remaining === 0) this.finishBulkAction(targets.length, failed);
+        },
+      });
+    });
+  }
+
+  private finishBulkAction(total: number, failed: number): void {
+    this.bulkBusy.set(false);
+    this.clearSelection();
+    // Bulk delete can empty out the current page entirely (more likely than
+    // with a single delete) - fall back a page rather than show a blank one.
+    if (this.currentPage() > this.totalPages()) this.currentPage.set(this.totalPages());
+    this.dashboardCache.invalidateAdminUsers();
+    this.dashboardCache.invalidateRawUsers();
+    if (failed === 0) {
+      this.toastService.show(`Updated ${total} user${total === 1 ? '' : 's'}.`, 'success');
+    } else {
+      this.toastService.show(
+        `Updated ${total - failed} of ${total} user${total === 1 ? '' : 's'} - ${failed} failed.`,
+        failed === total ? 'error' : 'warning'
+      );
+    }
+  }
 
   timeAgo(date: any): string {
     if (!date) return '-';

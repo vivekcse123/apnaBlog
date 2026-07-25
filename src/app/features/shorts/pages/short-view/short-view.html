@@ -9,7 +9,7 @@
   </div>
 } @else if (short(); as s) {
 
-<div class="sv-page">
+<div class="sv-page" id="main-content">
 
   <!-- Breadcrumb for SEO -->
   <nav class="sv-breadcrumb" aria-label="Breadcrumb">
@@ -53,7 +53,8 @@
             [poster]="s.thumbnailUrl || ''"
             controls playsinline webkit-playsinline
             preload="metadata"
-            [attr.aria-label]="s.title">
+            [attr.aria-label]="s.title"
+            [attr.aria-describedby]="s.caption ? 'sv-caption-' + s._id : null">
           </video>
         }
       </div>
@@ -68,7 +69,7 @@
         <h1 class="sv-title">{{ s.title }}</h1>
 
         @if (s.caption) {
-          <p class="sv-caption">{{ s.caption }}</p>
+          <p class="sv-caption" [id]="'sv-caption-' + s._id">{{ s.caption }}</p>
         }
 
         <div class="sv-author-row">

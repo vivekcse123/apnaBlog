@@ -10,7 +10,6 @@ import { UserService } from '../../../user/services/user-service';
 import { ThemeService, Language } from '../../../../core/services/theme-service';
 import { User } from '../../../user/models/user.mode';
 import { AdminService } from '../../services/admin-service';
-import { MessageModal } from '../../../../shared/message-modal/message-modal';
 import { ToastService } from '../../../../core/services/toast.service';
 import { switchMap } from 'rxjs';
 
@@ -31,7 +30,7 @@ interface NotifState {
   selector: 'app-settings',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, DatePipe, MessageModal],
+  imports: [CommonModule, FormsModule, DatePipe],
   templateUrl: './settings.html',
   styleUrl:    './settings.css',
 })
@@ -106,10 +105,6 @@ export class Settings implements OnInit {
   avatarPreview     = signal<string | null>(null);
   isRemovingAvatar  = signal(false);
 
-  showModal    = signal(false);
-  modalType    = signal<'success' | 'error'>('success');
-  modalTitle   = signal('');
-  modalMessage = signal('');
 
   user   = signal<User | null>(null);
   userId = signal<string | null>(null);
@@ -223,7 +218,7 @@ export class Settings implements OnInit {
         },
         error: (err) => {
           this.revokingId.set(null);
-          this.openModal('error', 'Revoke Failed', err?.error?.message ?? 'Could not revoke session.');
+          this.toastService.show(err?.error?.message ?? 'Could not revoke session.', 'error');
         },
       });
   }
@@ -295,15 +290,6 @@ export class Settings implements OnInit {
       });
   }
 
-  private openModal(type: 'success' | 'error', title: string, message: string): void {
-    this.modalType.set(type);
-    this.modalTitle.set(title);
-    this.modalMessage.set(message);
-    this.showModal.set(true);
-  }
-
-  onModalClosed(): void { this.showModal.set(false); }
-
   triggerAvatarUpload(): void {
     this.avatarInput.nativeElement.click();
   }
@@ -324,7 +310,7 @@ export class Settings implements OnInit {
         },
         error: (err) => {
           this.isRemovingAvatar.set(false);
-          this.openModal('error', 'Remove Failed', err?.error?.message ?? 'Could not remove avatar.');
+          this.toastService.show(err?.error?.message ?? 'Could not remove avatar.', 'error');
         },
       });
   }
@@ -334,7 +320,7 @@ export class Settings implements OnInit {
     if (!file) return;
 
     if (file.size > 2 * 1024 * 1024) {
-      this.openModal('error', 'File Too Large', 'Image must be under 2MB.');
+      this.toastService.show('Image must be under 2MB.', 'error');
       return;
     }
 
@@ -361,12 +347,12 @@ export class Settings implements OnInit {
           this.user.set(res.data);
           this.avatarPreview.set(null);
           this.isUploadingAvatar.set(false);
-          this.openModal('success', 'Avatar Updated', 'Your profile picture has been updated.');
+          this.toastService.show('Your profile picture has been updated.', 'success');
         },
         error: (err) => {
           this.avatarPreview.set(null);
           this.isUploadingAvatar.set(false);
-          this.openModal('error', 'Upload Failed', err?.error?.message ?? 'Could not upload image.');
+          this.toastService.show(err?.error?.message ?? 'Could not upload image.', 'error');
         },
       });
   }
@@ -442,13 +428,13 @@ export class Settings implements OnInit {
   updatePassword(): void {
     const { currentPassword, newPassword, confirm } = this.passwordForm;
     if (!currentPassword || !newPassword || !confirm) {
-      this.openModal('error', 'Validation Error', 'Please fill in all password fields.'); return;
+      this.toastService.show('Please fill in all password fields.', 'error'); return;
     }
     if (newPassword !== confirm) {
-      this.openModal('error', 'Validation Error', 'New password and confirm password do not match.'); return;
+      this.toastService.show('New password and confirm password do not match.', 'error'); return;
     }
     if (newPassword.length < 8) {
-      this.openModal('error', 'Validation Error', 'New password must be at least 8 characters.'); return;
+      this.toastService.show('New password must be at least 8 characters.', 'error'); return;
     }
     const id = this.userId();
     if (!id) return;
@@ -458,16 +444,15 @@ export class Settings implements OnInit {
       .subscribe({
         next: (res) => {
           this.passwordForm = { currentPassword: '', newPassword: '', confirm: '' };
-          this.openModal('success', 'Password Changed', res.message);
+          this.toastService.show(res.message || 'Password changed.', 'success');
           const t = setTimeout(() => {
-            this.showModal.set(false);
             this.authService.logout();
             this.router.navigate(['/auth/login']);
           }, 2000);
           this.destroyRef.onDestroy(() => clearTimeout(t));
         },
         error: (err) => {
-          this.openModal('error', 'Error', err?.error?.message ?? 'Something went wrong.');
+          this.toastService.show(err?.error?.message ?? 'Something went wrong.', 'error');
         },
       });
   }
@@ -483,7 +468,7 @@ export class Settings implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => { this.authService.logout(); this.router.navigate(['/auth/login']); },
-        error: (err) => { this.openModal('error', 'Error', err?.error?.message ?? 'Failed to deactivate account.'); },
+        error: (err) => { this.toastService.show(err?.error?.message ?? 'Failed to deactivate account.', 'error'); },
       });
   }
 
@@ -498,14 +483,13 @@ export class Settings implements OnInit {
           this.isDeleting.set(false);
           this.showDeleteConfirm.set(false);
           this.deleteInput = '';
-          this.openModal('success', 'Account Deletion Scheduled',
-            'Your account will be permanently deleted in 3 days.');
-          const t = setTimeout(() => { this.showModal.set(false); this.loadUser(id); }, 2000);
+          this.toastService.show('Account deletion scheduled - your account will be permanently deleted in 3 days.', 'success');
+          const t = setTimeout(() => { this.loadUser(id); }, 2000);
           this.destroyRef.onDestroy(() => clearTimeout(t));
         },
         error: (err) => {
           this.isDeleting.set(false);
-          this.openModal('error', 'Error', err?.error?.message ?? 'Failed to schedule account deletion.');
+          this.toastService.show(err?.error?.message ?? 'Failed to schedule account deletion.', 'error');
         },
       });
   }
@@ -519,13 +503,13 @@ export class Settings implements OnInit {
       .subscribe({
         next: () => {
           this.isCancelling.set(false);
-          this.openModal('success', 'Deletion Cancelled', 'Your account is now active.');
-          const t = setTimeout(() => { this.showModal.set(false); this.loadUser(id); }, 2000);
+          this.toastService.show('Deletion cancelled - your account is now active.', 'success');
+          const t = setTimeout(() => { this.loadUser(id); }, 2000);
           this.destroyRef.onDestroy(() => clearTimeout(t));
         },
         error: (err) => {
           this.isCancelling.set(false);
-          this.openModal('error', 'Error', err?.error?.message ?? 'Failed to cancel account deletion.');
+          this.toastService.show(err?.error?.message ?? 'Failed to cancel account deletion.', 'error');
         },
       });
   }
@@ -544,12 +528,12 @@ export class Settings implements OnInit {
             const a    = document.createElement('a');
             a.href = url; a.download = `backup-${new Date().toISOString()}.json`; a.click();
             window.URL.revokeObjectURL(url);
-            this.openModal('success', 'Export Successful', 'Your data has been downloaded.');
+            this.toastService.show('Your data has been downloaded.', 'success');
           } catch {
-            this.openModal('error', 'Export Failed', 'Could not process export file.');
+            this.toastService.show('Could not process export file.', 'error');
           }
         },
-        error: (err) => { this.openModal('error', 'Export Failed', err?.error?.message ?? 'Something went wrong.'); },
+        error: (err) => { this.toastService.show(err?.error?.message ?? 'Something went wrong.', 'error'); },
       });
   }
 }

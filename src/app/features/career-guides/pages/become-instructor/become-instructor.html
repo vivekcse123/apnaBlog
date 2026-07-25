@@ -1,6 +1,6 @@
 <app-site-header></app-site-header>
 
-<div class="bi">
+<div class="bi" id="main-content">
 
   <nav class="bi-breadcrumb" aria-label="Breadcrumb">
     <a routerLink="/career-guides">Career Guides</a>
@@ -25,6 +25,17 @@
   } @else if (isLoadingApplication()) {
     <div class="bi-gate">
       <p>Loading…</p>
+    </div>
+  } @else if (existingApplication()?.status === 'approved') {
+    <!-- ══ ALREADY APPROVED (brief - the isMentor redirect above usually wins
+         first; this only shows during the moment before it fires) ══ -->
+    <div class="bi-gate">
+      <span class="bi-gate-icon bi-gate-icon--success" aria-hidden="true">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      </span>
+      <h1>You're already a mentor!</h1>
+      <p class="bi-status-badge bi-status-badge--pending">Approved</p>
+      <p>Your mentor profile is live on Career Guides. Redirecting you to your dashboard…</p>
     </div>
   } @else if (existingApplication()?.status === 'pending') {
     <!-- ══ SUBMITTED CONFIRMATION ══ -->

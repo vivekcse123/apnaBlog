@@ -1,5 +1,5 @@
 import {
-  AfterViewInit, ChangeDetectionStrategy, Component, DestroyRef, ElementRef, HostListener, NgZone, OnDestroy, OnInit, PLATFORM_ID, computed, inject, signal
+  AfterViewInit, ChangeDetectionStrategy, Component, DestroyRef, ElementRef, HostListener, NgZone, OnDestroy, OnInit, PLATFORM_ID, ViewChild, computed, effect, inject, signal
 } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { environment } from '../../../../../environments/environment';
@@ -10,6 +10,7 @@ import { throttleTime, timeout } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Meta, Title, DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { TimeAgoPipe } from '../../../../shared/pipes/time-ago-pipe';
+import { CloudinaryResizePipe } from '../../../../shared/pipes/cloudinary-resize-pipe';
 import { TransferState, makeStateKey } from '@angular/core';
 
 import { HttpClient }     from '@angular/common/http';
@@ -77,7 +78,7 @@ const VISIBLE_STATUSES = new Set(['published', 'draft', 'pending']);
   selector:    'app-blog-detail',
   standalone:  true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports:     [RouterLink, CommonModule, FormsModule, TimeAgoPipe, MobileBottomNav, McqQuiz],
+  imports:     [RouterLink, CommonModule, FormsModule, TimeAgoPipe, MobileBottomNav, McqQuiz, CloudinaryResizePipe],
   templateUrl: './blog-detail.html',
   styleUrl:    './blog-detail.css',
 })
@@ -106,6 +107,37 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   taxonomyService       = inject(TaxonomyService);
   private http          = inject(HttpClient);
   private readonly apiBase = environment.apiUrl;
+
+  // ── Modal focus management - move focus into whichever dialog opens and
+  // restore it to the triggering element on close (WCAG 2.4.3). ──────────────
+  @ViewChild('authorModalCloseBtn')      authorModalCloseBtn?: ElementRef<HTMLButtonElement>;
+  @ViewChild('authorPostsModalCloseBtn') authorPostsModalCloseBtn?: ElementRef<HTMLButtonElement>;
+  @ViewChild('lightboxCloseBtn')         lightboxCloseBtn?: ElementRef<HTMLButtonElement>;
+  @ViewChild('flagModalCloseBtn')        flagModalCloseBtn?: ElementRef<HTMLButtonElement>;
+  private previouslyFocusedEl: HTMLElement | null = null;
+
+  // getCloseBtn is called lazily, inside the microtask - not passed as a
+  // captured value - because the @ViewChild query for a button inside an
+  // @if block only resolves after Angular finishes the change-detection
+  // pass triggered by the signal flip. Reading it eagerly (e.g. as an
+  // effect() argument) captures `undefined` from before the button existed.
+  private trapFocus(isOpen: boolean, getCloseBtn: () => ElementRef<HTMLButtonElement> | undefined): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    if (isOpen) {
+      this.previouslyFocusedEl = document.activeElement as HTMLElement;
+      queueMicrotask(() => getCloseBtn()?.nativeElement?.focus());
+    } else if (this.previouslyFocusedEl) {
+      this.previouslyFocusedEl.focus();
+      this.previouslyFocusedEl = null;
+    }
+  }
+
+  constructor() {
+    effect(() => this.trapFocus(this.showAuthorModal(), () => this.authorModalCloseBtn));
+    effect(() => this.trapFocus(this.showAuthorPostsModal(), () => this.authorPostsModalCloseBtn));
+    effect(() => this.trapFocus(!!this.lightboxSrc(), () => this.lightboxCloseBtn));
+    effect(() => this.trapFocus(this.showFlagModal(), () => this.flagModalCloseBtn));
+  }
 
   // ── Post state ────────────────────────────────────────────────────────────
   // Read TransferState once at construction so every signal that depends on the
@@ -277,6 +309,15 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   readingTime      = signal(0);
   contentWordCount = signal(0);
   showToc          = signal(false);
+
+  // Real "last updated" EEAT signal - only shown once a post has actually
+  // been edited after publishing (not on every post, where updatedAt just
+  // equals createdAt from the initial save).
+  isMeaningfullyUpdated = computed(() => {
+    const p = this.post();
+    if (!p?.updatedAt || !p.createdAt) return false;
+    return new Date(p.updatedAt).getTime() - new Date(p.createdAt).getTime() > 24 * 60 * 60 * 1000;
+  });
 
   // Hide all ads on posts with < 300 words
   isThinPost = computed(() => {
@@ -1005,6 +1046,13 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   private _processHeadings(html: string): { html: string; toc: TableOfContentsItem[] } {
     if (!html) return { html, toc: [] };
 
+    // The post's own title already renders as the page's single <h1> - any
+    // <h1> saved inside older post bodies (from before the editor's H1
+    // button was removed) would otherwise create a duplicate-H1 page,
+    // a heading-hierarchy/SEO violation. Downgrade it to h2 before the
+    // heading-processing pass below.
+    html = html.replace(/<h1(\s[^>]*)?>/gi, '<h2$1>').replace(/<\/h1>/gi, '</h2>');
+
     const toc: TableOfContentsItem[] = [];
     let counter = 0;
 
@@ -1022,7 +1070,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
           newAttrs = ` id="${id}"${attrs}`;
         }
 
-        if (level === 2 || level === 3) {
+        if (level === 2 || level === 3 || level === 4) {
           const text = inner.replace(/<[^>]*>/g, '').trim();
           if (text) toc.push({ id, text, level });
         }
@@ -1442,7 +1490,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
       next: (res: any) => {
         this.commentSubmitting.set(false);
         this.commentText.set('');
-        this.commentFeedback.set({ type: 'success', msg: 'Comment posted!' });
+        this.toastService.show('Comment posted!', 'success');
         const newCount = this.sessionCommentCount() + 1;
         this.sessionCommentCount.set(newCount);
         if (isPlatformBrowser(this.platformId)) {
@@ -1461,16 +1509,11 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
         this.commentFetchedCount.set(this.commentFetchedCount() + 1);
         this.totalCommentsCount.set(this.totalCommentsCount() + 1);
         this.post.set({ ...p, commentsCount: p.commentsCount + 1 });
-        setTimeout(() => this.commentFeedback.set(null), 3000);
       },
       error: (err: any) => {
         this.commentSubmitting.set(false);
         // Keep comment text so user doesn't lose their message on a transient error
-        this.commentFeedback.set({
-          type: 'error',
-          msg:  err?.error?.message ?? 'Failed to post comment. Please try again.',
-        });
-        setTimeout(() => this.commentFeedback.set(null), 4000);
+        this.toastService.show(err?.error?.message ?? 'Failed to post comment. Please try again.', 'error');
       },
     });
   }
@@ -1727,14 +1770,22 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
       try {
         let preload = this.document.querySelector("link[rel='preload'][as='image'][data-blog-preload]") as HTMLLinkElement | null;
         if (!preload) {
+          // Set every attribute - including href - BEFORE the link is connected to
+          // the document. A <link rel="preload"> runs its resource-fetch steps the
+          // instant it's inserted into a live document; appending it first and
+          // assigning `.href` afterward leaves it briefly connected with no href,
+          // which is exactly what triggers Chrome's "invalid href value" warning.
           preload = this.document.createElement('link') as HTMLLinkElement;
           preload.rel = 'preload';
           preload.as  = 'image';
           preload.setAttribute('data-blog-preload', '');
+          preload.href = post.featuredImage;
+          preload.setAttribute('fetchpriority', 'high');
           this.document.head?.appendChild(preload);
+        } else {
+          preload.href = post.featuredImage;
+          preload.setAttribute('fetchpriority', 'high');
         }
-        preload.href = post.featuredImage;
-        preload.setAttribute('fetchpriority', 'high');
       } catch (_) {}
     }
 
@@ -2045,7 +2096,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   private setupHeadingObserver(): void {
     if (!isPlatformBrowser(this.platformId) || !this.contentEl) return;
     this.headingObserver?.disconnect();
-    const headings = this.contentEl.querySelectorAll('h2, h3');
+    const headings = this.contentEl.querySelectorAll('h2, h3, h4');
     if (!headings.length) return;
     const host = this.elementRef.nativeElement as HTMLElement;
     // rootMargin carves the observation zone down to a thin band starting

@@ -1,0 +1,11 @@
+:host { display: block; }
+
+.pg-nav { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 28px 0 4px; flex-wrap: wrap; }
+.pg-btn {
+  width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; border: 1px solid var(--border);
+  background: var(--bg-surface); color: var(--text-secondary); font-size: 13px; font-weight: 700; cursor: pointer;
+}
+.pg-btn:hover:not(:disabled) { border-color: var(--accent); }
+.pg-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.pg-btn:disabled { opacity: .4; cursor: default; }
+.pg-dots { color: var(--text-muted); font-weight: 700; padding: 0 2px; }

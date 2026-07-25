@@ -30,6 +30,26 @@ export function readCachedSiteStats(): CachedSiteStats | null {
   }
 }
 
+/** Called by home.ts once it has the full published-post catalog, so every
+ * other page can read real counts via readCachedSiteStats() above instead of
+ * showing a fabricated placeholder number. */
+export function writeCachedSiteStats(posts: { views?: number; categories?: string[] }[]): void {
+  try {
+    if (typeof localStorage === 'undefined' || !posts.length) return;
+    const categoryCounts: Record<string, number> = {};
+    let totalViews = 0;
+    for (const post of posts) {
+      totalViews += Number(post.views) || 0;
+      for (const cat of post.categories ?? []) {
+        categoryCounts[cat] = (categoryCounts[cat] ?? 0) + 1;
+      }
+    }
+    localStorage.setItem(STATS_KEY, JSON.stringify({ total: posts.length, totalViews, categoryCounts }));
+  } catch {
+    // best-effort cache - a failed write just means the fallback pages show nothing, never a fake number
+  }
+}
+
 // Same K/M rounding as FormatCountPipe (via formatCompactCount), adapted to
 // this call site's "at least this many" convention: no trailing ".0", a
 // lowercase "k" for thousands, and a "+" suffix once abbreviated.

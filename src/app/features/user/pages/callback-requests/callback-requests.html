@@ -40,7 +40,7 @@
           @if (r.status === 'pending') {
             @if (canCancel(r)) {
               <div class="cr-actions">
-                <button class="cr-btn cr-btn--outline" type="button" [disabled]="cancelling().has(r._id)" (click)="cancel(r._id)">
+                <button class="cr-btn cr-btn--outline" type="button" [disabled]="cancelling().has(r._id)" (click)="requestCancel(r._id)">
                   {{ cancelling().has(r._id) ? 'Cancelling…' : 'Cancel Request' }}
                 </button>
               </div>
@@ -87,4 +87,13 @@
       }
     </div>
   }
+
+  <app-confirm-modal
+    [show]="!!pendingCancelId()"
+    title="Cancel this request?"
+    message="The mentor won't be notified you're coming. You can submit a new request later if you change your mind."
+    confirmText="Cancel request"
+    cancelText="Never mind"
+    (confirmed)="confirmCancel()"
+    (cancelled)="pendingCancelId.set(null)" />
 </div>

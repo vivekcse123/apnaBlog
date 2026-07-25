@@ -10,10 +10,17 @@
         <p class="mf-sub">Unresolved reports from the community. Resolve a group to unset the flagged status on the post.</p>
       </div>
     </div>
-    <button class="mf-refresh" (click)="loadFlags()">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-      Refresh
-    </button>
+    <div class="mf-header__actions">
+      <div class="mf-search">
+        <svg class="mf-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" class="mf-search-input" placeholder="Search by post or author…"
+               [ngModel]="searchQuery()" (ngModelChange)="onSearchChange($event)" autocomplete="off" />
+      </div>
+      <button class="mf-refresh" (click)="loadFlags()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        Refresh
+      </button>
+    </div>
   </div>
 
   @if (isLoading()) {
@@ -29,12 +36,34 @@
       </span>
       <p>No unresolved flags. The community is happy!</p>
     </div>
+  } @else if (filteredGroups().length === 0) {
+    <div class="mf-empty">
+      <p>No flagged posts match "{{ searchQuery() }}".</p>
+    </div>
   } @else {
+    <div class="mf-select-all">
+      <label class="mf-select-all__label">
+        <input type="checkbox" class="mf-checkbox" [checked]="allOnPageSelected()" (change)="toggleSelectAllOnPage()" />
+        Select all on this page
+      </label>
+      @if (selectedCount() > 0) {
+        <div class="mf-bulk-bar">
+          <span class="mf-bulk-count">{{ selectedCount() }} selected</span>
+          <button class="mf-btn mf-btn--resolve" [disabled]="bulkBusy()" (click)="requestBulkResolve()">Resolve Selected</button>
+          <button class="mf-bulk-clear" (click)="clearSelection()">Clear</button>
+        </div>
+      }
+    </div>
     <div class="mf-list">
-      @for (group of grouped(); track group.postId) {
+      @for (group of pagedGroups(); track group.postId) {
         <div class="mf-group" [class.mf-group--flagged]="group.isFlagged">
 
-          <div class="mf-group__head" (click)="toggleExpand(group)">
+          <div class="mf-group__head" (click)="toggleExpand(group)" role="button" tabindex="0"
+               (keydown.enter)="toggleExpand(group)" [attr.aria-expanded]="group.expanded"
+               [attr.aria-label]="(group.expanded ? 'Collapse' : 'Expand') + ' reports for ' + group.postTitle">
+            <input type="checkbox" class="mf-checkbox mf-group__checkbox" [checked]="isSelected(group.postId)"
+                   (click)="$event.stopPropagation()" (change)="toggleSelect(group.postId)"
+                   [attr.aria-label]="'Select ' + group.postTitle" />
             <div class="mf-group__info">
               <span class="mf-flag-count">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
@@ -48,7 +77,7 @@
               <button class="mf-btn mf-btn--view" (click)="viewPost(group); $event.stopPropagation()">View Post</button>
               <button class="mf-btn mf-btn--resolve"
                 [disabled]="resolving().has(group.postId)"
-                (click)="resolveAll(group); $event.stopPropagation()">
+                (click)="requestResolveAll(group); $event.stopPropagation()">
                 {{ resolving().has(group.postId) ? 'Resolving…' : 'Resolve All' }}
               </button>
               <span class="mf-chevron" [class.mf-chevron--open]="group.expanded">
@@ -77,6 +106,25 @@
         </div>
       }
     </div>
+    <app-pagination [currentPage]="currentPage()" [totalPages]="totalPages()" (pageChange)="goToPage($event)" />
   }
+
+  <app-confirm-modal
+    [show]="!!pendingResolve()"
+    title="Resolve all flags on this post?"
+    [message]="'This clears all ' + (pendingResolve()?.flagCount ?? 0) + ' flag(s) on \'' + (pendingResolve()?.postTitle ?? '') + '\'. The post stays live and can be re-flagged later if needed.'"
+    confirmText="Resolve All"
+    cancelText="Never mind"
+    (confirmed)="confirmResolveAll()"
+    (cancelled)="pendingResolve.set(null)" />
+
+  <app-confirm-modal
+    [show]="pendingBulkResolve()"
+    title="Resolve flags on {{ selectedCount() }} post{{ selectedCount() === 1 ? '' : 's' }}?"
+    message="This clears all flags on every selected post. Each post stays live and can be re-flagged later if needed."
+    confirmText="Resolve Selected"
+    cancelText="Never mind"
+    (confirmed)="confirmBulkResolve()"
+    (cancelled)="cancelBulkResolve()" />
 
 </div>

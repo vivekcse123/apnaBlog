@@ -70,6 +70,7 @@ export class ChallengesPage implements OnInit {
   private document   = inject(DOCUMENT);
 
   challenges    = signal<Challenge[]>([]);
+  loadError     = signal('');
   leaderboard   = signal<LeaderboardPost[]>([]);
   selectedId    = signal<string | null>(null);
   isLoading     = signal(true);
@@ -164,15 +165,23 @@ export class ChallengesPage implements OnInit {
     el.textContent = JSON.stringify(graph);
   }
 
+  retryLoad(): void {
+    this.loadChallenges();
+  }
+
   private loadChallenges(): void {
     this.isLoading.set(true);
+    this.loadError.set('');
     this.http.get<any>(`${environment.apiUrl}/challenge`).subscribe({
       next: res => {
         this.challenges.set(res.data ?? []);
         this.isLoading.set(false);
         if (res.data?.length) this.selectChallenge(res.data[0]._id);
       },
-      error: () => this.isLoading.set(false),
+      error: () => {
+        this.isLoading.set(false);
+        this.loadError.set('Couldn\'t load challenges right now.');
+      },
     });
   }
 

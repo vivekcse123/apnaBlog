@@ -35,23 +35,15 @@
        floating gap. */
     padding-bottom: env(safe-area-inset-bottom, 0px);
     gap: 0;
-    /* iOS PWA: force GPU compositing layer before first paint so position is
-       resolved immediately - prevents the nav from appearing above the screen
-       bottom on initial load. */
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
-    will-change: transform;
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
-  }
-
-  /* ── iOS PWA standalone: use JS-resolved --safe-area-bottom (set by index.html
-     polling script) so the correct inset is applied from the very first paint -
-     env(safe-area-inset-bottom) returns 0 on first paint due to a WebKit bug. */
-  @media (display-mode: standalone) {
-    .mob-nav {
-      padding-bottom: var(--safe-area-bottom, env(safe-area-inset-bottom, 0px));
-    }
+    /* No transform / will-change here on purpose: promoting this fixed-position
+       element onto its own GPU compositor layer is what caused the iOS gap bug
+       (see mobile-bottom-nav's git history) - WebKit caches a transform-promoted
+       fixed layer's screen offset at creation and doesn't reliably re-sync it
+       against Safari's animating visual viewport (address bar / bottom toolbar
+       collapsing) or against a safe-area-inset that resolves a frame later in
+       standalone PWA mode. Plain `position: fixed` + `env()` tracks the live
+       visual viewport correctly, which is why Android (no such compositor
+       quirk) never needed this and rendered fine all along. */
   }
 
   /* ── Nav item base - larger touch target (full pill height) ── */

@@ -77,13 +77,19 @@ export default async function handler(req, res) {
       { url: '/',               changefreq: 'daily',   priority: 1.0, lastmod: new Date().toISOString() },
       { url: '/about',          changefreq: 'monthly', priority: 0.8, lastmod: '2026-01-01T00:00:00.000Z' },
       { url: '/advertise',      changefreq: 'monthly', priority: 0.7, lastmod: new Date().toISOString() },
-      { url: '/topics',         changefreq: 'weekly',  priority: 0.7, lastmod: new Date().toISOString() },
       { url: '/challenges',     changefreq: 'weekly',  priority: 0.6, lastmod: new Date().toISOString() },
       { url: '/shorts',         changefreq: 'hourly',  priority: 0.9, lastmod: new Date().toISOString() },
       { url: '/privacy-policy', changefreq: 'yearly',  priority: 0.3, lastmod: '2026-04-01T00:00:00.000Z' },
       { url: '/terms',          changefreq: 'yearly',  priority: 0.3, lastmod: '2026-04-01T00:00:00.000Z' },
       { url: '/disclaimer',        changefreq: 'yearly',  priority: 0.3, lastmod: '2026-04-24T00:00:00.000Z' },
       { url: '/editorial-policy', changefreq: 'yearly',  priority: 0.5, lastmod: '2026-06-01T00:00:00.000Z' },
+      // '/topics' is intentionally excluded - it 301-redirects to '/blog'
+      // (see app.routes.ts), and a redirecting URL has no sitemap value.
+      { url: '/contact',        changefreq: 'yearly',  priority: 0.5, lastmod: new Date().toISOString() },
+      { url: '/write-and-earn', changefreq: 'monthly', priority: 0.6, lastmod: new Date().toISOString() },
+      { url: '/career-guides',  changefreq: 'weekly',  priority: 0.7, lastmod: new Date().toISOString() },
+      { url: '/career-guides/explore', changefreq: 'weekly', priority: 0.6, lastmod: new Date().toISOString() },
+      { url: '/career-guides/become-an-instructor', changefreq: 'monthly', priority: 0.5, lastmod: new Date().toISOString() },
     ];
 
     // Category slugs this site has pages for, with their crawl metadata.

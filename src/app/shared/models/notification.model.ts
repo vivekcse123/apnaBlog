@@ -8,6 +8,8 @@ export type NotificationType =
   | 'USER_FROZEN' | 'USER_UNFROZEN' | 'USER_UPDATED' | 'USER_DELETED'
   | 'USER_DELETION_REQUESTED' | 'USER_DELETION_CANCELLED'
   | 'MESSAGE_RECEIVED'
+  | 'CALLBACK_REQUESTED' | 'CALLBACK_STATUS_UPDATED' | 'CALLBACK_FEEDBACK_SUBMITTED' | 'CONTACT_RECEIVED'
+  | 'MENTOR_APPLICATION_SUBMITTED' | 'MENTOR_APPLICATION_APPROVED' | 'MENTOR_APPLICATION_REJECTED'
   | 'info' | 'warning' | 'success' | 'error';
 
 export interface Notification {
@@ -64,6 +66,13 @@ export const NOTIFICATION_META: Record<NotificationType, { icon: string; color: 
   USER_DELETION_CANCELLED:     { icon: '✅', color: '#10b981', label: 'Deletion Cancelled' },
   MESSAGE_RECEIVED:            { icon: '💬', color: '#2563eb', label: 'New Message'        },
   SUBSCRIBER_ADDED:            { icon: '🔔', color: '#8b5cf6', label: 'New Subscriber'     },
+  CALLBACK_REQUESTED:          { icon: '📞', color: '#4f46e5', label: 'Callback Request'   },
+  CALLBACK_STATUS_UPDATED:     { icon: '📅', color: '#f59e0b', label: 'Callback Update'    },
+  CALLBACK_FEEDBACK_SUBMITTED: { icon: '⭐', color: '#f59e0b', label: 'New Feedback'       },
+  CONTACT_RECEIVED:            { icon: '✉️', color: '#06b6d4', label: 'Contact Message'    },
+  MENTOR_APPLICATION_SUBMITTED: { icon: '📋', color: '#4f46e5', label: 'Mentor Application' },
+  MENTOR_APPLICATION_APPROVED:  { icon: '🎉', color: '#10b981', label: 'Mentor Approved'    },
+  MENTOR_APPLICATION_REJECTED:  { icon: '✏️', color: '#ef4444', label: 'Mentor Rejected'    },
   SHORT_PUBLISHED:             { icon: '🎬', color: '#6366f1', label: 'Short Published'    },
   SHORT_LIKED:                 { icon: '❤️', color: '#ec4899', label: 'Short Liked'        },
   SHORT_COMMENTED:             { icon: '💬', color: '#06b6d4', label: 'Short Comment'      },

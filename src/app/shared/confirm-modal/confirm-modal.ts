@@ -17,6 +17,7 @@ export class ConfirmModal {
   private previouslyFocused: HTMLElement | null = null;
 
   @ViewChild('confirmBtn') confirmBtn?: ElementRef<HTMLButtonElement>;
+  @ViewChild('cancelBtn')  cancelBtn?: ElementRef<HTMLButtonElement>;
 
   show        = input<boolean>(false);
   title       = input<string>('Are you sure?');
@@ -44,6 +45,21 @@ export class ConfirmModal {
   @HostListener('document:keydown.escape')
   onEscape(): void {
     if (this.show()) this.cancel();
+  }
+
+  // Trap Tab between the two buttons - this dialog is modal, so focus must
+  // never escape to the page behind it.
+  @HostListener('document:keydown', ['$event'])
+  onTab(event: KeyboardEvent): void {
+    if (event.key !== 'Tab' || !this.show()) return;
+    const active = document.activeElement;
+    if (active === this.confirmBtn?.nativeElement) {
+      event.preventDefault();
+      this.cancelBtn?.nativeElement?.focus();
+    } else if (active === this.cancelBtn?.nativeElement) {
+      event.preventDefault();
+      this.confirmBtn?.nativeElement?.focus();
+    }
   }
 
   confirm(): void {

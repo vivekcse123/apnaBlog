@@ -16,6 +16,21 @@
     </button>
   </div>
 
+  @if (!isLoading() && !error() && mentors().length > 0) {
+    <div class="mm-toolbar">
+      <div class="mm-search">
+        <svg class="mm-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" class="mm-search-input" placeholder="Search mentors…"
+               [ngModel]="searchQuery()" (ngModelChange)="onSearchChange($event)" autocomplete="off" />
+      </div>
+      <div class="mm-filter-chips">
+        <button class="mm-chip" [class.active]="statusFilter() === 'all'" (click)="setStatusFilter('all')">All</button>
+        <button class="mm-chip" [class.active]="statusFilter() === 'active'" (click)="setStatusFilter('active')">Active</button>
+        <button class="mm-chip" [class.active]="statusFilter() === 'suspended'" (click)="setStatusFilter('suspended')">Suspended</button>
+      </div>
+    </div>
+  }
+
   @if (isLoading()) {
     <div class="mm-loading">
       @for (_ of [1,2,3]; track $index) { <div class="mm-skeleton"></div> }
@@ -26,9 +41,13 @@
     <div class="mm-empty">
       <p>No mentors yet. Approve an application to get started.</p>
     </div>
+  } @else if (filteredMentors().length === 0) {
+    <div class="mm-empty">
+      <p>No mentors match "{{ searchQuery() }}".</p>
+    </div>
   } @else {
     <div class="mm-list">
-      @for (mentor of mentors(); track mentor._id) {
+      @for (mentor of pagedMentors(); track mentor._id) {
         <div class="mm-card">
           <div class="mm-card__head">
             <div class="mm-card__info">
@@ -88,6 +107,7 @@
         </div>
       }
     </div>
+    <app-pagination [currentPage]="currentPage()" [totalPages]="totalPages()" (pageChange)="goToPage($event)" />
   }
 
   @if (showConfirm()) {

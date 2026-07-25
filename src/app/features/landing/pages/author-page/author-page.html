@@ -44,9 +44,9 @@
           } @else {
             <div class="ap-avatar-fallback">{{ authorInitial }}</div>
           }
-          <span class="ap-verified-badge" title="Verified author" aria-hidden="true">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1l2.6 2.4 3.5-.6.9 3.4 3.4.9-.6 3.5L24 13l-2.4 2.6.6 3.5-3.4.9-.9 3.4-3.5-.6L12 25l-2.6-2.4-3.5.6-.9-3.4-3.4-.9.6-3.5L0 13l2.4-2.6-.6-3.5 3.4-.9.9-3.4 3.5.6z" transform="scale(0.9)"/></svg>
-          </span>
+          @if (isVerifiedAuthor) {
+            <app-verified-badge mode="overlay" size="sm" label="Verified author" />
+          }
         </div>
 
         <div class="ap-identity">

@@ -49,17 +49,32 @@ export class CreateCampaign {
     this.form.patchValue({ ctaText: text });
   }
 
+  // Escapes user-supplied text before it's interpolated into the HTML string
+  // below - without this, a sponsor could inject arbitrary markup into their
+  // own pending post content.
+  private escapeHtml(text: string): string {
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
   submit(): void {
     if (this.form.invalid || this.isSubmitting()) return;
     this.isSubmitting.set(true);
     this.errorMsg.set('');
 
     const v = this.form.value;
+    const pitch     = this.escapeHtml(v.pitch ?? '');
+    const brandName = this.escapeHtml(v.brandName ?? '');
+    const notes     = this.escapeHtml(v.notes ?? '');
     const content = `
 <h2>About This Campaign</h2>
-<p>${v.pitch}</p>
-<p>Visit <strong>${v.brandName}</strong> to learn more about their products and services.</p>
-${v.notes ? `<h2>Additional Information</h2><p>${v.notes}</p>` : ''}
+<p>${pitch}</p>
+<p>Visit <strong>${brandName}</strong> to learn more about their products and services.</p>
+${notes ? `<h2>Additional Information</h2><p>${notes}</p>` : ''}
 `.trim();
 
     this.postService.createBlog({

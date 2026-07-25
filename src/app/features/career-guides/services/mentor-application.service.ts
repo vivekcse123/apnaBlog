@@ -3,11 +3,13 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { Auth } from '../../../core/services/auth';
-import { MentorApplicationRecord, MentorApplicationStatus, SubmitMentorApplicationPayload } from '../models/mentor-application.model';
+import { MentorApplicationRecord, MentorApplicationStatus, PublicMentorCard, SubmitMentorApplicationPayload } from '../models/mentor-application.model';
 
 interface ItemResponse { status: number; message?: string; data: MentorApplicationRecord; }
 interface OptionalItemResponse { status: number; data: MentorApplicationRecord | null; }
 interface ListResponse { status: number; data: MentorApplicationRecord[]; }
+interface PublicMentorListResponse { status: number; data: PublicMentorCard[]; }
+interface PublicMentorItemResponse { status: number; data: PublicMentorCard; }
 
 @Injectable({ providedIn: 'root' })
 export class MentorApplicationService {
@@ -48,5 +50,17 @@ export class MentorApplicationService {
   reject(id: string, reason?: string): Observable<ItemResponse> {
     const h = this.headers();
     return this.http.patch<ItemResponse>(`${environment.apiUrl}/mentor-applications/${id}/reject`, { reason }, h ? { headers: h } : {});
+  }
+
+  /** Public: every real, approved mentor - the Career Guides listing's real
+   *  data source, alongside the curated MOCK_EXPERTS catalog (see guide-list.ts). */
+  approved(): Observable<PublicMentorListResponse> {
+    return this.http.get<PublicMentorListResponse>(`${environment.apiUrl}/mentor-applications/approved`);
+  }
+
+  /** Public: a single real approved mentor by slug - fallback for
+   *  expert-profile.ts when the slug isn't in MOCK_EXPERTS. */
+  approvedBySlug(slug: string): Observable<PublicMentorItemResponse> {
+    return this.http.get<PublicMentorItemResponse>(`${environment.apiUrl}/mentor-applications/approved/${slug}`);
   }
 }

@@ -1,6 +1,6 @@
 <app-site-header></app-site-header>
 
-<div class="md">
+<div class="md" id="main-content">
 
   @if (showAlreadyMentorNotice()) {
     <div class="md-notice">
@@ -12,7 +12,11 @@
   <header class="md-hero">
     <div>
       <span class="md-eyebrow">Mentor Dashboard</span>
-      <h1>Welcome back, {{ mentorName().split(' ')[0] || 'Mentor' }} 👋</h1>
+      <h1>
+        Welcome back, {{ mentorName().split(' ')[0] || 'Mentor' }}
+        <app-verified-badge mode="inline" size="md" label="Verified mentor" />
+        👋
+      </h1>
       <p>Here's what's happening with your mentorship requests today.</p>
       @if (avgRating(); as avg) {
         <p class="md-avg-rating">⭐ {{ avg }} average from {{ ratedCount() }} rated session{{ ratedCount() === 1 ? '' : 's' }}</p>

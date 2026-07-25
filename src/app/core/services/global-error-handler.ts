@@ -32,6 +32,17 @@ export class GlobalErrorHandler implements ErrorHandler {
       return;
     }
 
+    if (this.isThirdPartyAdError(error)) {
+      // adsbygoogle.push() throws a TagError whenever its slot has zero
+      // available width at push-time (e.g. a narrow viewport, a container
+      // still mid-layout, or an ad blocker hiding the slot) - a routine,
+      // harmless occurrence that just means that one ad doesn't render.
+      // Not app code and not worth alarming a real visitor with "Something
+      // went wrong" over, but still logged for visibility.
+      console.error('[GlobalError] Ignored (third-party ad script, not app code):', error);
+      return;
+    }
+
     console.error('[GlobalError]', error);
 
     if (isPlatformBrowser(this.platformId)) {
@@ -48,5 +59,11 @@ export class GlobalErrorHandler implements ErrorHandler {
     const stack = error instanceof Error ? (error.stack ?? '') : '';
     const message = error instanceof Error ? error.message : String(error);
     return stack.includes('backend_bundle.js') || message.includes('Angular DevTools');
+  }
+
+  private isThirdPartyAdError(error: unknown): boolean {
+    const stack = error instanceof Error ? (error.stack ?? '') : '';
+    const name = error instanceof Error ? error.name : '';
+    return name === 'TagError' || stack.includes('googlesyndication.com') || stack.includes('adsbygoogle');
   }
 }

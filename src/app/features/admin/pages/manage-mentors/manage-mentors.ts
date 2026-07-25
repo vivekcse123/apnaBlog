@@ -7,12 +7,16 @@ import { UserService } from '../../../user/services/user-service';
 import { MentorProfileService } from '../../../career-guides/services/mentor-profile.service';
 import { MentorProfileRecord } from '../../../career-guides/models/mentor-profile.model';
 import { User } from '../../../user/models/user.mode';
+import { ToastService } from '../../../../core/services/toast.service';
+import { Pagination } from '../../../../shared/components/pagination/pagination';
+
+type MentorStatusFilter = 'all' | 'active' | 'suspended';
 
 @Component({
   selector: 'app-manage-mentors',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, Pagination],
   templateUrl: './manage-mentors.html',
   styleUrl: './manage-mentors.css',
 })
@@ -21,12 +25,52 @@ export class ManageMentors implements OnInit {
   private userService = inject(UserService);
   private mentorProfileService = inject(MentorProfileService);
   private destroyRef = inject(DestroyRef);
+  private toast = inject(ToastService);
 
   allUsers = signal<User[]>([]);
   isLoading = signal(true);
   error = signal('');
 
   mentors = computed(() => this.allUsers().filter(u => u.isMentor));
+
+  searchQuery = signal('');
+  statusFilter = signal<MentorStatusFilter>('all');
+
+  filteredMentors = computed(() => {
+    const q = this.searchQuery().trim().toLowerCase();
+    const status = this.statusFilter();
+    return this.mentors().filter(m => {
+      if (status === 'active' && m.mentorStatus === 'suspended') return false;
+      if (status === 'suspended' && m.mentorStatus !== 'suspended') return false;
+      if (!q) return true;
+      return (m.name ?? '').toLowerCase().includes(q)
+        || (m.email ?? '').toLowerCase().includes(q)
+        || ((m as any).mentorSlug ?? '').toLowerCase().includes(q);
+    });
+  });
+
+  readonly PAGE_SIZE = 10;
+  currentPage = signal(1);
+  totalPages  = computed(() => Math.max(1, Math.ceil(this.filteredMentors().length / this.PAGE_SIZE)));
+  pagedMentors = computed(() => {
+    const start = (this.currentPage() - 1) * this.PAGE_SIZE;
+    return this.filteredMentors().slice(start, start + this.PAGE_SIZE);
+  });
+
+  goToPage(n: number): void {
+    if (n < 1 || n > this.totalPages()) return;
+    this.currentPage.set(n);
+  }
+
+  onSearchChange(value: string): void {
+    this.searchQuery.set(value);
+    this.currentPage.set(1);
+  }
+
+  setStatusFilter(status: MentorStatusFilter): void {
+    this.statusFilter.set(status);
+    this.currentPage.set(1);
+  }
 
   // Suspend/activate confirm gate - same pattern as manage-users.ts.
   pendingMentor = signal<User | null>(null);
@@ -87,7 +131,7 @@ export class ManageMentors implements OnInit {
         },
         error: (err) => {
           this.isTogglingStatus.set(false);
-          alert(err?.error?.message ?? 'Could not update mentor status.');
+          this.toast.show(err?.error?.message ?? 'Could not update mentor status.', 'error');
         },
       });
   }

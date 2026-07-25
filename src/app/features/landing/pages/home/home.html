@@ -14,7 +14,7 @@
         "width": 96,
         "height": 96
       },
-      "description": "India's Practical Career and Tech Knowledge Platform. Guides on Technology, Careers, AI, Business, and Digital Skills written by verified Indian professionals.",
+      "description": "India's Practical Career and Tech Knowledge Platform. Guides on Technology, Careers, AI, Business, and Digital Skills written by real Indian professionals.",
       "foundingLocation": "Hyderabad, India",
       "email": "hello@apnainsights.com",
       "sameAs": [
@@ -239,6 +239,13 @@
     </button>
   </div>
 
+  <form class="hp-drawer-search" (ngSubmit)="submitHeaderSearch(); menuOpen.set(false)" novalidate>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+    <label class="visually-hidden" for="hp-drawer-search-input">Search stories</label>
+    <input id="hp-drawer-search-input" type="search" placeholder="Search stories, topics, writers..."
+           [(ngModel)]="headerSearchQuery" name="drawerSearchQuery" autocomplete="off" />
+  </form>
+
   @if (isLoggedIn) {
     <a class="hp-drawer-user" [routerLink]="dashboardRoute" (click)="menuOpen.set(false)">
       <span class="hp-drawer-user-avatar">{{ loggedInInitials }}</span>
@@ -271,7 +278,9 @@
   <div class="hp-drawer-divider"></div>
   <a class="hp-drawer-link" routerLink="/" (click)="menuOpen.set(false)">Home</a>
   <a class="hp-drawer-link" routerLink="/blog" (click)="menuOpen.set(false)">Explore</a>
+  <a class="hp-drawer-link" routerLink="/blog" (click)="menuOpen.set(false)">Categories</a>
   <a class="hp-drawer-link" routerLink="/shorts" (click)="menuOpen.set(false)">Shorts</a>
+  <a class="hp-drawer-link" routerLink="/career-guides" routerLinkActive="active" (click)="menuOpen.set(false)">Career Guides <span class="hp-new-pill">New</span></a>
   <a class="hp-drawer-link" routerLink="/write-and-earn" (click)="menuOpen.set(false)">
     Write &amp; Earn <span class="hp-new-pill">New</span>
   </a>
@@ -296,7 +305,7 @@
 <app-birthday-popup />
 
 <!-- ══ HERO ═════════════════════════════════════════════════════════════ -->
-<section class="hp-hero" aria-labelledby="hero-heading">
+<section class="hp-hero" id="main-content" aria-labelledby="hero-heading">
   <div class="hp-hero-inner">
     <div class="hp-hero-text">
       <span class="hp-hero-badge">⚡ India's Hub for Practical Insights</span>
@@ -306,8 +315,7 @@
         <span class="hp-hero-title-accent">Insights</span>
       </h1>
       <p class="hp-hero-sub">
-        Real, expert-reviewed guides on tech, careers, health and everyday life - written by verified
-        contributors from across India. No fluff, no clickbait.
+        Learn from real professionals through expert-reviewed articles on technology, careers, health, and everyday life. Practical advice you can trust-without the fluff or clickbait.
       </p>
       <div class="hp-hero-ctas">
         <a class="hp-btn hp-btn--primary" routerLink="/blog">
@@ -371,26 +379,6 @@
   </div>
 </section>
 
-<!-- ══ CAREER GUIDES PROMO BANNER ═══════════════════════════════════════ -->
-<a class="hp-cg-banner" routerLink="/career-guides" aria-label="Career Guides - connect with industry experts for 1:1 career guidance">
-  <span class="hp-cg-banner-glow" aria-hidden="true"></span>
-
-  <span class="hp-cg-banner-icon" aria-hidden="true">
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-  </span>
-
-  <span class="hp-cg-banner-body">
-    <span class="hp-cg-banner-badge">✨ New</span>
-    <span class="hp-cg-banner-title">Career Guides</span>
-    <span class="hp-cg-banner-desc">Get 1:1 guidance from verified industry experts &mdash; resume reviews, interview prep &amp; personalized mentorship.</span>
-  </span>
-
-  <span class="hp-cg-banner-cta">
-    Explore Experts
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
-  </span>
-</a>
-
 <!-- ══ CATEGORY CHIP RAIL ═══════════════════════════════════════════════ -->
 <nav class="hp-chip-rail" aria-label="Browse by category">
   <button class="hp-chip-arrow hp-chip-arrow--left" type="button" [class.hp-chip-arrow--hidden]="chipRailAtStart()" (click)="chipTrack.scrollBy({left: -240, behavior: 'smooth'})" aria-label="Scroll categories left">
@@ -448,7 +436,9 @@
             }
           </span>
           <span class="hp-author-name">{{ fa.user.name || 'Anonymous' }}</span>
-          <svg class="hp-verified-badge" width="14" height="14" viewBox="0 0 24 24" fill="var(--accent)" aria-label="Verified contributor"><path d="M12 2l2.4 1.9 3-.6 1 2.9 2.9 1-.6 3L22 12l-1.9 2.4.6 3-2.9 1-1 2.9-3-.6L12 22l-2.4-1.9-3 .6-1-2.9-2.9-1 .6-3L2 12l1.9-2.4-.6-3 2.9-1 1-2.9 3 .6z"/><path d="M9 12l2 2 4-4" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          @if (isVerifiedContributor(fa.user)) {
+            <svg class="hp-verified-badge" width="14" height="14" viewBox="0 0 24 24" fill="var(--accent)" aria-label="Verified contributor"><path d="M12 2l2.4 1.9 3-.6 1 2.9 2.9 1-.6 3L22 12l-1.9 2.4.6 3-2.9 1-1 2.9-3-.6L12 22l-2.4-1.9-3 .6-1-2.9-2.9-1 .6-3L2 12l1.9-2.4-.6-3 2.9-1 1-2.9 3 .6z"/><path d="M9 12l2 2 4-4" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          }
           <span class="hp-dot">·</span>
           <span>{{ fa.createdAt | timeAgo }}</span>
           <span class="hp-dot">·</span>
@@ -462,6 +452,11 @@
           <span class="hp-stat" [innerHTML]="statIcon('heart')"></span>
           <span>{{ fa.likesCount | formatCount }}</span>
         </div>
+      </div>
+    } @else if (loadError()) {
+      <div class="hp-load-error">
+        <p>Couldn't load articles right now.</p>
+        <button type="button" class="hp-btn hp-btn--secondary" (click)="retryLoad()">Retry</button>
       </div>
     }
   </article>
@@ -502,6 +497,26 @@
     }
   </aside>
 </section>
+
+<!-- ══ CAREER GUIDES PROMO BANNER ═══════════════════════════════════════ -->
+<a class="hp-cg-banner" routerLink="/career-guides" aria-label="Career Guides - connect with industry experts for 1:1 career guidance">
+  <span class="hp-cg-banner-glow" aria-hidden="true"></span>
+
+  <span class="hp-cg-banner-icon" aria-hidden="true">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+  </span>
+
+  <span class="hp-cg-banner-body">
+    <span class="hp-cg-banner-badge">✨ New</span>
+    <span class="hp-cg-banner-title">Career Guides</span>
+    <span class="hp-cg-banner-desc">Get 1:1 guidance from verified industry experts &mdash; resume reviews, interview prep &amp; personalized mentorship.</span>
+  </span>
+
+  <span class="hp-cg-banner-cta">
+    Explore Experts
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
+  </span>
+</a>
 
 @if (sponsoredPosts().length) {
 <!-- ══ SPONSORED ═══════════════════════════════════════════════════════ -->
@@ -545,7 +560,7 @@
     </button>
     <div class="hp-rail" #trendRail (scroll)="onRailScroll(trendRail, trendRailAtStart)">
       @if (isLoading() && !trendingPosts().length) {
-        @for (s of skeletonItems; track $index) {
+        @for (s of trendingSkeletonItems; track $index) {
           <div class="hp-skeleton hp-skeleton--card"></div>
         }
       } @else {
@@ -586,7 +601,7 @@
   </div>
 
   @if (isLoading() && !editorPicks().length) {
-    @for (s of skeletonItems; track $index) {
+    @for (s of picksSkeletonItems; track $index) {
       <div class="hp-skeleton hp-skeleton--row"></div>
     }
   } @else {
@@ -691,7 +706,7 @@
         <img class="hp-logo-mark" src="/logo-96.png" alt="" width="28" height="28" loading="lazy" />
         <span class="hp-logo-word"><span class="hp-logo-word-a">Apna</span><span class="hp-logo-word-i">Insights</span></span>
       </a>
-      <p class="hp-footer-tagline">Practical knowledge for everyday life - expert guides on Technology, Career, Health and Business, written by verified contributors across India.</p>
+      <p class="hp-footer-tagline">Practical knowledge for everyday life - expert guides on Technology, Career, Health and Business, written by real contributors across India.</p>
       <div class="hp-footer-social">
         <a class="hp-social-btn" href="https://x.com/apnainsights_" target="_blank" rel="noopener" aria-label="Follow on X (Twitter)">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.74l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
@@ -716,7 +731,7 @@
       <a routerLink="/shorts">Shorts</a>
       <a routerLink="/write-and-earn">Write &amp; Earn</a>
       <a routerLink="/career-guides">Career Guides</a>
-      <a routerLink="//career-guides/become-an-instructor">Become an Instructor</a>
+      <a routerLink="/career-guides/become-an-instructor">Become an Instructor</a>
     </div>
 
     <div class="hp-footer-col">
@@ -735,12 +750,16 @@
       <a routerLink="/advertise">Advertise with Us</a>
       <a routerLink="/terms">Terms of Service</a>
       <a routerLink="/privacy-policy">Privacy Policy</a>
+      <a routerLink="/disclaimer">Disclaimer</a>
+      <a routerLink="/editorial-policy">Editorial Policy</a>
     </div>
   </div>
 
   <div class="hp-footer-col hp-footer-col--newsletter">
     <h3>Newsletter</h3>
-    <p class="hp-footer-newsletter-sub">Join 20,000+ readers</p>
+    @if (siteStats(); as stats) {
+      <p class="hp-footer-newsletter-sub">Join {{ formatStatCount(stats.reads) }} readers</p>
+    }
     <form class="hp-footer-newsletter-form" (ngSubmit)="onSubscribe()" novalidate>
       <label class="visually-hidden" for="hp-footer-newsletter-email">Email address</label>
       <input id="hp-footer-newsletter-email" name="hp-footer-newsletter-email" type="email"

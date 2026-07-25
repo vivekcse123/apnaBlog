@@ -15,7 +15,7 @@
 }
 .pp-header h2 { font-size: 17px; font-weight: 800; color: var(--text-primary); margin: 0; }
 .pp-close {
-  width: 30px; height: 30px; border-radius: 50%; border: none; background: var(--bg-surface-alt);
+  width: 32px; height: 32px; border-radius: 50%; border: none; background: var(--bg-surface-alt);
   color: var(--text-secondary); cursor: pointer; font-size: 13px;
 }
 .pp-close:hover { color: var(--text-primary); }

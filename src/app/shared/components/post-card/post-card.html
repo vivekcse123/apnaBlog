@@ -1,0 +1,49 @@
+<article class="pc-card">
+  <a class="pc-media" [routerLink]="postUrl()" tabindex="-1" aria-hidden="true">
+    @if (post().featuredImage) {
+      <img [src]="post().featuredImage | cldResize:imageWidth():imageHeight()" [alt]="post().title" loading="lazy" [attr.width]="imageWidth()" [attr.height]="imageHeight()" />
+    } @else {
+      <div class="pc-media-fallback">{{ post().title.charAt(0).toUpperCase() }}</div>
+    }
+    @if (showCategoryBadge() && category()) {
+      <span class="pc-badge" [style.background]="categoryColor()">{{ category() }}</span>
+    }
+    <button class="pc-save" [class.saved]="isBookmarked()"
+            (click)="toggleBookmark($event)"
+            [attr.aria-label]="(isBookmarked() ? 'Remove bookmark' : 'Bookmark') + ': ' + post().title"
+            [attr.aria-pressed]="isBookmarked()">
+      <svg width="14" height="14" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" [attr.fill]="isBookmarked() ? 'currentColor' : 'none'"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
+    </button>
+  </a>
+  <div class="pc-body">
+    <h4><a [routerLink]="postUrl()">{{ post().title }}</a></h4>
+    <p>{{ post().description }}</p>
+    <div class="pc-author">
+      <span class="pc-avatar" aria-hidden="true">{{ authorInitial() }}</span>
+      @if (authorId()) {
+        <a class="pc-who" [routerLink]="['/author', authorId()]">{{ authorName() }}</a>
+      } @else {
+        <span class="pc-who">{{ authorName() }}</span>
+      }
+      <span class="pc-meta">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>
+        {{ readingTime() }} min read
+      </span>
+    </div>
+    @if (showStats()) {
+      <div class="pc-stats">
+        <span class="pc-stat">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.2 12S5.6 5.5 12 5.5 21.8 12 21.8 12 18.4 18.5 12 18.5 2.2 12 2.2 12Z"/><circle cx="12" cy="12" r="2.8"/></svg>
+          {{ fmtCount(post().views) }}
+        </span>
+        <span class="pc-stat">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20.2S3.5 15.3 3.5 9.4A4.6 4.6 0 0 1 12 6.7a4.6 4.6 0 0 1 8.5 2.7c0 5.9-8.5 10.8-8.5 10.8Z"/></svg>
+          {{ fmtCount(post().likesCount) }}
+        </span>
+        <span class="pc-stat pc-stat-date">
+          <time [attr.datetime]="post().createdAt">{{ post().createdAt | timeAgo }}</time>
+        </span>
+      </div>
+    }
+  </div>
+</article>

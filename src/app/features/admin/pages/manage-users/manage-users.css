@@ -129,6 +129,30 @@
 .ap-btn--success:hover { opacity:.88; }
 .ap-btn:disabled { opacity:.45; cursor:not-allowed; transform:none; }
 
+/* ── Bulk selection & actions ─────────────────────────────────────── */
+.col-select { width: 36px; }
+.ap-checkbox { width: 16px; height: 16px; cursor: pointer; accent-color: var(--accent); }
+
+.ap-bulk-bar {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  background: var(--accent-subtle); border: 1px solid rgba(37, 99, 235, .25); border-radius: 10px;
+  padding: 10px 16px; margin-bottom: 14px;
+}
+.ap-bulk-count { font-size: 13px; font-weight: 700; color: var(--accent-text); }
+.ap-bulk-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.ap-bulk-btn {
+  padding: 7px 14px; border-radius: 8px; font-size: 12.5px; font-weight: 700; cursor: pointer;
+  background: var(--bg-surface); border: 1px solid var(--border); color: var(--text-secondary);
+}
+.ap-bulk-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent-text); }
+.ap-bulk-btn:disabled { opacity: .5; cursor: not-allowed; }
+.ap-bulk-btn--danger { color: #dc2626; border-color: rgba(220,38,38,.3); }
+.ap-bulk-btn--danger:hover:not(:disabled) { background: #dc2626; color: #fff; border-color: #dc2626; }
+.ap-bulk-clear {
+  margin-left: auto; background: none; border: none; color: var(--text-muted); font-size: 12.5px;
+  font-weight: 600; cursor: pointer; text-decoration: underline;
+}
+
 /* ── Stats ─────────────────────────────────────── */
 .ap-stats {
   display: grid;
@@ -459,7 +483,6 @@
   /* Stats: 2-col grid; if odd last card stays compact */
   .ap-stats { grid-template-columns:repeat(2,1fr); gap:8px; }
   .ap-stat  { padding:14px 14px; gap:10px; }
-  .ap-stat-icon { width:34px; height:34px; border-radius:8px; }
   .ap-stat-num  { font-size:22px; }
   .ap-stat-label{ font-size:11px; }
 

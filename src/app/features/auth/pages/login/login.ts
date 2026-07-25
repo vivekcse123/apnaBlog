@@ -31,8 +31,9 @@ export class Login implements OnInit {
   private meta         = inject(Meta);
   loginForm: FormGroup = new FormGroup({});
 
-  // Google's own rendered button lives invisibly on top of our styled button
-  // (see login.html/.css) - see the comment on signInWithGoogle() for why.
+  // Google's own rendered button lives on top and IS the visible/clickable
+  // button (see login.html/.css) - see the comment in the constructor below
+  // for why it must never be hidden/occluded before a click.
   @ViewChild('googleBtnSlot') googleBtnSlot!: ElementRef<HTMLDivElement>;
 
   isSubmitted     = signal(false);
@@ -48,9 +49,13 @@ export class Login implements OnInit {
       // cooldown, etc.) - it is NOT reliable as a direct button-click
       // handler. Google's own rendered button doesn't have that problem:
       // clicking it opens the real sign-in flow immediately, every time.
-      // So we render Google's actual button, invisibly, on top of our
-      // custom-styled one (see login.html/.css) - visually it's our button,
-      // but the click is always handled natively by Google's client.
+      // An earlier version rendered it invisibly on top of a custom-styled
+      // button, but Chrome's desktop anti-clickjacking check silently drops
+      // clicks on a hidden/occluded GIS button (mobile didn't enforce this,
+      // which is why that version worked on mobile but not desktop) - so the
+      // real button is now the visible one; our custom styling only overlays
+      // it as a loading spinner AFTER a real click already landed (see
+      // .google-btn--visible in auth-shared.css).
       pollUntilGoogleIdentityReady(() => {
         google.accounts.id.initialize({
           client_id: '602340491283-om39opmifq815fsvs15ju1et07kk0laq.apps.googleusercontent.com',
@@ -58,7 +63,7 @@ export class Login implements OnInit {
         });
         const width = Math.min(400, Math.max(200, this.googleBtnSlot?.nativeElement.offsetWidth || 300));
         google.accounts.id.renderButton(this.googleBtnSlot.nativeElement, {
-          type: 'standard', theme: 'outline', size: 'large', width, text: 'signin_with',
+          type: 'standard', theme: 'outline', size: 'large', width, text: 'continue_with',
         });
       });
     });
