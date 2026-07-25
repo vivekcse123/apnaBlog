@@ -707,8 +707,14 @@ html { scroll-behavior: smooth; }
 
   /* Toggle/pill controls have fixed dimensions - exempt from the 44px rule.
      .field-group label is a plain form-field caption (not a tap target
-     itself - the input below it is), so it shouldn't be stretched either. */
-  .toggle-switch, .theme-pill, .nav-item, .field-group label {
+     itself - the input below it is), so it shouldn't be stretched either.
+     .blog-breadcrumb-link/.blog-back-link are compact inline text nav links
+     (breadcrumb is a flex container so its <a> children get blockified and
+     .blog-back-link is inline-flex - both otherwise get force-stretched to
+     44px tall, ballooning the gap around them) - stretching them serves no
+     tap-target purpose since they're single-line text, not icon buttons. */
+  .toggle-switch, .theme-pill, .nav-item, .field-group label,
+  .blog-breadcrumb-link, .blog-back-link {
     min-height: unset !important;
     min-width: unset !important;
   }

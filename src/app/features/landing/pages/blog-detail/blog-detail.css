@@ -494,7 +494,7 @@
    the icon+text, not the full row width. */
 .blog-breadcrumb {
   max-width: 1600px; margin: 0 auto; padding: 16px 40px 0;
-  display: flex; align-items: center; flex-wrap: nowrap; gap: 6px;
+  display: flex;  flex-wrap: nowrap; gap: 6px;
   font-size: 13px; color: var(--text-muted);
 }
 .blog-breadcrumb-link { color: var(--text-muted); text-decoration: none; flex-shrink: 0; }
