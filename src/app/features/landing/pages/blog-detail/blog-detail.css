@@ -494,19 +494,19 @@
    the icon+text, not the full row width. */
 .blog-breadcrumb {
   max-width: 1600px; margin: 0 auto; padding: 16px 40px 0;
-  display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
+  display: flex; align-items: center; flex-wrap: nowrap; gap: 6px;
   font-size: 13px; color: var(--text-muted);
 }
-.blog-breadcrumb-link { color: var(--text-muted); text-decoration: none; }
+.blog-breadcrumb-link { color: var(--text-muted); text-decoration: none; flex-shrink: 0; }
 .blog-breadcrumb-link:hover { color: var(--accent-text); }
-.blog-breadcrumb-sep { color: var(--text-muted); opacity: 0.6; }
+.blog-breadcrumb-sep { color: var(--text-muted); opacity: 0.6; flex-shrink: 0; }
 .blog-breadcrumb-current {
   color: var(--text-secondary); font-weight: 600;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 320px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  flex: 1 1 auto; min-width: 0;
 }
 @media (max-width: 768px) {
   .blog-breadcrumb { padding: 12px 5% 0; }
-  .blog-breadcrumb-current { max-width: 45vw; }
 }
 
 .blog-back-wrap { max-width: 1600px; margin: 0 auto; padding: 14px 40px 20px; }
