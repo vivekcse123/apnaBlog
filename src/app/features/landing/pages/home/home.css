@@ -529,10 +529,11 @@
   background: var(--bg-surface);
   box-shadow: -8px 0 32px rgba(0,0,0,0.14);
   z-index: var(--z-modal, 1000);
-  /* Top-only bump so the close button/logo row clears the status bar/Dynamic
-     Island - this is a fixed, full-height (100dvh) panel, not sticky, so it
-     doesn't get the free clearance a sticky header gets from document flow. */
-  padding: calc(18px + env(safe-area-inset-top, 0px)) 18px 18px;
+  /* Top bump clears the status bar/Dynamic Island - fixed, full-height (100dvh)
+     panels don't get the free clearance a sticky header gets from document flow.
+     Bottom bump clears .mob-nav (fixed, ~58px + safe-area), which sits on top of
+     this drawer (higher z-index) and otherwise hides the last drawer items. */
+  padding: calc(18px + env(safe-area-inset-top, 0px)) 18px calc(78px + env(safe-area-inset-bottom, 0px));
   overflow-y: auto;
   transition: right 0.25s ease;
   display: flex;
@@ -1167,7 +1168,7 @@
   position: relative;
   border-radius: 14px;
   overflow: hidden;
-  aspect-ratio: 2.8/1;
+  aspect-ratio: 16/9;
   background: var(--bg-hover);
 }
 .hp-featured-media img {
@@ -1667,6 +1668,76 @@
 }
 .hp-footer-col a:hover { color: #fff; }
 
+/* ApnaConverter - a sibling product, not another link list, so it gets its
+   own bordered/gradient card instead of blending into the plain footer
+   columns above it. */
+.hp-footer-converter-card {
+  max-width: 1440px;
+  margin: 36px auto 0;
+  padding: 22px 24px;
+  background: linear-gradient(135deg, rgba(37,99,235,0.14), rgba(20,184,166,0.10));
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 20px;
+}
+.hp-footer-converter-head {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 16px;
+  text-decoration: none;
+}
+.hp-footer-converter-head:hover .hp-footer-converter-cta svg { transform: translateX(3px); }
+.hp-footer-converter-icon {
+  width: 42px; height: 42px; border-radius: 12px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--accent); color: #fff;
+}
+.hp-footer-converter-titlewrap { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.hp-footer-converter-title {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 8px;
+  font-size: 15px; font-weight: 800; color: #fff;
+}
+.hp-footer-converter-tag {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase;
+  padding: 3px 9px; border-radius: 999px;
+  background: rgba(255,255,255,0.1); color: #94A3B8;
+}
+.hp-footer-converter-desc { display: block; font-size: 13px; line-height: 1.5; color: #94A3B8; }
+.hp-footer-converter-cta {
+  display: flex; align-items: center; gap: 6px; flex-shrink: 0;
+  padding: 10px 16px; border-radius: 999px;
+  background: var(--accent); color: #fff; font-size: 13px; font-weight: 700; white-space: nowrap;
+}
+.hp-footer-converter-cta svg { transition: transform 0.2s ease; }
+
+.hp-footer-converter-links {
+  display: flex; flex-wrap: wrap; gap: 10px;
+  margin-top: 18px; padding-top: 18px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+.hp-footer-converter-pill {
+  display: inline-flex; align-items: center;
+  padding: 7px 14px; border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.16);
+  background: rgba(255,255,255,0.04);
+  color: #CBD5E1; text-decoration: none;
+  font-size: 12.5px; font-weight: 600;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+.hp-footer-converter-pill:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+@media (max-width: 640px) {
+  .hp-footer-converter-card { margin: 28px 16px 0; padding: 18px; }
+  .hp-footer-converter-head {
+    grid-template-columns: auto 1fr;
+    grid-template-areas: "icon title" "cta cta";
+    gap: 12px;
+  }
+  .hp-footer-converter-icon { grid-area: icon; }
+  .hp-footer-converter-titlewrap { grid-area: title; }
+  .hp-footer-converter-cta { grid-area: cta; width: 100%; justify-content: center; margin-top: 4px; }
+}
+
 .hp-footer-newsletter-sub { font-size: 12.5px; color: #94A3B8; margin: 0; }
 .hp-footer-newsletter-form { display: flex; gap: 0; }
 .hp-footer-newsletter-form input {
@@ -1744,31 +1815,43 @@
 }
 
 /* ═══ RESPONSIVE ══════════════════════════════════════════════════════ */
+/* Tablet only (single-column hero, but not yet the phone-size compaction
+   below 860px): the hero text column has plenty of width once it's no
+   longer sharing the row with .hp-hero-art, so the hard-coded line break
+   after "Practical Technology," just wastes it and leaves the title
+   looking oddly short/stacked - drop that one break so it flows onto the
+   same line as "Career & Lifestyle" instead. */
+@media (max-width: 1080px) and (min-width: 861px) {
+  .hp-hero-break-1 { display: none; }
+}
+
 @media (max-width: 1080px) {
   .hp-hero-inner { grid-template-columns: 1fr; }
-  .hp-hero-art { height: 320px; max-width: 460px; margin: 0 auto; }
+  /* Every child here (blob/browser-window/badges/plant) is position:absolute,
+     so .hp-hero-art has no in-flow content to size itself from. Without an
+     explicit width, `margin:0 auto` falls back to shrink-to-fit against that
+     empty flow content and resolves to 0 - collapsing the blob and browser
+     window (both sized relative to the parent) while only the fixed-size
+     badges/circle (positioned by offset, not by parent width) stay visible. */
+  .hp-hero-art { width: 100%; height: 320px; max-width: 460px; margin: 0 auto; }
   .hp-feature-row { grid-template-columns: 1fr; }
   .hp-tp-row { grid-template-columns: 1fr; }
-  /* Flowing 2-column layout, not a 2-column grid: Categories has 12 items
-     and Explore has 5, so a grid pairs them into the same row and stretches
-     that row to Categories' full height, leaving a large dead gap under the
-     short columns. column-span:all lets the brand block stay full-width
-     while the 4 link lists balance themselves into two columns by content
-     height instead of rigid row-pairing. */
-  .hp-footer-top { display: block; column-count: 2; column-gap: 32px; }
-  .hp-footer-brand { column-span: all; margin-bottom: 28px; }
-  .hp-footer-col { break-inside: avoid; margin-bottom: 28px; }
+  /* Nav links + NEW pills no longer fit this row once they've grown to
+     include Career Guides/Write & Earn - on tablets (e.g. 1024px) they'd
+     shrink and wrap mid-word instead of overflowing cleanly, so the
+     hamburger takes over here rather than at the header's own narrower
+     860px breakpoint. */
+  .hp-nav { display: none; }
+  .hp-header-actions { margin-left: auto; }
+  .hp-hamburger { display: flex; }
+  /* Real 3-column grid for the 3 link lists (Explore/Categories/Company) -
+     column-span:all lets the brand block stay full-width above them. */
+  .hp-footer-top { grid-template-columns: repeat(3, 1fr); column-gap: 32px; row-gap: 28px; }
+  .hp-footer-brand { grid-column: 1 / -1; }
 }
 
 @media (max-width: 860px) {
   .hp-header { padding: env(safe-area-inset-top, 0px) 16px 0; gap: 12px; }
-  .hp-nav { display: none; }
-  /* .hp-nav's margin:0 auto is what pushes header-actions to the right edge -
-     once nav is hidden that centering mechanism disappears, so it has to be
-     restated here directly or the theme toggle + hamburger collapse back
-     next to the logo instead of sitting at the right edge. */
-  .hp-header-actions { margin-left: auto; }
-  .hp-hamburger { display: flex; }
   /* Touch users swipe these rails directly - the click-to-scroll arrows are
      a desktop-only affordance for mouse/trackpad users. */
   .hp-chip-arrow { display: none; }
@@ -1797,11 +1880,10 @@
   .hp-sponsored-list { grid-template-columns: 1fr; }
   /* Smaller type/spacing throughout - the desktop footer's sizing made it
      feel oversized once it's a single narrow flowing column instead of a
-     wide 5-across row. */
+     wide 5-across row. Column/row structure itself is inherited from the
+     1080px breakpoint's grid - only the gaps tighten up here. */
   .hp-footer { padding: 32px 16px 0; font-size: 13px; }
-  .hp-footer-top { column-count: 3; column-gap: 18px; }
-  .hp-footer-brand { margin-bottom: 20px; }
-  .hp-footer-col { margin-bottom: 20px; }
+  .hp-footer-top { column-gap: 18px; row-gap: 20px; }
   .hp-footer-col h3 { font-size: 12px; margin-bottom: 10px; }
   .hp-footer-col a { font-size: 12.5px; padding: 5px 0; }
   .hp-footer-tagline { font-size: 12.5px; margin: 10px 0 14px; }

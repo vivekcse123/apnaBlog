@@ -275,7 +275,7 @@
     </div>
   }
 
-  <div class="hp-drawer-divider"></div>
+  <!-- <div class="hp-drawer-divider"></div> -->
   <a class="hp-drawer-link" routerLink="/" (click)="menuOpen.set(false)">Home</a>
   <a class="hp-drawer-link" routerLink="/blog" (click)="menuOpen.set(false)">Explore</a>
   <a class="hp-drawer-link" routerLink="/blog" (click)="menuOpen.set(false)">Categories</a>
@@ -310,7 +310,7 @@
     <div class="hp-hero-text">
       <span class="hp-hero-badge">⚡ India's Hub for Practical Insights</span>
       <h1 id="hero-heading" class="hp-hero-title">
-        Practical Technology,<br />
+        Practical Technology,<br class="hp-hero-break-1" />
         Career &amp; Lifestyle<br />
         <span class="hp-hero-title-accent">Insights</span>
       </h1>
@@ -518,6 +518,7 @@
   </span>
 </a>
 
+
 @if (sponsoredPosts().length) {
 <!-- ══ SPONSORED ═══════════════════════════════════════════════════════ -->
 <section class="hp-sponsored-row" aria-label="Sponsored">
@@ -576,10 +577,10 @@
             <div class="hp-meta-row">
               <span class="hp-stat" [innerHTML]="statIcon('clock')"></span>
               <span>{{ getReadingTime(post) }} min</span>
-              @if (hasMeaningfulViews(post.views)) {
-                <span class="hp-stat" [innerHTML]="statIcon('eye')"></span>
-                <span>{{ post.views | formatCount }}</span>
-              }
+              <span class="hp-stat" [innerHTML]="statIcon('eye')"></span>
+              <span>{{ post.views | formatCount }}</span>
+              <span class="hp-stat" [innerHTML]="statIcon('heart')"></span>
+              <span>{{ post.likesCount | formatCount }}</span>
             </div>
           </article>
         }
@@ -752,6 +753,33 @@
       <a routerLink="/privacy-policy">Privacy Policy</a>
       <a routerLink="/disclaimer">Disclaimer</a>
       <a routerLink="/editorial-policy">Editorial Policy</a>
+    </div>
+
+  </div>
+
+  <!-- Featured sibling product, not a plain link list - its own card so it
+       reads as "a product by ApnaInsights", not another footer link column.
+       Not a single wrapping <a> (nested anchors are invalid HTML) - the head
+       links to the homepage, each pill deep-links to its own tool page. -->
+  <div class="hp-footer-converter-card">
+    <a class="hp-footer-converter-head" href="https://www.apnaconverter.com/" target="_blank" rel="noopener" aria-label="ApnaConverter, a product by ApnaInsights">
+      <span class="hp-footer-converter-icon" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 15h6"/><path d="M9 11h2"/></svg>
+      </span>
+      <span class="hp-footer-converter-titlewrap">
+        <span class="hp-footer-converter-title">ApnaConverter<span class="hp-footer-converter-tag">A product by ApnaInsights</span></span>
+        <span class="hp-footer-converter-desc">Free resume builder, portfolio maker &amp; file converter tools to help you land your next job.</span>
+      </span>
+      <span class="hp-footer-converter-cta">
+        Visit Site
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7"/><path d="M7 7h10v10"/></svg>
+      </span>
+    </a>
+    <div class="hp-footer-converter-links">
+      <a class="hp-footer-converter-pill" href="https://www.apnaconverter.com/resume-builder" target="_blank" rel="noopener">Resume Builder</a>
+      <a class="hp-footer-converter-pill" href="https://www.apnaconverter.com/resume-builder/portfolio" target="_blank" rel="noopener">Portfolio Builder</a>
+      <a class="hp-footer-converter-pill" href="https://www.apnaconverter.com/ats-resume-checker" target="_blank" rel="noopener">ATS Checker</a>
+      <a class="hp-footer-converter-pill" href="https://www.apnaconverter.com/tools" target="_blank" rel="noopener">File Converter</a>
     </div>
   </div>
 
