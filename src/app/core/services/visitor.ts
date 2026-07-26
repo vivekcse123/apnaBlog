@@ -50,4 +50,21 @@ export class VisitorService {
 
     this.http.post(`${this.API}/track`, { page: path }).subscribe({ error: () => {} });
   }
+
+  /**
+   * Reports a completed PWA install (fires once per device via a
+   * localStorage flag - the `appinstalled` event can otherwise fire
+   * more than once, e.g. across reinstalls or duplicate listeners).
+   */
+  recordPwaInstall(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    if (!this.hasConsent()) return;
+
+    try {
+      if (localStorage.getItem('apna_pwa_install_reported') === '1') return;
+      localStorage.setItem('apna_pwa_install_reported', '1');
+    } catch { /* if storage is unavailable, fall through and report anyway */ }
+
+    this.http.post(`${this.API}/pwa-install`, {}).subscribe({ error: () => {} });
+  }
 }

@@ -4,6 +4,7 @@ import {
 import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { Meta, Title } from '@angular/platform-browser';
+import { PushNotificationService } from '../../../../core/services/push-notification.service';
 
 interface Slide {
   id:       number;
@@ -24,10 +25,11 @@ interface Slide {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Onboarding implements OnInit {
-  private router     = inject(Router);
-  private platformId = inject(PLATFORM_ID);
-  private meta       = inject(Meta);
-  private titleSvc   = inject(Title);
+  private router      = inject(Router);
+  private platformId  = inject(PLATFORM_ID);
+  private meta        = inject(Meta);
+  private titleSvc    = inject(Title);
+  private pushService = inject(PushNotificationService);
 
   ngOnInit(): void {
     this.titleSvc.setTitle('Welcome to ApnaInsights');
@@ -78,7 +80,14 @@ export class Onboarding implements OnInit {
   isLast = computed(() => this.current() === this.slides.length - 1);
 
   next(): void {
-    if (this.isLast()) { this.finish(); return; }
+    if (this.isLast()) {
+      // "Get Started" on the notifications slide is the user gesture that
+      // triggers the native permission dialog - fire-and-forget so a slow
+      // or ignored prompt never blocks navigation into the app.
+      if (isPlatformBrowser(this.platformId)) this.pushService.requestAndSubscribe();
+      this.finish();
+      return;
+    }
     this.current.update(c => c + 1);
   }
 

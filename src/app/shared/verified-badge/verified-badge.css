@@ -4,22 +4,24 @@
 .vb {
   display: flex; align-items: center; justify-content: center;
   border-radius: 50%; flex-shrink: 0; box-sizing: border-box;
-  background: linear-gradient(150deg, #60a5fa, #2563eb 55%, #1d4ed8);
-  box-shadow: 0 1px 3px rgba(15, 42, 105, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.45);
 }
-.vb-check { display: block; stroke-width: 2.6; }
+/* Flat seal icon, no gradient/shadow bubble - reads as a real verification
+   mark instead of a "fake" glossy badge. Overlay mode still gets a flat
+   backdrop (no gradient/shadow of its own) so it stays legible against
+   whatever photo sits underneath it; inline mode sits on the page's own
+   background already and needs no backdrop. */
+:host(.vb-host--overlay) .vb { background: var(--bg-surface); border: 2px solid var(--bg-surface); }
 
-/* Overlay mode gets a ring matching the surface it sits on, like a cutout. */
-:host(.vb-host--overlay) .vb { border: 2px solid var(--bg-surface); }
+.vb-icon { display: block; }
 
 :host(.vb-host--sm) .vb { width: 15px; height: 15px; }
-:host(.vb-host--sm) .vb-check { width: 9px; height: 9px; }
+:host(.vb-host--sm) .vb-icon { width: 12px; height: 12px; }
 
 :host(.vb-host--md) .vb { width: 19px; height: 19px; }
-:host(.vb-host--md) .vb-check { width: 11px; height: 11px; }
+:host(.vb-host--md) .vb-icon { width: 15px; height: 15px; }
 
 :host(.vb-host--lg) .vb { width: 25px; height: 25px; }
-:host(.vb-host--lg) .vb-check { width: 14px; height: 14px; }
+:host(.vb-host--lg) .vb-icon { width: 20px; height: 20px; }
 :host(.vb-host--overlay.vb-host--lg) .vb { border-width: 3px; }
 
 :host(.vb-host--overlay.vb-host--sm) { right: -2px; bottom: -2px; }

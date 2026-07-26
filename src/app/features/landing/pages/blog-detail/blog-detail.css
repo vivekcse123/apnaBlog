@@ -711,8 +711,26 @@
   background: none; border: none; font-family: inherit;
   padding: 0; cursor: default;
 }
-.meta-item.meta-comments-link { cursor: pointer; transition: color 0.15s; }
-.meta-item.meta-comments-link:hover { color: var(--accent-text); }
+/* Gets its own pill chrome (height, border, background) unlike the plain
+   date/read-time/views text - those are inert, this one is the only
+   clickable meta item and needs to visually read as a button. */
+.meta-item.meta-comments-link {
+  cursor: pointer;
+  height: 26px;
+  padding: 0 10px 0 8px;
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  background: var(--bg-surface);
+  transition: color 0.15s, background-color 0.15s, border-color 0.15s;
+}
+.meta-item.meta-comments-link:hover {
+  color: var(--accent-text);
+  background: var(--accent-subtle);
+  border-color: var(--accent);
+}
+.meta-comments-count {
+  font-weight: 700;
+}
 .meta-icon { display: inline-flex; align-items: center; flex-shrink: 0; }
 
 /* Font size controls */
@@ -849,6 +867,9 @@
 }
 .action-pill:hover { background: var(--accent-subtle); border-color: var(--accent); color: var(--accent-text); }
 .action-pill--active { background: var(--accent-subtle); border-color: var(--accent); color: var(--accent-text); }
+/* Desktop already shows "Read Discussions" in the byline meta row - this
+   duplicate only surfaces on mobile (see the ≤768px block further down). */
+.action-pill--discussion-mobile { display: none; }
 
 /* ── Emoji breakdown strip (desktop) ── */
 .emoji-count-strip {
@@ -2012,6 +2033,11 @@
   .like-btn-main, .action-pill { flex: 0 1 auto; }
   .action-pill span { display: none; }
   .action-pill { padding: 8px 11px; }
+  /* "Read Discussions" moves out of the scrollable meta row (date/read-time/
+     views) and into the Like/Save/Share row instead, so it reads as part of
+     the same action group rather than competing with plain stat text. */
+  .meta-comments-link { display: none; }
+  .action-pill--discussion-mobile { display: inline-flex; }
 
   /* Sections */
   .author-card       { flex-wrap: wrap; }
@@ -2270,7 +2296,7 @@
   .font-size-btns { flex-shrink: 0; }
 
   /* ── 4. Author meta line - pulled in tighter under the name on mobile only ── */
-  .author-chip-meta { margin-top: -33px; }
+  .author-chip-meta { margin-top: -20px; }
 
   /* ── 5. Article container - extra bottom padding to clear mob-article-bar ── */
   .blog-detail-container { padding-bottom: 60px; }

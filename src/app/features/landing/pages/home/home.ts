@@ -34,6 +34,7 @@ import { BookmarkService }       from '../../../../core/services/bookmark.servic
 import { AllPostsCache }         from '../../../../core/services/all-posts-cache';
 import { NotificationPanel }     from '../../../../shared/components/notification-panel/notification-panel';
 import { PanelCoordinator }      from '../../../../core/services/panel-coordinator';
+import { VisitorService }        from '../../../../core/services/visitor';
 
 const FETCH_LIMIT = 20;   // posts fetched for the homepage's ranked sections
 const PAGE_SIZE    = 8;   // items shown in the Trending/Editor's Picks rails
@@ -77,6 +78,7 @@ export class Home implements OnInit, OnDestroy {
   private titleService   = inject(Title);
   private document       = inject(DOCUMENT);
   private coordinator    = inject(PanelCoordinator);
+  private visitorService = inject(VisitorService);
 
   constructor() {
     effect(() => { if (this.headerSearchOpen()) this.coordinator.open('search'); });
@@ -461,7 +463,10 @@ export class Home implements OnInit, OnDestroy {
         e.preventDefault();
         this.installPromptEvent.set(e);
       });
-      window.addEventListener('appinstalled', () => this.installPromptEvent.set(null));
+      window.addEventListener('appinstalled', () => {
+        this.installPromptEvent.set(null);
+        this.visitorService.recordPwaInstall();
+      });
 
       // Mega-menu category counts are nav-only UI, not SEO/SSR-critical content,
       // and `/post?...limit=` is excluded from the transfer cache (see app.config.ts)

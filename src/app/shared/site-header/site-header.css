@@ -80,6 +80,14 @@
 }
 .hp-nav-link:hover { color: var(--text-primary); }
 .hp-nav-link--active { color: var(--accent); }
+.hp-nav-link--active::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; bottom: -14px;
+  height: 2.5px;
+  border-radius: 2px;
+  background: var(--accent);
+}
 .hp-nav-chevron { transition: transform 0.18s ease; }
 .hp-nav-chevron--open { transform: rotate(180deg); }
 
@@ -92,7 +100,7 @@
   top: calc(100% + 16px);
   left: 50%;
   transform: translateX(-50%);
-  width: 560px;
+  width: 680px;
   max-width: calc(100vw - 32px);
   max-height: 420px;
   overflow-y: auto;
@@ -162,6 +170,20 @@
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .cat-mega-count { font-size: 11.5px; font-weight: 500; color: var(--text-secondary); }
+.cat-mega-arrow {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: auto;
+  flex-shrink: 0;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--accent);
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.cat-mega-item:hover .cat-mega-arrow { opacity: 1; transform: translateX(0); }
 
 /* Icon-triggered search dropdown - the wrap is the positioning anchor for
    the popover card; without position:relative here the popover falls back

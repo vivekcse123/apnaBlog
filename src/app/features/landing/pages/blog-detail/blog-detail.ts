@@ -997,6 +997,12 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
           if (!cached) {
             this._bootstrapPost(postData);
           } else if (isBrowser) {
+            // The cached copy (from the home-feed list) can have different
+            // content than the full post - recompute meta tags, reading time
+            // and the "On this page" word count now that the real content
+            // has arrived, so they don't stay stuck at the cached values.
+            this.updateMetaTags(postData);
+            this.calculateReadingTime(postData);
             // Fresh data updated the signal → [innerHTML] re-renders and
             // destroys injected code-block wrappers. Re-inject after tick.
             setTimeout(() => this._enrichDom(), 50);
@@ -1410,7 +1416,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   openCommentDrawer(): void {
     if (this.commentDrawerOpen()) {
       // Already loaded - just scroll
-      this.document.getElementById('discussion')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      this._scrollToElementId('discussion');
       return;
     }
     this.commentText.set('');
@@ -1421,9 +1427,25 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
     this.commentDrawerOpen.set(true);
     const postId = this.post()?._id;
     if (postId) this.loadComments(postId, 0);
-    setTimeout(() => {
-      this.document.getElementById('discussion')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }, 80);
+    setTimeout(() => this._scrollToElementId('discussion'), 80);
+  }
+
+  // Manual scrollTop math against the host, rather than el.scrollIntoView():
+  // scrollIntoView asks the browser to find "the nearest scrollable ancestor"
+  // and can pick the wrong one (or do nothing) with the TOC/article/author-
+  // sidebar 3-column grid + position:sticky siblings this page has - most
+  // visible on mobile, where it either scrolled the wrong container or
+  // didn't move at all. Computing the target scrollTop directly against the
+  // host - which we already know is the one true scroll container - removes
+  // that ambiguity. Shared by scrollToHeading() and openCommentDrawer().
+  private _scrollToElementId(id: string, headerClearance = 84): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    const el = this.document.getElementById(id);
+    if (!el) return;
+    const host = this.elementRef.nativeElement as HTMLElement;
+    const delta = el.getBoundingClientRect().top - host.getBoundingClientRect().top;
+    const target = Math.max(0, host.scrollTop + delta - headerClearance);
+    host.scrollTo({ top: target, behavior: 'smooth' });
   }
 
   closeCommentDrawer(): void {
@@ -2051,21 +2073,7 @@ export class BlogDetail implements OnInit, AfterViewInit, OnDestroy {
   }
 
   scrollToHeading(id: string): void {
-    if (!isPlatformBrowser(this.platformId)) return;
-    const el = this.document.getElementById(id);
-    if (!el) return;
-    // Manual scrollTop math on the host, rather than el.scrollIntoView():
-    // scrollIntoView asks the browser to find "the nearest scrollable
-    // ancestor" and can pick the wrong one (or do nothing) once there are
-    // position:sticky siblings and a CSS Grid ancestor involved, as there
-    // now are with the TOC/article/author-sidebar 3-column layout. Computing
-    // the target scrollTop directly against the host - which we already
-    // know is the one true scroll container - removes that ambiguity.
-    const host = this.elementRef.nativeElement as HTMLElement;
-    const headerClearance = 84;
-    const delta = el.getBoundingClientRect().top - host.getBoundingClientRect().top;
-    const target = Math.max(0, host.scrollTop + delta - headerClearance);
-    host.scrollTo({ top: target, behavior: 'smooth' });
+    this._scrollToElementId(id);
   }
 
   scrollToComments(): void {

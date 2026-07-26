@@ -82,6 +82,10 @@
                   <span class="cat-mega-name">{{ row.name }}</span>
                   <span class="cat-mega-count">{{ row.count }} {{ row.count === 1 ? 'article' : 'articles' }}</span>
                 </span>
+                <span class="cat-mega-arrow" aria-hidden="true">
+                  Read
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                </span>
               </a>
             }
           </div>
@@ -322,7 +326,10 @@
           Explore Articles
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
         </a>
-        <a class="hp-btn hp-btn--secondary" routerLink="/category/news">🗞 Latest News</a>
+        <a class="hp-btn hp-btn--secondary hp-btn--news" routerLink="/category/news">
+          <span class="hp-live-dot" aria-hidden="true"></span>
+          🗞 Latest News
+        </a>
       </div>
     </div>
 

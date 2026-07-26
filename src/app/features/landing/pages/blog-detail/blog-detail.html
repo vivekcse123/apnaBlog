@@ -326,9 +326,12 @@
                 <span class="meta-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></span>
                 {{ post()!.views }} views
               </span>
-              <button class="meta-item meta-comments-link" type="button" (click)="openCommentDrawer()" title="Open comments">
+              <button class="meta-item meta-comments-link" type="button" (click)="openCommentDrawer()" title="Read discussions">
                 <span class="meta-icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
-                {{ post()!.commentsCount }} comment{{ post()!.commentsCount === 1 ? '' : 's' }}
+                Read Discussions
+                @if (post()!.commentsCount > 0) {
+                  <span class="meta-comments-count">{{ post()!.commentsCount }}</span>
+                }
               </button>
             </div>
           </div>
@@ -366,6 +369,17 @@
               <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
             </svg>
             <span>Share</span>
+          </button>
+
+          <!-- Mobile-only: the byline's "Read Discussions" pill is hidden below
+               768px (see .meta-comments-link media rule) so it doesn't crowd the
+               scrollable date/read-time/views row - it lives here instead,
+               grouped in the same line as Like/Save/Share. -->
+          <button class="action-pill action-pill--discussion-mobile" type="button"
+                  (click)="openCommentDrawer()" title="Read discussions"
+                  [attr.aria-label]="'Read discussions, ' + post()!.commentsCount + ' comments'">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <span>Discussion</span>
           </button>
         </div>
       </div>
