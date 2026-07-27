@@ -2,61 +2,65 @@
 
   <app-site-header></app-site-header>
 
-  <!-- BREADCRUMB (SEO only, visually minimal) -->
-  <nav class="cgp-breadcrumb" aria-label="Breadcrumb">
-    <ol class="cgp-breadcrumb-list" itemscope itemtype="https://schema.org/BreadcrumbList">
-      <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
-        <a routerLink="/" itemprop="item"><span itemprop="name">Home</span></a>
-        <meta itemprop="position" content="1" />
-      </li>
-      <span class="bc-sep" aria-hidden="true">›</span>
-      <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
-        <span itemprop="name" aria-current="page">{{ categoryName() }}</span>
-        <meta itemprop="position" content="2" />
-      </li>
-    </ol>
-  </nav>
+  @if (!isLiveStoryMode()) {
+    <!-- BREADCRUMB (SEO only, visually minimal) -->
+    <nav class="cgp-breadcrumb" aria-label="Breadcrumb">
+      <ol class="cgp-breadcrumb-list" itemscope itemtype="https://schema.org/BreadcrumbList">
+        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+          <a routerLink="/" itemprop="item"><span itemprop="name">Home</span></a>
+          <meta itemprop="position" content="1" />
+        </li>
+        <span class="bc-sep" aria-hidden="true">›</span>
+        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+          <span itemprop="name" aria-current="page">{{ categoryName() }}</span>
+          <meta itemprop="position" content="2" />
+        </li>
+      </ol>
+    </nav>
 
-  <!-- HERO -->
-  <section class="cgp-hero">
-    <span class="cgp-hero-icon" aria-hidden="true" [innerHTML]="getCategoryIcon()"></span>
-    <h1 class="cgp-title">{{ categoryName() }}</h1>
-    @if (categoryIntro()) {
-      <p class="cgp-intro">{{ categoryIntro() }}</p>
-    }
-    <p class="cgp-subtitle">
-      @if (!isLoading()) {
-        {{ posts().length }} stor{{ posts().length === 1 ? 'y' : 'ies' }} in this category
-      } @else {
-        Exploring stories…
+    <!-- HERO -->
+    <section class="cgp-hero">
+      <span class="cgp-hero-icon" aria-hidden="true" [innerHTML]="getCategoryIcon()"></span>
+      <h1 class="cgp-title">{{ categoryName() }}</h1>
+      @if (categoryIntro()) {
+        <p class="cgp-intro">{{ categoryIntro() }}</p>
       }
-    </p>
-
-    @if (showSearch()) {
-      <div class="cgp-search-wrap">
-        <svg class="cgp-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input
-          class="cgp-search-input"
-          type="search"
-          [placeholder]="'Search in ' + categoryName() + '…'"
-          [value]="searchQuery()"
-          (input)="searchQuery.set($any($event.target).value); currentPage.set(1)"
-          aria-label="Search within category"
-          autocomplete="off" />
-        @if (searchQuery()) {
-          <button class="cgp-search-clear" aria-label="Clear search" (click)="searchQuery.set(''); currentPage.set(1)">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-          </button>
+      <p class="cgp-subtitle">
+        @if (!isLoading()) {
+          {{ posts().length }} stor{{ posts().length === 1 ? 'y' : 'ies' }} in this category
+        } @else {
+          Exploring stories…
         }
-      </div>
-    }
-  </section>
+      </p>
+
+      @if (showSearch()) {
+        <div class="cgp-search-wrap">
+          <svg class="cgp-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input
+            class="cgp-search-input"
+            type="search"
+            [placeholder]="'Search in ' + categoryName() + '…'"
+            [value]="searchQuery()"
+            (input)="searchQuery.set($any($event.target).value); currentPage.set(1)"
+            aria-label="Search within category"
+            autocomplete="off" />
+          @if (searchQuery()) {
+            <button class="cgp-search-clear" aria-label="Clear search" (click)="searchQuery.set(''); currentPage.set(1)">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          }
+        </div>
+      }
+    </section>
+  }
 
   @if (categoryName() === 'News') {
-    <div class="cgp-order-toggle-wrap">
+    <div class="cgp-order-toggle-wrap" [class.cgp-order-toggle-wrap--floating]="isLiveStoryMode()">
       <button class="cgp-order-toggle" (click)="toggleSectionOrder()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
-        {{ sectionOrder() === 'live-first' ? 'Show Latest Stories first' : 'Show Live News first' }}
+        @if (!isLiveStoryMode()) {
+          {{ sectionOrder() === 'live-first' ? 'Show Latest Stories first' : 'Show Live News first' }}
+        }
       </button>
     </div>
   }
@@ -101,7 +105,7 @@
     } @else {
       <div class="cgp-grid">
         @for (post of visiblePosts(); track post._id) {
-          <app-post-card [post]="post" [imageWidth]="320" [imageHeight]="180" [showCategoryBadge]="false" />
+          <app-post-card [post]="post" [imageWidth]="320" [imageHeight]="180" [showCategoryBadge]="false" [compact]="categoryName() === 'News'" />
         }
       </div>
       <app-pagination [currentPage]="currentPage()" [totalPages]="totalPages()" (pageChange)="goToPage($event)" />

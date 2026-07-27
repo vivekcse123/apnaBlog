@@ -217,3 +217,172 @@
   .lns-card-title { font-size: 16px; }
   .lns-card-desc { font-size: 13.5px; -webkit-line-clamp: 3; }
 }
+
+/* ══════════════════════════════════════════════════════════════════════
+   MOBILE "STORY MODE" — immersive full-screen breaking-news stories
+   (max-width: 768px only; desktop/tablet keep .lns-grid above, untouched)
+   ══════════════════════════════════════════════════════════════════════ */
+.lns-stories {
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  height: calc(100dvh - 130px); /* fallback before JS measures the real header/bottom-nav heights (see storiesMaxHeight) */
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  background: var(--bg-base);
+}
+.lns-stories::-webkit-scrollbar { display: none; }
+
+.lns-story {
+  position: relative;
+  flex: 0 0 100%;
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  background: var(--bg-surface);
+  overflow: hidden;
+}
+.lns-story + .lns-story,
+.lns-story--load-more { border-top: 6px solid var(--bg-base); }
+
+/* Stretched link - an invisible layer covering the whole card so a tap
+   anywhere (image, headline, whitespace) opens the full story. It sits
+   above all the decorative content but *below* the action buttons (see
+   .lns-story-actions z-index), so Share/Bookmark/Like stay independently
+   clickable instead of the tap being swallowed by this overlay. */
+.lns-story-link {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+}
+.lns-story-link--inert { pointer-events: none; }
+
+/* ── Hero image (45–55% of the slide) ── */
+.lns-story-media {
+  position: relative;
+  flex: 0 0 46%;
+  min-height: 0;
+  background: var(--bg-hover);
+  overflow: hidden;
+  border-radius: 0 0 20px 20px;
+}
+.lns-story-media img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity .35s ease;
+}
+.lns-story-media img.lns-story-img--loaded { opacity: 1; }
+.lns-story-skel { position: absolute; inset: 0; border-radius: 0; }
+.lns-story-media-fallback {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 52px; font-weight: 800;
+  color: var(--accent); background: var(--accent-subtle);
+}
+.lns-story-scrim {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 60%;
+  background: linear-gradient(to top, rgba(0,0,0,.6), transparent);
+  pointer-events: none;
+}
+
+.lns-story-badges { position: absolute; top: 14px; left: 14px; z-index: 2; display: flex; align-items: center; gap: 6px; }
+.lns-story-cat {
+  padding: 3px 10px; border-radius: 99px;
+  font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .03em;
+  background: rgba(17, 24, 39, .55); color: #fff; backdrop-filter: blur(4px);
+}
+.lns-story-counter {
+  position: absolute; top: 14px; right: 14px; z-index: 2;
+  padding: 3px 10px; border-radius: 99px;
+  font-size: 11.5px; font-weight: 700; font-variant-numeric: tabular-nums;
+  background: rgba(17, 24, 39, .55); color: #fff; backdrop-filter: blur(4px);
+}
+
+.lns-swipe-hint {
+  position: absolute; left: 50%; bottom: 12px; z-index: 2;
+  transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 1px;
+  font-size: 10.5px; font-weight: 700; color: rgba(255,255,255,.92);
+  text-shadow: 0 1px 4px rgba(0,0,0,.4);
+  animation: lns-swipe-bounce 1.8s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes lns-swipe-bounce {
+  0%, 100% { transform: translate(-50%, 0);   opacity: .7; }
+  50%      { transform: translate(-50%, -6px); opacity: 1; }
+}
+
+/* ── Body ── */
+.lns-story-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 18px calc(10px + env(safe-area-inset-bottom, 0px));
+  overflow-y: auto;
+}
+.lns-story-title {
+  font-size: 21px;
+  font-weight: 800;
+  line-height: 1.26;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+  margin: 0;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+}
+.lns-story-desc {
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  margin: 0;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+}
+.lns-story-meta {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11.5px; font-weight: 600; color: var(--text-muted);
+}
+
+.lns-story-actions {
+  position: relative;
+  z-index: 6; /* above .lns-story-link so these stay independently clickable */
+  display: flex; align-items: center; gap: 8px;
+  flex-shrink: 0;
+  margin-top: 8px;
+}
+.lns-story-action {
+  flex: 0 0 auto;
+  display: flex; align-items: center; justify-content: center;
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border);
+  background: var(--bg-base);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: border-color .15s, color .15s;
+}
+.lns-story-action.active { border-color: var(--accent); color: var(--accent-text); }
+
+/* ── Trailing "load more" slide ── */
+.lns-story--load-more {
+  flex: 0 0 100%;
+  height: 100%;
+  scroll-snap-align: start;
+  display: flex; align-items: center; justify-content: center;
+  border-left: none; border-right: none; border-bottom: none;
+  background: var(--bg-surface);
+  color: var(--accent-text);
+  font-family: inherit; font-size: 15px; font-weight: 700;
+  cursor: pointer;
+}
+.lns-story--load-more:disabled { opacity: .6; cursor: default; }

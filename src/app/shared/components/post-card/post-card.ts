@@ -38,6 +38,10 @@ export class PostCard {
    * every card on that page is already the same category. */
   showCategoryBadge = input(true);
 
+  /** Inshorts-style minimal layout (image + title + brief only) on mobile.
+   * Used by the News category page. */
+  compact = input(false);
+
   postUrl = computed<any[]>(() => ['/blog', this.post().slug || this.post()._id]);
   authorName = computed(() => (this.post().user as any)?.name ?? 'Anonymous');
   authorId = computed<string | null>(() => (this.post().user as any)?._id ?? null);

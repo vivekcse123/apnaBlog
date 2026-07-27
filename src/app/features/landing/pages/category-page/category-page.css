@@ -253,6 +253,29 @@
 }
 .cgp-order-toggle:hover { border-color: var(--accent); color: var(--accent-text); }
 
+/* Immersive mobile Live News story mode: breadcrumb/hero are hidden, and
+   this toggle collapses to a small icon-only button floating top-right so
+   the story stack starts right under the topbar (see isLiveStoryMode()). */
+.cgp-order-toggle-wrap--floating {
+  position: fixed;
+  top: calc(56px + env(safe-area-inset-top, 0px) + 10px);
+  right: 14px;
+  z-index: 250;
+  max-width: none;
+  width: auto;
+  margin: 0;
+  padding: 0;
+}
+.cgp-order-toggle-wrap--floating .cgp-order-toggle {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--bg-surface);
+  box-shadow: var(--card-shadow-lg);
+}
+
 /* ── Grid ── */
 .cgp-main {
   max-width: 900px;
@@ -351,7 +374,7 @@
 @media (max-width: 480px) {
   .cgp-write-label { display: none; }
   .cgp-write-btn { padding: 8px 12px; }
-  .cgp-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .cgp-grid { grid-template-columns: 1fr; gap: 12px; }
   .cgp-card-body { padding: 10px; gap: 4px; }
   .cgp-card-title { font-size: 13.5px; -webkit-line-clamp: 3; min-height: calc(1.4em * 3); }
   .cgp-card-desc { display: none; }

@@ -14,6 +14,7 @@ import { of } from 'rxjs';
 import { PostService }    from '../../../post/services/post-service';
 import { AllPostsCache }  from '../../../../core/services/all-posts-cache';
 import { TaxonomyService } from '../../../../core/services/taxonomy.service';
+import { ViewportService } from '../../../../core/services/viewport.service';
 import { Post }           from '../../../../core/models/post.model';
 import { MobileBottomNav } from '../../../../shared/mobile-bottom-nav/mobile-bottom-nav';
 import { SiteHeader } from '../../../../shared/site-header/site-header';
@@ -115,6 +116,7 @@ export class CategoryPage implements OnInit, OnDestroy {
   private titleSvc    = inject(Title);
   private document    = inject(DOCUMENT);
   private auth        = inject(Auth);
+  private viewport    = inject(ViewportService);
 
   // Category pages are the site's top SEO landing pages - they need a way to
   // search or start writing without first clicking "Back to Home". Uses the
@@ -170,6 +172,16 @@ export class CategoryPage implements OnInit, OnDestroy {
   // Persisted so the choice survives revisits.
   private readonly SECTION_ORDER_KEY = 'apnainsights:news-section-order';
   sectionOrder = signal<'live-first' | 'posts-first'>('live-first');
+
+  // When the immersive mobile Live News story stack is what's on top of the
+  // page, the breadcrumb/hero above it just eats into the "nearly full
+  // screen" real estate it's supposed to have - collapse them down to a
+  // single floating switch button instead.
+  isLiveStoryMode = computed(() =>
+    this.categoryName() === 'News' &&
+    this.sectionOrder() === 'live-first' &&
+    this.viewport.isMobile()
+  );
 
   toggleSectionOrder(): void {
     const next = this.sectionOrder() === 'live-first' ? 'posts-first' : 'live-first';

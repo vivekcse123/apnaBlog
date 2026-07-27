@@ -1,4 +1,4 @@
-<article class="pc-card">
+<article class="pc-card" [class.pc-card--compact]="compact()">
   <a class="pc-media" [routerLink]="postUrl()" tabindex="-1" aria-hidden="true">
     @if (post().featuredImage) {
       <img [src]="post().featuredImage | cldResize:imageWidth():imageHeight()" [alt]="post().title" loading="lazy" [attr.width]="imageWidth()" [attr.height]="imageHeight()" />
