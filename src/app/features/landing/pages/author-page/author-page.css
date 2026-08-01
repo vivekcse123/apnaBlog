@@ -87,6 +87,7 @@
 }
 .ap-identity { flex: 1; min-width: 220px; padding-top: 8px; }
 .ap-name-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.ap-verified-badge { margin-left: -6px; }
 .ap-name {
   font-family: 'DM Sans', sans-serif;
   font-size: 24px;

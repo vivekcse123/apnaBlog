@@ -44,14 +44,14 @@
           } @else {
             <div class="ap-avatar-fallback">{{ authorInitial }}</div>
           }
-          @if (isVerifiedAuthor) {
-            <app-verified-badge mode="overlay" size="sm" label="Verified author" />
-          }
         </div>
 
         <div class="ap-identity">
           <div class="ap-name-row">
             <h1 class="ap-name">{{ authorName }}</h1>
+            @if (isVerifiedAuthor) {
+              <app-verified-badge class="ap-verified-badge" mode="inline" size="lg" label="Verified author" />
+            }
             <span class="ap-badge">Author</span>
             @if (writerBadgeActive) {
               <span class="ap-badge ap-badge--gold" [title]="writerBadgeTitle">🏆 {{ writerBadgeTitle }}</span>
